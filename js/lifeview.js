@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 890,
+		/** @const {number} */ versionBuild : 892,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -16898,7 +16898,7 @@
 
 		// reset history states
 		if (this.engine.multiNumStates > 2) {
-			if (256 - this.engine.multiNumStates >= 63) {
+			if (256 - this.engine.multiNumStates > 63) {
 				this.maxHistoryStates = 63;
 			} else {
 				this.maxHistoryStates = 256 - this.engine.multiNumStates;

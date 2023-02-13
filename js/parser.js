@@ -522,7 +522,7 @@
 
 		// if no theme specified then use the default for the rule
 		if (theme === -1) {
-			if (view.engine.multiNumStates === -1) {
+			if (view.engine.multiNumStates <= 2) {
 				if (view.engine.isLifeHistory) {
 					theme = 10;
 				} else {

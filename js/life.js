@@ -37,7 +37,7 @@
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY", "FlipXorY", "RotCWorCCW", "FlipXorYorRotCWorCCW"],
+		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY", "FlipXorY", "RotCWorCCW", "FlipXorYorRot"],
 
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
@@ -2633,10 +2633,10 @@
 					x = leftX;
 					x = this.drawRightString(String(i), fieldWidth, x, y, offset);
 					x = this.drawRightString(String(value), fieldWidth, x, y, offset);
-					x = this.drawRightString((100 * value / this.popTotal).toFixed(2) + "%", fieldWidth, x, y, offset);
+					x = this.drawRightString((Math.floor(10000 * value / this.popTotal) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
 
 					if (i > (alternating ? 2 : 1)) {
-						this.drawRightString((100 * value / this.popRotor).toFixed(2) + "%", fieldWidth, x, y, offset);
+						this.drawRightString((Math.floor(10000 * value / this.popRotor) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
 					}
 					y += rowHeight;
 				}
@@ -3415,6 +3415,19 @@
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 
+			// whether to save results
+			/** @type {boolean} */ saveResults = false,
+
+			// flag for verifying a spaceship
+			/** @type {boolean} */ verifyingSpaceship = false,
+
+			// last spaceship period
+			/** @type {number} */ lastSpaceshipPeriod = -1,
+
+			// last spaceship delay X and Y
+			/** @type {number} */ lastSpaceshipDeltaX = -1,
+			/** @type {number} */ lastSpaceshipDeltaY = -1,
+
 			// merge size into one value
 			/** @type {number} */ boxSize = (boxWidth << 16) | boxHeight,
 
@@ -3546,8 +3559,10 @@
 						} else {
 							if (hash === currentValue) {
 								j = i << 1;
+
 								// hash matched so check population and bounding box
 								if ((this.population === this.popList[i]) && boxSize === this.boxList[j]) {
+									saveResults = true;
 									period = this.counter - this.genList[i];
 
 									if (this.boxList[j + 1] === boxLocation) {
@@ -3559,25 +3574,46 @@
 											message = "Oscillator period " + period;
 										}
 									} else {
-										// pattern is moving
+										// pattern is moving so check if we are verifying spaceship
 										deltaX = leftX - (this.boxList[j + 1] >> 16);
 										deltaY = bottomY - (this.boxList[j + 1] & 65535);
-										message = this.spaceshipSpeed(period, deltaX, deltaY);
+										if (verifyingSpaceship) {
+											if ((period / lastSpaceshipPeriod === deltaX / lastSpaceshipDeltaX) && (period / lastSpaceshipPeriod === deltaY / lastSpaceshipDeltaY)) {
+												message = this.spaceshipSpeed(period, deltaX, deltaY);
+											} else {
+												saveResults = false;
+											}
+											verifyingSpaceship = false;
+										} else {
+											// remember current spaceship position so it can be verified
+											verifyingSpaceship = true;
+											lastSpaceshipPeriod = period;
+											lastSpaceshipDeltaX = deltaX;
+											lastSpaceshipDeltaY = deltaY;
+											saveResults = false;
+										}
 									}
-									quitLoop = true;
-									quit = true;
 
-									// create the results
-									this.identifyMessage = message;
-									this.identifyI = i;
-									this.identifyPeriod = period;
-									this.identifyDeltaX = deltaX;
-									this.identifyDeltaY = deltaY;
-									this.identifyBoxWidth = boxWidth;
-									this.identifyBoxHeight = boxHeight;
-									this.identifyFast = fast;
-									result = this.identifyResults(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
-									//result = [message];
+									// check if defering for spaceship verification
+									if (saveResults) {
+										quitLoop = true;
+										quit = true;
+
+										// create the results
+										this.identifyMessage = message;
+										this.identifyI = i;
+										this.identifyPeriod = period;
+										this.identifyDeltaX = deltaX;
+										this.identifyDeltaY = deltaY;
+										this.identifyBoxWidth = boxWidth;
+										this.identifyBoxHeight = boxHeight;
+										this.identifyFast = fast;
+										result = this.identifyResults(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
+									} else {
+										// try next
+										lastI = i;
+										i = this.nextList[i];
+									}
 								} else {
 									// false positive so try next
 									lastI = i;

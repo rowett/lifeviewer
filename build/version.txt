@@ -1,3 +1,12 @@
+Build 892
+- improved Identify spaceship detection
+
+Build 891
+- fixed HROT/LtL default custom theme
+- fixed Generations issue with 192 states
+- improved 100% representation in Cell Period Table and Help->Info->Identify
+- changed "FlipXorYorRotCWorCCW" to shorter "FlipXorYorRot"
+
 Build 890
 - fixed Klein and Cross-Surface Bounded Grids for Triangular rules
 - disable Sphere Bounded Grid for Triangular rules
