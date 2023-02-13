@@ -1,5 +1,8 @@
+Build 894
+- fixed issue with computing Mod
+
 Build 893
-- fix issue with Identify and orthogonal spaceships
+- fixed issue with Identify and orthogonal spaceships
 
 Build 892
 - improved Identify spaceship detection

@@ -2797,7 +2797,11 @@
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
 			/** @type {number} */ mult = 0,
-			/** @type {number} */ hash = 0;
+			/** @type {number} */ hash = 0,
+			/** @type {number} */ modHash = -1;
+
+		// clear mod value since it needs recomputing since the bounding box will be correct now
+		this.modValue = -1;
 
 		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
 		if (period <= LifeConstants.maxStrictPeriod && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
@@ -2900,6 +2904,27 @@
 				}
 				this.bornList[i + p] = this.births;
 				this.diedList[i + p] = this.deaths;
+
+				// check for mod matches if one hasn't already been found (ignore for non-square grid)
+				if (this.modValue === -1 && !(this.isHex || this.isTriangular)) {
+					modHash = this.checkModHash(box, true);
+					if (modHash !== -1) {
+						this.modValue = this.counter - this.genList[modHash];
+						this.checkModGen = this.counter + this.modValue;
+						this.checkModHashValue = hash;
+					}
+				} else {
+					// check if the Mod was correct by testing next Mod period
+					if (this.modValue !== -1 && !this.checkedMod && this.counter === this.checkModGen) {
+						modHash = this.checkModHash(box, false);
+						if (modHash !== -1) {
+							this.checkedMod = true;
+						} else {
+							// Mod was not a match so reset
+							this.modValue = -1;
+						}
+					}
+				}
 			}
 		}
 

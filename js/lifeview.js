@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 893,
+		/** @const {number} */ versionBuild : 894,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5525,7 +5525,8 @@
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
 					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
 				} else {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+					var raw = this.engine.getState(xPos + this.panX, yPos + this.panY, true);
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + raw;
 				}
 			}
 			this.xyLabel.deleted = false;
