@@ -3397,6 +3397,24 @@
 		return [message, type, direction, simpleSpeed, boxResult, genMessage, popResult, slope, period, heat, volatility, strict, modResult, activeResult, tempResult];
 	};
 
+	// returns true if spaceship continues in the same direction and speed
+	/** @returns {boolean} */
+	Life.prototype.spaceshipContinues = function(/** @type {number} */ period, /** @type {number} */ lastPeriod, /** @type {number} */ deltaX, /** @type {number} */ lastDeltaX, /** @type {number} */ deltaY, /** @type {number} */ lastDeltaY) {
+		var	/** @type {boolean} */ result = false;
+
+		if (deltaX === 0) {
+			result = (lastDeltaX === 0 && (period / lastPeriod === deltaY / lastDeltaY));
+		} else {
+			if (deltaY === 0) {
+				result = (lastDeltaY === 0 && (period / lastPeriod === deltaX / lastDeltaX));
+			} else {
+				result = ((period / lastPeriod === deltaX / lastDeltaX) && (period / lastPeriod === deltaY / lastDeltaY));
+			}
+		}
+
+		return result;
+	};
+
 	// return true if pattern is empty, stable, oscillating or a spaceship
 	/** @returns {Array} */
 	Life.prototype.oscillating = function(/** @type {boolean} */ fast, /** @type {View} */ view) {
@@ -3578,7 +3596,7 @@
 										deltaX = leftX - (this.boxList[j + 1] >> 16);
 										deltaY = bottomY - (this.boxList[j + 1] & 65535);
 										if (verifyingSpaceship) {
-											if ((period / lastSpaceshipPeriod === deltaX / lastSpaceshipDeltaX) && (period / lastSpaceshipPeriod === deltaY / lastSpaceshipDeltaY)) {
+											if (this.spaceshipContinues(period, lastSpaceshipPeriod, deltaX, lastSpaceshipDeltaX, deltaY, lastSpaceshipDeltaY)) {
 												message = this.spaceshipSpeed(period, deltaX, deltaY);
 											} else {
 												saveResults = false;

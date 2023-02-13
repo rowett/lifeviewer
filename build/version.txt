@@ -1,3 +1,6 @@
+Build 893
+- fix issue with Identify and orthogonal spaceships
+
 Build 892
 - improved Identify spaceship detection
 
