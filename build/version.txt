@@ -1,3 +1,6 @@
+Build 898
+- moved Last Identify button to Pattern submenu
+
 Build 897
 - new Identify engine
 - fixed a typo in Help

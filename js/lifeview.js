@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 897,
+		/** @const {number} */ versionBuild : 898,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5470,7 +5470,7 @@
 
 			// read the state
 			stateDisplay = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
-			rawState = this.engine.getState(xPos + this.panX, yPos + this.panY, true);
+			//rawState = this.engine.getState(xPos + this.panX, yPos + this.panY, true);
 
 			// add the offset to display coordinates
 			xPos += this.xOffset;
@@ -5503,11 +5503,11 @@
 					topY = this.engine.maxGridSize;
 				}
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
 				} else {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
 				}
 			} else {
 				// compute the grid extent
@@ -5518,11 +5518,11 @@
 
 				// display the state
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
 				} else {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
 				}
 			}
 			this.xyLabel.deleted = false;
@@ -6585,6 +6585,7 @@
 		this.randomizeButton.deleted = shown;
 		this.randomizePatternButton.deleted = shown;
 		this.identifyButton.deleted = shown;
+		this.lastIdentifyResultsButton.deleted = shown;
 		this.saveImageButton.deleted = shown;
 		this.saveGraphButton.deleted = shown;
 
@@ -6619,7 +6620,6 @@
 		this.snapToNearest45Button.deleted = shown;
 		this.saveViewButton.deleted = shown;
 		this.restoreViewButton.deleted = shown;
-		this.lastIdentifyResultsButton.deleted = shown;
 
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
@@ -16082,6 +16082,10 @@
 		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 50, 180, 40, "Identify");
 		this.identifyButton.toolTip = "identify oscillator or spaceship period [F6]";
 
+		// last identify results
+		this.lastIdentifyResultsButton = this.viewMenu.addButtonItem(this.lastIdentifyPressed, Menu.middle, 100, 50, 180, 40, "Last Identify");
+		this.lastIdentifyResultsButton.toolTip = "show last identify results [Shift F6]";
+
 		// image button
 		this.saveImageButton = this.viewMenu.addButtonItem(this.saveImagePressed, Menu.middle, -100, 100, 180, 40, "Save Image");
 		this.saveImageButton.toolTip = "save image [O]";
@@ -16222,32 +16226,28 @@
 		this.actionsButton.toolTip = "general actions";
 
 		// integer zoom button
-		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, -75, 180, 40, "Integer Zoom");
+		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, -50, 180, 40, "Integer Zoom");
 		this.integerZoomButton.toolTip = "set zoom to nearest integer [Shift 1]";
 
 		// center pattern button
-		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, -75, 180, 40, "Center Pattern");
+		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, -50, 180, 40, "Center Pattern");
 		this.centerPatternButton.toolTip = "center pattern [Ctrl M]";
 
 		// clear drawing state cells button
-		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, -100, -25, 180, 40, "Clear Drawing");
+		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, -100, 0, 180, 40, "Clear Drawing");
 		this.clearDrawingStateButton.toolTip = "clear drawing state cells [Ctrl Alt K]";
 
 		// snap angle to nearest 45 degrees
-		this.snapToNearest45Button = this.viewMenu.addButtonItem(this.snapToNearest45Pressed, Menu.middle, 100, -25, 180, 40, "Snap Angle");
+		this.snapToNearest45Button = this.viewMenu.addButtonItem(this.snapToNearest45Pressed, Menu.middle, 100, 0, 180, 40, "Snap Angle");
 		this.snapToNearest45Button.toolTip = "snap angle to nearest 45 degrees [Alt /]";
 
 		// save view
-		this.saveViewButton = this.viewMenu.addButtonItem(this.saveViewPressed, Menu.middle, -100, 25, 180, 40, "Save View");
+		this.saveViewButton = this.viewMenu.addButtonItem(this.saveViewPressed, Menu.middle, -100, 50, 180, 40, "Save View");
 		this.saveViewButton.toolTip = "save current view [Shift V]";
 
 		// restore view
-		this.restoreViewButton = this.viewMenu.addButtonItem(this.restoreViewPressed, Menu.middle, 100, 25, 180, 40, "Restore View");
+		this.restoreViewButton = this.viewMenu.addButtonItem(this.restoreViewPressed, Menu.middle, 100, 50, 180, 40, "Restore View");
 		this.restoreViewButton.toolTip = "restore saved view [V]";
-
-		// last identify results
-		this.lastIdentifyResultsButton = this.viewMenu.addButtonItem(this.lastIdentifyPressed, Menu.middle, -100, 75, 180, 40, "Last Identify");
-		this.lastIdentifyResultsButton.toolTip = "show last identify results [Shift F6]";
 
 		// add the advanced button
 		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 100, 25, 150, 40, "Advanced");
