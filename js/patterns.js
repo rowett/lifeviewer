@@ -7402,7 +7402,7 @@
 		this.decodeSpecifiedSize(source, endIndex);
 
 		// search for rule
-		if (ruleIndex === -1) {
+		if (ruleIndex === -1 || (ruleIndex > endIndex)) {
 			// no 'rule =' so check whether one was needed
 			if (needPrefix) {
 				// default to Conway's Life
@@ -7804,6 +7804,13 @@
 				this.executable = false;
 				pattern.gridType = -1;
 			}
+		}
+
+		// check whether Spherical bounded grid has been specified for a Hexagonal rule
+		if (pattern.isHex && pattern.gridType === 4 && this.failureReason === "") {
+			this.failureReason = "Hexagonal rules do not support Sphere";
+			this.executable = false;
+			pattern.gridType = -1;
 		}
 
 		// check whether Spherical bounded grid has been specified for a Triangular rule

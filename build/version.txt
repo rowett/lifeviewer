@@ -1,3 +1,17 @@
+Build 897
+- new Identify engine
+- fixed a typo in Help
+- fixed pattern decoder searching beyond the first line for a rule name
+- initialize all state colours to white (so there aren't transparent cells if illegal states used in a pattern)
+- fixed Triangular and Hexagonal Bounded Grid border colour
+
+Build 896
+- fixed issue with computing 2-state Mod
+- renamed some Mod symmetries
+
+Build 895
+- fixed more issues with computing Mod
+
 Build 894
 - fixed issue with computing Mod
 

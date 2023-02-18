@@ -2042,14 +2042,10 @@
 			// f6 to toggle oscillator search
 			case 117:
 				if (!me.identifyButton.locked) {
-					if (event.ctrlKey) {
-						me.fastIdentifyPressed(me);
+					if (event.shiftKey) {
+						me.displayLastIdentifyResults(me);
 					} else {
-						if (event.shiftKey) {
-							me.displayLastIdentifyResults(me);
-						} else {
-							me.identifyPressed(me);
-						}
+						me.identifyPressed(me);
 					}
 				}
 				break;

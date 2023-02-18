@@ -14,11 +14,6 @@
 		// number of snowflakes
 		/** @const {number} */ flakes : 50000,
 
-		// cell types for rotor/stator calculations
-		/** @const {number} */ cellWasDead : 0,
-		/** @const {number} */ cellWasAlive : 1,
-		/** @const {number} */ cellHasChanged : 2,
-
 		// transformation for mod hash
 		/** @const {number} */ modFirstTrans : 0,
 		/** @const {number} */ modRot90 : 0,
@@ -37,7 +32,7 @@
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["RotCCW", "RotCW", "FlipX", "FlipY", "FlipXY", "RotCWFlipX", "RotCWFlipY", "FlipXorY", "RotCWorCCW", "FlipXorYorRot"],
+		/** @const {Array<string>} */ modTypeName : ["Rot90CCW", "Rot90CW", "FlipX", "FlipY", "FlipXY", "Rot90CWFlipX", "Rot90CWFlipY", "FlipXorY", "Rot90", "FlipXorYorRot90"],
 
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 1048576,
@@ -187,6 +182,15 @@
 		/** @const {number} */ bottomRightSet : 128,
 	};
 
+	// ModCheck object
+	/**
+	 * @constructor
+	 */
+	function ModCheck(/** @type {number} */ checkGen, /** @type {number} */ modType) {
+		/** @type {number} */ this.checkGen = checkGen;
+		/** @type {number} */ this.modType = modType;
+	}
+
 	// Theme object
 	/**
 	 * @constructor
@@ -226,7 +230,6 @@
 			this.gridColour = ViewConstants.gridLineRawDefault;
 			this.gridMajorColour = ViewConstants.gridLineBoldRawDefault;
 		}
-
 	}
 
 	// copy theme
@@ -380,7 +383,6 @@
 		/** @type {number} */ this.identifyDeltaY = 0;
 		/** @type {number} */ this.identifyBoxWidth = 0;
 		/** @type {number} */ this.identifyBoxHeight = 0;
-		/** @type {boolean} */ this.identifyFast = false;
 
 		// last computed strict volatility
 		/** @type {string} */ this.strictVol = "";
@@ -398,6 +400,9 @@
 
 		// oscillator rotor population
 		/** @type {number} */ this.popRotor = 0;
+
+		// identify start time TBD remove
+		this.identifyStartTime = 0;
 
 		// whether last zoom was < 1/16x
 		/** @type {boolean} */ this.lastZoom16 = true;
@@ -463,15 +468,9 @@
 		/** @type {Uint32Array} */ this.nextList = null;
 		/** @type {number} */ this.startItem = 0;
 		/** @type {number} */ this.oscLength = 0;
-		/** @type {Array<Uint8Array>} */ this.countList = null;
-		/** @type {Array<Uint8Array>} */ this.initList = null;
-		/** @type {boolean} */ this.firstCount = true;
 		/** @type {BoundingBox} */ this.hashBox = new BoundingBox(0, 0, 0, 0);
 		/** @type {number} */ this.modValue = -1;
 		/** @type {number} */ this.modType = -1;
-		/** @type {number} */ this.checkModGen = 0;
-		/** @type {number} */ this.checkModHashValue = 0;
-		/** @type {boolean} */ this.checkedMod = false;
 
 		// flag for alternating Margolus grid lines
 		/** @type {boolean} */ this.altGrid = true;
@@ -1345,11 +1344,6 @@
 				this.diedList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.diedList"));
 				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList"));
 				this.nextList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.nextList"));
-				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
-				if (this.multiNumStates > 2 || this.isRuleTree) {
-					this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
-				}
-				this.firstCount = true;
 				this.hashBox.leftX = this.width;
 				this.hashBox.bottomY = this.height;
 				this.hashBox.rightX = 0;
@@ -1360,6 +1354,13 @@
 
 				// clear next pointers
 				this.nextList.fill(-1);
+
+				// clear last strict volatility
+				this.strictVol = "";
+				this.cellPeriod = null;
+
+				// TBD remove
+				this.identifyStartTime = performance.now();
 			}
 		} else {
 			// just switched off so release buffers
@@ -1370,8 +1371,6 @@
 			this.diedList = null;
 			this.boxList = null;
 			this.nextList = null;
-			this.countList = null;
-			this.initList = null;
 			this.modValue = -1;
 			this.modType = -1;
 			this.startItem = -1;
@@ -1394,9 +1393,9 @@
 		return message;
 	};
 
-	// get mod hash from 2-state pattern using Rot90
+	// get mod hash from 2-state pattern using Rot270
 	/** @returns {number} */
-	Life.prototype.getHash2Rot90 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot270 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
@@ -1461,9 +1460,9 @@
 		return hash | 0;
 	};
 
-	// get mod hash from 2-state pattern using Rot270
+	// get mod hash from 2-state pattern using Rot90
 	/** @returns {number} */
-	Life.prototype.getHash2Rot270 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot90 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
@@ -1652,7 +1651,7 @@
 
 		switch (transform) {
 			case LifeConstants.modRot90:
-				result = this.getHash2Rot90(checkWidth, checkHeight, height, hm1, left, bottom);
+				result = this.getHash2Rot90(checkWidth, checkHeight, height, wm1, left, bottom);
 				break;
 
 			case LifeConstants.modRot180:
@@ -1660,7 +1659,7 @@
 				break;
 
 			case LifeConstants.modRot270:
-				result = this.getHash2Rot270(checkWidth, checkHeight, height, wm1, left, bottom);
+				result = this.getHash2Rot270(checkWidth, checkHeight, height, hm1, left, bottom);
 				break;
 
 			case LifeConstants.modFlipX:
@@ -1725,12 +1724,15 @@
 			checkHeight = swap;
 		}
 
-		// create a hash from every alive cell
 		for (y = 0; y < checkHeight; y += 1) {
+
+			var rowMsg = "";
+			var rowMsgC = "";
+
 			for (x = 0; x < checkWidth; x += 1) {
 				// adjust the coordinates based on the transformation
 				switch (transform) {
-				case LifeConstants.modRot90:
+				case LifeConstants.modRot270:
 					cx = iDivHeight;
 					cy = hm1 - iModHeight;
 					break;
@@ -1738,7 +1740,7 @@
 					cx = wm1 - x;
 					cy = hm1 - y;
 					break;
-				case LifeConstants.modRot270:
+				case LifeConstants.modRot90:
 					cx = wm1 - iDivHeight;
 					cy = iModHeight;
 					break;
@@ -1775,19 +1777,22 @@
 						}
 					} else {
 						state = colourGrid[cy + bottom][cx + left];
+
+						rowMsg += String(state > this.historyStates ? state - this.historyStates : 0);
+
 						if (state > this.historyStates) {
 							state -= this.historyStates;
 
 							// adjust sub-cells for PCA rules based on transformation
 							if (this.isPCA) {
 								switch (transform) {
-								case LifeConstants.modRot90:
+								case LifeConstants.modRot270:
 									state = ((state << 1) & 15) | ((state & 8) >> 3);
 									break;
 								case LifeConstants.modRot180:
 									state = ((state & 3) << 2) | ((state & 12) >> 2);
 									break;
-								case LifeConstants.modRot270:
+								case LifeConstants.modRot90:
 									state = ((state >> 1) & 15) | ((state & 1) << 3);
 									break;
 								case LifeConstants.modFlipX:
@@ -1821,6 +1826,10 @@
 									hash = (hash * factor) ^ state;
 								}
 							}
+
+							rowMsgC += state;
+						} else {
+							rowMsgC += "0";
 						}
 					}
 				}
@@ -1832,109 +1841,102 @@
 					iDivHeight += 1;
 				}
 			}
+
+			//if (checkWidth <= 4) {
+				//console.log(y, rowMsg, rowMsgC);
+			//}
 		}
 
 		return hash | 0;
 	};
 
 	// check mod hashes
-	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {boolean} */ updateType) {
-		var	/** @type {number} */ i = 0,
-			/** @type {number} */ trans = LifeConstants.modFirstTrans,
-			/** @type {number} */ found = -1,
+	/** @returns {boolean} */
+	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash) {
+		var	/** @type {number} */ trans = LifeConstants.modFirstTrans,
+			/** @type {boolean} */ found = false,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
 			/** @type {number} */ hash = 0,
 			/** @type {number} */ hashY = 0;
 
 		// check each transformation
-		while (trans <= LifeConstants.modLastTrans && found === -1) {
+		while (trans <= LifeConstants.modLastTrans && !found) {
 			if (twoState) {
 				hash = this.getModHash2(box, trans);
 			} else {
 				hash = this.getModHash(box, trans);
 			}
+			//console.log(trans, LifeConstants.modTypeName[trans], hash, initialHash);
 
-			// check if updating or just checking
-			if (updateType) {
-				// search entries
-				i = this.startItem;
-				while (i !== -1 && found === -1) {
-					if (hash === this.hashList[i] && this.genList[i] !== this.counter) {
-						// ignore entries at the current generation
-						found = i;
-						if (updateType) {
-							this.modType = trans;
+			if (hash === initialHash) {
+				found = true;
 
-							// if this is FlipX then check if it is also true for FlipY
-							if (trans === LifeConstants.modFlipX) {
-								if (twoState) {
-									hashY = this.getModHash2(box, LifeConstants.modFlipY);
-								} else {
-									hashY = this.getModHash(box, LifeConstants.modFlipY);
-								}
-								if (hashY === hash) {
-									this.modType = LifeConstants.modFlipXorY;
+				//console.log("found", trans, LifeConstants.modTypeName[trans]);
 
-									// check for Rot90
-									if (twoState) {
-										hashY = this.getModHash2(box, LifeConstants.modRot90);
-									} else {
-										hashY = this.getModHash(box, LifeConstants.modRot90);
-									}
-									if (hashY === hash) {
-										// check for Rot270
-										if (twoState) {
-											hashY = this.getModHash2(box, LifeConstants.modRot90);
-										} else {
-											hashY = this.getModHash(box, LifeConstants.modRot90);
-										}
-										if (hashY === hash) {
-											this.modType = LifeConstants.modFlipXorYorRotCWorCCW;
-										}
-									}
-								}
-							}	
+				this.modType = trans;
 
-							// if this is Rot90 then check if it also true for Rot270
-							if (trans === LifeConstants.modRot90) {
-								if (twoState) {
-									hashY = this.getModHash2(box, LifeConstants.modRot270);
-								} else {
-									hashY = this.getModHash(box, LifeConstants.modRot270);
-								}
-								if (hashY === hash) {
-									this.modType = LifeConstants.modRotCWorCCW;
+				// if this is FlipX then check if it is also true for FlipY
+				if (trans === LifeConstants.modFlipX) {
+					if (twoState) {
+						hashY = this.getModHash2(box, LifeConstants.modFlipY);
+					} else {
+						hashY = this.getModHash(box, LifeConstants.modFlipY);
+					}
+					if (hashY === hash) {
+						this.modType = LifeConstants.modFlipXorY;
 
-									// check for Flip X
-									if (twoState) {
-										hashY = this.getModHash2(box, LifeConstants.modFlipX);
-									} else {
-										hashY = this.getModHash(box, LifeConstants.modFlipX);
-									}
-									if (hashY === hash) {
-										// check for Flip Y
-										if (twoState) {
-											hashY = this.getModHash2(box, LifeConstants.modFlipY);
-										} else {
-											hashY = this.getModHash(box, LifeConstants.modFlipY);
-										}
-										if (hashY === hash) {
-											this.modType = LifeConstants.modFlipXorYorRotCWorCCW;
-										}
-									}
-
-								}
+						// check for Rot90
+						if (twoState) {
+							hashY = this.getModHash2(box, LifeConstants.modRot90);
+						} else {
+							hashY = this.getModHash(box, LifeConstants.modRot90);
+						}
+						if (hashY === hash) {
+							// check for Rot270
+							if (twoState) {
+								hashY = this.getModHash2(box, LifeConstants.modRot90);
+							} else {
+								hashY = this.getModHash(box, LifeConstants.modRot90);
+							}
+							if (hashY === hash) {
+								this.modType = LifeConstants.modFlipXorYorRotCWorCCW;
 							}
 						}
+					}
+				}	
+
+				// if this is Rot90 then check if it also true for Rot270
+				if (trans === LifeConstants.modRot90) {
+					if (twoState) {
+						hashY = this.getModHash2(box, LifeConstants.modRot270);
 					} else {
-						i = this.nextList[i];
+						hashY = this.getModHash(box, LifeConstants.modRot270);
+					}
+					if (hashY === hash) {
+						this.modType = LifeConstants.modRotCWorCCW;
+
+						// check for Flip X
+						if (twoState) {
+							hashY = this.getModHash2(box, LifeConstants.modFlipX);
+						} else {
+							hashY = this.getModHash(box, LifeConstants.modFlipX);
+						}
+						if (hashY === hash) {
+							// check for Flip Y
+							if (twoState) {
+								hashY = this.getModHash2(box, LifeConstants.modFlipY);
+							} else {
+								hashY = this.getModHash(box, LifeConstants.modFlipY);
+							}
+							if (hashY === hash) {
+								this.modType = LifeConstants.modFlipXorYorRotCWorCCW;
+							}
+						}
 					}
 				}
-			} else {
-				if (hash === this.checkModHashValue) {
-					found = 1;
-				}
 			}
+
+			// next transformation
 			trans += 1;
 		}
 
@@ -1943,7 +1945,7 @@
 
 	// get hash from pattern
 	/** @returns {number} */
-	Life.prototype.getHash = function(/** @type {BoundingBox} */ box, /** @type {boolean} */ fast) {
+	Life.prototype.getHash = function(/** @type {BoundingBox} */ box) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = box.leftX,
@@ -1954,20 +1956,11 @@
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ yshift = 0,
 			/** @type {number} */ state = 0,
-			/** @type {number} */ count = 0,
-			/** @type {number} */ countN = 0,
-			/** @type {number} */ countE = 0,
-			/** @type {number} */ countS = 0,
-			/** @type {number} */ countW = 0,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
 			/** @type {number} */ hashX = 0,
 			/** @type {number} */ hashY = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @type {Array<Uint8Array>} */ countList = this.countList,
-			/** @type {Uint8Array} */ countRow = null,
-			/** @type {Array<Uint8Array>} */ initList = this.initList,
-			/** @type {Uint8Array} */ initRow = null,
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @type {BoundingBox} */ hashBox = this.hashBox;
 
@@ -2047,209 +2040,6 @@
 					}
 				}
 			}
-		}
-
-		// update count if not fast mode
-		if (!fast) {
-			for (cy = y; cy <= top; cy += 1) {
-				colourRow = colourGrid[cy];
-				countRow = countList[cy];
-				if (twoState) {
-					if (this.firstCount) {
-						for (cx = x; cx <= right; cx += 1) {
-							if (colourRow[cx] >= aliveStart) {
-								countRow[cx] = LifeConstants.cellWasAlive;
-							}
-						}
-					} else {
-						for (cx = x; cx <= right; cx += 1) {
-							if (colourRow[cx] >= aliveStart) {
-								// update count
-								if (countRow[cx] === LifeConstants.cellWasDead) {
-									countRow[cx] = LifeConstants.cellHasChanged;
-								}
-							} else {
-								// update count
-								if (countRow[cx] === LifeConstants.cellWasAlive) {
-									countRow[cx] = LifeConstants.cellHasChanged;
-								}
-							}
-						}
-					}
-				} else {
-					if (this.isPCA) {
-						// handle sub-cells
-						if (this.firstCount) {
-							for (cx = x; cx <= right; cx += 1) {
-								// get the 4 sub-cell states
-								state = colourRow[cx];
-								if (state > this.historyStates) {
-									state -= this.historyStates;
-								} else {
-									state = 0;
-								}
-
-								// north sub-cell
-								countN = 0;
-								if ((state & 1) !== 0) {
-									countN = LifeConstants.cellWasAlive;
-								}
-
-								// east sub-cell
-								countE = 0;
-								if ((state & 2) !== 0) {
-									countE = LifeConstants.cellWasAlive;
-								}
-
-								// south sub-cell
-								countS = 0;
-								if ((state & 4) !== 0) {
-									countS = LifeConstants.cellWasAlive;
-								}
-
-								// west sub-cell
-								countW = 0;
-								if ((state & 8) !== 0) {
-									countW = LifeConstants.cellWasAlive;
-								}
-
-								// combine the counts
-								countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
-							}
-						} else {
-							for (cx = x; cx <= right; cx += 1) {
-								// get the 4 sub-cell counts
-								count = countRow[cx];
-
-								// get the 4 sub-cell states
-								state = colourRow[cx];
-								if (state > this.historyStates) {
-									state -= this.historyStates;
-								} else {
-									state = 0;
-								}
-
-								// north sub-cell
-								countN = count & 3;
-								if ((state & 1) !== 0) {
-									// update count
-									if (countN === LifeConstants.cellWasDead) {
-										countN = LifeConstants.cellHasChanged;
-									}
-								} else {
-									// update count
-									if (countN === LifeConstants.cellWasAlive) {
-										countN = LifeConstants.cellHasChanged;
-									}
-								}
-
-								// east sub-cell
-								countE = (count >> 2) & 3;
-								if ((state & 2) !== 0) {
-									// update count
-									if (countE === LifeConstants.cellWasDead) {
-										countE = LifeConstants.cellHasChanged;
-									}
-								} else {
-									// update count
-									if (countE === LifeConstants.cellWasAlive) {
-										countE = LifeConstants.cellHasChanged;
-									}
-								}
-
-								// south sub-cell
-								countS = (count >> 4) & 3;
-								if ((state & 4) !== 0) {
-									// update count
-									if (countS === LifeConstants.cellWasDead) {
-										countS = LifeConstants.cellHasChanged;
-									}
-								} else {
-									// update count
-									if (countS === LifeConstants.cellWasAlive) {
-										countS = LifeConstants.cellHasChanged;
-									}
-								}
-
-								// west sub-cell
-								countW = (count >> 6) & 3;
-								if ((state & 8) !== 0) {
-									// update count
-									if (countW === LifeConstants.cellWasDead) {
-										countW = LifeConstants.cellHasChanged;
-									}
-								} else {
-									// update count
-									if (countW === LifeConstants.cellWasAlive) {
-										countW = LifeConstants.cellHasChanged;
-									}
-								}
-
-								// combine the counts
-								countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
-							}
-						}
-					} else {
-						if (this.isSuper) {
-							initRow = initList[cy];
-							for (cx = x; cx <= right; cx += 1) {
-								if (this.firstCount) {
-									initRow[cx] = colourRow[cx] & 1;
-									if (colourRow[cx] & 1) {
-										countRow[cx] = LifeConstants.cellWasAlive;
-									}
-								} else {
-									if (colourRow[cx] & 1) {
-										// update count
-										if (countRow[cx] === LifeConstants.cellWasDead) {
-											countRow[cx] = LifeConstants.cellHasChanged;
-										} else {
-											if ((colourRow[cx] & 1) !== initRow[cx]) {
-												countRow[cx] = LifeConstants.cellHasChanged;
-											}
-										}
-									} else {
-										// update count
-										if (countRow[cx] === LifeConstants.cellWasAlive) {
-											countRow[cx] = LifeConstants.cellHasChanged;
-										}
-									}
-								}
-							}
-						} else {
-							// multi-state
-							initRow = initList[cy];
-							for (cx = x; cx <= right; cx += 1) {
-								if (this.firstCount) {
-									initRow[cx] = colourRow[cx];
-									if (colourRow[cx] > this.historyStates) {
-										countRow[cx] = LifeConstants.cellWasAlive;
-									}
-								} else {
-									if (colourRow[cx] > this.historyStates) {
-										// update count
-										if (countRow[cx] === LifeConstants.cellWasDead) {
-											countRow[cx] = LifeConstants.cellHasChanged;
-										} else {
-											if (colourRow[cx] !== initRow[cx]) {
-												countRow[cx] = LifeConstants.cellHasChanged;
-											}
-										}
-									} else {
-										// update count
-										if (countRow[cx] === LifeConstants.cellWasAlive) {
-											countRow[cx] = LifeConstants.cellHasChanged;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-
-			// mark first count done
-			this.firstCount = false;
 		}
 
 		return hash | 0;
@@ -2366,6 +2156,7 @@
 		extent.rightX = rightX;
 		extent.topY = topY;
 
+		//console.log(extent);
 		return extent;
 	};
 
@@ -2764,7 +2555,7 @@
 	};
 
 	// compute strict volatility
-	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {BoundingBox} */ box, /** @type {View} */ view) {
+	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {BoundingBox} */ box, /** @type {View} */ view, /** @type {boolean} */ isOscillator) {
 		var	/** @type {number} */ p = 0,
 			/** @type {number} */ f = 0,
 			/** @type {number} */ j = 0,
@@ -2797,14 +2588,17 @@
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
 			/** @type {number} */ mult = 0,
-			/** @type {number} */ hash = 0,
-			/** @type {number} */ modHash = -1;
+			/** @type {number} */ hash0 = 0,
+			/** @type {number} */ hash1 = 0,
+			/** @type {Array<ModCheck>} */ modChecks = [],
+			/** @type {number} */ modCheckGen = -1;
 
 		// clear mod value since it needs recomputing since the bounding box will be correct now
 		this.modValue = -1;
+		//console.log("found period " + String(period) + " in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
 
 		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
-		if (period <= LifeConstants.maxStrictPeriod && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
+		if (isOscillator && (period <= LifeConstants.maxStrictPeriod) && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
 			// compute the maximum box width and height for the oscillator
 			extent = this.getOscillatorBounds(period, i);
 			boxWidth = extent.rightX - extent.leftX + 1;
@@ -2825,11 +2619,13 @@
 			computeStrict = true;
 		}
 
-		this.firstCount = true;
-		this.countList.whole.fill(LifeConstants.cellWasDead);
+		//var t = performance.now();
+		//console.log("currentGen", this.counter);
 
-		this.startItem = i + p;
-		for (p = 0; p < period * 2; p += 1) {
+		// save cell map for each generation in the period
+		// include 1st extra generation to check Oscillator Mod period/2
+		// include 2nd extra generation to check Spaceship full period Mod
+		for (p = 0; p <= period + 1; p += 1) {
 			// compute the next generation
 			this.nextGeneration(view.noHistory, view.graphDisabled, view.identify, view);
 			this.convertToPensTile();
@@ -2841,7 +2637,7 @@
 			// for alternating rules skip odd generations
 			if (!(this.altSpecified && ((this.counter & 1) !== 0))) {
 				// add to the strict volatility frame if computing strict volatility
-				if (computeStrict && p < period) {
+				if (computeStrict) {
 					// swap grids every generation
 					if (this.isSuper) {
 						colourGrid = this.colourGrid;
@@ -2894,39 +2690,76 @@
 					}
 				}
 
-				// compute the hash in slow mode
-				hash = this.getHash(box, false);
-				this.hashList[i + p] = hash;
-				this.genList[i + p] = this.counter;
-				this.nextList[i + p] = -1;
-				if (i + p > 0) {
-					this.nextList[i + p - 1] = i + p;
-				}
-				this.bornList[i + p] = this.births;
-				this.diedList[i + p] = this.deaths;
+				this.bornList[p] = this.births;
+				this.diedList[p] = this.deaths;
 
-				// check for mod matches if one hasn't already been found (ignore for non-square grid)
-				if (this.modValue === -1 && !(this.isHex || this.isTriangular)) {
-					modHash = this.checkModHash(box, true);
-					if (modHash !== -1) {
-						this.modValue = this.counter - this.genList[modHash];
-						this.checkModGen = this.counter + this.modValue;
-						this.checkModHashValue = hash;
-					}
+				if (!isOscillator) {
+					box = (this.isHROT ? this.HROTBox : this.zoomBox);
+				}
+
+				// save hash for generation 0 or 1
+				if (p === 0) {
+					hash0 = this.getHash(box);
+					//console.log(hash0, box);
 				} else {
-					// check if the Mod was correct by testing next Mod period
-					if (this.modValue !== -1 && !this.checkedMod && this.counter === this.checkModGen) {
-						modHash = this.checkModHash(box, false);
-						if (modHash !== -1) {
-							this.checkedMod = true;
-						} else {
-							// Mod was not a match so reset
-							this.modValue = -1;
+					if (p === 1) {
+						hash1 = this.getHash(box);
+						//console.log(hash1, box);
+					}
+				}
+
+				// ignore hex or triangular patterns
+				if (!(this.isHex || this.isTriangular)) {
+					// check if Mod has already been found
+					if (this.modValue === -1) {
+						// check if there is a pending Mod to verify
+						modCheckGen = -1;
+						if (modChecks.length > 0) {
+							modCheckGen = modChecks[0].checkGen;
+						}
+
+						// check if verifying
+						if (modCheckGen === p) {
+							// check the source generation against this one
+							if (this.checkModHash(box, hash1)) {
+								if (this.modType === modChecks[0].modType) {
+									//console.log("gen", p, this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verify");
+									this.modValue = p - 1;
+								} else {
+									//console.log("gen", p, this.counter, "failed", this.modType, modChecks[0].modType);
+								}
+							} else {
+								//console.log("gen", p, this.counter, "failed");
+								this.modValue = -1;
+							}
+
+							// remove the mod check
+							modChecks.shift();
+						}
+
+						// check if Mod found after verification
+						if (this.modValue === -1) {
+							// no Mod found so check if at a subperiod
+							if (p > 0 && (period % p === 0)) {
+								if (this.checkModHash(box, hash0)) {
+									// potential Mod found so create verification record
+									modChecks[modChecks.length] = new ModCheck(p + 1, this.modType);
+									//console.log("gen", p, this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "check at", p + 1);
+								} else {
+									//console.log("gen", p, this.counter, "no match");
+								}
+							}
 						}
 					}
 				}
 			}
 		}
+
+		//t = performance.now() - t;
+		//console.log("computed cell map for each generation in " + (t / 1000).toFixed(1) + " seconds");
+		//t = performance.now();
+
+		//console.log("currentGen", this.counter);
 
 		// compute strict volatility
 		if (computeStrict) {
@@ -2971,6 +2804,10 @@
 				}
 			}
 
+			//t = performance.now() - t;
+			//console.log("calculated cell periods in " + (t / 1000).toFixed(1) + " seconds");
+			//t = performance.now();
+
 			// calculate the factors of the period
 			for (f = 1; f <= (period / 2); f += 1) {
 				if (period % f === 0) {
@@ -3013,6 +2850,10 @@
 				}
 			}
 
+			//t = performance.now() - t;
+			//console.log("calculated cell factors in " + (t / 1000).toFixed(1) + " seconds");
+			//t = performance.now();
+
 			// count up the subperiod populations
 			for (cy = 0; cy < boxHeight; cy += 1) {
 				row = cy * boxWidth;
@@ -3035,11 +2876,14 @@
 
 			// create the cell period map
 			this.createCellPeriodMap();
+
+			// TBD remove
+			//console.log("completed search in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
 		}
 	};
 
 	// return identify results
-	Life.prototype.identifyResults = function(/** @type {View} */ view, /** @type {number} */ i, /** @type {string} */ message, /** @type {number} */ period, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight, /** @type {boolean} */ fast) {
+	Life.prototype.identifyResults = function(/** @type {View} */ view, /** @type {number} */ i, /** @type {string} */ message, /** @type {number} */ period, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight) {
 		// simple version of speed
 		var	/** @type {string} */ simpleSpeed = "",
 
@@ -3096,10 +2940,7 @@
 			/** @type {string} */ volatility = "",
 			/** @type {string} */ strict = "",
 
-			// count list
-			/** @type {Array<Uint8Array>} */ countList = this.countList,
-			/** @type {Uint8Array} */ countRow = null,
-			/** @type {number} */ count = 0,
+			// rotor and stator
 			/** @type {number} */ rotor = 0,
 			/** @type {number} */ stator = 0,
 			/** @type {string} */ activeResult = "",
@@ -3108,14 +2949,7 @@
 			/** @type {string} */ modResult = "",
 
 			// temperature
-			/** @type {string} */ tempResult = "",
-
-			// bounding box for pattern
-			/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
-
-			// counters
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0;
+			/** @type {string} */ tempResult = "";
 
 		// only use one generation for still life
 		if (period > 0) {
@@ -3220,6 +3054,9 @@
 				}
 				direction = this.getDisplacementName(deltaX, deltaY);
 			}
+
+			// compute Mod for spaceship
+			this.computeStrictVolatility(period, i, this.hashBox, view, false);
 		} else {
 			if (period === 1 || (this.altSpecified && period === 2)) {
 				type = "Still Life";
@@ -3227,11 +3064,8 @@
 				// oscillator
 				type = "Oscillator";
 
-				// if not in fast mode then update the cell activity since it may have taken
-				// some generations for the oscillator to form and compute strict volatility
-				if (!fast) {
-					this.computeStrictVolatility(period, i, this.hashBox, view);
-				}
+				// compute strict volatility and Mod for oscillator
+				this.computeStrictVolatility(period, i, this.hashBox, view, true);
 			}
 		}
 
@@ -3327,83 +3161,31 @@
 			}
 		}
 
-		// compute volatility
-		if (type === "Oscillator" && !fast) {
-			for (y = minY; y <= maxY; y += 1) {
-				countRow = countList[y];
-				if (this.isPCA) {
-					// handle PCA sub-cells
-					for (x = minX; x <= maxX; x += 1) {
-						count = countRow[x];
-
-						// north sub-cell
-						if ((count & 3) === LifeConstants.cellHasChanged) {
-							rotor += 1;
-						} else {
-							if ((count & 3) === LifeConstants.cellWasAlive) {
-								stator += 1;
-							}
-						}
-
-						// east sub-cell
-						count >>= 2;
-						if ((count & 3) === LifeConstants.cellHasChanged) {
-							rotor += 1;
-						} else {
-							if ((count & 3) === LifeConstants.cellWasAlive) {
-								stator += 1;
-							}
-						}
-
-						// south sub-cell
-						count >>= 2;
-						if ((count & 3) === LifeConstants.cellHasChanged) {
-							rotor += 1;
-						} else {
-							if ((count & 3) === LifeConstants.cellWasAlive) {
-								stator += 1;
-							}
-						}
-
-						// west sub-cell
-						count >>= 2;
-						if ((count & 3) === LifeConstants.cellHasChanged) {
-							rotor += 1;
-						} else {
-							if ((count & 3) === LifeConstants.cellWasAlive) {
-								stator += 1;
-							}
-						}
-					}
-				} else {
-					for (x = minX; x <= maxX; x += 1) {
-						if (countRow[x] === LifeConstants.cellHasChanged) {
-							rotor += 1;
-						} else {
-							if (countRow[x] === LifeConstants.cellWasAlive) {
-								stator += 1;
-							}
-						}
-					}
-				}
+		// get rotor and stator
+		if (type === "Oscillator") {
+			if (this.popSubPeriod) {
+				rotor = this.popTotal - this.popSubPeriod[1];
+				stator = this.popSubPeriod[1];
 			}
+		}
+
+		// compute volatility
+		if (type === "Oscillator") {
 			volatility = this.toPlaces(rotor / (rotor + stator), 2);
 			strict = this.strictVol;
 			this.popRotor = rotor;
 		}
 
 		// temperature
-		if (type === "Oscillator" && !fast) {
+		if (type === "Oscillator") {
 			tempResult = this.toPlaces(avgHeat / (rotor + stator), 2) + " | " + this.toPlaces(avgHeat / rotor, 2);
 		}
 
 		// active cells
-		if (!fast) {
-			activeResult = String(rotor + " | " + stator + " | " + (rotor + stator));
-		}
+		activeResult = String(rotor + " | " + stator + " | " + (rotor + stator));
 
 		// mod value
-		if (!fast && !(this.isHex || this.isTriangular)) {
+		if (!(this.isHex || this.isTriangular)) {
 			if (this.modValue <= 0) {
 				this.modValue = period;
 				modResult = String(this.modValue);
@@ -3412,8 +3194,13 @@
 				if (period % this.modValue === 0 && period !== this.modValue) {
 					modResult = String(this.modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
 				} else {
-					this.modValue = period;
-					modResult = String(this.modValue);
+					// for full period Spaceships show the Mod transformation
+					if (type === "Spaceship" && this.modValue === period) {
+						modResult = String(this.modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
+					} else {
+						this.modValue = period;
+						modResult = String(this.modValue);
+					}
 				}
 			}
 		}
@@ -3427,22 +3214,80 @@
 	Life.prototype.spaceshipContinues = function(/** @type {number} */ period, /** @type {number} */ lastPeriod, /** @type {number} */ deltaX, /** @type {number} */ lastDeltaX, /** @type {number} */ deltaY, /** @type {number} */ lastDeltaY) {
 		var	/** @type {boolean} */ result = false;
 
-		if (deltaX === 0) {
-			result = (lastDeltaX === 0 && (period / lastPeriod === deltaY / lastDeltaY));
-		} else {
-			if (deltaY === 0) {
-				result = (lastDeltaY === 0 && (period / lastPeriod === deltaX / lastDeltaX));
+		if (period === lastPeriod / 2) {
+			if (deltaX === 0) {
+				result = (lastDeltaX === 0 && (period / lastPeriod === deltaY / lastDeltaY));
 			} else {
-				result = ((period / lastPeriod === deltaX / lastDeltaX) && (period / lastPeriod === deltaY / lastDeltaY));
+				if (deltaY === 0) {
+					result = (lastDeltaY === 0 && (period / lastPeriod === deltaX / lastDeltaX));
+				} else {
+					result = ((period / lastPeriod === deltaX / lastDeltaX) && (period / lastPeriod === deltaY / lastDeltaY));
+				}
 			}
 		}
 
 		return result;
 	};
 
+	// get alive cell bounding box for Super pattern
+	/** @returns {BoundingBox} */
+	Life.prototype.getSuperAliveBox = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY) {
+		var 	/** @type {number} */ minx = 0,
+			/** @type {number} */ miny = 0,
+			/** @type {number} */ maxx = 0,
+			/** @type {number} */ maxy = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+
+			// colour grid
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null;
+
+		// swap grids every generation
+		if ((this.counter & 1) !== 0) {
+			colourGrid = this.nextColourGrid;
+		}
+
+		// find the first alive cell from the bottom left
+		minx = rightX;
+		maxx = leftX;
+		miny = topY;
+		maxy = bottomY;
+
+		for (y = bottomY; y <= topY; y += 1) {
+			colourRow = colourGrid[y];
+			for (x = leftX; x <= rightX; x += 1) {
+				if (colourRow[x] & 1) {
+					if (x < minx) {
+						minx = x;
+					}
+					if (x > maxx) {
+						maxx = x;
+					}
+
+					if (y < miny) {
+						miny = y;
+					}
+					if (y > maxy) {
+						maxy = y;
+					}
+				}
+			}
+		}
+
+		// update the bounding box
+		leftX = minx;
+		bottomY = miny;
+		rightX = maxx;
+		topY = maxy;
+
+		// return the result
+		return new BoundingBox(leftX, bottomY, rightX, topY);
+	};
+
 	// return true if pattern is empty, stable, oscillating or a spaceship
 	/** @returns {Array} */
-	Life.prototype.oscillating = function(/** @type {boolean} */ fast, /** @type {View} */ view) {
+	Life.prototype.oscillating = function(/** @type {View} */ view) {
 		// get bounding box
 		var	/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
 			/** @type {number} */ leftX = box.leftX,
@@ -3451,12 +3296,6 @@
 			/** @type {number} */ topY = box.topY,
 			/** @type {number} */ boxWidth = rightX - leftX + 1,
 			/** @type {number} */ boxHeight = topY - bottomY + 1,
-			/** @type {number} */ minx = 0,
-			/** @type {number} */ miny = 0,
-			/** @type {number} */ maxx = 0,
-			/** @type {number} */ maxy = 0,
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
 
 			// whether to save results
 			/** @type {boolean} */ saveResults = false,
@@ -3479,7 +3318,6 @@
 
 			// hash value of current pattern
 			/** @type {number} */ hash = 0,
-			/** @type {number} */ modHash = 0,
 			/** @type {number} */ currentValue = 0,
 
 			// period
@@ -3498,19 +3336,11 @@
 			/** @type {number} */ deltaX = 0,
 			/** @type {number} */ deltaY = 0,
 
-			// colour grid
-			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @type {Uint8Array} */ colourRow = null,
-
 			// message
 			/** @type {string} */ message = "",
 
 			// result
 			/** @type {Array} */ result = [];
-
-		// clear last strict volatility
-		this.strictVol = "";
-		this.cellPeriod = null;
 
 		// ensure altSpecified propagates from HROT since for some reason it doesn't work on the forum
 		if (this.isHROT) {
@@ -3533,53 +3363,20 @@
 			} else {
 				// for super rules create a bounding box of just the alive cells
 				if (this.isSuper) {
-					// swap grids every generation
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-					}
+					box = this.getSuperAliveBox(leftX, bottomY, rightX, topY);
 
-					// find the first alive cell from the bottom left
-					minx = rightX;
-					maxx = leftX;
-					miny = topY;
-					maxy = bottomY;
-
-					for (y = bottomY; y <= topY; y += 1) {
-						colourRow = colourGrid[y];
-						for (x = leftX; x <= rightX; x += 1) {
-							if (colourRow[x] & 1) {
-								if (x < minx) {
-									minx = x;
-								}
-								if (x > maxx) {
-									maxx = x;
-								}
-
-								if (y < miny) {
-									miny = y;
-								}
-								if (y > maxy) {
-									maxy = y;
-								}
-							}
-						}
-					}
-
-					// update the bounding box
-					leftX = minx;
-					bottomY = miny;
-					rightX = maxx;
-					topY = maxy;
+					leftX = box.leftX;
+					bottomY = box.bottomY;
+					rightX = box.rightX;
+					topY = box.topY;
 					boxWidth = rightX - leftX + 1;
 					boxHeight = topY - bottomY + 1;
 					boxSize = (boxWidth << 16) | boxHeight;
 					boxLocation = (leftX << 16) | bottomY;
-					box = new BoundingBox(leftX, bottomY, rightX, topY);
 				}
 
-				// get the hash of the current pattern in fast mode since slow mode parameters
-				// will be calculated once oscillator is found
-				hash = this.getHash(box, true);
+				// get the hash of the current pattern
+				hash = this.getHash(box);
 
 				// search hash list for match
 				quitLoop = false;
@@ -3639,8 +3436,15 @@
 
 									// check if defering for spaceship verification
 									if (saveResults) {
+										// result found
 										quitLoop = true;
 										quit = true;
+
+										// reset delta if waiting to verify a spaceship since it must be an oscillator
+										if (verifyingSpaceship) {
+											deltaX = 0;
+											deltaY = 0;
+										}
 
 										// create the results
 										this.identifyMessage = message;
@@ -3650,8 +3454,7 @@
 										this.identifyDeltaY = deltaY;
 										this.identifyBoxWidth = boxWidth;
 										this.identifyBoxHeight = boxHeight;
-										this.identifyFast = fast;
-										result = this.identifyResults(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight, fast);
+										result = this.identifyResults(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight);
 									} else {
 										// try next
 										lastI = i;
@@ -3687,27 +3490,6 @@
 							this.startItem = this.oscLength;
 						} else {
 							this.nextList[lastI] = this.oscLength;
-						}
-					}
-
-					// check for mod matches if one hasn't already been found (ignore for non-square grid)
-					if (this.modValue === -1 && !fast && !(this.isHex || this.isTriangular)) {
-						modHash = this.checkModHash(box, true);
-						if (modHash !== -1) {
-							this.modValue = this.counter - this.genList[modHash];
-							this.checkModGen = this.counter + this.modValue;
-							this.checkModHashValue = hash;
-						}
-					} else {
-						// check if the Mod was correct by testing next Mod period
-						if (this.modValue !== -1 && !this.checkedMod && this.counter === this.checkModGen) {
-							modHash = this.checkModHash(box, false);
-							if (modHash !== -1) {
-								this.checkedMod = true;
-							} else {
-								// Mod was not a match so reset
-								this.modValue = -1;
-							}
 						}
 					}
 
@@ -6884,8 +6666,6 @@
 			/** @type {Array<Uint16Array>} */ currentMaskGrid = this.state6Mask,
 			/** @type {Array<Uint16Array>} */ currentMaskAliveGrid = this.state6Alive,
 			/** @type {Array<Uint16Array>} */ currentMaskCellsGrid = this.state6Cells,
-			/** @type {Array<Uint8Array>} */ currentCountList = this.countList,
-			/** @type {Array<Uint8Array>} */ currentInitList = this.initList,
 
 			// get current tile buffers
 			/** @type {Array<Uint16Array>} */ currentMaskTileGrid = this.state6TileGrid,
@@ -6976,16 +6756,6 @@
 			// row occupancy array for grid bounding box calculation
 			this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16"));
 
-			// count grid
-			if (currentCountList) {
-				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
-			}
-
-			// init grid
-			if (currentInitList) {
-				this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
-			}
-
 			// colour grid
 			this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 			this.smallColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
@@ -7020,12 +6790,6 @@
 			this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallColourGrid, currentSmallColourGrid);
 			if (this.isPCA || this.isRuleTree || this.isSuper) {
 				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.nextColourGrid, currentNextColourGrid);
-			}
-			if (this.countList) {
-				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.countList, currentCountList);
-			}
-			if (this.initList) {
-				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.initList, currentInitList);
 			}
 			if (currentOverlayGrid && currentSmallOverlayGrid) {
 				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.overlayGrid, currentOverlayGrid);
@@ -8670,6 +8434,9 @@
 
 	// create pixel colours
 	Life.prototype.createPixelColours = function(/** @type {number} */ brightness) {
+		// initialize colours
+		this.pixelColours.fill(0xffffffff);
+
 		if (this.rainbow) {
 			this.createPixelColoursRainbow(brightness);
 		} else {
@@ -8761,6 +8528,9 @@
 				pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 			} else {
 				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+			}
+			if (needStrings) {
+				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 			}
 		}
 	};

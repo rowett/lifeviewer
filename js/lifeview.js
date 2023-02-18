@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 894,
+		/** @const {number} */ versionBuild : 897,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -708,17 +708,11 @@
 		// pattern manager
 		/** @type {PatternManager} */ this.manager = new PatternManager();
 
-		// whether to identify quickly (no Mod calculation)
-		/** @type {boolean} */ this.identifyFast = false;
-
 		// whether identify results displayed
 		/** @type {boolean} */ this.resultsDisplayed = false;
 
 		// last oscillator message
 		/** @type {string} */ this.lastOscillator = "";
-
-		// last results were fast
-		/** @type {boolean} */ this.lastWasFast = false;
 
 		// last oscillator heat
 		/** @type {string} */ this.lastIdentifyHeat = "";
@@ -1827,9 +1821,6 @@
 
 		// identify button
 		/** @type {MenuItem} */ this.identifyButton = null;
-
-		// fast identify button
-		/** @type {MenuItem} */ this.fastIdentifyButton = null;
 
 		// save image button
 		/** @type {MenuItem} */ this.saveImageButton = null;
@@ -5188,7 +5179,7 @@
 		y += h;
 
 		// active cells
-		if (this.lastIdentifyType === "Oscillator" && !this.lastWasFast) {
+		if (this.lastIdentifyType === "Oscillator") {
 			this.identifyActiveLabel.setPosition(Menu.north, x, y);
 			this.identifyActiveValueLabel.setPosition(Menu.north, xv, y);
 			y += h;
@@ -5213,7 +5204,7 @@
 			y += h;
 
 			// mod
-			if (!this.lastWasFast && !(this.engine.isHex || this.engine.isTriangular) && !this.engine.isMargolus) {
+			if (!(this.engine.isHex || this.engine.isTriangular) && !this.engine.isMargolus) {
 				this.identifyModLabel.setPosition(Menu.north, x, y);
 				this.identifyModValueLabel.setPosition(Menu.north, xv, y);
 				y += h;
@@ -5241,7 +5232,7 @@
 			y += h;
 		}
 
-		if (this.lastIdentifyType === "Oscillator" && !this.lastWasFast) {
+		if (this.lastIdentifyType === "Oscillator") {
 			// temperature
 			this.identifyTemperatureLabel.setPosition(Menu.north, x, y);
 			this.identifyTemperatureValueLabel.setPosition(Menu.north, xv, y);
@@ -5414,6 +5405,7 @@
 			/** @type {string} */ xDisplay = "",
 			/** @type {string} */ yDisplay = "",
 			/** @type {number} */ stateDisplay = 0,
+			/** @type {number} */ rawState = 0,
 
 			// display limit
 			/** @type {number} */ displayLimit = this.engine.maxGridSize > 9999 ? 99999 : 9999,
@@ -5478,6 +5470,7 @@
 
 			// read the state
 			stateDisplay = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
+			rawState = this.engine.getState(xPos + this.panX, yPos + this.panY, true);
 
 			// add the offset to display coordinates
 			xPos += this.xOffset;
@@ -5510,9 +5503,11 @@
 					topY = this.engine.maxGridSize;
 				}
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
 				} else {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
 				}
 			} else {
 				// compute the grid extent
@@ -5523,10 +5518,11 @@
 
 				// display the state
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
 				} else {
-					var raw = this.engine.getState(xPos + this.panX, yPos + this.panY, true);
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + raw;
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
 				}
 			}
 			this.xyLabel.deleted = false;
@@ -6471,25 +6467,25 @@
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
-		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
+		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
+		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified);
-		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
-		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
+		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
+		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyTypeValueLabel.deleted = shown;
 		this.identifyCellsValueLabel.deleted = shown;
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.lastWasFast || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
-		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
+		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
+		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
 		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified);
-		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
-		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || this.lastWasFast;
+		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
+		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
@@ -6589,7 +6585,6 @@
 		this.randomizeButton.deleted = shown;
 		this.randomizePatternButton.deleted = shown;
 		this.identifyButton.deleted = shown;
-		this.fastIdentifyButton.deleted = shown;
 		this.saveImageButton.deleted = shown;
 		this.saveGraphButton.deleted = shown;
 
@@ -6640,7 +6635,6 @@
 		this.randomizeButton.locked = shown;
 		this.randomizePatternButton.locked = shown;
 		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom;
-		this.fastIdentifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom;
 		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";
 		this.copyRuleButton.locked = shown;
 		this.copyNeighbourhoodButton.locked = shown;
@@ -7232,6 +7226,19 @@
 			// time budget in ms for this frame
 			/** @type {number} */ timeLimit = 13,
 
+			// original grid size (before any grid growth)
+			/** @type {number} */ origWidth = me.engine.width,
+			/** @type {number} */ origHeight = me.engine.height,
+
+			// box list
+			/** @type {Uint32Array} */ boxList = me.engine.boxList,
+
+			// current box location
+			/** @type {number} */ location = 0,
+
+			// counter
+			/** @type {number} */ i = 0,
+
 			// identify result
 			/** @type {Array<string>} */ identifyResult = [];
 
@@ -7282,6 +7289,38 @@
 				me.middleBox.rightX = me.engine.zoomBox.rightX;
 				me.middleBox.topY = me.engine.zoomBox.topY;
 				me.checkGridSize(me, me.middleBox);
+
+				// check if the grid grew
+				while (origWidth !== me.engine.width) {
+					// update box list
+					for (i = 0; i < me.engine.oscLength; i += 1) {
+						location = boxList[(i << 1) + 1];
+
+						// update left X
+						boxList[(i << 1) + 1] = (((location >> 16) + (origWidth >> 1)) << 16) | (location & 65535);
+					}
+
+					// update hash box
+					me.engine.hashBox.leftX += origWidth >> 1;
+					me.engine.hashBox.rightX += origWidth >> 1;
+
+					origWidth <<= 1;
+				}
+
+				while (origHeight !== me.engine.height) {
+					// update box list
+					for (i = 0; i < me.engine.oscLength; i += 1) {
+						location = boxList[(i << 1) + 1];
+
+						// bottom Y
+						boxList[(i << 1) + 1] = (((location & 65535) + (origHeight >> 1)) | ((location >> 16) << 16));
+					}
+					// update hash box
+					me.engine.hashBox.bottomY += origHeight >> 1;
+					me.engine.hashBox.topY += origHeight >> 1;
+
+					origHeight <<= 1;
+				}
 			}
 
 			// save elapsed time
@@ -7290,7 +7329,7 @@
 			// check if any cells are alive
 			if (me.engine.population > 0 || me.pasteEvery || me.engine.counter <= me.maxPasteGen) {
 				// compute oscillators
-				identifyResult = me.engine.oscillating(me.identifyFast, me);
+				identifyResult = me.engine.oscillating(me);
 				if (identifyResult.length > 0) {
 					// check for buffer full
 					if (identifyResult[0] === LifeConstants.bufferFullMessage) {
@@ -7368,9 +7407,6 @@
 						}
 						me.resultsDisplayed = true;
 
-						// save fast setting
-						me.lastWasFast = me.identifyFast;
-
 						// set label position for results
 						me.setResultsPosition();
 					}
@@ -7393,9 +7429,6 @@
 					}
 					me.engine.initSearch(me.identify);
 
-					// switch off fast mode
-					me.identifyFast = false;
-
 					// unlock the menu
 					me.viewMenu.locked = false;
 				}
@@ -7409,9 +7442,6 @@
 
 				me.resultsDisplayed = false;
 				me.engine.initSearch(me.identify);
-
-				// switch off fast mode
-				me.identifyFast = false;
 
 				// unlock the menu
 				me.viewMenu.locked = false;
@@ -14402,10 +14432,6 @@
 			me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
 		}
 
-		// reset check
-		me.engine.checkedMod = false;
-		me.engine.checkModGen = 0;
-
 		// check if anything is alive
 		if (me.engine.population === 0) {
 			me.menuManager.notification.notify("No live cells to Identify", 15, 120, 15, false);
@@ -14425,11 +14451,7 @@
 				me.resultsDisplayed = false;
 
 				// start identification
-				if (me.identifyFast) {
-					me.menuManager.notification.notify("Identifying (fast)...", 15, 216000, 15, false);
-				} else {
-					me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
-				}
+				me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
 
 				// set last zoom box to the same as current generation
 				me.engine.lastZoomBox.set(me.engine.zoomBox);
@@ -14532,13 +14554,6 @@
 
 	// identify button pressed
 	View.prototype.identifyPressed = function(/** @type {View} */ me) {
-		me.identifyFast = false;
-		me.identifyAction(me);
-	};
-
-	// fast identify button pressed
-	View.prototype.fastIdentifyPressed = function(/** @type {View} */ me) {
-		me.identifyFast = true;
 		me.identifyAction(me);
 	};
 
@@ -16067,10 +16082,6 @@
 		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 50, 180, 40, "Identify");
 		this.identifyButton.toolTip = "identify oscillator or spaceship period [F6]";
 
-		// fast identify button
-		this.fastIdentifyButton = this.viewMenu.addButtonItem(this.fastIdentifyPressed, Menu.middle, 100, 50, 180, 40, "Fast Identify");
-		this.fastIdentifyButton.toolTip = "quickly identify oscillator or spaceship period [Ctrl F6]";
-
 		// image button
 		this.saveImageButton = this.viewMenu.addButtonItem(this.saveImagePressed, Menu.middle, -100, 100, 180, 40, "Save Image");
 		this.saveImageButton.toolTip = "save image [O]";
@@ -17431,9 +17442,6 @@
 
 		// turn off pretty rendering
 		me.engine.pretty = false;
-
-		// clear identify buffer (needs to be done before growGrid)
-		me.engine.countList = null;
 
 		// flag not empty start
 		me.emptyStart = false;
