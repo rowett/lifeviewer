@@ -1,3 +1,17 @@
+Build 901
+- add ActiveCells, Temperature and Volatility calculations to Identify for multi-state rules or periods > 65536
+
+Build 900
+- fixed crash with odd sized bounded grid
+- fixed notification background persisting across Viewers
+- fixed starfield colour persisting across Viewers
+- fixed [R]History states not being updated correctly when rendering hexagons or triangles
+
+Build 899
+- fixed issue with Generations population with 192 states
+- removed "Type" display for Identify since the type is in the header
+- fixed an issue with [R]History state2 cells not rendering on pattern load if there are PASTE commands
+
 Build 898
 - moved Last Identify button to Pattern submenu
 

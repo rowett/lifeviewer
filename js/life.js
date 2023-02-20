@@ -28,6 +28,11 @@
 		/** @const {number} */ modRotCWorCCW : 8,
 		/** @const {number} */ modFlipXorYorRotCWorCCW : 9,
 
+		// cell types for rotor/stator calculations
+		/** @const {number} */ cellWasDead : 0,
+		/** @const {number} */ cellWasAlive : 1,
+		/** @const {number} */ cellHasChanged : 2,
+
 		// maximum number of bits for rule tree lookup
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
@@ -468,6 +473,8 @@
 		/** @type {Uint32Array} */ this.nextList = null;
 		/** @type {number} */ this.startItem = 0;
 		/** @type {number} */ this.oscLength = 0;
+		/** @type {Array<Uint8Array>} */ this.countList = null;
+		/** @type {Array<Uint8Array>} */ this.initList = null;
 		/** @type {BoundingBox} */ this.hashBox = new BoundingBox(0, 0, 0, 0);
 		/** @type {number} */ this.modValue = -1;
 		/** @type {number} */ this.modType = -1;
@@ -1344,6 +1351,10 @@
 				this.diedList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.diedList"));
 				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList"));
 				this.nextList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.nextList"));
+				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
+				if (this.multiNumStates > 2 || this.isRuleTree) {
+					this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
+				}
 				this.hashBox.leftX = this.width;
 				this.hashBox.bottomY = this.height;
 				this.hashBox.rightX = 0;
@@ -1371,6 +1382,8 @@
 			this.diedList = null;
 			this.boxList = null;
 			this.nextList = null;
+			this.countList = null;
+			this.init = null;
 			this.modValue = -1;
 			this.modType = -1;
 			this.startItem = -1;
@@ -2554,7 +2567,228 @@
 		}
 	};
 
-	// compute strict volatility
+	// update cell occupancy for rotor and stator calculation (used when not computing strict volatility)
+	Life.prototype.updateOccupancy = function(/** @type {BoundingBox} */ box, /** @type {number} */ gen) {
+		var	/** @type {number} */ x = box.leftX,
+			/** @type {number} */ y = box.bottomY,
+			/** @type {number} */ right = box.rightX,
+			/** @type {number} */ top = box.topY,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ countN = 0,
+			/** @type {number} */ countE = 0,
+			/** @type {number} */ countS = 0,
+			/** @type {number} */ countW = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ countList = this.countList,
+			/** @type {Uint8Array} */ countRow = null,
+			/** @type {Array<Uint8Array>} */ initList = this.initList,
+			/** @type {Uint8Array} */ initRow = null,
+			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree);
+
+		for (cy = y; cy <= top; cy += 1) {
+			colourRow = colourGrid[cy];
+			countRow = countList[cy];
+			if (twoState) {
+				if (gen === 0) {
+					for (cx = x; cx <= right; cx += 1) {
+						if (colourRow[cx] >= aliveStart) {
+							countRow[cx] = LifeConstants.cellWasAlive;
+						}
+					}
+				} else {
+					for (cx = x; cx <= right; cx += 1) {
+						if (colourRow[cx] >= aliveStart) {
+							// update count
+							if (countRow[cx] === LifeConstants.cellWasDead) {
+								countRow[cx] = LifeConstants.cellHasChanged;
+							}
+						} else {
+							// update count
+							if (countRow[cx] === LifeConstants.cellWasAlive) {
+								countRow[cx] = LifeConstants.cellHasChanged;
+							}
+						}
+					}
+				}
+			} else {
+				if (this.isPCA) {
+					// handle sub-cells
+					if (gen === 0) {
+						for (cx = x; cx <= right; cx += 1) {
+							// get the 4 sub-cell states
+							state = colourRow[cx];
+							if (state > this.historyStates) {
+								state -= this.historyStates;
+							} else {
+								state = 0;
+							}
+
+							// north sub-cell
+							countN = 0;
+							if ((state & 1) !== 0) {
+								countN = LifeConstants.cellWasAlive;
+							}
+
+							// east sub-cell
+							countE = 0;
+							if ((state & 2) !== 0) {
+								countE = LifeConstants.cellWasAlive;
+							}
+
+							// south sub-cell
+							countS = 0;
+							if ((state & 4) !== 0) {
+								countS = LifeConstants.cellWasAlive;
+							}
+
+							// west sub-cell
+							countW = 0;
+							if ((state & 8) !== 0) {
+								countW = LifeConstants.cellWasAlive;
+							}
+
+							// combine the counts
+							countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
+						}
+					} else {
+						for (cx = x; cx <= right; cx += 1) {
+							// get the 4 sub-cell counts
+							count = countRow[cx];
+
+							// get the 4 sub-cell states
+							state = colourRow[cx];
+							if (state > this.historyStates) {
+								state -= this.historyStates;
+							} else {
+								state = 0;
+							}
+
+							// north sub-cell
+							countN = count & 3;
+							if ((state & 1) !== 0) {
+								// update count
+								if (countN === LifeConstants.cellWasDead) {
+									countN = LifeConstants.cellHasChanged;
+								}
+							} else {
+								// update count
+								if (countN === LifeConstants.cellWasAlive) {
+									countN = LifeConstants.cellHasChanged;
+								}
+							}
+
+							// east sub-cell
+							countE = (count >> 2) & 3;
+							if ((state & 2) !== 0) {
+								// update count
+								if (countE === LifeConstants.cellWasDead) {
+									countE = LifeConstants.cellHasChanged;
+								}
+							} else {
+								// update count
+								if (countE === LifeConstants.cellWasAlive) {
+									countE = LifeConstants.cellHasChanged;
+								}
+							}
+
+							// south sub-cell
+							countS = (count >> 4) & 3;
+							if ((state & 4) !== 0) {
+								// update count
+								if (countS === LifeConstants.cellWasDead) {
+									countS = LifeConstants.cellHasChanged;
+								}
+							} else {
+								// update count
+								if (countS === LifeConstants.cellWasAlive) {
+									countS = LifeConstants.cellHasChanged;
+								}
+							}
+
+							// west sub-cell
+							countW = (count >> 6) & 3;
+							if ((state & 8) !== 0) {
+								// update count
+								if (countW === LifeConstants.cellWasDead) {
+									countW = LifeConstants.cellHasChanged;
+								}
+							} else {
+								// update count
+								if (countW === LifeConstants.cellWasAlive) {
+									countW = LifeConstants.cellHasChanged;
+								}
+							}
+
+							// combine the counts
+							countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
+						}
+					}
+				} else {
+					if (this.isSuper) {
+						initRow = initList[cy];
+						for (cx = x; cx <= right; cx += 1) {
+							if (gen === 0) {
+								initRow[cx] = colourRow[cx] & 1;
+								if (colourRow[cx] & 1) {
+									countRow[cx] = LifeConstants.cellWasAlive;
+								}
+							} else {
+								if (colourRow[cx] & 1) {
+									// update count
+									if (countRow[cx] === LifeConstants.cellWasDead) {
+										countRow[cx] = LifeConstants.cellHasChanged;
+									} else {
+										if ((colourRow[cx] & 1) !== initRow[cx]) {
+											countRow[cx] = LifeConstants.cellHasChanged;
+										}
+									}
+								} else {
+									// update count
+									if (countRow[cx] === LifeConstants.cellWasAlive) {
+										countRow[cx] = LifeConstants.cellHasChanged;
+									}
+								}
+							}
+						}
+					} else {
+						// multi-state
+						initRow = initList[cy];
+						for (cx = x; cx <= right; cx += 1) {
+							if (gen === 0) {
+								initRow[cx] = colourRow[cx];
+								if (colourRow[cx] > this.historyStates) {
+									countRow[cx] = LifeConstants.cellWasAlive;
+								}
+							} else {
+								if (colourRow[cx] > this.historyStates) {
+									// update count
+									if (countRow[cx] === LifeConstants.cellWasDead) {
+										countRow[cx] = LifeConstants.cellHasChanged;
+									} else {
+										if (colourRow[cx] !== initRow[cx]) {
+											countRow[cx] = LifeConstants.cellHasChanged;
+										}
+									}
+								} else {
+									// update count
+									if (countRow[cx] === LifeConstants.cellWasAlive) {
+										countRow[cx] = LifeConstants.cellHasChanged;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	};
+
+	// compute strict volatility and Mod
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {BoundingBox} */ box, /** @type {View} */ view, /** @type {boolean} */ isOscillator) {
 		var	/** @type {number} */ p = 0,
 			/** @type {number} */ f = 0,
@@ -2575,7 +2809,6 @@
 			/** @type {number} */ aliveStart = this.aliveStart,
 			/** @type {number} */ boxWidth = 0,
 			/** @type {number} */ boxHeight = 0,
-			/** @type {boolean} */ anyAlive = false,
 			/** @type {number} */ target = 0,
 			/** @type {number} */ popTotal = 0,
 			/** @type {number} */ row = 0,
@@ -2593,9 +2826,7 @@
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {number} */ modCheckGen = -1;
 
-		// clear mod value since it needs recomputing since the bounding box will be correct now
-		this.modValue = -1;
-		//console.log("found period " + String(period) + " in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
+		//console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
 
 		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
 		if (isOscillator && (period <= LifeConstants.maxStrictPeriod) && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
@@ -2620,7 +2851,6 @@
 		}
 
 		//var t = performance.now();
-		//console.log("currentGen", this.counter);
 
 		// save cell map for each generation in the period
 		// include 1st extra generation to check Oscillator Mod period/2
@@ -2688,6 +2918,9 @@
 					for (cx = 0; cx < occupiedFrame.length; cx += 1) {
 						occupiedFrame[cx] |= frames[cx + f];
 					}
+				} else {
+					// use the original method of computing cell occupancy
+					this.updateOccupancy(box, p);
 				}
 
 				this.bornList[p] = this.births;
@@ -2759,8 +2992,6 @@
 		//console.log("computed cell map for each generation in " + (t / 1000).toFixed(1) + " seconds");
 		//t = performance.now();
 
-		//console.log("currentGen", this.counter);
-
 		// compute strict volatility
 		if (computeStrict) {
 			// calculate the period of each cell
@@ -2775,21 +3006,8 @@
 					if (v) {
 						// check if the cell was alive in any generation
 						if (v & bit) {
-							// check the cell for every generation of the period at this location
-							anyAlive = false;
-							j = 0;
-							for (p = 0; p < period; p += 1) {
-								if (frames[j + f] & bit) {
-									popPhase[p] += 1;
-									anyAlive = true;
-								}
-								j += bitFrameInBytes;
-							}
-
-							if (anyAlive) {
-								cellPeriod[row + cx] = period;
-								popTotal += 1;
-							}
+							cellPeriod[row + cx] = period;
+							popTotal += 1;
 						}
 
 						bit >>= 1;
@@ -2819,31 +3037,28 @@
 						row = cy * boxWidth;
 						j = cy * bitRowInBytes;
 						for (bitcx = 0; bitcx < bitRowInBytes; bitcx += 1) {
-							// use the occupancy map to skip blocks of cells that are unoccupied
-							if (occupiedFrame[j + bitcx]) {
-								rightcx = (bitcx + 1) << 4;
-								if (rightcx > boxWidth) {
-									rightcx = boxWidth;
-								}
-								bit = bitStart;
-								for (cx = bitcx << 4; cx < rightcx; cx += 1) {
-									if (cellPeriod[row + cx] === period) {
-										off1 = bitcx + j;
-										off2 = off1 + mult;
+							rightcx = (bitcx + 1) << 4;
+							if (rightcx > boxWidth) {
+								rightcx = boxWidth;
+							}
+							bit = bitStart;
+							for (cx = bitcx << 4; cx < rightcx; cx += 1) {
+								if (cellPeriod[row + cx] === period) {
+									off1 = bitcx + j;
+									off2 = off1 + mult;
 
-										for (p = 0; p < target; p += 1) {
-											if ((frames[off1] & bit) !== (frames[off2] & bit)) {
-												break;
-											}
-											off1 += bitFrameInBytes;
-											off2 += bitFrameInBytes;
+									for (p = 0; p < target; p += 1) {
+										if ((frames[off1] & bit) !== (frames[off2] & bit)) {
+											break;
 										}
-										if (p === target) {
-											cellPeriod[row + cx] = f;
-										}
+										off1 += bitFrameInBytes;
+										off2 += bitFrameInBytes;
 									}
-									bit >>= 1;
+									if (p === target) {
+										cellPeriod[row + cx] = f;
+									}
 								}
+								bit >>= 1;
 							}
 						}
 					}
@@ -2876,10 +3091,10 @@
 
 			// create the cell period map
 			this.createCellPeriodMap();
-
-			// TBD remove
-			//console.log("completed search in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
 		}
+
+		// TBD remove
+		//console.log("completed search in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
 	};
 
 	// return identify results
@@ -2941,8 +3156,13 @@
 			/** @type {string} */ strict = "",
 
 			// rotor and stator
+			/** @type {Array<Uint8Array>} */ countList = this.countList,
+			/** @type {Uint8Array} */ countRow = null,
+			/** @type {number} */ count = 0,
 			/** @type {number} */ rotor = 0,
 			/** @type {number} */ stator = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
 			/** @type {string} */ activeResult = "",
 
 			// mod value
@@ -3161,16 +3381,74 @@
 			}
 		}
 
-		// get rotor and stator
+		// compute volatility
 		if (type === "Oscillator") {
+			// if strict volatility calculated then get rotor and stator from there
 			if (this.popSubPeriod) {
 				rotor = this.popTotal - this.popSubPeriod[1];
 				stator = this.popSubPeriod[1];
-			}
-		}
+			} else {
+				// otherwise get it from the count list
+				for (y = minY; y <= maxY; y += 1) {
+					countRow = countList[y];
+					if (this.isPCA) {
+						// handle PCA sub-cells
+						for (x = minX; x <= maxX; x += 1) {
+							count = countRow[x];
 
-		// compute volatility
-		if (type === "Oscillator") {
+							// north sub-cell
+							if ((count & 3) === LifeConstants.cellHasChanged) {
+								rotor += 1;
+							} else {
+								if ((count & 3) === LifeConstants.cellWasAlive) {
+									stator += 1;
+								}
+							}
+
+							// east sub-cell
+							count >>= 2;
+							if ((count & 3) === LifeConstants.cellHasChanged) {
+								rotor += 1;
+							} else {
+								if ((count & 3) === LifeConstants.cellWasAlive) {
+									stator += 1;
+								}
+							}
+
+							// south sub-cell
+							count >>= 2;
+							if ((count & 3) === LifeConstants.cellHasChanged) {
+								rotor += 1;
+							} else {
+								if ((count & 3) === LifeConstants.cellWasAlive) {
+									stator += 1;
+								}
+							}
+
+							// west sub-cell
+							count >>= 2;
+							if ((count & 3) === LifeConstants.cellHasChanged) {
+								rotor += 1;
+							} else {
+								if ((count & 3) === LifeConstants.cellWasAlive) {
+									stator += 1;
+								}
+							}
+						}
+					} else {
+						for (x = minX; x <= maxX; x += 1) {
+							if (countRow[x] === LifeConstants.cellHasChanged) {
+								rotor += 1;
+							} else {
+								if (countRow[x] === LifeConstants.cellWasAlive) {
+									stator += 1;
+								}
+							}
+						}
+					}
+				}
+			}
+
 			volatility = this.toPlaces(rotor / (rotor + stator), 2);
 			strict = this.strictVol;
 			this.popRotor = rotor;
@@ -3819,7 +4097,7 @@
 						if (overlayRow) {
 							overState = overlayRow[x];
 							if (overState === state4 || overState === state6) {
-								if (state > aliveStart) {
+								if (state >= aliveStart) {
 									state = state3;
 								} else {
 									state = overState;
@@ -4515,7 +4793,7 @@
 						if (overlayRow) {
 							overState = overlayRow[x];
 							if (overState === state4 || overState === state6) {
-								if (state > aliveStart) {
+								if (state >= aliveStart) {
 									state = state3;
 								} else {
 									state = overState;
@@ -6666,6 +6944,8 @@
 			/** @type {Array<Uint16Array>} */ currentMaskGrid = this.state6Mask,
 			/** @type {Array<Uint16Array>} */ currentMaskAliveGrid = this.state6Alive,
 			/** @type {Array<Uint16Array>} */ currentMaskCellsGrid = this.state6Cells,
+			/** @type {Array<Uint8Array>} */ currentCountList = this.countList,
+			/** @type {Array<Uint8Array>} */ currentInitList = this.initList,
 
 			// get current tile buffers
 			/** @type {Array<Uint16Array>} */ currentMaskTileGrid = this.state6TileGrid,
@@ -6756,6 +7036,16 @@
 			// row occupancy array for grid bounding box calculation
 			this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16"));
 
+			// count grid
+			if (currentCountList) {
+				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
+			}
+
+			// init grid
+			if (currentInitList) {
+				this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
+			}
+
 			// colour grid
 			this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 			this.smallColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
@@ -6790,6 +7080,12 @@
 			this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallColourGrid, currentSmallColourGrid);
 			if (this.isPCA || this.isRuleTree || this.isSuper) {
 				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.nextColourGrid, currentNextColourGrid);
+			}
+			if (this.countList) {
+				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.countList, currentCountList);
+			}
+			if (this.initList) {
+				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.initList, currentInitList);
 			}
 			if (currentOverlayGrid && currentSmallOverlayGrid) {
 				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.overlayGrid, currentOverlayGrid);
@@ -6850,6 +7146,13 @@
 			this.historyBox.rightX += xOffset;
 			this.historyBox.topY += yOffset;
 			this.historyBox.bottomY += yOffset;
+
+			if (this.hashBox) {
+				this.hashBox.leftX += xOffset;
+				this.hashBox.rightX += xOffset;
+				this.hashBox.topY += yOffset;
+				this.hashBox.bottomY += yOffset;
+			}
 
 			// update identify positions
 			if (this.oscLength > 0) {
@@ -14317,8 +14620,8 @@
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
 			}
-			this.drawBoundedGridBorder(colourGrid, 0);
 		}
+		this.drawBoundedGridBorder(colourGrid, 0);
 
 		// set tiles on boundary
 		this.setBoundedTiles();
@@ -32860,6 +33163,11 @@
 			} else {
 				minX = (this.width + this.height) * 2;
 				maxX = -minX;
+				bottomY |= 0;
+				topY |= 0;
+				leftX |= 0;
+				rightX |= 0;
+
 				for (y = bottomY; y <= topY; y += 1) {
 					colourRow = colourGrid[y];
 					for (x = leftX; x <= rightX; x += 1) {

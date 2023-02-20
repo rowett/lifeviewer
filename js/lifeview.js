@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 898,
+		/** @const {number} */ versionBuild : 901,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -761,7 +761,6 @@
 
 		// labels for identify results
 		/** @type {MenuItem} */ this.identifyBannerLabel = null;
-		/** @type {MenuItem} */ this.identifyTypeLabel = null;
 		/** @type {MenuItem} */ this.identifyCellsLabel = null;
 		/** @type {MenuItem} */ this.identifyBoxLabel = null;
 		/** @type {MenuItem} */ this.identifyDirectionLabel = null;
@@ -775,7 +774,6 @@
 		/** @type {MenuItem} */ this.identifyTemperatureLabel = null;
 
 		// labels for identify result values
-		/** @type {MenuItem} */ this.identifyTypeValueLabel = null;
 		/** @type {MenuItem} */ this.identifyCellsValueLabel = null;
 		/** @type {MenuItem} */ this.identifyBoxValueLabel = null;
 		/** @type {MenuItem} */ this.identifyDirectionValueLabel = null;
@@ -5152,9 +5150,9 @@
 	// set the identify results label positions
 	View.prototype.setResultsPosition = function() {
 		var	/** @type {number} */ y = 170,
-			/** @type {number} */ h = this.identifyTypeLabel.relHeight,
-			/** @type {number} */ x = this.identifyTypeLabel.relX,
-			/** @type {number} */ xv = this.identifyTypeValueLabel.relX;
+			/** @type {number} */ h = this.identifyCellsLabel.relHeight,
+			/** @type {number} */ x = this.identifyCellsLabel.relX,
+			/** @type {number} */ xv = this.identifyCellsValueLabel.relX;
 
 		// banner
 		this.identifyBannerLabel.setPosition(Menu.north, 0, y - 48);
@@ -5167,11 +5165,6 @@
 
 		// save cell period map button
 		this.identifySaveCellMapButton.setY(y - 48 + 170);
-
-		// type
-		this.identifyTypeLabel.setPosition(Menu.north, x, y);
-		this.identifyTypeValueLabel.setPosition(Menu.north, xv, y);
-		y += h;
 
 		// cells
 		this.identifyCellsLabel.setPosition(Menu.north, x, y);
@@ -5405,7 +5398,7 @@
 			/** @type {string} */ xDisplay = "",
 			/** @type {string} */ yDisplay = "",
 			/** @type {number} */ stateDisplay = 0,
-			/** @type {number} */ rawState = 0,
+			// /** @type {number} */ rawState = 0,
 
 			// display limit
 			/** @type {number} */ displayLimit = this.engine.maxGridSize > 9999 ? 99999 : 9999,
@@ -6462,7 +6455,6 @@
 		shown = shown || this.periodMapDisplayed === 2;
 		this.identifyBannerLabel.deleted = shown;
 		shown = shown || this.periodMapDisplayed > 0;
-		this.identifyTypeLabel.deleted = shown;
 		this.identifyCellsLabel.deleted = shown;
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
@@ -6474,7 +6466,6 @@
 		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified);
 		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
-		this.identifyTypeValueLabel.deleted = shown;
 		this.identifyCellsValueLabel.deleted = shown;
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
@@ -7289,38 +7280,6 @@
 				me.middleBox.rightX = me.engine.zoomBox.rightX;
 				me.middleBox.topY = me.engine.zoomBox.topY;
 				me.checkGridSize(me, me.middleBox);
-
-				// check if the grid grew
-				while (origWidth !== me.engine.width) {
-					// update box list
-					for (i = 0; i < me.engine.oscLength; i += 1) {
-						location = boxList[(i << 1) + 1];
-
-						// update left X
-						boxList[(i << 1) + 1] = (((location >> 16) + (origWidth >> 1)) << 16) | (location & 65535);
-					}
-
-					// update hash box
-					me.engine.hashBox.leftX += origWidth >> 1;
-					me.engine.hashBox.rightX += origWidth >> 1;
-
-					origWidth <<= 1;
-				}
-
-				while (origHeight !== me.engine.height) {
-					// update box list
-					for (i = 0; i < me.engine.oscLength; i += 1) {
-						location = boxList[(i << 1) + 1];
-
-						// bottom Y
-						boxList[(i << 1) + 1] = (((location & 65535) + (origHeight >> 1)) | ((location >> 16) << 16));
-					}
-					// update hash box
-					me.engine.hashBox.bottomY += origHeight >> 1;
-					me.engine.hashBox.topY += origHeight >> 1;
-
-					origHeight <<= 1;
-				}
 			}
 
 			// save elapsed time
@@ -7369,7 +7328,6 @@
 							me.lastIdentifyTemperature = identifyResult[14];
 
 							// update result labels
-							me.identifyTypeValueLabel.preText = me.lastIdentifyType;
 							me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
 							if (me.lastIdentifyCells.indexOf("|") === -1) {
 								me.identifyCellsValueLabel.toolTip = "";
@@ -15704,7 +15662,6 @@
 		this.identifyBannerLabel.setFont("32px Arial");
 
 		// create identify results labels
-		this.identifyTypeLabel = this.viewMenu.addLabelItem(Menu.north, -160, 100, 160, 32, "Type");
 		this.identifyCellsLabel = this.viewMenu.addLabelItem(Menu.north, -160, 140, 160, 32, "Cells");
 		this.identifyBoxLabel = this.viewMenu.addLabelItem(Menu.north, -160, 180, 160, 32, "Bounding Box");
 		this.identifyDirectionLabel = this.viewMenu.addLabelItem(Menu.north, -160, 240, 160, 32, "Direction");
@@ -15718,7 +15675,6 @@
 		this.identifyTemperatureLabel = this.viewMenu.addLabelItem(Menu.north, -160, 540, 160, 32, "Temperature");
 
 		// create identify results values
-		this.identifyTypeValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 100, 320, 32, "");
 		this.identifyCellsValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 140, 320, 32, "");
 		this.identifyBoxValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 180, 320, 32, "");
 		this.identifyDirectionValueLabel = this.viewMenu.addLabelItem(Menu.north, 80, 220, 320, 32, "");
@@ -16832,6 +16788,7 @@
 
 		// clear no GUI mode
 		this.noGUI = false;
+		this.menuManager.noGUI = false;
 		this.noGUIDefined = false;
 
 		// clear hide source mode
@@ -17432,6 +17389,11 @@
 			me.isEdge = true;
 		} else {
 			me.isEdge = false;
+		}
+
+		// reset starfield colour
+		if (me.starField) {
+			me.starField.starColour = new Colour(255, 255, 255);
 		}
 
 		// disable HROT non-deterministic mode
@@ -18567,15 +18529,6 @@
 				me.engine.resetColourGridBox(me.engine.grid16);
 			}
 
-			// check if me is a LifeHistory pattern
-			if (me.engine.isLifeHistory) {
-				// check if there are state 2 cells
-				if (me.manager.stateCount[2]) {
-					// copy state 2 to the colour grid
-					me.engine.copyState2(pattern, me.panX, me.panY);
-				}
-			}
-
 			// draw any rle snippets after colour grid conversion (for paste blending modes)
 			me.pasteRLEList();
 
@@ -18585,6 +18538,15 @@
 				me.engine.resetHistoryBox();
 				if (me.engine.multiNumStates <= 2) {
 					me.engine.resetColourGridBox(me.engine.grid16);
+				}
+			}
+
+			// check if pattern is an [R]History pattern
+			if (me.engine.isLifeHistory) {
+				// check if there are state 2 cells
+				if (me.manager.stateCount[2]) {
+					// copy state 2 to the colour grid
+					me.engine.copyState2(pattern, me.panX, me.panY);
 				}
 			}
 
