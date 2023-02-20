@@ -191,9 +191,11 @@
 	/**
 	 * @constructor
 	 */
-	function ModCheck(/** @type {number} */ checkGen, /** @type {number} */ modType) {
+	function ModCheck(/** @type {number} */ checkGen, /** @type {number} */ modType, /** @type {number} */ width, /** @type {number} */ height) {
 		/** @type {number} */ this.checkGen = checkGen;
 		/** @type {number} */ this.modType = modType;
+		/** @type {number} */ this.width = width;
+		/** @type {number} */ this.height = height;
 	}
 
 	// Theme object
@@ -1739,8 +1741,8 @@
 
 		for (y = 0; y < checkHeight; y += 1) {
 
-			var rowMsg = "";
-			var rowMsgC = "";
+			//var rowMsg = "";
+			//var rowMsgC = "";
 
 			for (x = 0; x < checkWidth; x += 1) {
 				// adjust the coordinates based on the transformation
@@ -1791,7 +1793,7 @@
 					} else {
 						state = colourGrid[cy + bottom][cx + left];
 
-						rowMsg += String(state > this.historyStates ? state - this.historyStates : 0);
+						//rowMsg += String(state > this.historyStates ? state - this.historyStates : 0);
 
 						if (state > this.historyStates) {
 							state -= this.historyStates;
@@ -1840,9 +1842,9 @@
 								}
 							}
 
-							rowMsgC += state;
-						} else {
-							rowMsgC += "0";
+							//rowMsgC += state;
+						//} else {
+							//rowMsgC += "0";
 						}
 					}
 				}
@@ -1863,17 +1865,97 @@
 		return hash | 0;
 	};
 
+	// check for a specific mod transformation
+	/** @returns {number} */
+	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ trans) {
+		var	/** @type {number} */ hash = 0,
+			/** @type {number} */ hashY = 0,
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree);
+
+		// get the hash at the specific transformation
+		if (twoState) {
+			hash = this.getModHash2(box, trans);
+		} else {
+			hash = this.getModHash(box, trans);
+		}
+
+		if (hash === initialHash) {
+			// if this is FlipX then check if it is also true for FlipY
+			if (trans === LifeConstants.modFlipX) {
+				if (twoState) {
+					hashY = this.getModHash2(box, LifeConstants.modFlipY);
+				} else {
+					hashY = this.getModHash(box, LifeConstants.modFlipY);
+				}
+				if (hashY === hash) {
+					trans = LifeConstants.modFlipXorY;
+
+					// check for Rot90
+					if (twoState) {
+						hashY = this.getModHash2(box, LifeConstants.modRot90);
+					} else {
+						hashY = this.getModHash(box, LifeConstants.modRot90);
+					}
+					if (hashY === hash) {
+						// check for Rot270
+						if (twoState) {
+							hashY = this.getModHash2(box, LifeConstants.modRot90);
+						} else {
+							hashY = this.getModHash(box, LifeConstants.modRot90);
+						}
+						if (hashY === hash) {
+							trans = LifeConstants.modFlipXorYorRotCWorCCW;
+						}
+					}
+				}
+			}	
+
+			// if this is Rot90 then check if it also true for Rot270
+			if (trans === LifeConstants.modRot90) {
+				if (twoState) {
+					hashY = this.getModHash2(box, LifeConstants.modRot270);
+				} else {
+					hashY = this.getModHash(box, LifeConstants.modRot270);
+				}
+				if (hashY === hash) {
+					trans = LifeConstants.modRotCWorCCW;
+
+					// check for Flip X
+					if (twoState) {
+						hashY = this.getModHash2(box, LifeConstants.modFlipX);
+					} else {
+						hashY = this.getModHash(box, LifeConstants.modFlipX);
+					}
+					if (hashY === hash) {
+						// check for Flip Y
+						if (twoState) {
+							hashY = this.getModHash2(box, LifeConstants.modFlipY);
+						} else {
+							hashY = this.getModHash(box, LifeConstants.modFlipY);
+						}
+						if (hashY === hash) {
+							trans = LifeConstants.modFlipXorYorRotCWorCCW;
+						}
+					}
+				}
+			}
+		} else {
+			trans = -1;
+		}
+
+		return trans;
+	};
+
 	// check mod hashes
-	/** @returns {boolean} */
+	/** @returns {Array<number>} */
 	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash) {
 		var	/** @type {number} */ trans = LifeConstants.modFirstTrans,
-			/** @type {boolean} */ found = false,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
 			/** @type {number} */ hash = 0,
-			/** @type {number} */ hashY = 0;
+			/** @type {Array<number>} */ results = [];
 
 		// check each transformation
-		while (trans <= LifeConstants.modLastTrans && !found) {
+		for (trans = 0; trans <= LifeConstants.modLastTrans; trans += 1) {
 			if (twoState) {
 				hash = this.getModHash2(box, trans);
 			} else {
@@ -1882,78 +1964,14 @@
 			//console.log(trans, LifeConstants.modTypeName[trans], hash, initialHash);
 
 			if (hash === initialHash) {
-				found = true;
-
 				//console.log("found", trans, LifeConstants.modTypeName[trans]);
 
-				this.modType = trans;
-
-				// if this is FlipX then check if it is also true for FlipY
-				if (trans === LifeConstants.modFlipX) {
-					if (twoState) {
-						hashY = this.getModHash2(box, LifeConstants.modFlipY);
-					} else {
-						hashY = this.getModHash(box, LifeConstants.modFlipY);
-					}
-					if (hashY === hash) {
-						this.modType = LifeConstants.modFlipXorY;
-
-						// check for Rot90
-						if (twoState) {
-							hashY = this.getModHash2(box, LifeConstants.modRot90);
-						} else {
-							hashY = this.getModHash(box, LifeConstants.modRot90);
-						}
-						if (hashY === hash) {
-							// check for Rot270
-							if (twoState) {
-								hashY = this.getModHash2(box, LifeConstants.modRot90);
-							} else {
-								hashY = this.getModHash(box, LifeConstants.modRot90);
-							}
-							if (hashY === hash) {
-								this.modType = LifeConstants.modFlipXorYorRotCWorCCW;
-							}
-						}
-					}
-				}	
-
-				// if this is Rot90 then check if it also true for Rot270
-				if (trans === LifeConstants.modRot90) {
-					if (twoState) {
-						hashY = this.getModHash2(box, LifeConstants.modRot270);
-					} else {
-						hashY = this.getModHash(box, LifeConstants.modRot270);
-					}
-					if (hashY === hash) {
-						this.modType = LifeConstants.modRotCWorCCW;
-
-						// check for Flip X
-						if (twoState) {
-							hashY = this.getModHash2(box, LifeConstants.modFlipX);
-						} else {
-							hashY = this.getModHash(box, LifeConstants.modFlipX);
-						}
-						if (hashY === hash) {
-							// check for Flip Y
-							if (twoState) {
-								hashY = this.getModHash2(box, LifeConstants.modFlipY);
-							} else {
-								hashY = this.getModHash(box, LifeConstants.modFlipY);
-							}
-							if (hashY === hash) {
-								this.modType = LifeConstants.modFlipXorYorRotCWorCCW;
-							}
-						}
-					}
-				}
+				// add to results
+				results[results.length] = trans;
 			}
-
-			// next transformation
-			trans += 1;
 		}
 
-		return found;
+		return results;
 	};
 
 	// get hash from pattern
@@ -2590,6 +2608,16 @@
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree);
 
+		//var msgRow = "";
+
+		// check for PCA, RuleTree or Super rules
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
+
 		for (cy = y; cy <= top; cy += 1) {
 			colourRow = colourGrid[cy];
 			countRow = countList[cy];
@@ -2617,6 +2645,8 @@
 				}
 			} else {
 				if (this.isPCA) {
+					//msgRow = "";
+
 					// handle sub-cells
 					if (gen === 0) {
 						for (cx = x; cx <= right; cx += 1) {
@@ -2654,7 +2684,11 @@
 
 							// combine the counts
 							countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
+
+							//msgRow += countRow[cx] + " ";
 						}
+
+						//console.log("gen", gen, "y", cy, "data", msgRow);
 					} else {
 						for (cx = x; cx <= right; cx += 1) {
 							// get the 4 sub-cell counts
@@ -2726,7 +2760,11 @@
 
 							// combine the counts
 							countRow[cx] = countN | (countE << 2) | (countS << 4) | (countW << 6);
+
+							//msgRow += countRow[cx] + " ";
 						}
+
+						//console.log("gen", gen, "y", cy, "data", msgRow);
 					}
 				} else {
 					if (this.isSuper) {
@@ -2803,7 +2841,6 @@
 			/** @type {number} */ cy = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @type {Uint8Array} */ popPhase = new Uint8Array(period),
 			/** @type {Uint32Array} */ popSubPeriod = new Uint32Array(period + 1),
 			/** @type {Uint16Array} */ cellPeriod = null,
 			/** @type {number} */ aliveStart = this.aliveStart,
@@ -2824,7 +2861,7 @@
 			/** @type {number} */ hash0 = 0,
 			/** @type {number} */ hash1 = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
-			/** @type {number} */ modCheckGen = -1;
+			/** @type {Array<number>} */ modMatches = [];
 
 		//console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
 
@@ -2837,6 +2874,8 @@
 			bitRowInBytes = ((boxWidth - 1) >> 4) + 1;
 			bitFrameInBytes = bitRowInBytes * boxHeight;
 
+			box = extent;
+
 			// allocate memory for each generation in the period (allocation is one bit per cell)
 			frames = new Uint16Array(period * bitFrameInBytes);
 			cellPeriod = new Uint16Array(boxWidth * boxHeight);
@@ -2848,14 +2887,15 @@
 
 			// mark computing strict volatility
 			computeStrict = true;
+		} else {
+			this.countList.whole.fill(LifeConstants.cellWasDead);
 		}
 
 		//var t = performance.now();
 
 		// save cell map for each generation in the period
-		// include 1st extra generation to check Oscillator Mod period/2
-		// include 2nd extra generation to check Spaceship full period Mod
-		for (p = 0; p <= period + 1; p += 1) {
+		// include extra generation to check Oscillator Mod period/2
+		for (p = 0; p <= period; p += 1) {
 			// compute the next generation
 			this.nextGeneration(view.noHistory, view.graphDisabled, view.identify, view);
 			this.convertToPensTile();
@@ -2928,7 +2968,12 @@
 
 				if (!isOscillator) {
 					box = (this.isHROT ? this.HROTBox : this.zoomBox);
+					if (this.isSuper) {
+						box = this.getSuperAliveBox(box.leftX, box.bottomY, box.rightX, box.topY);
+					}
 				}
+
+				//console.log(p, box, (box.rightX - box.leftX + 1), (box.topY - box.bottomY + 1));
 
 				// save hash for generation 0 or 1
 				if (p === 0) {
@@ -2945,25 +2990,19 @@
 				if (!(this.isHex || this.isTriangular)) {
 					// check if Mod has already been found
 					if (this.modValue === -1) {
-						// check if there is a pending Mod to verify
-						modCheckGen = -1;
-						if (modChecks.length > 0) {
-							modCheckGen = modChecks[0].checkGen;
-						}
-
 						// check if verifying
-						if (modCheckGen === p) {
-							// check the source generation against this one
-							if (this.checkModHash(box, hash1)) {
-								if (this.modType === modChecks[0].modType) {
+						while (this.modValue === -1 && modChecks.length > 0 && modChecks[0].checkGen === p) {
+							// check if the bounding box is the same size as the source
+							if (((box.rightX - box.leftX + 1) === modChecks[0].width) && ((box.topY - box.bottomY) + 1) === modChecks[0].height) {
+								// check the source generation against this one
+								this.modType = this.checkModHashType(box, hash1, modChecks[0].modType);
+								if (this.modType !== -1) {
 									//console.log("gen", p, this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verify");
 									this.modValue = p - 1;
 								} else {
-									//console.log("gen", p, this.counter, "failed", this.modType, modChecks[0].modType);
+									//console.log("gen", p, this.counter, "failed");
+									this.modValue = -1;
 								}
-							} else {
-								//console.log("gen", p, this.counter, "failed");
-								this.modValue = -1;
 							}
 
 							// remove the mod check
@@ -2974,12 +3013,11 @@
 						if (this.modValue === -1) {
 							// no Mod found so check if at a subperiod
 							if (p > 0 && (period % p === 0)) {
-								if (this.checkModHash(box, hash0)) {
+								modMatches = this.checkModHash(box, hash0);
+								for (j = 0; j < modMatches.length; j += 1) {
 									// potential Mod found so create verification record
-									modChecks[modChecks.length] = new ModCheck(p + 1, this.modType);
+									modChecks[modChecks.length] = new ModCheck(p + 1, modMatches[j], box.rightX - box.leftX + 1, box.topY - box.bottomY + 1);
 									//console.log("gen", p, this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "check at", p + 1);
-								} else {
-									//console.log("gen", p, this.counter, "no match");
 								}
 							}
 						}
@@ -3091,6 +3129,8 @@
 
 			// create the cell period map
 			this.createCellPeriodMap();
+		} else {
+			this.popSubPeriod = null;
 		}
 
 		// TBD remove

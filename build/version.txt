@@ -1,3 +1,20 @@
+Build 906
+- fixed missing Mod transformation for [R]Super spaceships
+- ensure spaceship Mod calculation takes into account each generation bounding box size
+
+Build 905
+- fixed compound Mod transformations
+
+Build 904
+- handle Mod detection when multiple transformations are valid
+- fixed PCA rotor and stator calculation
+
+Build 903
+- remove symmetry for spaceship full period
+
+Build 902
+- fixed Oscillator detection issue
+
 Build 901
 - add ActiveCells, Temperature and Volatility calculations to Identify for multi-state rules or periods > 65536
 

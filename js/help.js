@@ -912,7 +912,6 @@
 		y = this.renderHelpLine(view, "Alt Z", "randomize pattern and rule", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Alt Z", "randomize pattern only", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F6", "toggle oscillator and spaceship identification", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl F6", "fast identification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift F6", "display last identification result", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
