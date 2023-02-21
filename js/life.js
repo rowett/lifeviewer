@@ -3371,29 +3371,33 @@
 			}
 		}
 
-		// update the record range
+		// set the last record
 		last = period;
 
 		// compute the min and max population
-		total = 0;
-		for (i = 0; i < last; i += 1) {
-			current = this.popList[i];
-			total += current;
-			if (current < min) {
-				min = current;
-			}
-			if (current > max) {
-				max = current;
-			}
-		}
-
-		if (min === max) {
-			// if min and max are the same then just output one
-			popResult = String(min);
+		if (type === "Still Life") {
+			popResult = String(this.population);
 		} else {
-			// otherwise output min, max and average
-			avg = total / last;
-			popResult = String(min) + " | " + String(max) + " | " + this.toPlaces(avg, 1);
+			total = 0;
+			for (i = 0; i < last; i += 1) {
+				current = this.popList[i];
+				total += current;
+				if (current < min) {
+					min = current;
+				}
+				if (current > max) {
+					max = current;
+				}
+			}
+
+			if (min === max) {
+				// output the latest
+				popResult = String(max);
+			} else {
+				// otherwise output min, max and average
+				avg = total / last;
+				popResult = String(min) + " | " + String(max) + " | " + this.toPlaces(avg, 1);
+			}
 		}
 
 		// compute the bounding box
@@ -3570,12 +3574,16 @@
 
 		// calculate still life density
 		if (type === "Still Life") {
-			total = this.popList[0] * 100 / (boxWidth * boxHeight);
+			total = this.population / (boxWidth * boxHeight);
 			if (this.isPCA) {
 				total /= 4;
 			}
 
-			densityResult = total.toFixed(1) + "%";
+			if (total === 1) {
+				densityResult = String(total);
+			} else {
+				densityResult = total.toFixed(2);
+			}
 		}
 
 		// return the result

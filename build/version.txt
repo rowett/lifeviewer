@@ -1,3 +1,7 @@
+Build 913
+- show Density as a value from 0 to 1
+- only show current population for Still Life patterns that start not as a Still Life
+
 Build 912
 - add Density to Still Life statistics
 
