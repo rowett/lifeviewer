@@ -37,13 +37,13 @@
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["Rot90CCW", "Rot90CW", "FlipX", "FlipY", "FlipXY", "Rot90CWFlipX", "Rot90CWFlipY", "FlipXorY", "Rot90", "FlipXorYorRot90"],
+		/** @const {Array<string>} */ modTypeName : ["Rot90CW", "Rot90CCW", "FlipX", "FlipY", "FlipXY", "Rot90CWFlipX", "Rot90CWFlipY", "FlipXorY", "Rot90", "FlipXorYorRot90"],
 
 		// maximum number of generations to check for oscillators
-		/** @const {number} */ maxOscillatorGens : 1048576,
+		/** @const {number} */ maxOscillatorGens : 4194304,
 
-		// maximum period to compute strict volatility
-		/** @const {number} */ maxStrictPeriod : 65535,
+		// maxmimum memory to compute strict volatility
+		/** @const {number} */ maxStrictMemory : 256 * 1024 * 1024,
 
 		// buffer full
 		/** @const {string} */ bufferFullMessage : "Buffer Full",
@@ -191,11 +191,9 @@
 	/**
 	 * @constructor
 	 */
-	function ModCheck(/** @type {number} */ checkGen, /** @type {number} */ modType, /** @type {number} */ width, /** @type {number} */ height) {
+	function ModCheck(/** @type {number} */ checkGen, /** @type {number} */ modType) {
 		/** @type {number} */ this.checkGen = checkGen;
 		/** @type {number} */ this.modType = modType;
-		/** @type {number} */ this.width = width;
-		/** @type {number} */ this.height = height;
 	}
 
 	// Theme object
@@ -395,7 +393,7 @@
 		/** @type {string} */ this.strictVol = "";
 
 		// last period per cell for oscillator
-		/** @type {Uint16Array} */ this.cellPeriod = null;
+		/** @type {Uint32Array} */ this.cellPeriod = null;
 		/** @type {number} */ this.cellPeriodWidth = 0;
 		/** @type {number} */ this.cellPeriodHeight = 0;
 
@@ -2154,32 +2152,29 @@
 
 		currentP = 0;
 		for (p = 0; p < period; p += 1) {
-			// for alternating rules skip odd generations
-			if (!(this.altSpecified && ((i + p) & 1) !== 0)) {
-				// get the bounding box for the current generation within the oscillator period
-				current = this.boxList[(i + currentP) << 1];
-				cWidth = current >> 16;
-				cHeight = current & 65535;
-				current = this.boxList[((i + currentP) << 1) + 1];
-				cLeftX = current >> 16;
-				cBottomY = current & 65535;
+			// get the bounding box for the current generation within the oscillator period
+			current = this.boxList[(i + currentP) << 1];
+			cWidth = current >> 16;
+			cHeight = current & 65535;
+			current = this.boxList[((i + currentP) << 1) + 1];
+			cLeftX = current >> 16;
+			cBottomY = current & 65535;
 
-				// update the extent
-				if (cLeftX < leftX) {
-					leftX = cLeftX;
-				}
-				if (cBottomY < bottomY) {
-					bottomY = cBottomY;
-				}
-				if (cLeftX + cWidth - 1 > rightX) {
-					rightX = cLeftX + cWidth - 1;
-				}
-				if (cBottomY + cHeight - 1 > topY) {
-					topY = cBottomY + cHeight - 1;
-				}
-
-				currentP += 1;
+			// update the extent
+			if (cLeftX < leftX) {
+				leftX = cLeftX;
 			}
+			if (cBottomY < bottomY) {
+				bottomY = cBottomY;
+			}
+			if (cLeftX + cWidth - 1 > rightX) {
+				rightX = cLeftX + cWidth - 1;
+			}
+			if (cBottomY + cHeight - 1 > topY) {
+				topY = cBottomY + cHeight - 1;
+			}
+
+			currentP += 1;
 		}
 
 		extent.leftX = leftX;
@@ -2842,7 +2837,7 @@
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @type {Uint32Array} */ popSubPeriod = new Uint32Array(period + 1),
-			/** @type {Uint16Array} */ cellPeriod = null,
+			/** @type {Uint32Array} */ cellPeriod = null,
 			/** @type {number} */ aliveStart = this.aliveStart,
 			/** @type {number} */ boxWidth = 0,
 			/** @type {number} */ boxHeight = 0,
@@ -2858,15 +2853,20 @@
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
 			/** @type {number} */ mult = 0,
+			/** @type {number} */ gen1 = 1,
 			/** @type {number} */ hash0 = 0,
+			/** @type {number} */ width0 = 0,
+			/** @type {number} */ height0 = 0,
 			/** @type {number} */ hash1 = 0,
+			/** @type {number} */ width1 = 0,
+			/** @type {number} */ height1 = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {Array<number>} */ modMatches = [];
 
-		//console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
+		console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
 
-		// determine whether period is small enough to compute strict volatility (since it can take a lot of RAM)
-		if (isOscillator && (period <= LifeConstants.maxStrictPeriod) && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
+		// determine whether Strict Volatility can be calculated based on amount of RAM needed
+		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
 			// compute the maximum box width and height for the oscillator
 			extent = this.getOscillatorBounds(period, i);
 			boxWidth = extent.rightX - extent.leftX + 1;
@@ -2874,24 +2874,39 @@
 			bitRowInBytes = ((boxWidth - 1) >> 4) + 1;
 			bitFrameInBytes = bitRowInBytes * boxHeight;
 
-			box = extent;
+			if (bitFrameInBytes * period <= LifeConstants.maxStrictMemory) {
+				box = extent;
+				//console.log("extent", box, (box.rightX - box.leftX + 1), (box.topY - box.bottomY + 1));
+	
+				// allocate memory for each generation in the period (allocation is one bit per cell)
+				frames = new Uint16Array(period * bitFrameInBytes);
+				cellPeriod = new Uint32Array(boxWidth * boxHeight);
+				occupiedFrame = new Uint16Array(bitFrameInBytes);
+	
+				// get the frame data width most significant bit number
+				frameTypeMSB = (frames.BYTES_PER_ELEMENT * 8) - 1;
+				bitStart = 1 << frameTypeMSB;
+	
+				// mark computing strict volatility
+				computeStrict = true;
+			}
 
-			// allocate memory for each generation in the period (allocation is one bit per cell)
-			frames = new Uint16Array(period * bitFrameInBytes);
-			cellPeriod = new Uint16Array(boxWidth * boxHeight);
-			occupiedFrame = new Uint16Array(bitFrameInBytes);
+			console.log("memory", bitFrameInBytes * period, ((100 * bitFrameInBytes * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
+		}
 
-			// get the frame data width most significant bit number
-			frameTypeMSB = (frames.BYTES_PER_ELEMENT * 8) - 1;
-			bitStart = 1 << frameTypeMSB;
-
-			// mark computing strict volatility
-			computeStrict = true;
-		} else {
+		// if not computing strict volatility then use other method for rotor and stator
+		if (!computeStrict) {
 			this.countList.whole.fill(LifeConstants.cellWasDead);
 		}
 
 		//var t = performance.now();
+
+		// setup the second generation
+		if (this.altSpecified) {
+			gen1 = 2;
+		} else {
+			gen1 = 1;
+		}
 
 		// save cell map for each generation in the period
 		// include extra generation to check Oscillator Mod period/2
@@ -2904,88 +2919,103 @@
 
 			this.saveSnapshotIfNeeded(view);
 
-			// for alternating rules skip odd generations
-			if (!(this.altSpecified && ((this.counter & 1) !== 0))) {
-				// add to the strict volatility frame if computing strict volatility
-				if (computeStrict) {
-					// swap grids every generation
+			//if ((p & 1023) === 0) {
+				//console.log(p, ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
+			//}
+
+			// check if grid buffer needs to grow just for spaceships (since oscillators don't move)
+			// (normally this check happens at render time but we may have processed more generations than expected by that function)
+			if (this.counter && this.population > 0 && !isOscillator) {
+				view.middleBox.leftX = this.zoomBox.leftX;
+				view.middleBox.bottomY = this.zoomBox.bottomY;
+				view.middleBox.rightX = this.zoomBox.rightX;
+				view.middleBox.topY = this.zoomBox.topY;
+				view.checkGridSize(view, view.middleBox);
+			}
+
+			// add to the strict volatility frame if computing strict volatility
+			if (computeStrict) {
+				// swap grids every generation
+				if (this.isSuper) {
+					colourGrid = this.colourGrid;
+					if ((this.counter & 1) !== 0) {
+						colourGrid = this.nextColourGrid;
+					}
+				}
+
+				// process each row of the pattern extent
+				for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
+					// get the pattern row
+					colourRow = colourGrid[cy];
+
+					// find the start of the row
+					f = ((cy - extent.bottomY) * bitRowInBytes) + (p * bitFrameInBytes);
+					bit = bitStart;
+
+					// check for Super rules
 					if (this.isSuper) {
-						colourGrid = this.colourGrid;
-						if ((this.counter & 1) !== 0) {
-							colourGrid = this.nextColourGrid;
+						// process the row
+						for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+							if (colourRow[cx] & 1) {
+								frames[f] |= bit;
+							}
+							bit >>= 1;
+							if (!bit) {
+								bit = bitStart;
+								f += 1;
+							}
+						}
+					} else {
+						// process the row
+						for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+							if (colourRow[cx] >= aliveStart) {
+								frames[f] |= bit;
+							}
+							bit >>= 1;
+							if (!bit) {
+								bit = bitStart;
+								f += 1;
+							}
 						}
 					}
-
-					// process each row of the pattern extent
-					for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
-						// get the pattern row
-						colourRow = colourGrid[cy];
-
-						// find the start of the row
-						f = ((cy - extent.bottomY) * bitRowInBytes) + (p * bitFrameInBytes);
-						bit = bitStart;
-
-						// check for Super rules
-						if (this.isSuper) {
-							// process the row
-							for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
-								if (colourRow[cx] & 1) {
-									frames[f] |= bit;
-								}
-								bit >>= 1;
-								if (!bit) {
-									bit = bitStart;
-									f += 1;
-								}
-							}
-						} else {
-							// process the row
-							for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
-								if (colourRow[cx] >= aliveStart) {
-									frames[f] |= bit;
-								}
-								bit >>= 1;
-								if (!bit) {
-									bit = bitStart;
-									f += 1;
-								}
-							}
-						}
-					}
-
-					// merge current frame with occupied frame
-					f = p * bitFrameInBytes;
-					for (cx = 0; cx < occupiedFrame.length; cx += 1) {
-						occupiedFrame[cx] |= frames[cx + f];
-					}
-				} else {
-					// use the original method of computing cell occupancy
-					this.updateOccupancy(box, p);
 				}
 
-				this.bornList[p] = this.births;
-				this.diedList[p] = this.deaths;
-
-				if (!isOscillator) {
-					box = (this.isHROT ? this.HROTBox : this.zoomBox);
-					if (this.isSuper) {
-						box = this.getSuperAliveBox(box.leftX, box.bottomY, box.rightX, box.topY);
-					}
+				// merge current frame with occupied frame
+				f = p * bitFrameInBytes;
+				for (cx = 0; cx < occupiedFrame.length; cx += 1) {
+					occupiedFrame[cx] |= frames[cx + f];
 				}
+			} else {
+				// use the original method of computing cell occupancy
+				this.updateOccupancy(box, p);
+			}
 
-				//console.log(p, box, (box.rightX - box.leftX + 1), (box.topY - box.bottomY + 1));
-
-				// save hash for generation 0 or 1
-				if (p === 0) {
-					hash0 = this.getHash(box);
-					//console.log(hash0, box);
-				} else {
-					if (p === 1) {
-						hash1 = this.getHash(box);
-						//console.log(hash1, box);
-					}
+			if (!isOscillator) {
+				box = (this.isHROT ? this.HROTBox : this.zoomBox);
+				if (this.isSuper) {
+					box = this.getSuperAliveBox(box.leftX, box.bottomY, box.rightX, box.topY);
 				}
+			}
 
+			//console.log(p, "gen", this.counter, box, "width", (box.rightX - box.leftX + 1), "height", (box.topY - box.bottomY + 1));
+
+			// save hash for first two generations
+			if (p === 0) {
+				hash0 = this.getHash(box);
+				width0 = (box.rightX - box.leftX + 1);
+				height0 = (box.topY - box.bottomY + 1);
+				//console.log("hash0", hash0);
+			} else {
+				if (p === gen1) {
+					hash1 = this.getHash(box);
+					width1 = (box.rightX - box.leftX + 1);
+					height1 = (box.topY - box.bottomY + 1);
+					//console.log("hash1", hash1);
+				}
+			}
+
+			// for alternating rules skip every other generation
+			if (!(this.altSpecified && ((p & 1) !== 0))) {
 				// ignore hex or triangular patterns
 				if (!(this.isHex || this.isTriangular)) {
 					// check if Mod has already been found
@@ -2993,14 +3023,14 @@
 						// check if verifying
 						while (this.modValue === -1 && modChecks.length > 0 && modChecks[0].checkGen === p) {
 							// check if the bounding box is the same size as the source
-							if (((box.rightX - box.leftX + 1) === modChecks[0].width) && ((box.topY - box.bottomY) + 1) === modChecks[0].height) {
+							if ((((box.rightX - box.leftX + 1) === width1) && ((box.topY - box.bottomY) + 1) === height1) || ((box.rightX - box.leftX + 1) === height1) && ((box.topY - box.bottomY + 1) === width1)) {
 								// check the source generation against this one
 								this.modType = this.checkModHashType(box, hash1, modChecks[0].modType);
 								if (this.modType !== -1) {
-									//console.log("gen", p, this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verify");
-									this.modValue = p - 1;
+									//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
+									this.modValue = p - gen1;
 								} else {
-									//console.log("gen", p, this.counter, "failed");
+									//console.log(p, "gen", this.counter, "verify failed");
 									this.modValue = -1;
 								}
 							}
@@ -3013,17 +3043,27 @@
 						if (this.modValue === -1) {
 							// no Mod found so check if at a subperiod
 							if (p > 0 && (period % p === 0)) {
-								modMatches = this.checkModHash(box, hash0);
-								for (j = 0; j < modMatches.length; j += 1) {
-									// potential Mod found so create verification record
-									modChecks[modChecks.length] = new ModCheck(p + 1, modMatches[j], box.rightX - box.leftX + 1, box.topY - box.bottomY + 1);
-									//console.log("gen", p, this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "check at", p + 1);
+								// ensure bounding box is the same size as the source
+								if ((((box.rightX - box.leftX + 1) === width0) && ((box.topY - box.bottomY) + 1) === height0) || ((box.rightX - box.leftX + 1) === height0) && ((box.topY - box.bottomY + 1) == width0)) {
+									modMatches = this.checkModHash(box, hash0);
+									for (j = 0; j < modMatches.length; j += 1) {
+										// potential Mod found so create verification record
+										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatches[j]);
+										//console.log(p, "gen", this.counter, "type", modMatches[j], LifeConstants.modTypeName[modMatches[j]], "check at", p + gen1);
+									}
 								}
 							}
 						}
 					}
 				}
 			}
+
+			// save statistics for this generation
+			this.bornList[p] = this.births;
+			this.diedList[p] = this.deaths;
+			this.popList[p] = this.population;
+			this.boxList[p << 1] = ((box.rightX - box.leftX + 1) << 16) | (box.topY - box.bottomY + 1);
+			this.boxList[(p << 1) + 1] = (box.leftX << 16) | box.bottomY;
 		}
 
 		//t = performance.now() - t;
@@ -3134,7 +3174,7 @@
 		}
 
 		// TBD remove
-		//console.log("completed search in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
+		console.log("identification complete in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
 	};
 
 	// return identify results
@@ -3179,9 +3219,8 @@
 			/** @type {number} */ maxY = 0,
 			/** @type {string} */ boxResult = "",
 
-			// last record to check
-			/** @type {number} */ last = this.oscLength,
-			/** @type {number} */ start = i,
+			// record range
+			/** @type {number} */ last = 0,
 
 			// heat
 			/** @type {number} */ minHeat = 16384,
@@ -3329,9 +3368,12 @@
 			}
 		}
 
+		// update the record range
+		last = period;
+
 		// compute the min and max population
 		total = 0;
-		while (i < last) {
+		for (i = 0; i < last; i += 1) {
 			current = this.popList[i];
 			total += current;
 			if (current < min) {
@@ -3340,21 +3382,20 @@
 			if (current > max) {
 				max = current;
 			}
-			i += 1;
 		}
+
 		if (min === max) {
 			// if min and max are the same then just output one
 			popResult = String(min);
 		} else {
 			// otherwise output min, max and average
-			avg = total / (last - start);
+			avg = total / last;
 			popResult = String(min) + " | " + String(max) + " | " + this.toPlaces(avg, 1);
 		}
 
 		// compute the bounding box
-		i = start;
 		if (type === "Spaceship") {
-			while (i < last) {
+			for (i = 0; i < last; i += 1) {
 				current = this.boxList[i << 1];
 				currentWidth = current >> 16;
 				currentHeight = current & 65535;
@@ -3364,10 +3405,9 @@
 				if (currentHeight > boxHeight) {
 					boxHeight = currentHeight;
 				}
-				i += 1;
 			}
 		} else {
-			while (i < last) {
+			for (i = 0; i < last; i += 1) {
 				current = this.boxList[i << 1];
 				currentWidth = current >> 16;
 				currentHeight = current & 65535;
@@ -3388,7 +3428,6 @@
 				if (currentBottom + currentHeight - 1 > maxY) {
 					maxY = currentBottom + currentHeight - 1;
 				}
-				i += 1;
 			}
 			boxWidth = maxX - minX + 1;
 			boxHeight = maxY - minY + 1;
@@ -3398,8 +3437,7 @@
 		// compute the heat
 		if (period > 0) {
 			heatVal = 0;
-			i = start;
-			while (i < last) {
+			for (i = 0; i < last; i += 1) {
 				nextHeat = this.bornList[i] + this.diedList[i];
 				if (nextHeat < minHeat) {
 					minHeat = nextHeat;
@@ -3408,15 +3446,15 @@
 					maxHeat = nextHeat;
 				}
 				heatVal += nextHeat;
-				i += 1;
 			}
+
 			// if min and max are the same then just output one
 			if (minHeat === maxHeat) {
 				avgHeat = minHeat;
 				heat = String(avgHeat.toFixed(1));
 			} else {
 				// output min, max and average
-				avgHeat = heatVal / (last - start);
+				avgHeat = heatVal / last;
 				heat = this.toPlaces(minHeat, 1) + " | " + this.toPlaces(maxHeat, 1) + " | " + this.toPlaces(avgHeat, 1);
 			}
 		}
@@ -3508,16 +3546,20 @@
 				this.modValue = period;
 				modResult = String(this.modValue);
 			} else {
+				// for spaceships ignore invalid Mods
+				if (type === "Spaceship" && !(this.modType === LifeConstants.modFlipX || this.modType === LifeConstants.modFlipY || this.modType === LifeConstants.modRot90FlipX || this.modType === LifeConstants.modRot90FlipY)) {
+					this.modValue = period;
+				}
+
 				// check the mod is a divisor of the period
 				if (period % this.modValue === 0 && period !== this.modValue) {
 					modResult = String(this.modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
 				} else {
-					// for full period Spaceships show the Mod transformation
+					// for Spaceships don't show transformation if Mod is full period, or if Mod type is invalid
 					if (type === "Spaceship" && this.modValue === period) {
-						modResult = String(this.modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
-					} else {
-						this.modValue = period;
 						modResult = String(this.modValue);
+					} else {
+						modResult = String(this.modValue) + " (" + LifeConstants.modTypeName[this.modType] + ")";
 					}
 				}
 			}
@@ -3545,6 +3587,68 @@
 		}
 
 		return result;
+	};
+
+	// get alive cell bounding box for [R]History patterns
+	/** @returns {BoundingBox} */
+	Life.prototype.getHistoryAliveBox = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY) {
+		var 	/** @type {number} */ minx = 0,
+			/** @type {number} */ miny = 0,
+			/** @type {number} */ maxx = 0,
+			/** @type {number} */ maxy = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
+
+			// colour grid
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null;
+
+		// find the first alive cell from the bottom left
+		minx = rightX;
+		maxx = leftX;
+		miny = topY;
+		maxy = bottomY;
+
+		//var msgRow = "";
+
+		for (y = bottomY; y <= topY; y += 1) {
+			colourRow = colourGrid[y];
+			//msgRow = "";
+			for (x = leftX; x <= rightX; x += 1) {
+				state = colourRow[x];
+
+				//msgRow += String(state) + " ";
+
+				if (state >= aliveStart) {
+					if (x < minx) {
+						minx = x;
+					}
+					if (x > maxx) {
+						maxx = x;
+					}
+
+					if (y < miny) {
+						miny = y;
+					}
+					if (y > maxy) {
+						maxy = y;
+					}
+				}
+			}
+
+			//console.log(y, msgRow);
+		}
+
+		// update the bounding box
+		leftX = minx;
+		bottomY = miny;
+		rightX = maxx;
+		topY = maxy;
+
+		// return the result
+		return new BoundingBox(leftX, bottomY, rightX, topY);
 	};
 
 	// get alive cell bounding box for Super pattern
@@ -3601,6 +3705,33 @@
 
 		// return the result
 		return new BoundingBox(leftX, bottomY, rightX, topY);
+	};
+
+	// create new Identify record
+	Life.prototype.addIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ lastI, /** @type {boolean} */ skipAlt) {
+		// create the new record
+		this.hashList[this.oscLength] = hash;
+		this.genList[this.oscLength] = this.counter;
+		this.popList[this.oscLength] = this.population;
+		this.bornList[this.oscLength] = this.births;
+		this.diedList[this.oscLength] = this.deaths;
+		this.boxList[this.oscLength << 1] = boxSize;
+		this.boxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
+		this.nextList[this.oscLength] = -1;
+
+		// check if this record should be skipped
+		if (!skipAlt) {
+			// do not skip so point the previous record at this one
+			if (this.startItem === -1) {
+				this.startItem = 0;
+			} else {
+				if (lastI === -1) {
+					this.startItem = this.oscLength;
+				} else {
+					this.nextList[lastI] = this.oscLength;
+				}
+			}
+		}
 	};
 
 	// return true if pattern is empty, stable, oscillating or a spaceship
@@ -3665,11 +3796,6 @@
 			this.altSpecified = this.HROT.altSpecified;
 		}
 
-		// for alternating rules or Margolus skip odd generations
-		if ((this.isMargolus || this.altSpecified) && ((this.counter & 1) !== 0)) {
-			return result;
-		}
-
 		// check buffer
 		if (this.oscLength < LifeConstants.maxOscillatorGens) {
 			// check population
@@ -3691,6 +3817,35 @@
 					boxHeight = topY - bottomY + 1;
 					boxSize = (boxWidth << 16) | boxHeight;
 					boxLocation = (leftX << 16) | bottomY;
+				}
+
+				// for [R]History rules with state 6 ensure bounding box is correct
+				if (this.isLifeHistory && this.state6Mask !== null) {
+					box = this.getHistoryAliveBox(leftX, bottomY, rightX, topY);
+
+					leftX = box.leftX;
+					bottomY = box.bottomY;
+					rightX = box.rightX;
+					topY = box.topY;
+					boxWidth = rightX - leftX + 1;
+					boxHeight = topY - bottomY + 1;
+					boxSize = (boxWidth << 16) | boxHeight;
+					boxLocation = (leftX << 16) | bottomY;
+				}
+
+				// for alternating rules or Margolus skip odd generations
+				if ((this.isMargolus || this.altSpecified) && ((this.counter & 1) !== 0)) {
+					// create the new record marking it to be skipped in searches
+					this.addIdentifyRecord(-1, boxSize, leftX, bottomY, lastI, true);
+
+					// check for buffer full
+					this.oscLength += 1;
+					if (this.oscLength === LifeConstants.maxOscillatorGens) {
+						this.oscLength = 0;
+						result = [LifeConstants.bufferFullMessage];
+					}
+
+					return result;
 				}
 
 				// get the hash of the current pattern
@@ -3790,26 +3945,8 @@
 
 				// add to the lists
 				if (!quit) {
-					// create the new record
-					this.hashList[this.oscLength] = hash;
-					this.genList[this.oscLength] = this.counter;
-					this.popList[this.oscLength] = this.population;
-					this.bornList[this.oscLength] = this.births;
-					this.diedList[this.oscLength] = this.deaths;
-					this.boxList[this.oscLength << 1] = boxSize;
-					this.boxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
-					this.nextList[this.oscLength] = -1;
-
-					// point the previous record at this one
-					if (this.startItem === -1) {
-						this.startItem = 0;
-					} else {
-						if (lastI === -1) {
-							this.startItem = this.oscLength;
-						} else {
-							this.nextList[lastI] = this.oscLength;
-						}
-					}
+					// create the new record marking it not to be skipped in searches
+					this.addIdentifyRecord(hash, boxSize, leftX, bottomY, lastI, false);
 
 					// check for buffer full
 					this.oscLength += 1;
@@ -11638,6 +11775,12 @@
 			/** @type {number} */ s15 = 0,
 			/** @type {number} */ s16 = 0,
 			/** @type {number} */ s17 = 0,
+			/** @type {number} */ s18 = 0,
+			/** @type {number} */ s19 = 0,
+			/** @type {number} */ s20 = 0,
+			/** @type {number} */ s21 = 0,
+			/** @type {number} */ s22 = 0,
+			/** @type {number} */ s23 = 0,
 			/** @type {number} */ xc = 0,
 			/** @type {number} */ yc = 0,
 			/** @type {number} */ xLim = 0,
@@ -11650,6 +11793,8 @@
 			/** @type {number} */ dy4 = dy3 + dy,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ overlayRow = null,
+			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
 			/** @const {number} */ leftX = this.zoomBox.leftX,
 			/** @const {number} */ rightX = this.zoomBox.rightX,
 			/** @const {number} */ bottomY = this.zoomBox.bottomY,
@@ -11687,6 +11832,37 @@
 			found = false;
 			while (!found && !(xc === xLim || yc === yLim)) {
 				colourRow = colourGrid[yc];
+
+				/* TBD debug search area
+				if (overlayGrid) {
+					var mark = ViewConstants.stateMap[4] + 128;
+					overlayRow = overlayGrid[yc];
+					overlayRow[xc] = mark;
+					overlayRow[xc + dx] = mark;
+					overlayRow[xc + dx2] = mark;
+					overlayRow[xc + dx3] = mark;
+					overlayRow[xc + dx4] = mark;
+					overlayRow[xc + dx4 + dx] = mark;
+					overlayRow[xc + dx4 + dx2] = mark;
+					overlayRow[xc + dx4 + dx3] = mark;
+					overlayGrid[yc + dy][xc] = mark;
+					overlayGrid[yc + dy2][xc] = mark;
+					overlayGrid[yc + dy3][xc] = mark;
+					overlayGrid[yc + dy4][xc] = mark;
+					overlayGrid[yc + dy4 + dy][xc] = mark;
+					overlayGrid[yc + dy4 + dy2][xc] = mark;
+					overlayGrid[yc + dy4 + dy3][xc] = mark;
+
+					overlayGrid[yc - dy4][xc] = mark;
+					overlayRow[xc - dx4] = mark;
+					overlayGrid[yc - dy4 - dy][xc] = mark;
+					overlayRow[xc - dx4 - dx] = mark;
+					overlayGrid[yc - dy4 - dy2][xc] = mark;
+					overlayRow[xc - dx4 - dx2] = mark;
+				}
+				*/
+
+				// look diagonal
 				s1 = colourRow[xc];
 				s2 = colourGrid[yc + dy][xc];
 				s3 = colourRow[xc + dx];
@@ -11704,7 +11880,16 @@
 				s15 = colourRow[xc + dx4 + dx2];
 				s16 = colourGrid[yc + dy4 + dy3][xc];
 				s17 = colourRow[xc + dx4 + dx3];
-				if ((s1 | s2 | s3 | s4 | s5 | s6 | s7 | s8 | s9 | s10 | s11 | s12 | s13 | s14 | s15 | s16 | s17) & 64) {
+
+				// look ahead
+				s18 = colourGrid[yc - dy4][xc];
+				s19 = colourRow[xc - dx4];
+				s20 = colourGrid[yc - dy4 - dy][xc];
+				s21 = colourRow[xc - dx4 - dx];
+				s22 = colourGrid[yc - dy4 - dy2][xc];
+				s23 = colourRow[xc - dx4 - dx2];
+
+				if ((s1 | s2 | s3 | s4 | s5 | s6 | s7 | s8 | s9 | s10 | s11 | s12 | s13 | s14 | s15 | s16 | s17 | s18 | s19 | s20 | s21 | s22 | s23) & 64) {
 					found = true;
 				} else {
 					xc += dx;

@@ -1,3 +1,25 @@
+Build 911
+- fixed an issue with KILLGLIDERS
+
+Build 910
+- fixed Strict Volatility for periods > 65535
+- increased maximum search generations for Identify
+- improved Identify for alternating rules
+
+Build 909
+- fixed issue with Identify and [R]History bounding box
+- fixed diagonal spaceship Mod
+- fixed Mod for alternating rules
+- maximum period for Strict Volatility calculations is now based on memory needed
+
+Buid 908
+- fixed spaceship Mod transformations
+- fixed issue with grid growing during spaceship Mod calculation
+- fixed bounded box size with state 6 [R]History cells
+
+Build 907
+- fixed switched Rot90 labels
+
 Build 906
 - fixed missing Mod transformation for [R]Super spaceships
 - ensure spaceship Mod calculation takes into account each generation bounding box size

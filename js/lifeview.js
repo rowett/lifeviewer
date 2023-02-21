@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 906,
+		/** @const {number} */ versionBuild : 911,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7216,19 +7216,6 @@
 
 			// time budget in ms for this frame
 			/** @type {number} */ timeLimit = 13,
-
-			// original grid size (before any grid growth)
-			/** @type {number} */ origWidth = me.engine.width,
-			/** @type {number} */ origHeight = me.engine.height,
-
-			// box list
-			/** @type {Uint32Array} */ boxList = me.engine.boxList,
-
-			// current box location
-			/** @type {number} */ location = 0,
-
-			// counter
-			/** @type {number} */ i = 0,
 
 			// identify result
 			/** @type {Array<string>} */ identifyResult = [];
