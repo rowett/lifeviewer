@@ -3248,7 +3248,10 @@
 			/** @type {string} */ modResult = "",
 
 			// temperature
-			/** @type {string} */ tempResult = "";
+			/** @type {string} */ tempResult = "",
+
+			// density (of still life)
+			/** @type {string} */ densityResult = "";
 
 		// only use one generation for still life
 		if (period > 0) {
@@ -3565,8 +3568,18 @@
 			}
 		}
 
+		// calculate still life density
+		if (type === "Still Life") {
+			total = this.popList[0] * 100 / (boxWidth * boxHeight);
+			if (this.isPCA) {
+				total /= 4;
+			}
+
+			densityResult = total.toFixed(1) + "%";
+		}
+
 		// return the result
-		return [message, type, direction, simpleSpeed, boxResult, genMessage, popResult, slope, period, heat, volatility, strict, modResult, activeResult, tempResult];
+		return [message, type, direction, simpleSpeed, boxResult, genMessage, popResult, slope, period, heat, volatility, strict, modResult, activeResult, tempResult, densityResult];
 	};
 
 	// returns true if spaceship continues in the same direction and speed

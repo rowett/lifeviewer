@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 911,
+		/** @const {number} */ versionBuild : 912,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -755,6 +755,9 @@
 
 		// last oscillator temperature
 		/** @type {string} */ this.lastIdentifyTemperature = "";
+
+		// last still life density
+		/** @type {string} */ this.lastIdentifyDensity = "";
 
 		// whether computing oscillators
 		/** @type {boolean} */ this.identify = false;
@@ -5236,44 +5239,51 @@
 			this.identifyVolatilityValueLabel.setPosition(Menu.north, xv, y);
 			y += h;
 		}
+
+		if (this.lastIdentifyType === "Still Life") {
+			// density
+			this.identifyModLabel.setPosition(Menu.north, x, y);
+			this.identifyModValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+		}
 	};
 
-	// update step label
-	View.prototype.updateStepLabel = function(/** @type {number} */ stepsTaken) {
-		var	/** @type {number} */ i = 0,
-			/** @type {number} */ total = 0;
+// update step label
+View.prototype.updateStepLabel = function(/** @type {number} */ stepsTaken) {
+	var	/** @type {number} */ i = 0,
+		/** @type {number} */ total = 0;
 
-		// add the sample to the array
-		this.stepSamples[this.stepIndex] = stepsTaken;
-		this.stepIndex += 1;
-		if (this.stepIndex >= ViewConstants.numStepSamples) {
-			this.stepIndex = 0;
-		}
-
-		// compute the average
-		for (i = 0; i < this.stepSamples.length; i += 1) {
-			total += this.stepSamples[i];
-		}
-		total /= this.stepSamples.length;
-
-		// update the label
-		this.stepLabel.preText = String(Math.round(total));
-		this.stepLabel.deleted = false;
-	};
-
-	// clear step samples
-	View.prototype.clearStepSamples = function() {
-		var	/** @type {number} */ i = 0;
-
-		for (i = 0; i < this.stepSamples.length; i += 1) {
-			this.stepSamples[i] = 0;
-		}
+	// add the sample to the array
+	this.stepSamples[this.stepIndex] = stepsTaken;
+	this.stepIndex += 1;
+	if (this.stepIndex >= ViewConstants.numStepSamples) {
 		this.stepIndex = 0;
-		this.stepLabel.deleted = true;
-	};
+	}
 
-	// get cell distance from the center of the viewpoint
-	/** @returns {number} */
+	// compute the average
+	for (i = 0; i < this.stepSamples.length; i += 1) {
+		total += this.stepSamples[i];
+	}
+	total /= this.stepSamples.length;
+
+	// update the label
+	this.stepLabel.preText = String(Math.round(total));
+	this.stepLabel.deleted = false;
+};
+
+// clear step samples
+View.prototype.clearStepSamples = function() {
+	var	/** @type {number} */ i = 0;
+
+	for (i = 0; i < this.stepSamples.length; i += 1) {
+		this.stepSamples[i] = 0;
+	}
+	this.stepIndex = 0;
+	this.stepLabel.deleted = true;
+};
+
+// get cell distance from the center of the viewpoint
+/** @returns {number} */
 	View.prototype.getDistFromCenter = function(/** @type {number} */ x, /** @type {number} */ y) {
 		// position relative to display width and height
 		var	/** @type {number} */ displayX = 0,
@@ -6459,7 +6469,7 @@
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
+		this.identifyModLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
 		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
@@ -6470,7 +6480,7 @@
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
+		this.identifyModValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
 		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
@@ -7295,6 +7305,7 @@
 						me.lastIdentifyMod = "";
 						me.lastIdentifyActive = "";
 						me.lastIdentifyTemperature = "";
+						me.lastIdentifyDensity = "";
 					} else {
 						// check results
 						me.lastOscillator = identifyResult[0];
@@ -7313,6 +7324,7 @@
 							me.lastIdentifyMod = identifyResult[12];
 							me.lastIdentifyActive = identifyResult[13];
 							me.lastIdentifyTemperature = identifyResult[14];
+							me.lastIdentifyDensity = identifyResult[15];
 
 							// update result labels
 							me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
@@ -7349,6 +7361,13 @@
 							me.identifyActiveValueLabel.toolTip = "rotor | stator | total";
 							me.identifyTemperatureValueLabel.preText = me.lastIdentifyTemperature;
 							me.identifyTemperatureValueLabel.toolTip = "active | rotor";
+
+							if (me.lastIdentifyType === "Still Life") {
+								me.identifyModValueLabel.preText = me.lastIdentifyDensity;
+								me.identifyModLabel.preText = "Density";
+							} else {
+								me.identifyModLabel.preText = "Mod";
+							}
 						}
 						me.resultsDisplayed = true;
 

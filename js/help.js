@@ -1702,6 +1702,9 @@
 					y = this.renderHelpLine(view, "  Grid", "\t\t\t" + this.rgbString(0x50, 0x50, 0x50).trim(), ctx, x, y, height, helpLine);
 				}
 			}
+			if (view.lastIdentifyType === "Still Life") {
+				y = this.renderHelpLine(view, "Density", view.lastIdentifyDensity, ctx, x, y, height, helpLine);
+			}
 			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		}

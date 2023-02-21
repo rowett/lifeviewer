@@ -1,3 +1,6 @@
+Build 912
+- add Density to Still Life statistics
+
 Build 911
 - fixed an issue with KILLGLIDERS
 
