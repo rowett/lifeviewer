@@ -1,3 +1,16 @@
+Build 916
+- added an extra digit to Density display
+- fixed population calculation for [R]History state6 cells
+
+Build 915
+- fixed a potential crash when growing the grid
+
+Build 914
+- add State 2 Rotor % to Cell Map Table and Help->Info->Identify
+- fixed bounding box for Still Life patterns
+- align Gen menu statistics at bottom of display when not all are displayed
+- fixed population calculation for Super rules in Hex or von Neumann neighbourhoods with state 6 cells
+
 Build 913
 - show Density as a value from 0 to 1
 - only show current population for Still Life patterns that start not as a Still Life

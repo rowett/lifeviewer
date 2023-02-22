@@ -1354,6 +1354,8 @@
 				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
 				if (this.multiNumStates > 2 || this.isRuleTree) {
 					this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList");
+				} else {
+					this.initList = null;
 				}
 				this.hashBox.leftX = this.width;
 				this.hashBox.bottomY = this.height;
@@ -1383,7 +1385,7 @@
 			this.boxList = null;
 			this.nextList = null;
 			this.countList = null;
-			this.init = null;
+			this.initList = null;
 			this.modValue = -1;
 			this.modType = -1;
 			this.startItem = -1;
@@ -2412,8 +2414,7 @@
 			/** @type {number} */ numCols = this.cellPeriodNumCols,
 			/** @type {number} */ fieldWidth = (width >> 2) - 1,
 			/** @type {number} */ leftX = (this.displayWidth - width) >> 1,
-			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
-			/** @type {boolean} */ alternating = (this.isMargolus || this.altSpecified);
+			/** @type {CanvasRenderingContext2D} */ ctx = this.context;
 
 		// get number of subperiods
 		if (this.popSubPeriod[this.popSubPeriod.length - 1] === 0) {
@@ -2452,7 +2453,7 @@
 					x = this.drawRightString(String(value), fieldWidth, x, y, offset);
 					x = this.drawRightString((Math.floor(10000 * value / this.popTotal) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
 
-					if (i > (alternating ? 2 : 1)) {
+					if (i > 1) {
 						this.drawRightString((Math.floor(10000 * value / this.popRotor) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
 					}
 					y += rowHeight;
@@ -3401,43 +3402,45 @@
 		}
 
 		// compute the bounding box
-		if (type === "Spaceship") {
-			for (i = 0; i < last; i += 1) {
-				current = this.boxList[i << 1];
-				currentWidth = current >> 16;
-				currentHeight = current & 65535;
-				if (currentWidth > boxWidth) {
-					boxWidth = currentWidth;
+		if (type !== "Still Life") {
+			if (type === "Spaceship") {
+				for (i = 0; i < last; i += 1) {
+					current = this.boxList[i << 1];
+					currentWidth = current >> 16;
+					currentHeight = current & 65535;
+					if (currentWidth > boxWidth) {
+						boxWidth = currentWidth;
+					}
+					if (currentHeight > boxHeight) {
+						boxHeight = currentHeight;
+					}
 				}
-				if (currentHeight > boxHeight) {
-					boxHeight = currentHeight;
+			} else {
+				for (i = 0; i < last; i += 1) {
+					current = this.boxList[i << 1];
+					currentWidth = current >> 16;
+					currentHeight = current & 65535;
+					current = this.boxList[(i << 1) + 1];
+					currentLeft = current >> 16;
+					currentBottom = current & 65535;
+	
+					// update bounding box
+					if (currentLeft < minX) {
+						minX = currentLeft;
+					}
+					if (currentBottom < minY) {
+						minY = currentBottom;
+					}
+					if (currentLeft + currentWidth - 1 > maxX) {
+						maxX = currentLeft + currentWidth - 1;
+					}
+					if (currentBottom + currentHeight - 1 > maxY) {
+						maxY = currentBottom + currentHeight - 1;
+					}
 				}
+				boxWidth = maxX - minX + 1;
+				boxHeight = maxY - minY + 1;
 			}
-		} else {
-			for (i = 0; i < last; i += 1) {
-				current = this.boxList[i << 1];
-				currentWidth = current >> 16;
-				currentHeight = current & 65535;
-				current = this.boxList[(i << 1) + 1];
-				currentLeft = current >> 16;
-				currentBottom = current & 65535;
-
-				// update bounding box
-				if (currentLeft < minX) {
-					minX = currentLeft;
-				}
-				if (currentBottom < minY) {
-					minY = currentBottom;
-				}
-				if (currentLeft + currentWidth - 1 > maxX) {
-					maxX = currentLeft + currentWidth - 1;
-				}
-				if (currentBottom + currentHeight - 1 > maxY) {
-					maxY = currentBottom + currentHeight - 1;
-				}
-			}
-			boxWidth = maxX - minX + 1;
-			boxHeight = maxY - minY + 1;
 		}
 		boxResult = String(boxWidth + " x " + boxHeight + " = " + (boxWidth * boxHeight));
 
@@ -3582,7 +3585,7 @@
 			if (total === 1) {
 				densityResult = String(total);
 			} else {
-				densityResult = total.toFixed(2);
+				densityResult = total.toFixed(3);
 			}
 		}
 
@@ -15584,7 +15587,7 @@
 									nextGrid16[y][leftX] = next;
 									popDiff = bitCounts16[orig] - bitCounts16[next];
 									this.population -= popDiff;
-									this.deaths += popDiff;
+									this.births -= popDiff;
 								}
 							}
 						}
@@ -21604,7 +21607,11 @@
 
 													case 6:
 														// clear cell in bit grid
-														gridRow[leftX] &= ~colIndex;
+														if (gridRow[leftX] & colIndex) {
+															gridRow[leftX] &= ~colIndex;
+															this.deaths += 1;
+															this.population -=1;
+														}
 														break;
 
 													case 8:
@@ -22114,7 +22121,11 @@
 
 													case 6:
 														// clear cell in bit grid
-														gridRow[leftX] &= ~colIndex;
+														if (gridRow[leftX] & colIndex) {
+															gridRow[leftX] &= ~colIndex;
+															this.deaths += 1;
+															this.population -=1;
+														}
 														break;
 
 													case 8:

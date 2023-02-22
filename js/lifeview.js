@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 913,
+		/** @const {number} */ versionBuild : 916,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6387,6 +6387,35 @@ View.prototype.clearStepSamples = function() {
 		me.speedRange.bgCol = controlColour;
 	};
 
+	// set stats label positions
+	View.prototype.setStatsLabelPositions = function() {
+		var	/** @type {number} */ topY = this.genLabel.relY,
+			/** @type {number} */ midY = this.elapsedTimeLabel.relY,
+			/** @type {number} */ lowY = this.xyLabel.relY;
+
+		if (this.birthsLabel.deleted && this.deathsLabel.deleted) {
+			// only population displayed so put at bottom
+			this.popLabel.setY(lowY);
+			this.popValue.setY(lowY);
+		} else {
+			if (this.deathsLabel.deleted) {
+				// population and births displayed
+				this.popLabel.setY(midY);
+				this.popValue.setY(midY);
+				this.birthsLabel.setY(lowY);
+				this.birthsValue.setY(lowY);
+			} else {
+				// population, births and deaths displayed
+				this.popLabel.setY(topY);
+				this.popValue.setY(topY);
+				this.birthsLabel.setY(midY);
+				this.birthsValue.setY(midY);
+				this.deathsLabel.setY(lowY);
+				this.deathsValue.setY(lowY);
+			}
+		}
+	};
+
 	// update origin
 	View.prototype.updateOrigin = function() {
 		// initial zoom at T=0
@@ -6529,6 +6558,9 @@ View.prototype.clearStepSamples = function() {
 		this.deathsLabel.deleted = shown;
 		this.deathsValue.deleted = shown;
 		this.ruleLabel.deleted = hide;
+
+		// set stats label positions
+		this.setStatsLabelPositions();
 
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
