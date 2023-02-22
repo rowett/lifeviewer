@@ -2581,8 +2581,129 @@
 		}
 	};
 
+	// update occupancy for state 2 with tiles
+	Life.prototype.updateOccupancyState2 = function(/** @type {number} */ gen) {
+		var	/** @type {number} */ h = 0,
+			/** @type {number} */ cr = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileHistoryGrid,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Array<Uint8Array>} */ countList = this.countList,
+			/** @type {Uint8Array} */ countRow = null,
+			/** @type {number} */ th = 0,
+			/** @type {number} */ tw = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ topY = 0,
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ tiles = 0,
+			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
+
+			// set tile height
+			/** @type {number} */ ySize = this.tileY,
+
+			// tile width (in 16bit chunks)
+			/** @type {number} */ xSize = this.tileX << 3,
+
+			// tile rows
+			/** @type {number} */ tileRows = this.tileRows,
+
+			// tile columns in 16 bit values
+			/** @type {number} */ tileCols16 = this.tileCols >> 4,
+
+			// starting and ending tile row
+			/** @type {number} */ tileStartRow = 0,
+			/** @type {number} */ tileEndRow = tileRows;
+
+		// check start and end row are in range
+		if (tileStartRow < 0) {
+			tileStartRow = 0;
+		}
+		if (tileEndRow > tileRows) {
+			tileEndRow = tileRows;
+		}
+
+		// set the initial tile row
+		bottomY = tileStartRow << this.tilePower;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = tileStartRow; th < tileEndRow; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileRow = colourTileGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileRow[tw];
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// process each row
+							h = bottomY;
+							while (h < topY) {
+								// get colour grid row
+								colourRow = colourGrid[h];
+								countRow = countList[h];
+
+								// get correct starting colour index
+								cr = leftX;
+
+								// check if this is the first generation
+								if (gen === 0) {
+									// process each cell along the tile row
+									for (cr = leftX; cr < leftX + xSize; cr += 1) {
+										if (colourRow[cr] >= aliveStart) {
+											countRow[cr] = LifeConstants.cellWasAlive;
+										}
+									}
+								} else {
+									// process each cell along the tile row
+									for (cr = leftX; cr < leftX + xSize; cr += 1) {
+										if (colourRow[cr] >= aliveStart) {
+											// update count
+											if (countRow[cr] === LifeConstants.cellWasDead) {
+												countRow[cr] = LifeConstants.cellHasChanged;
+											}
+										} else {
+											// update count
+											if (countRow[cr] === LifeConstants.cellWasAlive) {
+												countRow[cr] = LifeConstants.cellHasChanged;
+											}
+										}
+									}
+								}
+
+								// next row
+								h += 1;
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
 	// update cell occupancy for rotor and stator calculation (used when not computing strict volatility)
-	Life.prototype.updateOccupancy = function(/** @type {BoundingBox} */ box, /** @type {number} */ gen) {
+	Life.prototype.updateOccupancyAny = function(/** @type {BoundingBox} */ box, /** @type {number} */ gen) {
 		var	/** @type {number} */ x = box.leftX,
 			/** @type {number} */ y = box.bottomY,
 			/** @type {number} */ right = box.rightX,
@@ -2819,6 +2940,17 @@
 					}
 				}
 			}
+		}
+	};
+
+	// update cell occupancy for rotor and stator calculation (used when not computing strict volatility)
+	Life.prototype.updateOccupancy = function(/** @type {BoundingBox} */ box, /** @type {number} */ gen) {
+		var	/** @type {boolean} */ twoState = this.multiNumStates === -1;
+
+		if (twoState) {
+			this.updateOccupancyState2(gen);
+		} else {
+			this.updateOccupancyAny(box, gen);
 		}
 	};
 
@@ -15517,8 +15649,10 @@
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ orig = 0,
-			/** @type {number} */ next = 0,
+			/** @type {number} */ nextAlive = 0,
+			/** @type {number} */ nextCells = 0,
 			/** @type {number} */ popDiff = 0,
+			/** @type {number} */ popDiff2 = 0,
 
 			// bit counts
 			/** @type {Uint8Array} */ bitCounts16 = this.bitCounts16,
@@ -15528,6 +15662,9 @@
 
 			// state6 masks
 			/** @type {Array<Uint16Array>} */ aliveMask = this.state6Alive,
+
+			// state6 cells
+			/** @type {Array<Uint16Array>} */ cellsMask = this.state6Cells,
 
 			// state 6 tile grid
 			/** @type {Array<Uint16Array>} */ state6TileGrid = this.state6TileGrid,
@@ -15582,12 +15719,17 @@
 							// process the tile
 							for (y = bottomY; y < bottomY + 16; y += 1) {
 								orig = nextGrid16[y][leftX];
-								next = orig & ~aliveMask[y][leftX];
-								if (next !== orig) {
-									nextGrid16[y][leftX] = next;
-									popDiff = bitCounts16[orig] - bitCounts16[next];
+								nextAlive = orig & ~aliveMask[y][leftX];
+								nextCells = orig & ~cellsMask[y][leftX];
+
+								if (nextAlive !== orig) {
+									nextGrid16[y][leftX] = nextAlive;
+									popDiff = bitCounts16[orig] - bitCounts16[nextAlive];
+									popDiff2 = bitCounts16[orig] - bitCounts16[nextCells];
+
 									this.population -= popDiff;
-									this.births -= popDiff;
+									this.births -= popDiff2;
+									this.deaths += (popDiff - popDiff2);
 								}
 							}
 						}
@@ -22645,8 +22787,9 @@
 														// clear cell in bit grid
 														if (gridRow[leftX] & colIndex) {
 															gridRow[leftX] &= ~colIndex;
-															this.deaths += 1;
+															this.births -= 1;
 															this.population -=1;
+
 														}
 														break;
 

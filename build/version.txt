@@ -1,3 +1,10 @@
+Build 918
+- fixed population calculation (again) for [R]History state6 cells
+- fixed population calculation for [R]Super state6 cells
+
+Build 917
+- performance improvement for computing rotor and stator for 2-state Life-like patterns
+
 Build 916
 - added an extra digit to Density display
 - fixed population calculation for [R]History state6 cells
