@@ -3256,14 +3256,14 @@
 				pattern.ruleName += "*";
 			}
 
-			// check for horizontal shift
-			if (pattern.gridHorizontalShift) {
-				pattern.ruleName += "+" + pattern.gridHorizontalShift;
-			}
-
 			// check for horizontal twist
 			if (pattern.gridHorizontalTwist) {
 				pattern.ruleName += "*";
+			}
+
+			// check for horizontal shift
+			if (pattern.gridHorizontalShift) {
+				pattern.ruleName += "+" + pattern.gridHorizontalShift;
 			}
 
 			// add more if the height is not the same or vertical shift or twist are defined
@@ -3271,15 +3271,20 @@
 				// add the height
 				pattern.ruleName += "," + pattern.gridHeight;
 
-				// check for horizontal shift
-				if (pattern.gridVerticalShift) {
-					pattern.ruleName += "+" + pattern.gridVerticalShift;
-				}
-
 				// check for horizontal twist
 				if (pattern.gridVerticalTwist) {
 					pattern.ruleName += "*";
 				}
+
+				// check for horizontal shift
+				if (pattern.gridVerticalShift) {
+					if (pattern.gridVerticalShift < 0) {
+						pattern.ruleName += pattern.gridVerticalShift;
+					} else {
+						pattern.ruleName += "+" + pattern.gridVerticalShift;
+					}
+				}
+
 			}
 		}
 

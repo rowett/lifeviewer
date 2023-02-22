@@ -1,3 +1,6 @@
+Build 919
+- fixed issue with canonical Klein bounded grid string
+
 Build 918
 - fixed population calculation (again) for [R]History state6 cells
 - fixed population calculation for [R]Super state6 cells
