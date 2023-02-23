@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 919,
+		/** @const {number} */ versionBuild : 922,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5408,7 +5408,7 @@ View.prototype.clearStepSamples = function() {
 			/** @type {string} */ xDisplay = "",
 			/** @type {string} */ yDisplay = "",
 			/** @type {number} */ stateDisplay = 0,
-			// /** @type {number} */ rawState = 0,
+			/** @type {number} */ rawState = 0,
 
 			// display limit
 			/** @type {number} */ displayLimit = this.engine.maxGridSize > 9999 ? 99999 : 9999,
@@ -5473,7 +5473,7 @@ View.prototype.clearStepSamples = function() {
 
 			// read the state
 			stateDisplay = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
-			//rawState = this.engine.getState(xPos + this.panX, yPos + this.panY, true);
+			rawState = this.engine.getState(xPos + this.panX, yPos + this.panY, true);
 
 			// add the offset to display coordinates
 			xPos += this.xOffset;
@@ -6498,7 +6498,7 @@ View.prototype.clearStepSamples = function() {
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
+		this.identifyModLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || (this.lastIdentifyType !== "Still Life" && this.engine.isMargolus);
 		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
@@ -6509,7 +6509,7 @@ View.prototype.clearStepSamples = function() {
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || this.engine.isMargolus;
+		this.identifyModValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || (this.lastIdentifyType !== "Still Life" && this.engine.isMargolus);
 		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
@@ -18214,8 +18214,16 @@ View.prototype.clearStepSamples = function() {
 		me.engine.allocateGraphData(!me.graphDisabled);
 
 		// check pattern size (script command may have increased maximum allowed size)
-		if (pattern && (pattern.width > me.engine.maxGridSize || pattern.height > me.engine.maxGridSize)) {
-			me.failureReason = "Pattern too big (maximum " + me.engine.maxGridSize + "x" + me.engine.maxGridSize + ")";
+		borderSize = 6;
+		if (pattern.isHROT) {
+			borderSize = pattern.rangeHROT * 6;
+		}
+		if (pattern.isLTL) {
+			borderSize = pattern.rangeLTL * 6;
+		}
+
+		if (pattern && (pattern.width >= me.engine.maxGridSize - borderSize || pattern.height >= me.engine.maxGridSize - borderSize)) {
+			me.failureReason = "Pattern too big (maximum " + (me.engine.maxGridSize - borderSize) + "x" + (me.engine.maxGridSize - borderSize) + ")";
 			pattern.tooBig = true;
 			me.executable = false;
 		}

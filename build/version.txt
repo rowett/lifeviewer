@@ -1,3 +1,14 @@
+Build 922
+- fixed pattern size check
+- enable Density for Margolus Still Life
+- fixed issue with HROT multi-state bounding box for Identify
+
+Build 921
+- Population Graph vertical axis scale now based on selected data types
+
+Build 920
+- fixed population count issue for HROT/LtL patterns with HISTORYSTATES
+
 Build 919
 - fixed issue with canonical Klein bounded grid string
 

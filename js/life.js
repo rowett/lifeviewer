@@ -547,8 +547,13 @@
 		// population graph entries
 		/** @type {number} */ this.popGraphEntries = 0;
 
-		// maximum population value
+		// maximum data values for graph
 		/** @type {number} */ this.maxPopValue = 0;
+		/** @type {number} */ this.maxBirthsValue = 0;
+		/** @type {number} */ this.maxDeathsValue = 0;
+
+		// maximum value for selected graph data types
+		/** @type {number} */ this.maxDataValue = 0;
 
 		// x, y and z origin
 		/** @type {number} */ this.originX = 0;
@@ -3025,6 +3030,11 @@
 			}
 
 			console.log("memory", bitFrameInBytes * period, ((100 * bitFrameInBytes * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
+		} else {
+			if (isOscillator) {
+				extent = this.getOscillatorBounds(period, i);
+				box = extent;
+			}
 		}
 
 		// if not computing strict volatility then use other method for rotor and stator
@@ -7663,7 +7673,7 @@
 
 		// get HROT alive state
 		if (this.isHROT) {
-			aliveState = this.HROT.scount + this.historyStates - 1;
+			aliveState = 63 + this.HROT.scount - 1;
 		}
 
 		// check for HROT or PCA
@@ -15231,11 +15241,11 @@
 			if (this.population > this.maxPopValue) {
 				this.maxPopValue = this.population;
 			}
-			if (this.births > this.maxPopValue) {
-				this.maxPopValue = this.births;
+			if (this.births > this.maxBirthsValue) {
+				this.maxBirthsValue = this.births;
 			}
-			if (this.deaths > this.maxPopValue) {
-				this.maxPopValue = this.deaths;
+			if (this.deaths > this.maxDeathsValue) {
+				this.maxDeathsValue = this.deaths;
 			}
 
 			if (this.popGraphData && this.popGraphData.length > 0) {
@@ -15285,7 +15295,7 @@
 		if (lines) {
 			ctx.strokeStyle = graphCol;
 			ctx.beginPath();
-			y = (graphHeight - graphHeight * (graphData[0][0] / this.maxPopValue)) | 0;
+			y = (graphHeight - graphHeight * (graphData[0][0] / this.maxDataValue)) | 0;
 			ctx.moveTo(borderX + borderAxis + 0.5, y + borderY + borderAxis + 0.5);
 		} else {
 			ctx.fillStyle = graphCol;
@@ -15330,7 +15340,7 @@
 			// check if there is data for this point
 			if (i <= this.counter) {
 				x = borderX + borderAxis + 1 + i;
-				y = (graphHeight - graphHeight * (minVal / this.maxPopValue)) | 0;
+				y = (graphHeight - graphHeight * (minVal / this.maxDataValue)) | 0;
 				// check whether using lines or points
 				if (lines) {
 					// drawing lines
@@ -15338,7 +15348,7 @@
 
 					// check if there was a range of values at this sample point
 					if (minVal !== maxVal) {
-						y = (graphHeight - graphHeight * (maxVal / this.maxPopValue)) | 0;
+						y = (graphHeight - graphHeight * (maxVal / this.maxDataValue)) | 0;
 						ctx.lineTo(x + 0.5, y + borderY + borderAxis + 0.5);
 					}
 				} else {
@@ -15348,7 +15358,7 @@
 						if (minVal === maxVal) {
 							ctx.fillRect(x + 0.5, y + borderY + borderAxis + 0.5, 1, 1);
 						} else {
-							y = (graphHeight - graphHeight * (maxVal / this.maxPopValue)) | 0;
+							y = (graphHeight - graphHeight * (maxVal / this.maxDataValue)) | 0;
 							ctx.fillRect(x + 0.5, y + borderY + borderAxis + 0.5, 1, 1);
 						}
 					}
@@ -15404,6 +15414,25 @@
 				dataPoints = LifeConstants.maxPopSamples;
 			}
 
+			// compute the maximum data value based on data types selected
+			this.maxDataValue = 0;
+			if (this.boundedGridType === -1) {
+				if (view.graphShowBirths) {
+					this.maxDataValue = this.maxBirthsValue;
+				}
+
+				if (view.graphShowDeaths) {
+					if (this.maxDeathsValue > this.maxDataValue) {
+						this.maxDataValue = this.maxDeathsValue;
+					}
+				}
+			}
+			if (view.graphShowPopulation) {
+				if (this.maxPopValue > this.maxDataValue) {
+					this.maxDataValue = this.maxPopValue;
+				}
+			}
+
 			// draw 
 			// save context
 			ctx.save();
@@ -15445,7 +15474,7 @@
 					ctx.save();
 					ctx.translate(borderX + borderAxis - borderAxis / 2 + ((6 * xScale) | 0), borderY + borderAxis);
 					ctx.rotate(-90 * Math.PI / 180);
-					ctx.fillText(String(this.maxPopValue), i, i);
+					ctx.fillText(String(this.maxDataValue), i, i);
 					ctx.restore();
 					ctx.save();
 					ctx.translate(borderX + borderAxis - borderAxis / 2 + ((6 * xScale) | 0), graphHeight);
@@ -15540,6 +15569,8 @@
 
 		// reset maximum population
 		this.maxPopValue = this.population;
+		this.maxBirthsValue = this.births;
+		this.maxDeathsValue = this.deaths;
 	};
 
 	// reset history box
