@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 922,
+		/** @const {number} */ versionBuild : 924,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1742,6 +1742,9 @@
 		// esc button
 		/** @type {MenuItem} */ this.escButton = null;
 
+		// close errors button
+		/** @type {MenuItem} */ this.closeErrorsButton = null;
+
 		// label toggle button
 		/** @type {MenuItem} */ this.labelButton = null;
 
@@ -2311,6 +2314,11 @@
 				}
 			}
 
+			// update graph data if at T=0
+			if (!this.graphDisabled && this.engine.counter === 0) {
+				this.engine.resetPopulationData();
+			}
+
 			// set the state
 			this.diedGeneration = -1;
 			return this.engine.setState(x, y, colour, deadZero);
@@ -2392,6 +2400,11 @@
 		// check for state 6 changes to [R]History
 		if (this.engine.isLifeHistory && wasState6) {
 			this.engine.populateState6MaskFromColGrid();
+		}
+
+		// update period graph population if at T=0
+		if (!this.graphDisabled && this.engine.counter === 0) {
+			this.engine.resetPopulationData();
 		}
 	};
 
@@ -6564,7 +6577,7 @@ View.prototype.clearStepSamples = function() {
 
 		this.fitButton.deleted = hide;
 		this.shrinkButton.deleted = hide || !this.thumbnailEverOn;
-		this.escButton.deleted = !(this.isInPopup || this.scriptErrors.length);
+		this.escButton.deleted = !this.isInPopup;
 
 		if (this.showDisplaySettings || this.showClipboardSettings || this.showInfoSettings || this.showPatternSettings || this.showPlaybackSettings || this.showThemeSelection || this.showActionsSettings) {
 			this.backButton.preText = "Back";
@@ -6739,18 +6752,8 @@ View.prototype.clearStepSamples = function() {
 		this.infoBarLabelWValueRight.deleted = shown;
 		this.infoBarLabelNValueRight.deleted = shown;
 
-		// adjust esc button if popup
-		if (this.scriptErrors.length) {
-			this.escButton.toolTip = "close errors [Esc]";
-			this.escButton.preText = "Esc";
-			this.escButton.setFont("16px Arial");
-			this.escButton.bgCol = this.autoFitToggle.bgCol;
-		} else {
-			this.escButton.toolTip = "close window [Esc]";
-			this.escButton.preText = "X";
-			this.escButton.setFont("24px Arial");
-			this.escButton.bgCol = "red";
-		}
+		// close errors button
+		this.closeErrorsButton.deleted = (this.scriptErrors.length === 0 || this.displayHelp !== 0);
 
 		// help done button
 		this.doneButton.deleted = !(this.chromeBug && this.displayHelp && this.helpTopic === ViewConstants.welcomeTopic);
@@ -11919,16 +11922,16 @@ View.prototype.clearStepSamples = function() {
 
 	// esc button
 	View.prototype.escPressed = function(/** @type {View} */ me) {
-		// check if errors displayed
-		if (me.scriptErrors.length) {
-			// clear errors
-			me.scriptErrors = [];
-			me.displayErrors = 0;
-			me.setMousePointer(/** @type {!number} */ (me.modeList.current));
-		} else {
-			// hide the viewer
-			hideViewer();
-		}
+		// hide the viewer
+		hideViewer();
+	};
+
+	// close errors button
+	View.prototype.closeErrorsPressed = function(/** @type {View} */ me) {
+		// clear errors
+		me.scriptErrors = [];
+		me.displayErrors = 0;
+		me.setMousePointer(/** @type {!number} */ (me.modeList.current));
 	};
 
 	// previous POI button
@@ -14607,9 +14610,10 @@ View.prototype.clearStepSamples = function() {
 	View.prototype.toggleSettings = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			// close help if settings opened
-			if (me.displayHelp !== 0 && newValue[0]) {
+			if ((me.displayHelp !== 0 || me.scriptErrors.length !== 0) && newValue[0]) {
 				me.displayHelp = 0;
 				me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
+				me.scriptErrors = [];
 			}
 
 			// close theme selection buttons if settings closed
@@ -15673,6 +15677,9 @@ View.prototype.clearStepSamples = function() {
 
 		// set the menu colours
 		this.menuManager.setColours(fgCol, bgCol, highlightCol, selectedCol, lockedCol, borderCol, this.helpFontColour);
+
+		// set the escape button background
+		this.escButton.bgCol = "red";
 	};
 
 	// create menus
@@ -16121,9 +16128,14 @@ View.prototype.clearStepSamples = function() {
 		this.nextUniverseButton.toolTip = "go to next universe [Page Down]";
 
 		// esc button
-		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -85, 40, 40, "Esc");
-		this.escButton.toolTip = "close errors";
-		this.escButton.setFont("16px Arial");
+		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -85, 40, 40, "X");
+		this.escButton.toolTip = "close window";
+		this.escButton.setFont("24px Arial");
+		this.escButton.bgCol = "red";
+
+		// clear errors button
+		this.closeErrorsButton = this.viewMenu.addButtonItem(this.closeErrorsPressed, Menu.southEast, -40, -85, 40, 40, "X");
+		this.closeErrorsButton.toolTip = "close errors [Esc]";
 
 		// previous POI button
 		this.prevPOIButton = this.viewMenu.addButtonItem(this.prevPOIPressed, Menu.west, 10, 0, 40, 40, "<");
@@ -17012,6 +17024,12 @@ View.prototype.clearStepSamples = function() {
 
 		// resize arrays
 		this.engine.resizeDisplay(this.displayWidth, this.displayHeight);
+
+		// resize the cell period map if available
+		if (!(this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "") && (this.engine.popSubPeriod !== null)) {
+			this.engine.createCellPeriodMap();
+			console.log("create");
+		}
 	};
 
 	// switch to thumbnail view
@@ -18215,10 +18233,10 @@ View.prototype.clearStepSamples = function() {
 
 		// check pattern size (script command may have increased maximum allowed size)
 		borderSize = 6;
-		if (pattern.isHROT) {
+		if (pattern && pattern.isHROT) {
 			borderSize = pattern.rangeHROT * 6;
 		}
-		if (pattern.isLTL) {
+		if (pattern && pattern.isLTL) {
 			borderSize = pattern.rangeLTL * 6;
 		}
 

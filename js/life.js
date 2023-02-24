@@ -62,71 +62,77 @@
 
 		// NW glider
 		/** @const {Array<Array<number>>} */ gliderNW0 : [[1, 1, 1],
-														  [1, 0, 0],
-														  [0, 1, 0]],
+										  [1, 0, 0],
+										  [0, 1, 0]],
 
 		/** @const {Array<Array<number>>} */ gliderNW1 : [[0, 1, 0],
-														  [1, 1, 0],
-														  [1, 0, 1]],
+										  [1, 1, 0],
+										  [1, 0, 1]],
 
 		/** @const {Array<Array<number>>} */ gliderNW2 : [[1, 1, 0],
-														  [1, 0, 1],
-														  [1, 0, 0]],
+										  [1, 0, 1],
+										  [1, 0, 0]],
 
 		/** @const {Array<Array<number>>} */ gliderNW3 : [[0, 1, 1],
-														  [1, 1, 0],
-														  [0, 0, 1]],
+										  [1, 1, 0],
+										  [0, 0, 1]],
 
 		// NE glider
 		/** @const {Array<Array<number>>} */ gliderNE0 : [[1, 1, 1],
-														  [0, 0, 1],
-														  [0, 1, 0]],
+										  [0, 0, 1],
+										  [0, 1, 0]],
 
 		/** @const {Array<Array<number>>} */ gliderNE1 : [[0, 1, 0],
-														  [0, 1, 1],
-														  [1, 0, 1]],
+										  [0, 1, 1],
+										  [1, 0, 1]],
 
 		/** @const {Array<Array<number>>} */ gliderNE2 : [[0, 1, 1],
-														  [1, 0, 1],
-														  [0, 0, 1]],
+										  [1, 0, 1],
+										  [0, 0, 1]],
 
 		/** @const {Array<Array<number>>} */ gliderNE3 : [[1, 1, 0],
-														  [0, 1, 1],
-														  [1, 0, 0]],
+										  [0, 1, 1],
+										  [1, 0, 0]],
 
 		// SW glider
 		/** @const {Array<Array<number>>} */ gliderSW0 : [[0, 1, 0],
-														  [1, 0, 0],
-														  [1, 1, 1]],
+										  [1, 0, 0],
+										  [1, 1, 1]],
 
 		/** @const {Array<Array<number>>} */ gliderSW1 : [[1, 0, 1],
-														  [1, 1, 0],
-														  [0, 1, 0]],
+										  [1, 1, 0],
+										  [0, 1, 0]],
 
 		/** @const {Array<Array<number>>} */ gliderSW2 : [[1, 0, 0],
-														  [1, 0, 1],
-														  [1, 1, 0]],
+										  [1, 0, 1],
+										  [1, 1, 0]],
 
 		/** @const {Array<Array<number>>} */ gliderSW3 : [[0, 0, 1],
-														  [1, 1, 0],
-														  [0, 1, 1]],
+										  [1, 1, 0],
+										  [0, 1, 1]],
 
 		// SE glider
 		/** @const {Array<Array<number>>} */ gliderSE0 : [[0, 1, 0],
-														  [0, 0, 1],
-														  [1, 1, 1]],
+										  [0, 0, 1],
+										  [1, 1, 1]],
 
 		/** @const {Array<Array<number>>} */ gliderSE1 : [[1, 0, 1],
-														  [0, 1, 1],
-														  [0, 1, 0]],
+										  [0, 1, 1],
+										  [0, 1, 0]],
 
 		/** @const {Array<Array<number>>} */ gliderSE2 : [[0, 0, 1],
-														  [1, 0, 1],
-														  [0, 1, 1]],
+										  [1, 0, 1],
+										  [0, 1, 1]],
 
 		/** @const {Array<Array<number>>} */ gliderSE3 : [[1, 0, 0],
-														  [0, 1, 1],
-														  [1, 1, 0]],
+										  [0, 1, 1],
+										  [1, 1, 0]],
+
+		// glider orientations
+		/** @const {number} */ gliderNE : 0,
+		/** @const {number} */ gliderNW : 1,
+		/** @const {number} */ gliderSE : 2,
+		/** @const {number} */ gliderSW : 3,
 
 		// hex and triangle cell coordinate buffer size
 		/** @const {number} */ coordBufferSize : 4096,
@@ -406,7 +412,7 @@
 		// oscillator rotor population
 		/** @type {number} */ this.popRotor = 0;
 
-		// identify start time TBD remove
+		// identify start time
 		this.identifyStartTime = 0;
 
 		// whether last zoom was < 1/16x
@@ -1377,7 +1383,7 @@
 				this.strictVol = "";
 				this.cellPeriod = null;
 
-				// TBD remove
+				// get start time
 				this.identifyStartTime = performance.now();
 			}
 		} else {
@@ -11921,7 +11927,7 @@
 
 	// check pattern for glider
 	/** @returns {boolean} */
-	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ dx, /** @type {number} */ dy) {
+	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {number} */ orientation) {
 		var	/** @type {boolean} */ found = false,
 			/** @type {Array<number>} */ gliderRow = null,
 			/** @type {number} */ s1 = 0,
@@ -11949,6 +11955,8 @@
 			/** @type {number} */ s23 = 0,
 			/** @type {number} */ xc = 0,
 			/** @type {number} */ yc = 0,
+			/** @type {number} */ xFound = 0,
+			/** @type {number} */ yFound = 0,
 			/** @type {number} */ xLim = 0,
 			/** @type {number} */ yLim = 0,
 			/** @type {number} */ dx2 = dx + dx,
@@ -12030,42 +12038,174 @@
 
 				// look diagonal
 				s1 = colourRow[xc];
+				if (s1 & 64) {
+					xFound = xc;
+					yFound = yc;
+					found = true;
+				}
+
 				s2 = colourGrid[yc + dy][xc];
+				if (s2 & 64) {
+					xFound = xc;
+					yFound = yc + dy;
+					found = true;
+				}
+
 				s3 = colourRow[xc + dx];
+				if (s3 & 64) {
+					xFound = xc + dx;
+					yFound = yc;
+					found = true;
+				}
+
 				s4 = colourGrid[yc + dy2][xc];
+				if (s4 & 64) {
+					xFound = xc;
+					yFound = yc + dy2;
+					found = true;
+				}
+
 				s5 = colourRow[xc + dx2];
+				if (s5 & 64) {
+					xFound = xc + dx2;
+					yFound = yc;
+					found = true;
+				}
+
 				s6 = colourGrid[yc + dy3][xc];
+				if (s6 & 64) {
+					xFound = xc;
+					yFound = yc + dy3;
+					found = true;
+				}
+
 				s7 = colourRow[xc + dx3];
+				if (s7 & 64) {
+					xFound = xc + dx3;
+					yFound = yc;
+					found = true;
+				}
+
 				s8 = colourGrid[yc + dy4][xc];
+				if (s8 & 64) {
+					xFound = xc;
+					yFound = yc + dy4;
+					found = true;
+				}
+
 				s9 = colourRow[xc + dx4];
+				if (s9 & 64) {
+					xFound = xc + dx4;
+					yFound = yc;
+					found = true;
+				}
+
 				s10 = colourGrid[yc + dy4 + dy][xc];
+				if (s10 & 64) {
+					xFound = xc;
+					yFound = yc + dy4 + dy;
+					found = true;
+				}
+
 				s11 = colourRow[xc + dx4 + dx];
+				if (s11 & 64) {
+					xFound = xc + dx4 + dx;
+					yFound = yc + dy;
+					found = true;
+				}
+
 				s12 = colourGrid[yc + dy4 + dy][xc];
+				if (s12 & 64) {
+					xFound = xc;
+					yFound = yc + dy4 + dy;
+					found = true;
+				}
+
 				s13 = colourRow[xc + dx4 + dx];
+				if (s13 & 64) {
+					xFound = xc + dx4 + dx;
+					yFound = yc;
+					found = true;
+				}
+
 				s14 = colourGrid[yc + dy4 + dy2][xc];
+				if (s14 & 64) {
+					xFound = xc;
+					yFound = yc + dy4 + dy2;
+					found = true;
+				}
+
 				s15 = colourRow[xc + dx4 + dx2];
+				if (s15 & 64) {
+					xFound = xc + dx4 + dx2;
+					yFound = yc;
+					found = true;
+				}
+
 				s16 = colourGrid[yc + dy4 + dy3][xc];
+				if (s16 & 64) {
+					xFound = xc;
+					yFound = yc + dy4 + dy3;
+					found = true;
+				}
+
 				s17 = colourRow[xc + dx4 + dx3];
+				if (s17 & 64) {
+					xFound = xc + dx4 + dx3;
+					yFound = yc;
+					found = true;
+				}
 
 				// look ahead
 				s18 = colourGrid[yc - dy4][xc];
-				s19 = colourRow[xc - dx4];
-				s20 = colourGrid[yc - dy4 - dy][xc];
-				s21 = colourRow[xc - dx4 - dx];
-				s22 = colourGrid[yc - dy4 - dy2][xc];
-				s23 = colourRow[xc - dx4 - dx2];
-
-				if ((s1 | s2 | s3 | s4 | s5 | s6 | s7 | s8 | s9 | s10 | s11 | s12 | s13 | s14 | s15 | s16 | s17 | s18 | s19 | s20 | s21 | s22 | s23) & 64) {
+				if (s18 & 64) {
+					xFound = xc;
+					yFound = yc - dy4;
 					found = true;
-				} else {
-					xc += dx;
-					yc += dy;
 				}
+
+				s19 = colourRow[xc - dx4];
+				if (s19 & 64) {
+					xFound = xc - dx4;
+					yFound = yc;
+					found = true;
+				}
+
+				s20 = colourGrid[yc - dy4 - dy][xc];
+				if (s20 & 64) {
+					xFound = xc;
+					yFound = yc - dy4 - dy;
+					found = true;
+				}
+
+				s21 = colourRow[xc - dx4 - dx];
+				if (s21 & 64) {
+					xFound = xc - dx4 - dx;
+					yFound = yc;
+					found = true;
+				}
+
+				s22 = colourGrid[yc - dy4 - dy2][xc];
+				if (s22 & 64) {
+					xFound = xc;
+					yFound = yc - dy4 - dy2;
+					found = true;
+				}
+
+				s23 = colourRow[xc - dx4 - dx2];
+				if (s23 & 64) {
+					xFound = xc - dx4 - dx2;
+					yFound = yc;
+					found = true;
+				}
+
+				xc += dx;
+				yc += dy;
 			}
 
 			// if glider found but not clear then add to potential clear list
 			if (found) {
-				this.potentialClears[this.potentialClears.length] = {glider: glider, x: x, y: y, xc: xc, yc: yc};
+				this.potentialClears[this.potentialClears.length] = {glider: glider, x: x, y: y, xc: xFound, yc: yFound, orientation: orientation};
 			} else {
 				// clear the glider
 				this.deleteGlider(glider, x, y);
@@ -12080,6 +12220,9 @@
 			/** @type {number} */ j = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
+			/** @type {number} */ otherX = 0,
+			/** @type {number} */ otherY = 0,
+			/** @type {number} */ orientation = 0,
 			/** @type {number} */ l = this.potentialClears.length,
 			/** @type {boolean} */ found = false,
 			target = null,
@@ -12090,8 +12233,11 @@
 			for (i = 0; i < l; i += 1) {
 				// get the target of the current glider
 				current = this.potentialClears[i];
+
+				// get the hit location
 				x = current.xc;
 				y = current.yc;
+				orientation = current.orientation;
 
 				// check if target was another edge glider
 				j = 0;
@@ -12099,8 +12245,15 @@
 				while (!found && j < l) {
 					// ignore same glider
 					if (j !== i) {
+						// get the other glider
 						target = this.potentialClears[j];
-						if (target.x >= x - 3 && target.x <= x + 3 && target.y >= y - 3 && target.y <= y + 3) {
+
+						// get the middle of the other glider
+						otherX = target.x + 3;
+						otherY = target.y + 3;
+
+						// check if the other glider contains the hit location
+						if (x >= otherX - 1 && x <= otherX + 1 && y >= otherY -1 && y <= otherY + 1 && target.orientation === orientation) {
 							// delete glider
 							this.deleteGlider(current.glider, current.x, current.y);
 							found = true;
@@ -12150,14 +12303,14 @@
 			for (x = leftX; x <= rightX; x += 1) {
 				if (bottomRow[x] >= aliveStart) {
 					// NW and NE glider
-					if (!this.findAndDeleteGlider(this.gliderNW07x7, x, bottomY, -1, 1)) {
-						if (!this.findAndDeleteGlider(this.gliderNW17x7, x - 1, bottomY, -1, 1)) {
-							if (!this.findAndDeleteGlider(this.gliderNW27x7, x, bottomY, -1, 1)) {
-								if (!this.findAndDeleteGlider(this.gliderNW37x7, x - 1, bottomY, -1, 1)) {
-									if (!this.findAndDeleteGlider(this.gliderNE07x7, x, bottomY, 1, 1)) {
-										if (!this.findAndDeleteGlider(this.gliderNE17x7, x - 1, bottomY, 1, 1)) {
-											if (!this.findAndDeleteGlider(this.gliderNE27x7, x - 1, bottomY, 1, 1)) {
-												this.findAndDeleteGlider(this.gliderNE37x7, x, bottomY, 1, 1);
+					if (!this.findAndDeleteGlider(this.gliderNW07x7, x, bottomY, -1, 1, LifeConstants.gliderNW)) {
+						if (!this.findAndDeleteGlider(this.gliderNW17x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW)) {
+							if (!this.findAndDeleteGlider(this.gliderNW27x7, x, bottomY, -1, 1, LifeConstants.gliderNW)) {
+								if (!this.findAndDeleteGlider(this.gliderNW37x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW)) {
+									if (!this.findAndDeleteGlider(this.gliderNE07x7, x, bottomY, 1, 1, LifeConstants.gliderNE)) {
+										if (!this.findAndDeleteGlider(this.gliderNE17x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE)) {
+											if (!this.findAndDeleteGlider(this.gliderNE27x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE)) {
+												this.findAndDeleteGlider(this.gliderNE37x7, x, bottomY, 1, 1, LifeConstants.gliderNE);
 											}
 										}
 									}
@@ -12168,14 +12321,14 @@
 				}
 				if (topRow[x] >= aliveStart) {
 					// SW and SE glider
-					if (!this.findAndDeleteGlider(this.gliderSW07x7, x, topY - 2, -1, -1)) {
-						if (!this.findAndDeleteGlider(this.gliderSW17x7, x - 1, topY - 2, -1, -1)) {
-							if (!this.findAndDeleteGlider(this.gliderSW27x7, x, topY - 2, -1, -1)) {
-								if (!this.findAndDeleteGlider(this.gliderSW37x7, x - 1, topY - 2, -1, -1)) {
-									if (!this.findAndDeleteGlider(this.gliderSE07x7, x, topY - 2, 1, -1)) {
-										if (!this.findAndDeleteGlider(this.gliderSE17x7, x - 1, topY - 2, 1, -1)) {
-											if (!this.findAndDeleteGlider(this.gliderSE27x7, x - 1, topY - 2, 1, -1)) {
-												this.findAndDeleteGlider(this.gliderSE37x7, x, topY - 2, 1, -1);
+					if (!this.findAndDeleteGlider(this.gliderSW07x7, x, topY - 2, -1, -1, LifeConstants.gliderSW)) {
+						if (!this.findAndDeleteGlider(this.gliderSW17x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW)) {
+							if (!this.findAndDeleteGlider(this.gliderSW27x7, x, topY - 2, -1, -1, LifeConstants.gliderSW)) {
+								if (!this.findAndDeleteGlider(this.gliderSW37x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW)) {
+									if (!this.findAndDeleteGlider(this.gliderSE07x7, x, topY - 2, 1, -1, LifeConstants.gliderSE)) {
+										if (!this.findAndDeleteGlider(this.gliderSE17x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE)) {
+											if (!this.findAndDeleteGlider(this.gliderSE27x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE)) {
+												this.findAndDeleteGlider(this.gliderSE37x7, x, topY - 2, 1, -1, LifeConstants.gliderSE);
 											}
 										}
 									}
@@ -12190,14 +12343,14 @@
 				currentRow = colourGrid[y];
 				if (currentRow[leftX] >= aliveStart) {
 					// NW and SW glider
-					if (!this.findAndDeleteGlider(this.gliderNW07x7, leftX, y, 1, -1)) {
-						if (!this.findAndDeleteGlider(this.gliderNW17x7, leftX, y - 1, 1, -1)) {
-							if (!this.findAndDeleteGlider(this.gliderNW27x7, leftX, y, 1, -1)) {
-								if (!this.findAndDeleteGlider(this.gliderNW37x7, leftX, y - 1, 1, -1)) {
-									if (!this.findAndDeleteGlider(this.gliderSW07x7, leftX, y - 1, 1, 1)) {
-										if (!this.findAndDeleteGlider(this.gliderSW17x7, leftX, y, 1, 1)) {
-											if (!this.findAndDeleteGlider(this.gliderSW27x7, leftX, y, 1, 1)) {
-												this.findAndDeleteGlider(this.gliderSW37x7, leftX, y - 1, 1, 1);
+					if (!this.findAndDeleteGlider(this.gliderNW07x7, leftX, y, 1, -1, LifeConstants.gliderNW)) {
+						if (!this.findAndDeleteGlider(this.gliderNW17x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW)) {
+							if (!this.findAndDeleteGlider(this.gliderNW27x7, leftX, y, 1, -1, LifeConstants.gliderNW)) {
+								if (!this.findAndDeleteGlider(this.gliderNW37x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW)) {
+									if (!this.findAndDeleteGlider(this.gliderSW07x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW)) {
+										if (!this.findAndDeleteGlider(this.gliderSW17x7, leftX, y, 1, 1, LifeConstants.gliderSW)) {
+											if (!this.findAndDeleteGlider(this.gliderSW27x7, leftX, y, 1, 1, LifeConstants.gliderSW)) {
+												this.findAndDeleteGlider(this.gliderSW37x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW);
 											}
 										}
 									}
@@ -12208,14 +12361,14 @@
 				}
 				if (currentRow[rightX] >= aliveStart) {
 					// NE and SE glider
-					if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1)) {
-						if (!this.findAndDeleteGlider(this.gliderNE17x7, rightX - 2, y - 1, -1, -1)) {
-							if (!this.findAndDeleteGlider(this.gliderNE27x7, rightX - 2, y, -1, -1)) {
-								if (!this.findAndDeleteGlider(this.gliderNE37x7, rightX - 2, y - 1, -1, -1)) {
-									if (!this.findAndDeleteGlider(this.gliderSE07x7, rightX - 2, y - 1, -1, 1)) {
-										if (!this.findAndDeleteGlider(this.gliderSE17x7, rightX - 2, y, -1, 1)) {
-											if (!this.findAndDeleteGlider(this.gliderSE27x7, rightX - 2, y, -1, 1)) {
-												this.findAndDeleteGlider(this.gliderSE37x7, rightX - 2, y - 1, -1, 1);
+					if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE)) {
+						if (!this.findAndDeleteGlider(this.gliderNE17x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE)) {
+							if (!this.findAndDeleteGlider(this.gliderNE27x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE)) {
+								if (!this.findAndDeleteGlider(this.gliderNE37x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE)) {
+									if (!this.findAndDeleteGlider(this.gliderSE07x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE)) {
+										if (!this.findAndDeleteGlider(this.gliderSE17x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE)) {
+											if (!this.findAndDeleteGlider(this.gliderSE27x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE)) {
+												this.findAndDeleteGlider(this.gliderSE37x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE);
 											}
 										}
 									}

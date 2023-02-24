@@ -1,3 +1,13 @@
+Build 924
+- regenerate Cell Period Map image on resize
+
+Build 923
+- improved KILLGLIDERS when two or more gliders are diagonally aligned in the same direction
+- only allow even shifts in bounded grids for Triangular rules
+- fixed an issue with HROT Custom Neighbourhoods with Triangular or Hexagonal neighbourhoods
+- show Esc button if there are script errors
+- update Population Graph if pattern edited at T=0
+
 Build 922
 - fixed pattern size check
 - enable Density for Margolus Still Life

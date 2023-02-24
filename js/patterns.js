@@ -4103,6 +4103,7 @@
 			/** @type {number} */ value = 0,
 			/** @type {number} */ numRead = 0,
 			/** @type {number} */ numSW = 0,
+			/** @type {number} */ neighbourLetter = 0,
 			/** @type {Array<number>} */ weights = [],
 			/** @type {Array<number>} */ stateWeights = [],
 			/** @type {number} */ maxStateWeight = 0,
@@ -4148,21 +4149,6 @@
 			}
 		}
 
-		// check for hex grid type postfix
-		if (result !== -1) {
-			if (this.index < l) {
-				if (rule[this.index] === "h") {
-					pattern.customGridType = "H";
-					this.index += 1;
-				} else {
-					if (rule[this.index] === "l") {
-						pattern.customGridType = "L";
-						this.index += 1;
-					}
-				}
-			}
-		}
-
 		// check for optional state weights
 		if (result !== -1) {
 			if (rule[this.index] === ",") {
@@ -4195,6 +4181,23 @@
 			}
 		}
 
+		// check for hex grid type postfix
+		if (result !== -1) {
+			if (this.index < l) {
+				if (rule[this.index] === "h") {
+					pattern.customGridType = "H";
+					this.index += 1;
+					neighbourLetter = 1;
+				} else {
+					if (rule[this.index] === "l") {
+						pattern.customGridType = "L";
+						this.index += 1;
+						neighbourLetter = 1;
+					}
+				}
+			}
+		}
+
 		// check if string is valid
 		if (result !== -1) {
 			// sum weights ignoring negatives for maximum neighbour count
@@ -4205,9 +4208,9 @@
 				}
 			}
 			if (stateWeights.length > 0) {
-				pattern.customNeighbourhood = rule.substring(this.index - (numRead + numSW + 1), this.index).toLowerCase();
+				pattern.customNeighbourhood = rule.substring(this.index - (numRead + numSW + 1) - neighbourLetter, this.index - neighbourLetter).toLowerCase();
 			} else {
-				pattern.customNeighbourhood = rule.substring(this.index - numRead, this.index).toLowerCase();
+				pattern.customNeighbourhood = rule.substring(this.index - numRead - neighbourLetter, this.index - neighbourLetter).toLowerCase();
 			}
 			pattern.customNeighbourCount = value;
 			pattern.weightedNeighbourhood = weights;
@@ -6907,6 +6910,8 @@
 
 		// check if valid
 		if (width !== -1) {
+			source += " ";
+
 			// read next character
 			chr = source[this.index];
 
@@ -7005,6 +7010,8 @@
 
 		// check if valid
 		if (width !== -1) {
+			source += " ";
+
 			// read next character
 			chr = source[this.index];
 
@@ -7020,6 +7027,7 @@
 			// check for shift
 			if (chr === "-" || chr === "+") {
 				// read shift
+				this.index += 1;
 				shiftWidth = this.readValueFromString(source);
 
 				// check if shift was present
@@ -7032,14 +7040,10 @@
 						shiftWidth = -shiftWidth;
 					}
 				}
-
-				// next character
-				this.index += 1;
-				chr = source[this.index];
 			}
 
 			// check for comma
-			if (chr === ",") {
+			if (source[this.index] === ",") {
 				this.index += 1;
 
 				// read height
@@ -7125,6 +7129,8 @@
 
 		// check if valid
 		if (width !== -1) {
+			source += " ";
+
 			// check for comma
 			if (source[this.index] === ",") {
 				this.index += 1;
@@ -7155,6 +7161,8 @@
 
 		// check if valid
 		if (width !== -1) {
+			source += " ";
+
 			// check for comma
 			if (source[this.index] === ",") {
 				this.index += 1;
@@ -7823,6 +7831,15 @@
 			this.failureReason = "Triangular rules do not support Sphere";
 			this.executable = false;
 			pattern.gridType = -1;
+		}
+
+		// check whether odd-numbered shifts in bounded grids are given for Triangular rules
+		if (pattern.isTriangular && (pattern.gridType === 1 || pattern.gridType === 2)) {
+			if ((pattern.gridHorizontalShift & 1) || (pattern.gridVerticalShift & 1)) {
+				this.failureReason = "Triangular rules only support even shifts";
+				this.executable = false;
+				pattern.gridType = -1;
+			}
 		}
 
 		// check whether LTL bounded grid type is valid
