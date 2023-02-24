@@ -9560,25 +9560,23 @@
 		if (newPattern.tooBig) {
 			this.failureReason = "Pattern too big (maximum " + this.maxWidth + "x" + this.maxHeight + ")";
 			this.tooBig = true;
-
-			// create a dummy empty pattern since there may be paste snippets
-			newPattern.invalid = false;
-			newPattern.width = 1;
-			newPattern.height = 1;
-			newPattern.lifeMap = Array.matrix(Type.Uint16, newPattern.height, ((newPattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+			newPattern = null;
+			this.executable = false;
 		}
 
 		// remove bounded grid postfix if present
-		if (newPattern.gridType !== -1) {
-			index = newPattern.ruleName.lastIndexOf(":");
-			newPattern.boundedGridDef = newPattern.ruleName.substring(index);
-			newPattern.ruleName = newPattern.ruleName.substring(0, index);
-		} else {
-			newPattern.boundedGridDef = "";
+		if (newPattern) {
+			if (newPattern.gridType !== -1) {
+				index = newPattern.ruleName.lastIndexOf(":");
+				newPattern.boundedGridDef = newPattern.ruleName.substring(index);
+				newPattern.ruleName = newPattern.ruleName.substring(0, index);
+			} else {
+				newPattern.boundedGridDef = "";
+			}
 		}
 
 		// check if the new pattern was decoded
-		if (newPattern.lifeMap === null && this.failureReason === "") {
+		if (newPattern && newPattern.lifeMap === null && this.failureReason === "") {
 			this.failureReason = "Invalid pattern";
 			newPattern = null;
 			this.executable = false;

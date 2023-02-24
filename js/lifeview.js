@@ -19629,11 +19629,16 @@ View.prototype.clearStepSamples = function() {
 	function completeIsPatternFailed(/** @type {Pattern} */ pattern, /** @type {Array} */ args) {
 		// unpack arguments
 		var	rleItem = args[1],
-			textItem = args[2];
+			textItem = args[2],
+			/** @type {string} */ reason = args[3];
 
 		if (pattern) {
 			if (rleItem !== null) {
 				createError(rleItem, textItem, pattern.ruleName + " - " + pattern.originalFailure);
+			}
+		} else {
+			if (rleItem !== null) {
+				createError(rleItem, textItem, reason);
 			}
 		}
 	}
@@ -19645,7 +19650,11 @@ View.prototype.clearStepSamples = function() {
 		// attempt to create a pattern
 		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem], null);
 		if (!manager.loadingFromRepository) {
-			completeIsPattern(pattern, [patternString, rleItem, textItem]);
+			if (pattern) {
+				completeIsPattern(pattern, [patternString, rleItem, textItem]);
+			} else {
+				completeIsPatternFailed(pattern, [patternString, rleItem, textItem, manager.failureReason]);
+			}
 		}
 	}
 

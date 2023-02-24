@@ -1,5 +1,6 @@
 Build 924
 - regenerate Cell Period Map image on resize
+- fixed some invalid patterns not generating "Show Pattern Error" message on forum
 
 Build 923
 - improved KILLGLIDERS when two or more gliders are diagonally aligned in the same direction
