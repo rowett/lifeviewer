@@ -1,3 +1,7 @@
+Build 925
+- small performance improvement to Identify strict volatility calculation
+- Identify search time is now shown in Help->Info->Identify
+
 Build 924
 - regenerate Cell Period Map image on resize
 - fixed some invalid patterns not generating "Show Pattern Error" message on forum

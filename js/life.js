@@ -412,8 +412,9 @@
 		// oscillator rotor population
 		/** @type {number} */ this.popRotor = 0;
 
-		// identify start time
+		// identify start and elapsed time
 		this.identifyStartTime = 0;
+		this.identifyElapsedTime = 0;
 
 		// whether last zoom was < 1/16x
 		/** @type {boolean} */ this.lastZoom16 = true;
@@ -3004,6 +3005,7 @@
 			/** @type {number} */ hash1 = 0,
 			/** @type {number} */ width1 = 0,
 			/** @type {number} */ height1 = 0,
+			/** @type {number} */ frameBits = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {Array<number>} */ modMatches = [];
 
@@ -3116,15 +3118,112 @@
 						}
 					} else {
 						// process the row
-						for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+						cx = extent.leftX;
+						frameBits = 0;
+						while (cx <= extent.rightX - 16) {
 							if (colourRow[cx] >= aliveStart) {
-								frames[f] |= bit;
+								frameBits |= bit;
 							}
 							bit >>= 1;
-							if (!bit) {
-								bit = bitStart;
-								f += 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
 							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							// not needed since last bit and reset below
+							//bit >>= 1;
+							cx += 1;
+
+							// save frame bits
+							if (frameBits !== 0) {
+								frames[f] = frameBits;
+								frameBits = 0;
+							}
+
+							// reset bit to start of word
+							bit = bitStart;
+							f += 1;
+						}
+
+						// process remaining cells in row
+						while (cx <= extent.rightX) {
+							if (colourRow[cx] >= aliveStart) {
+								frameBits |= bit;
+							}
+							bit >>= 1;
+							cx += 1;
+						}
+						if (frameBits !== 0) {
+							frames[f] = frameBits;
 						}
 					}
 				}
@@ -3322,8 +3421,9 @@
 			this.popSubPeriod = null;
 		}
 
-		// TBD remove
-		console.log("identification complete in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
+		// save elapsed time
+		this.identifyElapsedTime = ((performance.now() - this.identifyStartTime) / 1000);
+		console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
 	};
 
 	// return identify results

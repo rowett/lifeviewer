@@ -1706,6 +1706,7 @@
 				y = this.renderHelpLine(view, "Density", view.lastIdentifyDensity, ctx, x, y, height, helpLine);
 			}
 			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Time", view.engine.identifyElapsedTime.toFixed(1) + " seconds", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		}
 

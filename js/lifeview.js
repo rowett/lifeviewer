@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 924,
+		/** @const {number} */ versionBuild : 925,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -17028,7 +17028,6 @@ View.prototype.clearStepSamples = function() {
 		// resize the cell period map if available
 		if (!(this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "") && (this.engine.popSubPeriod !== null)) {
 			this.engine.createCellPeriodMap();
-			console.log("create");
 		}
 	};
 
