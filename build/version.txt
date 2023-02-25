@@ -1,3 +1,6 @@
+Build 926
+- further small performance improvement to Identify
+
 Build 925
 - small performance improvement to Identify strict volatility calculation
 - Identify search time is now shown in Help->Info->Identify

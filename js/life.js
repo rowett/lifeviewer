@@ -2966,6 +2966,313 @@
 		}
 	};
 
+	// update cell occupancy for rotor and stator calculation (used when computing strict volatility)
+	Life.prototype.updateOccupancyStrict = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {Uint16Array} */ occupiedFrame, /** @type {number} */ p, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitStart) {
+		var	/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ bit = 0,
+			/** @type {number} */ f = 0,
+			/** @type {number} */ l = 0,
+			/** @type {number} */ frameBits = 0,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {Uint8Array} */ colourRow = null;
+
+		// swap grids every generation
+		if (this.isSuper) {
+			colourGrid = this.colourGrid;
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
+
+		// process each row of the pattern extent
+		l = p * bitFrameInBytes;
+		for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
+			// get the pattern row
+			colourRow = colourGrid[cy];
+
+			// find the start of the row
+			f = ((cy - extent.bottomY) * bitRowInBytes) + l;
+			bit = bitStart;
+
+			// check for Super rules
+			if (this.isSuper) {
+				// process the row
+				cx = extent.leftX;
+				frameBits = 0;
+				while (cx <= extent.rightX - 16) {
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					// not needed since last bit and reset below
+					//bit >>= 1;
+					cx += 1;
+
+					// save frame bits
+					if (frameBits !== 0) {
+						frames[f] = frameBits;
+						occupiedFrame[f - l] |= frameBits;
+						frameBits = 0;
+					}
+
+					// reset bit to start of word
+					bit = bitStart;
+					f += 1;
+				}
+
+				// process remaining cells in row
+				while (cx <= extent.rightX) {
+					if (colourRow[cx] & 1) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+				}
+				if (frameBits !== 0) {
+					frames[f] = frameBits;
+					occupiedFrame[f - l] |= frameBits;
+				}
+			} else {
+				// process the row
+				cx = extent.leftX;
+				frameBits = 0;
+				while (cx <= extent.rightX - 16) {
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					// not needed since last bit and reset below
+					//bit >>= 1;
+					cx += 1;
+
+					// save frame bits
+					if (frameBits !== 0) {
+						frames[f] = frameBits;
+						occupiedFrame[f - l] |= frameBits;
+						frameBits = 0;
+					}
+
+					// reset bit to start of word
+					bit = bitStart;
+					f += 1;
+				}
+
+				// process remaining cells in row
+				while (cx <= extent.rightX) {
+					if (colourRow[cx] >= aliveStart) {
+						frameBits |= bit;
+					}
+					bit >>= 1;
+					cx += 1;
+				}
+				if (frameBits !== 0) {
+					frames[f] = frameBits;
+					occupiedFrame[f - l] |= frameBits;
+				}
+			}
+		}
+	};
+
+	// compute cell factors
+	Life.prototype.computeCellFactors = function(/** @type {Uint32Array} */ cellPeriod, /** @type {number} */ period, /** @type {Uint16Array} */ frames, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitStart) {
+		var	/** @type {number} */ f = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ p = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ bit = 0,
+			/** @type {number} */ mult = 0,
+			/** @type {number} */ row = 0,
+			/** @type {number} */ off1 = 0,
+			/** @type {number} */ off2 = 0,
+			/** @type {number} */ target = 0;
+
+		for (f = 1; f <= (period / 2); f += 1) {
+			if (period % f === 0) {
+				// check each factor
+				target = period - f;
+				mult = f * bitFrameInBytes;
+
+				for (cy = 0; cy < boxHeight; cy += 1) {
+					row = cy * boxWidth;
+					j = cy * bitRowInBytes;
+					bit = bitStart;
+					for (cx = 0; cx < boxWidth; cx += 1) {
+						if (cellPeriod[row + cx] === period) {
+							off1 = (cx >> 4) + j;
+							off2 = off1 + mult;
+
+							for (p = 0; p < target; p += 1) {
+								if ((frames[off1] & bit) !== (frames[off2] & bit)) {
+									break;
+								}
+								off1 += bitFrameInBytes;
+								off2 += bitFrameInBytes;
+							}
+							if (p === target) {
+								cellPeriod[row + cx] = f;
+							}
+						}
+						bit >>= 1;
+
+						if (!bit) {
+							bit = bitStart;
+						}
+					}
+				}
+			}
+		}
+	};
+
 	// compute strict volatility and Mod
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {BoundingBox} */ box, /** @type {View} */ view, /** @type {boolean} */ isOscillator) {
 		var	/** @type {number} */ p = 0,
@@ -2980,24 +3287,16 @@
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @type {Uint8Array} */ colourRow = null,
 			/** @type {Uint32Array} */ popSubPeriod = new Uint32Array(period + 1),
 			/** @type {Uint32Array} */ cellPeriod = null,
-			/** @type {number} */ aliveStart = this.aliveStart,
 			/** @type {number} */ boxWidth = 0,
 			/** @type {number} */ boxHeight = 0,
-			/** @type {number} */ target = 0,
 			/** @type {number} */ popTotal = 0,
 			/** @type {number} */ row = 0,
-			/** @type {number} */ off1 = 0,
-			/** @type {number} */ off2 = 0,
-			/** @type {number} */ bitcx = 0,
-			/** @type {number} */ rightcx = 0,
 			/** @type {BoundingBox} */ extent = null,
 			/** @type {number} */ frameTypeMSB = 0,
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
-			/** @type {number} */ mult = 0,
 			/** @type {number} */ gen1 = 1,
 			/** @type {number} */ hash0 = 0,
 			/** @type {number} */ width0 = 0,
@@ -3005,7 +3304,6 @@
 			/** @type {number} */ hash1 = 0,
 			/** @type {number} */ width1 = 0,
 			/** @type {number} */ height1 = 0,
-			/** @type {number} */ frameBits = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {Array<number>} */ modMatches = [];
 
@@ -3086,153 +3384,7 @@
 
 			// add to the strict volatility frame if computing strict volatility
 			if (computeStrict) {
-				// swap grids every generation
-				if (this.isSuper) {
-					colourGrid = this.colourGrid;
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-					}
-				}
-
-				// process each row of the pattern extent
-				for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
-					// get the pattern row
-					colourRow = colourGrid[cy];
-
-					// find the start of the row
-					f = ((cy - extent.bottomY) * bitRowInBytes) + (p * bitFrameInBytes);
-					bit = bitStart;
-
-					// check for Super rules
-					if (this.isSuper) {
-						// process the row
-						for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
-							if (colourRow[cx] & 1) {
-								frames[f] |= bit;
-							}
-							bit >>= 1;
-							if (!bit) {
-								bit = bitStart;
-								f += 1;
-							}
-						}
-					} else {
-						// process the row
-						cx = extent.leftX;
-						frameBits = 0;
-						while (cx <= extent.rightX - 16) {
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							// not needed since last bit and reset below
-							//bit >>= 1;
-							cx += 1;
-
-							// save frame bits
-							if (frameBits !== 0) {
-								frames[f] = frameBits;
-								frameBits = 0;
-							}
-
-							// reset bit to start of word
-							bit = bitStart;
-							f += 1;
-						}
-
-						// process remaining cells in row
-						while (cx <= extent.rightX) {
-							if (colourRow[cx] >= aliveStart) {
-								frameBits |= bit;
-							}
-							bit >>= 1;
-							cx += 1;
-						}
-						if (frameBits !== 0) {
-							frames[f] = frameBits;
-						}
-					}
-				}
-
-				// merge current frame with occupied frame
-				f = p * bitFrameInBytes;
-				for (cx = 0; cx < occupiedFrame.length; cx += 1) {
-					occupiedFrame[cx] |= frames[cx + f];
-				}
+				this.updateOccupancyStrict(extent, colourGrid, frames, occupiedFrame, p, bitRowInBytes, bitFrameInBytes, bitStart);
 			} else {
 				// use the original method of computing cell occupancy
 				this.updateOccupancy(box, p);
@@ -3349,47 +3501,11 @@
 			}
 
 			//t = performance.now() - t;
-			//console.log("calculated cell periods in " + (t / 1000).toFixed(1) + " seconds");
+			//console.log("calculated active cells in " + (t / 1000).toFixed(1) + " seconds");
 			//t = performance.now();
 
 			// calculate the factors of the period
-			for (f = 1; f <= (period / 2); f += 1) {
-				if (period % f === 0) {
-					// check each factor
-					target = period - f;
-					mult = f * bitFrameInBytes;
-
-					for (cy = 0; cy < boxHeight; cy += 1) {
-						row = cy * boxWidth;
-						j = cy * bitRowInBytes;
-						for (bitcx = 0; bitcx < bitRowInBytes; bitcx += 1) {
-							rightcx = (bitcx + 1) << 4;
-							if (rightcx > boxWidth) {
-								rightcx = boxWidth;
-							}
-							bit = bitStart;
-							for (cx = bitcx << 4; cx < rightcx; cx += 1) {
-								if (cellPeriod[row + cx] === period) {
-									off1 = bitcx + j;
-									off2 = off1 + mult;
-
-									for (p = 0; p < target; p += 1) {
-										if ((frames[off1] & bit) !== (frames[off2] & bit)) {
-											break;
-										}
-										off1 += bitFrameInBytes;
-										off2 += bitFrameInBytes;
-									}
-									if (p === target) {
-										cellPeriod[row + cx] = f;
-									}
-								}
-								bit >>= 1;
-							}
-						}
-					}
-				}
-			}
+			this.computeCellFactors(cellPeriod, period, frames, boxWidth, boxHeight, bitFrameInBytes, bitRowInBytes, bitStart);
 
 			//t = performance.now() - t;
 			//console.log("calculated cell factors in " + (t / 1000).toFixed(1) + " seconds");
