@@ -415,6 +415,7 @@
 		// identify start and elapsed time
 		this.identifyStartTime = 0;
 		this.identifyElapsedTime = 0;
+		this.identifyDetectionTime = 0;
 
 		// whether last zoom was < 1/16x
 		/** @type {boolean} */ this.lastZoom16 = true;
@@ -3307,7 +3308,8 @@
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {Array<number>} */ modMatches = [];
 
-		console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
+		this.identifyDetectionTime = (performance.now() - this.identifyStartTime) / 1000;
+		console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
 
 		// determine whether Strict Volatility can be calculated based on amount of RAM needed
 		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
@@ -12197,6 +12199,7 @@
 		y -= 2;
 		yc = 0;
 		found = true;
+
 		while (found && yc < glider.length) {
 			xc = 0;
 			gliderRow = glider[yc];
@@ -12419,13 +12422,8 @@
 				yc += dy;
 			}
 
-			// if glider found but not clear then add to potential clear list
-			if (found) {
-				this.potentialClears[this.potentialClears.length] = {glider: glider, x: x, y: y, xc: xFound, yc: yFound, orientation: orientation};
-			} else {
-				// clear the glider
-				this.deleteGlider(glider, x, y);
-			}
+			// add to potential clear list
+			this.potentialClears[this.potentialClears.length] = {glider: glider, x: x, y: y, xc: xFound, yc: yFound, orientation: orientation, detected: found};
 		}
 		return found;
 	};
@@ -12438,6 +12436,7 @@
 			/** @type {number} */ y = 0,
 			/** @type {number} */ otherX = 0,
 			/** @type {number} */ otherY = 0,
+			/** @type {number} */ otherOrientation = 0,
 			/** @type {number} */ orientation = 0,
 			/** @type {number} */ l = this.potentialClears.length,
 			/** @type {boolean} */ found = false,
@@ -12447,35 +12446,111 @@
 		// check for at least two gliders
 		if (l > 1) {
 			for (i = 0; i < l; i += 1) {
-				// get the target of the current glider
+				// check if the current glider has a target
 				current = this.potentialClears[i];
-
-				// get the hit location
-				x = current.xc;
-				y = current.yc;
-				orientation = current.orientation;
-
-				// check if target was another edge glider
-				j = 0;
-				found = false;
-				while (!found && j < l) {
-					// ignore same glider
-					if (j !== i) {
-						// get the other glider
-						target = this.potentialClears[j];
-
-						// get the middle of the other glider
-						otherX = target.x + 3;
-						otherY = target.y + 3;
-
-						// check if the other glider contains the hit location
-						if (x >= otherX - 1 && x <= otherX + 1 && y >= otherY -1 && y <= otherY + 1 && target.orientation === orientation) {
-							// delete glider
-							this.deleteGlider(current.glider, current.x, current.y);
-							found = true;
+				if (current.detected) {
+					// get the hit location
+					x = current.xc;
+					y = current.yc;
+					orientation = current.orientation;
+	
+					// check if target was another edge glider
+					j = 0;
+					found = false;
+					while (!found && j < l) {
+						// ignore same glider
+						if (j !== i) {
+							// get the other glider
+							target = this.potentialClears[j];
+	
+							// get the middle of the other glider
+							otherX = target.x + 3;
+							otherY = target.y + 3;
+	
+							// check if the other glider contains the hit location
+							if (x >= otherX - 1 && x <= otherX + 1 && y >= otherY -1 && y <= otherY + 1 && target.orientation === orientation) {
+								// delete glider
+								this.deleteGlider(current.glider, current.x, current.y);
+								found = true;
+							}
 						}
+						j += 1;
 					}
-					j += 1;
+				} else {
+					// get the glider location
+					x = current.x + 3;
+					y = current.y + 3;
+					orientation = current.orientation;
+
+					// check if there is another glider on the same axis
+					j = 0;
+					found = false;
+					while (!found && j < l) {
+						// ignore same glider
+						if (j !== i) {
+							// get the other glider
+							target = this.potentialClears[j];
+
+							// get the middle of the other glider
+							otherX = target.x + 3;
+							otherY = target.y + 3;
+							otherOrientation = target.orientation;
+
+							switch (orientation) {
+								case LifeConstants.gliderNW:
+									if (otherOrientation === LifeConstants.gliderNE && y >= otherY - 1 && y <= otherY + 1) {
+										found = true;
+									}
+
+									if (otherOrientation === LifeConstants.gliderSW && x >= otherX - 1 && x <= otherX + 1) {
+										found = true;
+									}
+									break;
+
+								case LifeConstants.gliderNE:
+									if (otherOrientation === LifeConstants.gliderNW && y >= otherY - 1 && y <= otherY + 1) {
+										found = true;
+									}
+
+									if (otherOrientation === LifeConstants.gliderSE && x >= otherX - 1 && x <= otherX + 1) {
+										found = true;
+									}
+									break;
+
+								case LifeConstants.gliderSW:
+									if (otherOrientation === LifeConstants.gliderSE && y >= otherY - 1 && y <= otherY + 1) {
+										found = true;
+									}
+
+									if (otherOrientation === LifeConstants.gliderNW && x >= otherX - 1 && x <= otherX + 1) {
+										found = true;
+									}
+									break;
+
+								case LifeConstants.gliderSE:
+									if (otherOrientation === LifeConstants.gliderSW && y >= otherY - 1 && y <= otherY + 1) {
+										found = true;
+									}
+
+									if (otherOrientation === LifeConstants.gliderNE && x >= otherX - 1 && x <= otherX + 1) {
+										found = true;
+									}
+									break;
+							}
+						}
+						j += 1;
+					}
+					if (!found) {
+						this.deleteGlider(current.glider, current.x, current.y);
+					}
+				}
+			}
+		} else {
+			// check for a single glider that hasn't detected a potential collision
+			if (l === 1) {
+				current = this.potentialClears[0];
+				if (!current.detected) {
+					this.deleteGlider(current.glider, current.x, current.y);
 				}
 			}
 		}
@@ -12535,6 +12610,7 @@
 						}
 					}
 				}
+
 				if (topRow[x] >= aliveStart) {
 					// SW and SE glider
 					if (!this.findAndDeleteGlider(this.gliderSW07x7, x, topY - 2, -1, -1, LifeConstants.gliderSW)) {
@@ -12554,6 +12630,7 @@
 					}
 				}
 			}
+
 			// check left and right columns
 			for (y = bottomY; y <= topY; y += 1) {
 				currentRow = colourGrid[y];
@@ -12575,6 +12652,7 @@
 						}
 					}
 				}
+
 				if (currentRow[rightX] >= aliveStart) {
 					// NE and SE glider
 					if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE)) {

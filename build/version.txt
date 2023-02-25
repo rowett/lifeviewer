@@ -1,3 +1,9 @@
+Build 928
+- added period detection time to Help->Info->Identify
+
+Build 927
+- fixed an issue with KILLGLIDERS
+
 Build 926
 - further small performance improvement to Identify
 
