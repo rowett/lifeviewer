@@ -1,3 +1,9 @@
+Build 930
+- handle repository rule files with missing final end of line
+
+Build 929
+- further fixes for KILLGLIDERS
+
 Build 928
 - added period detection time to Help->Info->Identify
 

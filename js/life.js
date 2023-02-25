@@ -12145,7 +12145,7 @@
 
 	// check pattern for glider
 	/** @returns {boolean} */
-	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {number} */ orientation) {
+	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {number} */ orientation, /** @type {number} */ off) {
 		var	/** @type {boolean} */ found = false,
 			/** @type {Array<number>} */ gliderRow = null,
 			/** @type {number} */ s1 = 0,
@@ -12423,7 +12423,7 @@
 			}
 
 			// add to potential clear list
-			this.potentialClears[this.potentialClears.length] = {glider: glider, x: x, y: y, xc: xFound, yc: yFound, orientation: orientation, detected: found};
+			this.potentialClears[this.potentialClears.length] = {glider: glider, x: x, y: y, xc: xFound, yc: yFound, orientation: orientation, detected: found, offset: off};
 		}
 		return found;
 	};
@@ -12468,7 +12468,7 @@
 							otherY = target.y + 3;
 	
 							// check if the other glider contains the hit location
-							if (x >= otherX - 1 && x <= otherX + 1 && y >= otherY -1 && y <= otherY + 1 && target.orientation === orientation) {
+							if (x >= otherX - 1 && x <= otherX + 1 && y >= otherY -1 && y <= otherY + 1 && target.orientation === orientation && current.offset === 0) {
 								// delete glider
 								this.deleteGlider(current.glider, current.x, current.y);
 								found = true;
@@ -12498,41 +12498,41 @@
 
 							switch (orientation) {
 								case LifeConstants.gliderNW:
-									if (otherOrientation === LifeConstants.gliderNE && y >= otherY - 1 && y <= otherY + 1) {
+									if (otherOrientation === LifeConstants.gliderNE && y >= otherY - 6 && y <= otherY + 6 && x >= otherX) {
 										found = true;
 									}
 
-									if (otherOrientation === LifeConstants.gliderSW && x >= otherX - 1 && x <= otherX + 1) {
+									if (otherOrientation === LifeConstants.gliderSW && x >= otherX - 6 && x <= otherX + 6 && y >= otherY) {
 										found = true;
 									}
 									break;
 
 								case LifeConstants.gliderNE:
-									if (otherOrientation === LifeConstants.gliderNW && y >= otherY - 1 && y <= otherY + 1) {
+									if (otherOrientation === LifeConstants.gliderNW && y >= otherY - 6 && y <= otherY + 6 && x <= otherX) {
 										found = true;
 									}
 
-									if (otherOrientation === LifeConstants.gliderSE && x >= otherX - 1 && x <= otherX + 1) {
+									if (otherOrientation === LifeConstants.gliderSE && x >= otherX - 6 && x <= otherX + 6 && y >= otherY) {
 										found = true;
 									}
 									break;
 
 								case LifeConstants.gliderSW:
-									if (otherOrientation === LifeConstants.gliderSE && y >= otherY - 1 && y <= otherY + 1) {
+									if (otherOrientation === LifeConstants.gliderSE && y >= otherY - 6 && y <= otherY + 6 && x >= otherX) {
 										found = true;
 									}
 
-									if (otherOrientation === LifeConstants.gliderNW && x >= otherX - 1 && x <= otherX + 1) {
+									if (otherOrientation === LifeConstants.gliderNW && x >= otherX - 6 && x <= otherX + 6 && y <= otherY) {
 										found = true;
 									}
 									break;
 
 								case LifeConstants.gliderSE:
-									if (otherOrientation === LifeConstants.gliderSW && y >= otherY - 1 && y <= otherY + 1) {
+									if (otherOrientation === LifeConstants.gliderSW && y >= otherY - 6 && y <= otherY + 6 && x <= otherX) {
 										found = true;
 									}
 
-									if (otherOrientation === LifeConstants.gliderNE && x >= otherX - 1 && x <= otherX + 1) {
+									if (otherOrientation === LifeConstants.gliderNE && x >= otherX - 6 && x <= otherX + 6 && y <= otherY) {
 										found = true;
 									}
 									break;
@@ -12540,7 +12540,7 @@
 						}
 						j += 1;
 					}
-					if (!found) {
+					if (!found && current.offset === 0) {
 						this.deleteGlider(current.glider, current.x, current.y);
 					}
 				}
@@ -12549,7 +12549,7 @@
 			// check for a single glider that hasn't detected a potential collision
 			if (l === 1) {
 				current = this.potentialClears[0];
-				if (!current.detected) {
+				if (!current.detected && current.offset === 0) {
 					this.deleteGlider(current.glider, current.x, current.y);
 				}
 			}
@@ -12560,6 +12560,7 @@
 	Life.prototype.clearEscapingGliders = function() {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
+			/** @type {number} */ off = 0,
 			/** @type {number} */ leftX = this.zoomBox.leftX,
 			/** @type {number} */ rightX = this.zoomBox.rightX,
 			/** @type {number} */ bottomY = this.zoomBox.bottomY,
@@ -12592,16 +12593,22 @@
 
 			// check top and bottom rows
 			for (x = leftX; x <= rightX; x += 1) {
-				if (bottomRow[x] >= aliveStart) {
-					// NW and NE glider
-					if (!this.findAndDeleteGlider(this.gliderNW07x7, x, bottomY, -1, 1, LifeConstants.gliderNW)) {
-						if (!this.findAndDeleteGlider(this.gliderNW17x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW)) {
-							if (!this.findAndDeleteGlider(this.gliderNW27x7, x, bottomY, -1, 1, LifeConstants.gliderNW)) {
-								if (!this.findAndDeleteGlider(this.gliderNW37x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW)) {
-									if (!this.findAndDeleteGlider(this.gliderNE07x7, x, bottomY, 1, 1, LifeConstants.gliderNE)) {
-										if (!this.findAndDeleteGlider(this.gliderNE17x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE)) {
-											if (!this.findAndDeleteGlider(this.gliderNE27x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE)) {
-												this.findAndDeleteGlider(this.gliderNE37x7, x, bottomY, 1, 1, LifeConstants.gliderNE);
+				// check several rows
+				for (off = 0; off <= 6; off += 1) {
+					bottomY = this.zoomBox.bottomY + off;
+					bottomRow = colourGrid[bottomY];
+
+					if (bottomRow[x] >= aliveStart) {
+						// NW and NE glider
+						if (!this.findAndDeleteGlider(this.gliderNW07x7, x, bottomY, -1, 1, LifeConstants.gliderNW, off)) {
+							if (!this.findAndDeleteGlider(this.gliderNW17x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW, off)) {
+								if (!this.findAndDeleteGlider(this.gliderNW27x7, x, bottomY, -1, 1, LifeConstants.gliderNW, off)) {
+									if (!this.findAndDeleteGlider(this.gliderNW37x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW, off)) {
+										if (!this.findAndDeleteGlider(this.gliderNE07x7, x, bottomY, 1, 1, LifeConstants.gliderNE, off)) {
+											if (!this.findAndDeleteGlider(this.gliderNE17x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE, off)) {
+												if (!this.findAndDeleteGlider(this.gliderNE27x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE, off)) {
+													this.findAndDeleteGlider(this.gliderNE37x7, x, bottomY, 1, 1, LifeConstants.gliderNE, off);
+												}
 											}
 										}
 									}
@@ -12609,18 +12616,21 @@
 							}
 						}
 					}
-				}
 
-				if (topRow[x] >= aliveStart) {
-					// SW and SE glider
-					if (!this.findAndDeleteGlider(this.gliderSW07x7, x, topY - 2, -1, -1, LifeConstants.gliderSW)) {
-						if (!this.findAndDeleteGlider(this.gliderSW17x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW)) {
-							if (!this.findAndDeleteGlider(this.gliderSW27x7, x, topY - 2, -1, -1, LifeConstants.gliderSW)) {
-								if (!this.findAndDeleteGlider(this.gliderSW37x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW)) {
-									if (!this.findAndDeleteGlider(this.gliderSE07x7, x, topY - 2, 1, -1, LifeConstants.gliderSE)) {
-										if (!this.findAndDeleteGlider(this.gliderSE17x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE)) {
-											if (!this.findAndDeleteGlider(this.gliderSE27x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE)) {
-												this.findAndDeleteGlider(this.gliderSE37x7, x, topY - 2, 1, -1, LifeConstants.gliderSE);
+					topY = this.zoomBox.topY - off;
+					topRow = colourGrid[topY];
+
+					if (topRow[x] >= aliveStart) {
+						// SW and SE glider
+						if (!this.findAndDeleteGlider(this.gliderSW07x7, x, topY - 2, -1, -1, LifeConstants.gliderSW, off)) {
+							if (!this.findAndDeleteGlider(this.gliderSW17x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW, off)) {
+								if (!this.findAndDeleteGlider(this.gliderSW27x7, x, topY - 2, -1, -1, LifeConstants.gliderSW, off)) {
+									if (!this.findAndDeleteGlider(this.gliderSW37x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW, off)) {
+										if (!this.findAndDeleteGlider(this.gliderSE07x7, x, topY - 2, 1, -1, LifeConstants.gliderSE, off)) {
+											if (!this.findAndDeleteGlider(this.gliderSE17x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE, off)) {
+												if (!this.findAndDeleteGlider(this.gliderSE27x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE, off)) {
+													this.findAndDeleteGlider(this.gliderSE37x7, x, topY - 2, 1, -1, LifeConstants.gliderSE, off);
+												}
 											}
 										}
 									}
@@ -12633,17 +12643,22 @@
 
 			// check left and right columns
 			for (y = bottomY; y <= topY; y += 1) {
-				currentRow = colourGrid[y];
-				if (currentRow[leftX] >= aliveStart) {
-					// NW and SW glider
-					if (!this.findAndDeleteGlider(this.gliderNW07x7, leftX, y, 1, -1, LifeConstants.gliderNW)) {
-						if (!this.findAndDeleteGlider(this.gliderNW17x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW)) {
-							if (!this.findAndDeleteGlider(this.gliderNW27x7, leftX, y, 1, -1, LifeConstants.gliderNW)) {
-								if (!this.findAndDeleteGlider(this.gliderNW37x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW)) {
-									if (!this.findAndDeleteGlider(this.gliderSW07x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW)) {
-										if (!this.findAndDeleteGlider(this.gliderSW17x7, leftX, y, 1, 1, LifeConstants.gliderSW)) {
-											if (!this.findAndDeleteGlider(this.gliderSW27x7, leftX, y, 1, 1, LifeConstants.gliderSW)) {
-												this.findAndDeleteGlider(this.gliderSW37x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW);
+				// check several columns
+				for (off = 0; off <= 6; off += 1) {
+					currentRow = colourGrid[y];
+					leftX = this.zoomBox.leftX + off;
+
+					if (currentRow[leftX] >= aliveStart) {
+						// NW and SW glider
+						if (!this.findAndDeleteGlider(this.gliderNW07x7, leftX, y, 1, -1, LifeConstants.gliderNW, off)) {
+							if (!this.findAndDeleteGlider(this.gliderNW17x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW, off)) {
+								if (!this.findAndDeleteGlider(this.gliderNW27x7, leftX, y, 1, -1, LifeConstants.gliderNW, off)) {
+									if (!this.findAndDeleteGlider(this.gliderNW37x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW, off)) {
+										if (!this.findAndDeleteGlider(this.gliderSW07x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW, off)) {
+											if (!this.findAndDeleteGlider(this.gliderSW17x7, leftX, y, 1, 1, LifeConstants.gliderSW, off)) {
+												if (!this.findAndDeleteGlider(this.gliderSW27x7, leftX, y, 1, 1, LifeConstants.gliderSW, off)) {
+													this.findAndDeleteGlider(this.gliderSW37x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW, off);
+												}
 											}
 										}
 									}
@@ -12651,18 +12666,19 @@
 							}
 						}
 					}
-				}
 
-				if (currentRow[rightX] >= aliveStart) {
-					// NE and SE glider
-					if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE)) {
-						if (!this.findAndDeleteGlider(this.gliderNE17x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE)) {
-							if (!this.findAndDeleteGlider(this.gliderNE27x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE)) {
-								if (!this.findAndDeleteGlider(this.gliderNE37x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE)) {
-									if (!this.findAndDeleteGlider(this.gliderSE07x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE)) {
-										if (!this.findAndDeleteGlider(this.gliderSE17x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE)) {
-											if (!this.findAndDeleteGlider(this.gliderSE27x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE)) {
-												this.findAndDeleteGlider(this.gliderSE37x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE);
+					rightX = this.zoomBox.rightX - off;
+					if (currentRow[rightX] >= aliveStart) {
+						// NE and SE glider
+						if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE, off)) {
+							if (!this.findAndDeleteGlider(this.gliderNE17x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE, off)) {
+								if (!this.findAndDeleteGlider(this.gliderNE27x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE, off)) {
+									if (!this.findAndDeleteGlider(this.gliderNE37x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE, off)) {
+										if (!this.findAndDeleteGlider(this.gliderSE07x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE, off)) {
+											if (!this.findAndDeleteGlider(this.gliderSE17x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE, off)) {
+												if (!this.findAndDeleteGlider(this.gliderSE27x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE, off)) {
+													this.findAndDeleteGlider(this.gliderSE37x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE, off);
+												}
 											}
 										}
 									}
