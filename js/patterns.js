@@ -8388,7 +8388,7 @@
 
 			// read the name
 			name = "";
-			while (!reader.nextIsNewline()) {
+			while ((!reader.nextIsNewline()) && reader.peekAtNextToken() !== "") {
 				if (name === "") {
 					name = reader.getNextToken();
 				} else {
@@ -9551,16 +9551,19 @@
 					} else {
 						// assume RLE no header
 						this.decodeRLE(newPattern, source, allocator);
+						if (newPattern.invalid) {
+							newPattern = null;
+						}
 					}
 				}
 			}
 		}
 
 		// check if the new pattern was too big
-		if (newPattern.tooBig) {
+		if (newPattern && newPattern.tooBig) {
 			this.failureReason = "Pattern too big (maximum " + this.maxWidth + "x" + this.maxHeight + ")";
+			newPattern.invalid = true;
 			this.tooBig = true;
-			newPattern = null;
 			this.executable = false;
 		}
 
@@ -9584,7 +9587,6 @@
 
 		// check if the RLE was valid
 		if (newPattern && newPattern.invalid && !newPattern.tooBig) {
-			newPattern = null;
 			this.executable = false;
 		}
 

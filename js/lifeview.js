@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 930,
+		/** @const {number} */ versionBuild : 932,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -19628,16 +19628,11 @@ View.prototype.clearStepSamples = function() {
 	function completeIsPatternFailed(/** @type {Pattern} */ pattern, /** @type {Array} */ args) {
 		// unpack arguments
 		var	rleItem = args[1],
-			textItem = args[2],
-			/** @type {string} */ reason = args[3];
+			textItem = args[2];
 
 		if (pattern) {
 			if (rleItem !== null) {
 				createError(rleItem, textItem, pattern.ruleName + " - " + pattern.originalFailure);
-			}
-		} else {
-			if (rleItem !== null) {
-				createError(rleItem, textItem, reason);
 			}
 		}
 	}
@@ -19650,9 +19645,12 @@ View.prototype.clearStepSamples = function() {
 		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem], null);
 		if (!manager.loadingFromRepository) {
 			if (pattern) {
-				completeIsPattern(pattern, [patternString, rleItem, textItem]);
-			} else {
-				completeIsPatternFailed(pattern, [patternString, rleItem, textItem, manager.failureReason]);
+				if (pattern.invalid) {
+					pattern.originalFailure = manager.failureReason;
+					completeIsPatternFailed(pattern, [patternString, rleItem, textItem]);
+				} else {
+					completeIsPattern(pattern, [patternString, rleItem, textItem]);
+				}
 			}
 		}
 	}

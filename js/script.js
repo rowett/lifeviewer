@@ -285,9 +285,6 @@
 			if (this.source.charCodeAt(this.starts[this.current]) === 10) {
 				result = true;
 			}
-		} else {
-			// return true if no more tokens
-			result = true;
 		}
 
 		return result;

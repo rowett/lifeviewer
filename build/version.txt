@@ -1,3 +1,10 @@
+Build 932
+- fixed initial population count for multi-state rules
+- performance improvements for HROT/LtL 2-state Identify
+
+Build 931
+- improve Show Pattern Error detection for forum
+
 Build 930
 - handle repository rule files with missing final end of line
 

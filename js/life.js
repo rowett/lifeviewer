@@ -398,6 +398,11 @@
 		// last computed strict volatility
 		/** @type {string} */ this.strictVol = "";
 
+		// minimum and maximum heat
+		/** @type {number} */ this.minHeat = 0;
+		/** @type {number} */ this.maxHeat = 0;
+		/** @type {number} */ this.heatVal = 0;
+
 		// last period per cell for oscillator
 		/** @type {Uint32Array} */ this.cellPeriod = null;
 		/** @type {number} */ this.cellPeriodWidth = 0;
@@ -475,15 +480,12 @@
 		/** @type {Int32Array} */ this.hashList = null;
 		/** @type {Uint32Array} */ this.genList = null;
 		/** @type {Uint32Array} */ this.popList = null;
-		/** @type {Uint32Array} */ this.bornList = null;
-		/** @type {Uint32Array} */ this.diedList = null;
 		/** @type {Uint32Array} */ this.boxList = null;
 		/** @type {Uint32Array} */ this.nextList = null;
 		/** @type {number} */ this.startItem = 0;
 		/** @type {number} */ this.oscLength = 0;
 		/** @type {Array<Uint8Array>} */ this.countList = null;
 		/** @type {Array<Uint8Array>} */ this.initList = null;
-		/** @type {BoundingBox} */ this.hashBox = new BoundingBox(0, 0, 0, 0);
 		/** @type {number} */ this.modValue = -1;
 		/** @type {number} */ this.modType = -1;
 
@@ -1360,8 +1362,6 @@
 				this.hashList = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.hashList"));
 				this.genList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.genList"));
 				this.popList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.popList"));
-				this.bornList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.bornList"));
-				this.diedList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.diedList"));
 				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList"));
 				this.nextList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.nextList"));
 				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList");
@@ -1370,10 +1370,6 @@
 				} else {
 					this.initList = null;
 				}
-				this.hashBox.leftX = this.width;
-				this.hashBox.bottomY = this.height;
-				this.hashBox.rightX = 0;
-				this.hashBox.topY = 0;
 				this.modValue = -1;
 				this.modType = -1;
 				this.startItem = -1;
@@ -1393,8 +1389,6 @@
 			this.hashList = null;
 			this.genList = null;
 			this.popList = null;
-			this.bornList = null;
-			this.diedList = null;
 			this.boxList = null;
 			this.nextList = null;
 			this.countList = null;
@@ -2005,8 +1999,7 @@
 			/** @type {number} */ hashY = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
-			/** @type {BoundingBox} */ hashBox = this.hashBox;
+			/** @type {number} */ aliveStart = LifeConstants.aliveStart;
 
 		// check for PCA, RuleTree or Super rules
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
@@ -2016,23 +2009,11 @@
 			}
 		}
 
-		// update bounding box for hash
-		if (x < hashBox.leftX) {
-			hashBox.leftX = x;
-		}
-		if (y < hashBox.bottomY) {
-			hashBox.bottomY = y;
-		}
-		if (right > hashBox.rightX) {
-			hashBox.rightX = right;
-		}
-		if (top > hashBox.topY) {
-			hashBox.topY = top;
-		}
+
+		// create a hash from every alive cell
 		hashX = x;
 		hashY = y;
 
-		// create a hash from every alive cell
 		for (cy = y; cy <= top; cy += 1) {
 			yshift = cy - hashY;
 			colourRow = colourGrid[cy];
@@ -2600,8 +2581,10 @@
 			/** @type {number} */ cr = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
 			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
 			/** @type {Array<Uint8Array>} */ countList = this.countList,
 			/** @type {Uint8Array} */ countRow = null,
 			/** @type {number} */ th = 0,
@@ -2648,11 +2631,12 @@
 
 			// get the tile row and colour tile rows
 			colourTileRow = colourTileGrid[th];
+			colourTileHistoryRow = colourTileHistoryGrid[th];
 
 			// scan each set of tiles
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
-				tiles = colourTileRow[tw];
+				tiles = colourTileRow[tw] | colourTileHistoryRow[tw];
 
 				// check if any are occupied
 				if (tiles) {
@@ -2958,7 +2942,7 @@
 
 	// update cell occupancy for rotor and stator calculation (used when not computing strict volatility)
 	Life.prototype.updateOccupancy = function(/** @type {BoundingBox} */ box, /** @type {number} */ gen) {
-		var	/** @type {boolean} */ twoState = this.multiNumStates === -1;
+		var	/** @type {boolean} */ twoState = ((this.multiNumStates === -1) || (this.isHROT && this.multiNumStates === 2));
 
 		if (twoState) {
 			this.updateOccupancyState2(gen);
@@ -3275,7 +3259,7 @@
 	};
 
 	// compute strict volatility and Mod
-	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {BoundingBox} */ box, /** @type {View} */ view, /** @type {boolean} */ isOscillator) {
+	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {View} */ view, /** @type {boolean} */ isOscillator) {
 		var	/** @type {number} */ p = 0,
 			/** @type {number} */ f = 0,
 			/** @type {number} */ j = 0,
@@ -3305,11 +3289,15 @@
 			/** @type {number} */ hash1 = 0,
 			/** @type {number} */ width1 = 0,
 			/** @type {number} */ height1 = 0,
+			/** @type {number} */ nextHeat = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {Array<number>} */ modMatches = [];
 
 		this.identifyDetectionTime = (performance.now() - this.identifyStartTime) / 1000;
 		console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
+
+		// compute bounding box extent over entire period
+		extent = this.getOscillatorBounds(period, i);
 
 		// determine whether Strict Volatility can be calculated based on amount of RAM needed
 		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
@@ -3321,9 +3309,6 @@
 			bitFrameInBytes = bitRowInBytes * boxHeight;
 
 			if (bitFrameInBytes * period <= LifeConstants.maxStrictMemory) {
-				box = extent;
-				//console.log("extent", box, (box.rightX - box.leftX + 1), (box.topY - box.bottomY + 1));
-	
 				// allocate memory for each generation in the period (allocation is one bit per cell)
 				frames = new Uint16Array(period * bitFrameInBytes);
 				cellPeriod = new Uint32Array(boxWidth * boxHeight);
@@ -3338,11 +3323,6 @@
 			}
 
 			console.log("memory", bitFrameInBytes * period, ((100 * bitFrameInBytes * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
-		} else {
-			if (isOscillator) {
-				extent = this.getOscillatorBounds(period, i);
-				box = extent;
-			}
 		}
 
 		// if not computing strict volatility then use other method for rotor and stator
@@ -3359,6 +3339,11 @@
 			gen1 = 1;
 		}
 
+		// reset heat
+		this.minHeat = 16384 * 163484;
+		this.maxHeat = 0;
+		this.heatVal = 0;
+
 		// save cell map for each generation in the period
 		// include extra generation to check Oscillator Mod period/2
 		for (p = 0; p <= period; p += 1) {
@@ -3370,8 +3355,8 @@
 
 			this.saveSnapshotIfNeeded(view);
 
-			//if ((p & 1023) === 0) {
-				//console.log(p, ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
+			//if (p && ((p & 4095) === 0)) {
+				//console.log(p, period, ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
 			//}
 
 			// check if grid buffer needs to grow just for spaceships (since oscillators don't move)
@@ -3389,13 +3374,13 @@
 				this.updateOccupancyStrict(extent, colourGrid, frames, occupiedFrame, p, bitRowInBytes, bitFrameInBytes, bitStart);
 			} else {
 				// use the original method of computing cell occupancy
-				this.updateOccupancy(box, p);
+				this.updateOccupancy(extent, p);
 			}
 
 			if (!isOscillator) {
-				box = (this.isHROT ? this.HROTBox : this.zoomBox);
+				extent = (this.isHROT ? this.HROTBox : this.zoomBox);
 				if (this.isSuper) {
-					box = this.getSuperAliveBox(box.leftX, box.bottomY, box.rightX, box.topY);
+					extent = this.getSuperAliveBox(extent.leftX, extent.bottomY, extent.rightX, extent.topY);
 				}
 			}
 
@@ -3403,15 +3388,15 @@
 
 			// save hash for first two generations
 			if (p === 0) {
-				hash0 = this.getHash(box);
-				width0 = (box.rightX - box.leftX + 1);
-				height0 = (box.topY - box.bottomY + 1);
+				hash0 = this.getHash(extent);
+				width0 = (extent.rightX - extent.leftX + 1);
+				height0 = (extent.topY - extent.bottomY + 1);
 				//console.log("hash0", hash0);
 			} else {
 				if (p === gen1) {
-					hash1 = this.getHash(box);
-					width1 = (box.rightX - box.leftX + 1);
-					height1 = (box.topY - box.bottomY + 1);
+					hash1 = this.getHash(extent);
+					width1 = (extent.rightX - extent.leftX + 1);
+					height1 = (extent.topY - extent.bottomY + 1);
 					//console.log("hash1", hash1);
 				}
 			}
@@ -3425,9 +3410,9 @@
 						// check if verifying
 						while (this.modValue === -1 && modChecks.length > 0 && modChecks[0].checkGen === p) {
 							// check if the bounding box is the same size as the source
-							if ((((box.rightX - box.leftX + 1) === width1) && ((box.topY - box.bottomY) + 1) === height1) || ((box.rightX - box.leftX + 1) === height1) && ((box.topY - box.bottomY + 1) === width1)) {
+							if ((((extent.rightX - extent.leftX + 1) === width1) && ((extent.topY - extent.bottomY) + 1) === height1) || ((extent.rightX - extent.leftX + 1) === height1) && ((extent.topY - extent.bottomY + 1) === width1)) {
 								// check the source generation against this one
-								this.modType = this.checkModHashType(box, hash1, modChecks[0].modType);
+								this.modType = this.checkModHashType(extent, hash1, modChecks[0].modType);
 								if (this.modType !== -1) {
 									//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
 									this.modValue = p - gen1;
@@ -3446,8 +3431,8 @@
 							// no Mod found so check if at a subperiod
 							if (p > 0 && (period % p === 0)) {
 								// ensure bounding box is the same size as the source
-								if ((((box.rightX - box.leftX + 1) === width0) && ((box.topY - box.bottomY) + 1) === height0) || ((box.rightX - box.leftX + 1) === height0) && ((box.topY - box.bottomY + 1) == width0)) {
-									modMatches = this.checkModHash(box, hash0);
+								if ((((extent.rightX - extent.leftX + 1) === width0) && ((extent.topY - extent.bottomY) + 1) === height0) || ((extent.rightX - extent.leftX + 1) === height0) && ((extent.topY - extent.bottomY + 1) == width0)) {
+									modMatches = this.checkModHash(extent, hash0);
 									for (j = 0; j < modMatches.length; j += 1) {
 										// potential Mod found so create verification record
 										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatches[j]);
@@ -3460,12 +3445,24 @@
 				}
 			}
 
+			// update heat
+			if (p < period) {
+				nextHeat = this.births + this.deaths;
+				if (nextHeat < this.minHeat) {
+					this.minHeat = nextHeat;
+				}
+
+				if (nextHeat > this.maxHeat) {
+					this.maxHeat = nextHeat;
+				}
+
+				this.heatVal += nextHeat;
+			}
+
 			// save statistics for this generation
-			this.bornList[p] = this.births;
-			this.diedList[p] = this.deaths;
 			this.popList[p] = this.population;
-			this.boxList[p << 1] = ((box.rightX - box.leftX + 1) << 16) | (box.topY - box.bottomY + 1);
-			this.boxList[(p << 1) + 1] = (box.leftX << 16) | box.bottomY;
+			this.boxList[p << 1] = ((extent.rightX - extent.leftX + 1) << 16) | (extent.topY - extent.bottomY + 1);
+			this.boxList[(p << 1) + 1] = (extent.leftX << 16) | extent.bottomY;
 		}
 
 		//t = performance.now() - t;
@@ -3501,10 +3498,6 @@
 					}
 				}
 			}
-
-			//t = performance.now() - t;
-			//console.log("calculated active cells in " + (t / 1000).toFixed(1) + " seconds");
-			//t = performance.now();
 
 			// calculate the factors of the period
 			this.computeCellFactors(cellPeriod, period, frames, boxWidth, boxHeight, bitFrameInBytes, bitRowInBytes, bitStart);
@@ -3590,11 +3583,7 @@
 			/** @type {number} */ last = 0,
 
 			// heat
-			/** @type {number} */ minHeat = 16384,
-			/** @type {number} */ maxHeat = 0,
 			/** @type {number} */ avgHeat = 0,
-			/** @type {number} */ nextHeat = 0,
-			/** @type {number} */ heatVal = 0,
 			/** @type {string} */ heat = "",
 
 			// volatility
@@ -3725,7 +3714,7 @@
 			}
 
 			// compute Mod for spaceship
-			this.computeStrictVolatility(period, i, this.hashBox, view, false);
+			this.computeStrictVolatility(period, i, view, false);
 		} else {
 			if (period === 1 || (this.altSpecified && period === 2)) {
 				type = "Still Life";
@@ -3734,7 +3723,7 @@
 				type = "Oscillator";
 
 				// compute strict volatility and Mod for oscillator
-				this.computeStrictVolatility(period, i, this.hashBox, view, true);
+				this.computeStrictVolatility(period, i, view, true);
 			}
 		}
 
@@ -3812,26 +3801,14 @@
 
 		// compute the heat
 		if (period > 0) {
-			heatVal = 0;
-			for (i = 0; i < last; i += 1) {
-				nextHeat = this.bornList[i] + this.diedList[i];
-				if (nextHeat < minHeat) {
-					minHeat = nextHeat;
-				}
-				if (nextHeat > maxHeat) {
-					maxHeat = nextHeat;
-				}
-				heatVal += nextHeat;
-			}
-
 			// if min and max are the same then just output one
-			if (minHeat === maxHeat) {
-				avgHeat = minHeat;
+			if (this.minHeat === this.maxHeat) {
+				avgHeat = this.minHeat;
 				heat = String(avgHeat.toFixed(1));
 			} else {
 				// output min, max and average
-				avgHeat = heatVal / last;
-				heat = this.toPlaces(minHeat, 1) + " | " + this.toPlaces(maxHeat, 1) + " | " + this.toPlaces(avgHeat, 1);
+				avgHeat = this.heatVal / last;
+				heat = this.toPlaces(this.minHeat, 1) + " | " + this.toPlaces(this.maxHeat, 1) + " | " + this.toPlaces(avgHeat, 1);
 			}
 		}
 
@@ -4103,8 +4080,6 @@
 		this.hashList[this.oscLength] = hash;
 		this.genList[this.oscLength] = this.counter;
 		this.popList[this.oscLength] = this.population;
-		this.bornList[this.oscLength] = this.births;
-		this.diedList[this.oscLength] = this.deaths;
 		this.boxList[this.oscLength << 1] = boxSize;
 		this.boxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
 		this.nextList[this.oscLength] = -1;
@@ -7714,13 +7689,6 @@
 			this.historyBox.topY += yOffset;
 			this.historyBox.bottomY += yOffset;
 
-			if (this.hashBox) {
-				this.hashBox.leftX += xOffset;
-				this.hashBox.rightX += xOffset;
-				this.hashBox.topY += yOffset;
-				this.hashBox.bottomY += yOffset;
-			}
-
 			// update identify positions
 			if (this.oscLength > 0) {
 				for (y = 0; y < this.oscLength; y += 1) {
@@ -7897,7 +7865,7 @@
 
 		// get HROT alive state
 		if (this.isHROT) {
-			aliveState = 63 + this.HROT.scount - 1;
+			aliveState = this.historyStates + this.HROT.scount - 1;
 		}
 
 		// check for HROT or PCA
@@ -34103,7 +34071,6 @@
 		if (height === 0) {
 			height = 1;
 		}
-
 
 		// compute the zoom in each direction
 		zoomX = displayWidth / width;

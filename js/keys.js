@@ -10,10 +10,11 @@
 	/** @returns {boolean} */
 	KeyProcessor.processKeyCopy = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
-		var	/** @type {boolean} */ processed = true;
+		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ ctrlKey = event.ctrlKey;
 
 		// check for control-R which would refresh browser
-		if (event.ctrlKey && keyCode === 82) {
+		if (ctrlKey && keyCode === 82) {
 			return true;
 		}
 
@@ -47,10 +48,13 @@
 	/** @returns {boolean} */
 	KeyProcessor.processKeyGoTo = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
-		var	/** @type {boolean} */ processed = true;
+		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ ctrlKey = event.ctrlKey,
+			/** @type {boolean} */ altKey = event.altKey,
+			/** @type {boolean} */ metaKey = event.metaKey;
 
 		// check for control, meta or alt
-		if (event.ctrlKey || event.metaKey || event.altKey) {
+		if (ctrlKey || metaKey || altKey) {
 			// clear key code so it is not handled here
 			keyCode = -1;
 		}
@@ -83,10 +87,13 @@
 	/** @returns {boolean} */
 	KeyProcessor.processKeyIdentify = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
-		var	/** @type {boolean} */ processed = true;
+		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ ctrlKey = event.ctrlKey,
+			/** @type {boolean} */ metaKey = event.metaKey,
+			/** @type {boolean} */ altKey = event.altKey;
 
 		// check for control, meta or alt
-		if (event.ctrlKey || event.metaKey || event.altKey) {
+		if (ctrlKey || metaKey || altKey) {
 			// clear key code so it is not handled here
 			keyCode = -1;
 		}
@@ -131,10 +138,13 @@
 	/** @returns {boolean} */
 	KeyProcessor.processKeyHistory = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
-		var	/** @type {boolean} */ processed = true;
+		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ ctrlKey = event.ctrlKey,
+			/** @type {boolean} */ metaKey = event.metaKey,
+			/** @type {boolean} */ altKey = event.altKey;
 
 		// check for control, meta or alt
-		if (event.ctrlKey || event.metaKey || event.altKey) {
+		if (ctrlKey || metaKey || altKey) {
 			// clear key code so it is not handled here
 			keyCode = -1;
 		}
@@ -163,6 +173,9 @@
 	KeyProcessor.processKey = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ shiftKey = event.shiftKey,
+			/** @type {boolean} */ ctrlKey = event.ctrlKey,
+			/** @type {boolean} */ altKey = event.altKey,
 
 			// value for changes
 			/** @type {number} */ value = 0;
@@ -172,7 +185,7 @@
 			// gui disabled so check if NOGUI was defined
 			if (!me.noGUIDefined) {
 				// user disabled the GUI so check for toggle key shift and 'u'
-				if (keyCode === 85 && event.shiftKey) {
+				if (keyCode === 85 && shiftKey) {
 					me.noGUI = !me.noGUI;
 					me.viewMenu.deleted = me.noGUI;
 					me.menuManager.noGUI = me.noGUI;
@@ -180,7 +193,7 @@
 			}
 		} else {
 			// convert control-arrow keys into PageUp/PageDown/Home/End
-			if (event.ctrlKey && !event.altKey && (keyCode >= 37 && keyCode <= 40)) {
+			if (ctrlKey && !altKey && (keyCode >= 37 && keyCode <= 40)) {
 				if (keyCode === 37) {
 					keyCode = 33;
 				} else if (keyCode === 38)  {
@@ -193,7 +206,7 @@
 			}
 
 			// check for alt-number
-			if (event.altKey && !event.ctrlKey) {
+			if (altKey && !ctrlKey) {
 				if (keyCode >= 48 && keyCode <= 57) {
 					value = keyCode - 48;
 					// if selecting or no POIs then choose clipboard
@@ -464,7 +477,7 @@
 			switch (keyCode) {
 			// '/' for tilt down
 			case 191:
-				if (event.shiftKey) {
+				if (shiftKey) {
 					// switch between hexagonal and square cells for hex display
 					if (me.engine.isHex) {
 						me.hexCellButton.current = me.viewHexCellToggle([!me.engine.forceRectangles], true, me);
@@ -500,7 +513,7 @@
 
 			// single quote for tilt up
 			case 192:
-				if (event.shiftKey) {
+				if (shiftKey) {
 					// reset tilt
 					if (!me.tiltItem.locked) {
 						me.tiltItem.current = me.viewTiltRange([0.5, 0], true, me);
@@ -563,12 +576,12 @@
 			// b for back one step
 			case 66:
 				// check for ctrl
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					// copy neighbourhood to clipboard from selection
 					me.copyNeighbourhood(me);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						me.libraryToggle.current = [!me.libraryToggle.current[0]];
 						me.menuManager.toggleRequired = true;
 					} else {
@@ -618,7 +631,7 @@
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 					} else {
 						// check for shift key
-						if (event.shiftKey) {
+						if (shiftKey) {
 							// check for reversible Margolus or PCA patterns
 							if ((me.engine.isMargolus || me.engine.isPCA) && me.engine.margolusReverseLookup1 !== null) {
 								me.playList.current = me.viewPlayList(ViewConstants.modeStepBack, true, me);
@@ -651,8 +664,8 @@
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 					} else {
 						// check for ctrl
-						if (event.ctrlKey || event.shiftKey) {
-							me.evolvePressed(me, event.shiftKey);
+						if (ctrlKey || shiftKey) {
+							me.evolvePressed(me, shiftKey);
 						} else {
 							// next generation
 							me.nextStep = true;
@@ -665,7 +678,7 @@
 
 			// w for toggle waypoint/track/loop mode
 			case 87:
-				if (event.shiftKey) {
+				if (shiftKey) {
 					me.showLagToggle.current = me.toggleShowLag([!me.perfWarning], true, me);
 					me.menuManager.notification.notify("Performance Warning " + (me.perfWarning ? "On" : "Off"), 15, 40, 15, true);
 				} else {
@@ -693,13 +706,13 @@
 			// d for show cell period map or toggle states display
 			case 68:
 				// check for ctrl
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					// toggle states display
 					me.statesToggle.current = me.toggleStates([!me.showStates], true, me);
 					me.menuManager.notification.notify("States Display " + (me.showStates ? "On" : "Off"), 15, 80, 15, true);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						me.downloadCellPeriodMap(me);
 					} else {
 						// show cell period map
@@ -729,14 +742,14 @@
 			// z for stop other viewers
 			case 90:
 				// check for control
-				if (event.ctrlKey) {
-					if (event.altKey) {
+				if (ctrlKey) {
+					if (altKey) {
 						if (!me.randomizeButton.locked) {
 							me.randomPattern(me, true);
 						}
 					}
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// redo edit
 						me.redo(me);
 					} else {
@@ -747,7 +760,7 @@
 					}
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// stop all viewers
 						value = Controller.stopAllViewers();
 						if (value === 0) {
@@ -773,11 +786,11 @@
 
 			// x for toggle grid lines
 			case 88:
-				if (event.ctrlKey) {
-					me.processCut(me, event.shiftKey, event.altKey);
+				if (ctrlKey) {
+					me.processCut(me, shiftKey, altKey);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// toggle major grid lines
 						me.majorButton.current = me.viewMajorToggle([!me.engine.gridLineMajorEnabled], true, me);
 						if (me.engine.gridLineMajor > 0) {
@@ -799,7 +812,7 @@
 				if (me.displayHelp !== 0) {
 					this.toggleHelpTopic(me, ViewConstants.memoryTopic);
 				} else {
-					if (event.ctrlKey) {
+					if (ctrlKey) {
 						me.redo(me);
 					} else {
 						// check if graph disabled
@@ -807,7 +820,7 @@
 							me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
 						} else {
 							// check for shift
-							if (event.shiftKey) {
+							if (shiftKey) {
 								// toggle lines
 								me.popGraphLines = !me.popGraphLines;
 								me.linesToggle.current = me.toggleLines([me.popGraphLines], true, me);
@@ -830,8 +843,8 @@
 					this.toggleHelpTopic(me, ViewConstants.keysTopic);
 				} else {
 					// check for ctrl
-					if (event.ctrlKey) {
-						if (event.altKey) {
+					if (ctrlKey) {
+						if (altKey) {
 							me.clearCells(me, false, false);
 							value = me.drawState;
 							if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper) && value > 0) {
@@ -848,7 +861,7 @@
 						}
 					} else {
 						// check for shift
-						if (event.shiftKey) {
+						if (shiftKey) {
 							// copy view
 							me.copyPosition(me, true);
 							me.menuManager.notification.notify("Copied view to clipboard", 15, 180, 15, true);
@@ -864,13 +877,13 @@
 			// p for increase depth or toggle loop
 			case 80:
 				// check for ctrl
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					// toggle pause playback while drawing
 					me.pausePlaybackToggle.current = me.togglePausePlayback([!me.pauseWhileDrawing], true, me);
 					me.menuManager.notification.notify("Pause while drawing " + (me.pauseWhileDrawing ? "On" : "Off"), 15, 80, 15, true);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						if (me.loopGeneration !== -1) {
 							// toggle loop mode
 							me.loopDisabled = !me.loopDisabled;
@@ -895,13 +908,13 @@
 			// l for decrease depth or cycle paste location
 			case 76:
 				// check for ctrl
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					// toggle kill gliders
 					me.engine.clearGliders = !me.engine.clearGliders;
 					me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						me.cyclePasteLocation(me);
 					} else {
 						// disable depth in multi-state mode
@@ -921,7 +934,7 @@
 			// q for increase layers
 			case 81:
 				// check for ctrl
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.qualityToggle.current = me.viewQualityToggle([!me.engine.pretty], true, me);
 					me.menuManager.notification.notify((me.engine.pretty ? "High" : "Standard") + " Quality Rendering", 15, 80, 15, true);
 				} else {
@@ -942,13 +955,13 @@
 				if (me.displayHelp !== 0) {
 					this.toggleHelpTopic(me, ViewConstants.aliasesTopic);
 				} else {
-					if (event.shiftKey) {
+					if (shiftKey) {
 						if (me.isSelection) {
 							me.autoShrinkSelection(me);
 						}
 					} else {
 						// check for ctrl key
-						if (event.ctrlKey) {
+						if (ctrlKey) {
 							if (!me.modeList.itemLocked[ViewConstants.modeSelect]) {
 								me.selectAllPressed(me);
 							}
@@ -969,7 +982,7 @@
 			// r for reset
 			case 82:
 				// check for shift key
-				if (event.shiftKey) {
+				if (shiftKey) {
 					Controller.resetAllViewers();
 				} else {
 					// reset this viewer
@@ -984,13 +997,13 @@
 					this.toggleHelpTopic(me, ViewConstants.scriptsTopic);
 				} else {
 					// check for ctrl key
-					if (event.ctrlKey) {
+					if (ctrlKey) {
 						// save current pattern to source document node
 						me.saveCurrentRLE(me);
 						me.menuManager.notification.notify("Saved", 15, 120, 15, true);
 					} else {
 						// check for shift key
-						if (event.shiftKey) {
+						if (shiftKey) {
 							// only enabled for [R]History
 							if (me.engine.isLifeHistory) {
 								// toggle state 1 fit mode
@@ -1015,7 +1028,7 @@
 					}
 				} else {
 					// check for go to generation
-					if (event.shiftKey) {
+					if (shiftKey) {
 						if (!me.viewOnly) {
 							me.goToGenPressed(me);
 						}
@@ -1042,11 +1055,11 @@
 
 			// v for reset view
 			case 86:
-				if (event.ctrlKey) {
-					me.processPaste(me, event.shiftKey, false);
+				if (ctrlKey) {
+					me.processPaste(me, shiftKey, false);
 				} else {
 					// check for shift key
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// save current camera position
 						me.saveCamera(me);
 						me.menuManager.notification.notify("Saved camera position", 15, 100, 15, true);
@@ -1071,7 +1084,7 @@
 				// check for controls locked
 				if (!me.controlsLocked) {
 					// check for shift key
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// zoom in by a factor of 2
 						me.adjustZoomPosition(me.zoomItem.current[0], Math.log((me.engine.zoom * me.engine.originZ) * 2 / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom) - me.zoomItem.current[0]);
 					} else {
@@ -1086,7 +1099,7 @@
 				// check for controls locked
 				if (!me.controlsLocked) {
 					// check for shift key
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// zoom out by a factor of 2
 						me.adjustZoomPosition(me.zoomItem.current[0], Math.log((me.engine.zoom * me.engine.originZ) / 2 / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom) - me.zoomItem.current[0]);
 					} else {
@@ -1099,8 +1112,8 @@
 			// 5 for reset angle
 			case 53:
 			case 101: // num 5
-				if (event.ctrlKey) {
-					if (event.shiftKey) {
+				if (ctrlKey) {
+					if (shiftKey) {
 						// random fill 2 state
 						if (!me.engine.isPCA) {
 							me.randomFill(me, true);
@@ -1109,7 +1122,7 @@
 						me.switchToState(5);
 					}
 				} else {
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// random fill
 						me.randomFill(me, false);
 					} else {
@@ -1125,11 +1138,11 @@
 			// 1 for 100% zoom
 			case 49:
 			case 97: // num 1
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.switchToState(1);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// set zoom to nearest integer
 						me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
 
@@ -1145,11 +1158,11 @@
 			// 2 for 200% zoom
 			case 50:
 			case 98: // num 2
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.switchToState(2);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// zoom to -2x
 						me.changeZoom(me, 0.5, false);
 					} else {
@@ -1162,11 +1175,11 @@
 			// 3 for 3200% zoom
 			case 51:
 			case 99: // num 3
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.switchToState(3);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// zoom to -32x
 						me.changeZoom(me, 0.03125, false);
 					} else {
@@ -1179,11 +1192,11 @@
 			// 4 for 400% zoom
 			case 52:
 			case 100: // num 4
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.switchToState(4);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// zoom to -4x
 						me.changeZoom(me, 0.25, false);
 					} else {
@@ -1196,11 +1209,11 @@
 			// 6 for 1600% zoom
 			case 54:
 			case 102: // num 6
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.switchToState(6);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// zoom to -16x
 						me.changeZoom(me, 0.0625, false);
 					} else {
@@ -1212,7 +1225,7 @@
 
 			// 7 for decrease graph opacity
 			case 55:
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.switchToState(7);
 				} else {
 					// check if graph disabled
@@ -1233,11 +1246,11 @@
 			// 8 for 800% zoom
 			case 56:
 			case 104: // num 8
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.switchToState(8);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// zoom to -8x
 						me.changeZoom(me, 0.125, false);
 					} else {
@@ -1249,7 +1262,7 @@
 
 			// 9 for increase graph opacity
 			case 57:
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.switchToState(9);
 				} else {
 					// check if graph disabled
@@ -1270,7 +1283,7 @@
 			// 0 for reset speed
 			case 48:
 			case 96: // num 0
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.switchToState(0);
 				} else {
 					// reset playback speed
@@ -1282,7 +1295,7 @@
 			case 189:
 			case 109: // num -
 				// check for ctrl -
-				if (event.ctrlKey && keyCode === 189) {
+				if (ctrlKey && keyCode === 189) {
 					// pass up to browser
 					processed = false;
 				} else {
@@ -1291,7 +1304,7 @@
 						// check for step
 						if (me.gensPerStep > ViewConstants.minStepSpeed) {
 							// check for shift
-							if (event.shiftKey) {
+							if (shiftKey) {
 								// go to minimum step
 								me.gensPerStep = ViewConstants.minStepSpeed;
 							} else {
@@ -1305,7 +1318,7 @@
 						} else {
 							// decrease generation speed
 							if (me.genSpeed > ViewConstants.minGenSpeed) {
-								if (event.shiftKey) {
+								if (shiftKey) {
 									me.genSpeed = ViewConstants.minGenSpeed;
 								} else {
 									me.genSpeed -= 1;
@@ -1324,7 +1337,7 @@
 			case 187:
 			case 107: // num +
 				// check for ctrl +
-				if (event.ctrlKey && keyCode === 187) {
+				if (ctrlKey && keyCode === 187) {
 					// pass up to browser
 					processed = false;
 				} else {
@@ -1332,7 +1345,7 @@
 					if (!me.viewOnly) {
 						// increase generation speed
 						if (me.genSpeed < me.refreshRate) {
-							if (event.shiftKey) {
+							if (shiftKey) {
 								me.genSpeed = me.refreshRate;
 							} else {
 								me.genSpeed += 1;
@@ -1342,7 +1355,7 @@
 							}
 						} else {
 							if (me.gensPerStep < ViewConstants.maxStepSpeed) {
-								if (event.shiftKey) {
+								if (shiftKey) {
 									me.gensPerStep = ViewConstants.maxStepSpeed;
 								} else {
 									me.gensPerStep += 1;
@@ -1359,7 +1372,7 @@
 
 			// , for rotate anticlockwise
 			case 188:
-				if (event.shiftKey && (me.isSelection || me.isPasting)) {
+				if (shiftKey && (me.isSelection || me.isPasting)) {
 					me.rotateCCWPressed(me);
 				} else {
 					if (!me.angleItem.locked) {
@@ -1367,7 +1380,7 @@
 						value = me.angleItem.current[0];
 
 						// check for shift key
-						if (event.shiftKey) {
+						if (shiftKey) {
 							// decrease by a quarter
 							value -= 90;
 						} else {
@@ -1388,7 +1401,7 @@
 
 			// . for rotate clockwise
 			case 190:
-				if (event.shiftKey && (me.isSelection || me.isPasting)) {
+				if (shiftKey && (me.isSelection || me.isPasting)) {
 					me.rotateCWPressed(me);
 				} else {
 					if (!me.angleItem.locked) {
@@ -1396,7 +1409,7 @@
 						value = me.angleItem.current[0];
 
 						// check for shift key
-						if (event.shiftKey) {
+						if (shiftKey) {
 							// increase by a quarter
 							value += 90;
 						} else {
@@ -1418,14 +1431,14 @@
 			// Del to clear cells or selection
 			case 46:
 				if (me.isSelection) {
-					if (event.shiftKey) {
+					if (shiftKey) {
 						me.clearOutside(me);
 					} else {
-						me.doClearSelection(me, event.ctrlKey);
+						me.doClearSelection(me, ctrlKey);
 					}
 				} else {
-					if (event.ctrlKey) {
-						value = me.clearCells(me, event.ctrlKey, false);
+					if (ctrlKey) {
+						value = me.clearCells(me, ctrlKey, false);
 						if (value) {
 							me.menuManager.notification.notify("Cleared [R]History cells", 15, 120, 15, true);
 						}
@@ -1436,11 +1449,11 @@
 			// j for jump to POI
 			case 74:
 				// check for just ctrl
-				if (event.ctrlKey && !event.shiftKey) {
+				if (ctrlKey && !shiftKey) {
 					me.copyRulePressed(me);
 				} else {
 					// check for ctrl and shift
-					if (event.ctrlKey && event.shiftKey) {
+					if (ctrlKey && shiftKey) {
 						// pass up to browser
 						processed = false;
 					} else {
@@ -1449,7 +1462,7 @@
 							// check for controls locked
 							if (!me.controlsLocked) {
 								// check for shift key
-								if (event.shiftKey) {
+								if (shiftKey) {
 									// go to previous POI
 									me.prevPOIPressed(me);
 								} else {
@@ -1471,7 +1484,7 @@
 					this.toggleHelpTopic(me, ViewConstants.themesTopic);
 				} else {
 					// check for shift key
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// toggle extended timing
 						me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
 					} else {
@@ -1483,7 +1496,7 @@
 
 			// u for UI or reverse playback for Margolus
 			case 85:
-				if (event.shiftKey) {
+				if (shiftKey) {
 					// ignore if NOGUI defined
 					if (!me.noGUIDefined) {
 						me.noGUI = !me.noGUI;
@@ -1508,14 +1521,14 @@
 
 			// g for generation statistics
 			case 71:
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					// toggle autogrid mode
 					me.autoGrid = !me.autoGrid;
 					me.autoGridButton.current = me.viewAutoGridToggle([me.autoGrid], true, me);
 					me.menuManager.notification.notify("Auto Grid Lines " + (me.autoGrid ? "On" : "Off"), 15, 40, 15, true);
 				} else {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// toggle relative mode if defined
 						if (me.genDefined) {
 							me.relativeToggle.current = me.viewRelativeToggle([!me.genRelative], true, me);
@@ -1535,14 +1548,14 @@
 			// f for fit zoom
 			case 70:
 				// check for ctrl key
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					if (me.isSelection) {
 						me.fitZoomDisplay(true, true, ViewConstants.fitZoomSelection);
 						me.menuManager.notification.notify("Fit Selection", 15, 80, 15, true);
 					}
 				} else {
 					// check for shift key
-					if (event.shiftKey) {
+					if (shiftKey) {
 						if (!me.autoFitToggle.locked) {
 							me.autoFit = !me.autoFit;
 							me.autoFitToggle.current = me.toggleAutoFit([me.autoFit], true, me);
@@ -1566,8 +1579,8 @@
 			// o for new screenshot
 			case 79:
 				// check for ctrl key
-				if (event.ctrlKey) {
-					if (event.shiftKey) {
+				if (ctrlKey) {
+					if (shiftKey) {
 						// attempt to read RLE from clipboard
 						me.openClipboardPressed(me);
 					} else {
@@ -1575,7 +1588,7 @@
 					}
 				} else {
 					// check for shift key
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// capture graph
 						me.screenShotScheduled = 2;
 					} else {
@@ -1588,7 +1601,7 @@
 			// arrow left for left
 			case 37:
 				// check for shift key
-				if (event.shiftKey) {
+				if (shiftKey) {
 					// scroll pattern diagonally
 					me.moveView(me.engine.zoom, me.engine.zoom);
 				} else {
@@ -1610,7 +1623,7 @@
 						me.scrollErrorsUp(me, 1);
 					} else {
 						// check for shift key
-						if (event.shiftKey) {
+						if (shiftKey) {
 							// scroll pattern diagonally
 							me.moveView(-me.engine.zoom, me.engine.zoom);
 						} else {
@@ -1624,7 +1637,7 @@
 			// arrow right for right
 			case 39:
 				// check for shift key
-				if (event.shiftKey) {
+				if (shiftKey) {
 					// scroll pattern diagonally
 					me.moveView(-me.engine.zoom, -me.engine.zoom);
 				} else {
@@ -1646,7 +1659,7 @@
 						me.scrollErrorsDown(me, 1);
 					} else {
 						// check for shift key
-						if (event.shiftKey) {
+						if (shiftKey) {
 							me.moveView(me.engine.zoom, -me.engine.zoom);
 						} else {
 							// scroll pattern up
@@ -1658,11 +1671,11 @@
 
 			// m for menu or cycle paste mode
 			case 77:
-				if (event.ctrlKey) {
+				if (ctrlKey) {
 					me.fitZoomDisplay(true, true, ViewConstants.fitZoomMiddle);
 					me.menuManager.notification.notify("Center Pattern", 15, 80, 15, true);
 				} else {
-					if (event.shiftKey) {
+					if (shiftKey) {
 						me.cyclePasteMode(me);
 					} else {
 						if (me.navToggle && !me.navToggle.deleted && !me.navToggle.locked) {
@@ -1679,8 +1692,8 @@
 			// c for theme cycle or copy
 			case 67:
 				// check for control-C
-				if (event.ctrlKey) {
-					me.processCopy(me, event.shiftKey, event.altKey);
+				if (ctrlKey) {
+					me.processCopy(me, shiftKey, altKey);
 				} else {
 					// check for Help
 					if (me.displayHelp !== 0) {
@@ -1690,7 +1703,7 @@
 						if (!me.multiStateView) {
 							if (me.themeButton && !me.themeButton.locked) {
 								// check for shift key
-								if (event.shiftKey) {
+								if (shiftKey) {
 									// decrement colour theme
 									value = me.engine.colourTheme - 1;
 									if (value < 0) {
@@ -1733,7 +1746,7 @@
 			// h for display help
 			case 72:
 				// check for shift key
-				if (event.shiftKey) {
+				if (shiftKey) {
 					// toggle history fit mode
 					me.historyFitButton.current = me.viewHistoryFitToggle([!me.historyFit], true, me);
 					me.menuManager.notification.notify("AutoFit History Mode " + (me.historyFit ? "On" : "Off"), 15, 40, 15, true);
@@ -1770,16 +1783,16 @@
 			// i for display information
 			case 73:
 				// check for ctrl and shift
-				if (event.ctrlKey && event.shiftKey) {
+				if (ctrlKey && shiftKey) {
 					// pass up to browser
 					processed = false;
 				} else {
 					// check for ctrl key
-					if (event.ctrlKey) {
+					if (ctrlKey) {
 						me.invertSelectionPressed(me);
 					} else {
 						// check for shift key
-						if (event.shiftKey) {
+						if (shiftKey) {
 							// toggle infobar
 							me.infoBarButton.current = me.viewInfoBarToggle([!me.infoBarEnabled], true, me);
 						} else {
@@ -1887,7 +1900,7 @@
 				// check if help displayed
 				if (me.displayHelp) {
 					// check for shift key
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// move to previous section
 						me.previousHelpSection(me);
 					} else {
@@ -1917,7 +1930,7 @@
 				// check if help displayed
 				if (me.displayHelp) {
 					// check for shift
-					if (event.shiftKey) {
+					if (shiftKey) {
 						// move to next help section
 						me.nextHelpSection(me);
 					} else {
@@ -1996,7 +2009,7 @@
 			// f2 for draw mode
 			case 113:
 				// check for shift key
-				if (event.shiftKey) {
+				if (shiftKey) {
 					me.smartToggle.current = me.toggleSmart([!me.smartDrawing], true, me);
 					me.menuManager.notification.notify("Smart Drawing " + (me.smartDrawing ? "On" : "Off"), 15, 40, 15, true);
 				} else {
@@ -2006,7 +2019,7 @@
 
 			// f3 for pick mode
 			case 114:
-				if (event.shiftKey) {
+				if (shiftKey) {
 					me.graphDataToggle.current = me.viewGraphList([!me.graphDataToggle.current[0], me.graphDataToggle.current[1], me.graphDataToggle.current[2]], true, me);
 				} else {
 					if (!me.viewOnly) {
@@ -2021,7 +2034,7 @@
 
 			// f4 for select mode
 			case 115:
-				if (event.shiftKey) {
+				if (shiftKey) {
 					me.graphDataToggle.current = me.viewGraphList([me.graphDataToggle.current[0], !me.graphDataToggle.current[1], me.graphDataToggle.current[2]], true, me);
 				} else {
 					if (!me.modeList.itemLocked[ViewConstants.modeSelect]) {
@@ -2032,7 +2045,7 @@
 
 			// f5 for pan mode
 			case 116:
-				if (event.shiftKey) {
+				if (shiftKey) {
 					me.graphDataToggle.current = me.viewGraphList([me.graphDataToggle.current[0], me.graphDataToggle.current[1], !me.graphDataToggle.current[2]], true, me);
 				} else {
 					me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
@@ -2042,7 +2055,7 @@
 			// f6 to toggle oscillator search
 			case 117:
 				if (!me.identifyButton.locked) {
-					if (event.shiftKey) {
+					if (shiftKey) {
 						me.displayLastIdentifyResults(me);
 					} else {
 						me.identifyPressed(me);
