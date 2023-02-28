@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 932,
+		/** @const {number} */ versionBuild : 935,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4140,7 +4140,7 @@
 		// update the life grid
 		for (y = 0; y < height; y += 1) {
 			patternRow = pattern.lifeMap[y];
-			if (y + panY >= dBottomY && y + panY <= dTopY) {
+			if (y + panY >= dBottomY && y + panY <= dTopY && y + panY >= 0 && y + panY < this.engine.height) {
 				gridRow = grid[y + panY];
 
 				// check for multi-state view
@@ -4150,7 +4150,7 @@
 
 					// copy colour cells
 					for (x = 0; x < width; x += 1) {
-						if (x + panX >= dLeftX && x + panX <= dRightX) {
+						if (x + panX >= dLeftX && x + panX <= dRightX && x + panX >= 0 && x + panX < this.engine.width) {
 							state = multiStateRow[x];
 							if (state > 0) {
 								state += this.historyStates;
@@ -4166,7 +4166,7 @@
 
 						// copy colour cells
 						for (x = 0; x < width; x += 1) {
-							if (x + panX >= dLeftX && x + panX <= dRightX) {
+							if (x + panX >= dLeftX && x + panX <= dRightX && x + panX >= 0 && x + panX < this.engine.width) {
 								// reverse order for rendering unless "none" rule is used
 								state = multiStateRow[x];
 								if (state > 0 && !this.engine.isNone) {
@@ -4183,7 +4183,7 @@
 					colourGridRow = colourGrid[y + panY];
 				}
 				for (x = 0; x < width; x += 1) {
-					if (x + panX >= dLeftX && x + panX <= dRightX) {
+					if (x + panX >= dLeftX && x + panX <= dRightX && x + panX >= 0 && x + panX < this.engine.width) {
 						if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
 							gridRow[(x + panX) >> 4] |= 1 << (~(x + panX) & 15);
 							if (isTwoStateHROT) {
@@ -4198,13 +4198,13 @@
 		// copy [R]History states to the overlay grid if required
 		if (overlayGrid) {
 			for (y = 0; y < height; y += 1) {
-				if (y + panY >= dBottomY && y + panY <= dTopY) {
+				if (y + panY >= dBottomY && y + panY <= dTopY && y + panY >= 0 && y + panY < this.engine.height) {
 					multiStateRow = pattern.multiStateMap[y];
 					overlayGridRow = overlayGrid[y + panY];
 
 					// copy states
 					for (x = 0; x < width; x += 1) {
-						if (x + panX >= dLeftX && x + panX <= dRightX) {
+						if (x + panX >= dLeftX && x + panX <= dRightX && x + panX >= 0 && x + panX < this.engine.width) {
 							// get the next state
 							state = multiStateRow[x];
 							if (state) {

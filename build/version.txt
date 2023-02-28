@@ -1,3 +1,14 @@
+Build 935
+- fixed Identify not checking for assymetric state6 cells in [R]History patterns
+- renamed some transformation types
+- fixed valid transformation types for spaceships
+
+Build 934
+- fixed a crash during pattern load
+
+Build 933
+- performance improvements to Identify
+
 Build 932
 - fixed initial population count for multi-state rules
 - performance improvements for HROT/LtL 2-state Identify
