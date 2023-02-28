@@ -1,3 +1,9 @@
+Build 937
+- added more composite transformations
+
+Build 936
+- renamed some more transformations and added FlipDiag
+
 Build 935
 - fixed Identify not checking for assymetric state6 cells in [R]History patterns
 - renamed some transformation types

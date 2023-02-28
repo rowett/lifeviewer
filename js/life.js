@@ -27,6 +27,13 @@
 		/** @const {number} */ modFlipXorY : 7,
 		/** @const {number} */ modRotCWorCCW : 8,
 		/** @const {number} */ modFlipXorYorRotCWorCCW : 9,
+		/** @const {number} */ modFlipDiag: 10,
+		/** @const {number} */ modFlipDiagorRot90 : 11,
+		/** @const {number} */ modFlipXorRot180 : 12,
+		/** @const {number} */ modFlipYorRot180 : 13,
+		/** @const {number} */ modFlipDiagLRot180 : 14,
+		/** @const {number} */ modFlipDiagRRot180 : 15,
+		/** @const {number} */ modFlipOrthorDiag : 16,
 
 		// transformations to check for oscillators
 		/** @const {Array<number>} */ modOscillator : [0, 1, 2, 3, 4, 5, 6],
@@ -43,7 +50,7 @@
 		/** @const {number} */ maxRuleTreeLookupBits : 20,
 
 		// mod type names
-		/** @const {Array<string>} */ modTypeName : ["Rot90CW", "Rot90CCW", "FlipX", "FlipY", "Rot180", "Flip\\", "Flip/", "FlipXorY", "Rot90", "FlipXorYorRot90"],
+		/** @const {Array<string>} */ modTypeName : ["Rot90CW", "Rot90CCW", "FlipX", "FlipY", "Rot180", "Flip" + String.fromCharCode(10189), "Flip" + String.fromCharCode(10187), "FlipOrth", "Rot90", "FlipOrthOrRot90", "FlipDiag", "FlipDiagOrRot90", "FlipXOrRot180", "FlipYOrRot180", "Flip" + String.fromCharCode(10189) + "OrRot180", "Flip" + String.fromCharCode(10187) + "OrRot180", "FlipOrthOrDiag"],
 
 		// maximum number of generations to check for oscillators
 		/** @const {number} */ maxOscillatorGens : 4194304,
@@ -1812,7 +1819,7 @@
 
 	// get mod hash from pattern
 	/** @returns {number} */
-	Life.prototype.getModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform) {
+	Life.prototype.getModHashN = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ left = box.leftX,
@@ -1978,84 +1985,185 @@
 		return hash | 0;
 	};
 
+	// get mod hash
+	/** @returns {number} */
+	Life.prototype.getModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform, /** @type {boolean} */ state2) {
+		var	/** @type {number} */ result = 0;
+
+		if (state2) {
+			result = this.getModHash2(box, transform);
+		} else {
+			result = this.getModHashN(box, transform);
+		}
+
+		return result;
+	};
+
 	// check for a specific mod transformation
 	/** @returns {number} */
-	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ trans) {
+	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ trans, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ hash = 0,
 			/** @type {number} */ hashY = 0,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree);
 
 		// get the hash at the specific transformation
-		if (twoState) {
-			hash = this.getModHash2(box, trans);
-		} else {
-			hash = this.getModHash(box, trans);
-		}
+		hash = this.getModHash(box, trans, twoState);
 
 		if (hash === initialHash) {
 			// if this is FlipX then check if it is also true for FlipY
 			if (trans === LifeConstants.modFlipX) {
-				if (twoState) {
-					hashY = this.getModHash2(box, LifeConstants.modFlipY);
-				} else {
-					hashY = this.getModHash(box, LifeConstants.modFlipY);
-				}
+				hashY = this.getModHash(box, LifeConstants.modFlipY, twoState);
+
+				// check for 90 degree rotates
 				if (hashY === hash) {
 					trans = LifeConstants.modFlipXorY;
 
 					// check for Rot90
-					if (twoState) {
-						hashY = this.getModHash2(box, LifeConstants.modRot90);
-					} else {
-						hashY = this.getModHash(box, LifeConstants.modRot90);
-					}
+					hashY = this.getModHash(box, LifeConstants.modRot90, twoState);
 					if (hashY === hash) {
 						// check for Rot270
-						if (twoState) {
-							hashY = this.getModHash2(box, LifeConstants.modRot90);
-						} else {
-							hashY = this.getModHash(box, LifeConstants.modRot90);
-						}
+						hashY = this.getModHash(box, LifeConstants.modRot90, twoState);
 						if (hashY === hash) {
 							trans = LifeConstants.modFlipXorYorRotCWorCCW;
 						}
+					} else {
+						// check for FlipDiag
+						hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
+						if (hashY === hash) {
+							hashY = this.getModHash(box, LifeConstants.modRot90FlipY, twoState);
+							if (hashY === hash) {
+								trans = LifeConstants.modFlipOrthorDiag;
+							}
+						}
+					}
+				} else {
+					// check for 180 degree rotates
+					hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
+					if (hashY === hash) {
+						trans = LifeConstants.modFlipXorRot180;
+					}
+				}
+			}	
+
+			// if FlipY then check for FlipX
+			if (trans === LifeConstants.modFlipY) {
+				hashY = this.getModHash(box, LifeConstants.modFlipX, twoState);
+
+				// check for 90 degree rotates
+				if (hashY === hash) {
+					trans = LifeConstants.modFlipXorY;
+
+					// check for Rot90
+					hashY = this.getModHash(box, LifeConstants.modRot90, twoState);
+					if (hashY === hash) {
+						// check for Rot270
+						hashY = this.getModHash(box, LifeConstants.modRot90, twoState);
+						if (hashY === hash) {
+							trans = LifeConstants.modFlipXorYorRotCWorCCW;
+						}
+					} else {
+						// check for FlipDiag
+						hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
+						if (hashY === hash) {
+							hashY = this.getModHash(box, LifeConstants.modRot90FlipY, twoState);
+							if (hashY === hash) {
+								trans = LifeConstants.modFlipOrthorDiag;
+							}
+						}
+					}
+				} else {
+					// check for 180 degree rotates
+					hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
+					if (hashY === hash) {
+						trans = LifeConstants.modFlipYorRot180;
 					}
 				}
 			}	
 
 			// if this is Rot90 then check if it also true for Rot270
 			if (trans === LifeConstants.modRot90) {
-				if (twoState) {
-					hashY = this.getModHash2(box, LifeConstants.modRot270);
-				} else {
-					hashY = this.getModHash(box, LifeConstants.modRot270);
-				}
+				hashY = this.getModHash(box, LifeConstants.modRot270, twoState);
 				if (hashY === hash) {
 					trans = LifeConstants.modRotCWorCCW;
 
 					// check for Flip X
-					if (twoState) {
-						hashY = this.getModHash2(box, LifeConstants.modFlipX);
-					} else {
-						hashY = this.getModHash(box, LifeConstants.modFlipX);
-					}
+					hashY = this.getModHash(box, LifeConstants.modFlipX, twoState);
 					if (hashY === hash) {
 						// check for Flip Y
-						if (twoState) {
-							hashY = this.getModHash2(box, LifeConstants.modFlipY);
-						} else {
-							hashY = this.getModHash(box, LifeConstants.modFlipY);
-						}
+						hashY = this.getModHash(box, LifeConstants.modFlipY, twoState);
 						if (hashY === hash) {
 							trans = LifeConstants.modFlipXorYorRotCWorCCW;
 						}
 					}
+
+					// check for Rot90FlipX
+					hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
+					if (hashY === hash) {
+						// check for Rot90FlipY
+						hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
+						if (hashY === hash) {
+							trans = LifeConstants.modFlipDiagorRot90;
+						}
+					}
 				}
 			}
-		} else {
+
+			// if this is Flip / then check if it is also true for Flip \
+			if (trans === LifeConstants.modRot90FlipX) {
+				hashY = this.getModHash(box, LifeConstants.modRot90FlipY, twoState);
+				if (hash === hashY) {
+					trans = LifeConstants.modFlipDiag;
+				} else {
+					// check for Rot180
+					hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
+					if (hash === hashY) {
+						trans = LifeConstants.modFlipDiagLRot180;
+					}
+				}
+			}
+
+			// if this is Flip \ then check if it is also true for Flip /
+			if (trans === LifeConstants.modRot90FlipY) {
+				hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
+				if (hash === hashY) {
+					trans = LifeConstants.modFlipDiag;
+				} else {
+					// check for Rot180
+					hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
+					if (hash === hashY) {
+						trans = LifeConstants.modFlipDiagLRot180;
+					}
+				}
+			}
+
+			// if this is Rot180 check for Flip / and Flip \
+			if (trans === LifeConstants.modRot180) {
+				hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
+				if (hash === hashY) {
+					trans = LifeConstants.modFlipDiagLRot180;
+				} else {
+					hashY = this.getModHash(box, LifeConstants.modRot90FlipY, twoState);
+					if (hash === hashY) {
+						trans = LifeConstants.modFlipDiagRRot180;
+					}
+				}
+			}
+		} else{
+			// not found
 			trans = -1;
 		}
 
+		// check for diagonal spaceships
+		if (trans === LifeConstants.modFlipDiag && deltaX !== 0 && deltaY !== 0) {
+			if (deltaX === deltaY) {
+				trans = LifeConstants.modRot90FlipX;
+			}
+			if (deltaX === -deltaY) {
+				trans = LifeConstants.modRot90FlipY;
+			}
+		}
+
+		// return transformation
 		return trans;
 	};
 
@@ -2080,12 +2188,8 @@
 		// check each transformation
 		for (i = 0; i < checkList.length; i += 1) {
 			trans = checkList[i];
+			hash = this.getModHash(box, trans, twoState);
 
-			if (twoState) {
-				hash = this.getModHash2(box, trans);
-			} else {
-				hash = this.getModHash(box, trans);
-			}
 			//console.log(trans, LifeConstants.modTypeName[trans], hash, initialHash);
 
 			if (hash === initialHash) {
@@ -3570,7 +3674,7 @@
 			/** @type {Array<number>} */ modMatches = [];
 
 		this.identifyDetectionTime = (performance.now() - this.identifyStartTime) / 1000;
-		console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
+		//console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
 
 		// compute bounding box extent over entire period
 		extent = this.getOscillatorBounds(period, i);
@@ -3603,7 +3707,7 @@
 				computeStrict = true;
 			}
 
-			console.log("memory", bitFrameInBytes * period, ((100 * bitFrameInBytes * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
+			//console.log("memory", bitFrameInBytes * period, ((100 * bitFrameInBytes * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
 		}
 
 		// if not computing strict volatility then use other method for rotor and stator
@@ -3706,7 +3810,7 @@
 							// check if the bounding box is the same size as the source
 							if ((((extent.rightX - extent.leftX + 1) === width1) && ((extent.topY - extent.bottomY) + 1) === height1) || ((extent.rightX - extent.leftX + 1) === height1) && ((extent.topY - extent.bottomY + 1) === width1)) {
 								// check the source generation against this one
-								this.modType = this.checkModHashType(extent, hash1, modChecks[0].modType);
+								this.modType = this.checkModHashType(extent, hash1, modChecks[0].modType, deltaX, deltaY);
 								if (this.modType !== -1) {
 									// verify state 6 if needed
 									if (this.isLifeHistory) {
@@ -3845,7 +3949,7 @@
 
 		// save elapsed time
 		this.identifyElapsedTime = ((performance.now() - this.identifyStartTime) / 1000);
-		console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
+		//console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
 	};
 
 	// return identify results
