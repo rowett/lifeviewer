@@ -1,3 +1,9 @@
+Build 939
+- fixed an issue with Clear Selection not fully removing state 6 cells
+
+Build 938
+- fixed initial population issue with HROT patterns
+
 Build 937
 - added more composite transformations
 

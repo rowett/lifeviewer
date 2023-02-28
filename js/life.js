@@ -8279,7 +8279,11 @@
 
 		// get HROT alive state
 		if (this.isHROT) {
-			aliveState = this.historyStates + this.HROT.scount - 1;
+			if (this.multiNumStates > 2) {
+				aliveState = this.historyStates + this.multiNumStates - 1;
+			} else {
+				aliveState = LifeConstants.aliveStart;
+			}
 		}
 
 		// check for HROT or PCA

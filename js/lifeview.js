@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 937,
+		/** @const {number} */ versionBuild : 939,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -12128,10 +12128,6 @@ View.prototype.clearStepSamples = function() {
 							}
 						}
 					}
-					// update state 6 grid
-					if (me.engine.isLifeHistory) {
-						this.engine.populateState6MaskFromColGrid();
-					}
 				} else {
 					// clear cells in selection
 					for (y = y1; y <= y2; y += 1) {
@@ -12142,6 +12138,11 @@ View.prototype.clearStepSamples = function() {
 							}
 						}
 					}
+				}
+
+				// update state 6 grid
+				if (me.engine.isLifeHistory) {
+					this.engine.populateState6MaskFromColGrid();
 				}
 
 				// check if shrink needed
