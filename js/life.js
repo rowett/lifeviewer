@@ -2004,7 +2004,8 @@
 	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ trans, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ hash = 0,
 			/** @type {number} */ hashY = 0,
-			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree);
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
+			/** @type {boolean} */ isSpaceship = (deltaX !==0 && deltaY !== 0);
 
 		// get the hash at the specific transformation
 		hash = this.getModHash(box, trans, twoState);
@@ -2115,9 +2116,11 @@
 					trans = LifeConstants.modFlipDiag;
 				} else {
 					// check for Rot180
-					hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
-					if (hash === hashY) {
-						trans = LifeConstants.modFlipDiagLRot180;
+					if (!isSpaceship) {
+						hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
+						if (hash === hashY) {
+							trans = LifeConstants.modFlipDiagLRot180;
+						}
 					}
 				}
 			}
@@ -2129,9 +2132,11 @@
 					trans = LifeConstants.modFlipDiag;
 				} else {
 					// check for Rot180
-					hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
-					if (hash === hashY) {
-						trans = LifeConstants.modFlipDiagLRot180;
+					if (!isSpaceship) {
+						hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
+						if (hash === hashY) {
+							trans = LifeConstants.modFlipDiagLRot180;
+						}
 					}
 				}
 			}
@@ -2154,7 +2159,7 @@
 		}
 
 		// check for diagonal spaceships
-		if (trans === LifeConstants.modFlipDiag && deltaX !== 0 && deltaY !== 0) {
+		if (trans === LifeConstants.modFlipDiag && isSpaceship) {
 			if (deltaX === deltaY) {
 				trans = LifeConstants.modRot90FlipX;
 			}
@@ -3786,7 +3791,7 @@
 					state6Hash0 = this.getHashState6(extentState6);
 				}
 
-				//console.log("hash0", hash0);
+				//console.log(p, "gen", this.counter, "hash0", hash0);
 
 			} else {
 				if (p === gen1) {
@@ -3794,7 +3799,7 @@
 					width1 = (extent.rightX - extent.leftX + 1);
 					height1 = (extent.topY - extent.bottomY + 1);
 
-					//console.log("hash1", hash1);
+					//console.log(p, "gen", this.counter, "hash1", hash1);
 
 				}
 			}

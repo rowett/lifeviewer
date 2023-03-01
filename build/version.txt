@@ -1,3 +1,6 @@
+Build 940
+- fixed spaceships allowing Rot180
+
 Build 939
 - fixed an issue with Clear Selection not fully removing state 6 cells
 
