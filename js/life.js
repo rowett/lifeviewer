@@ -2159,12 +2159,21 @@
 		}
 
 		// check for diagonal spaceships
-		if (trans === LifeConstants.modFlipDiag && isSpaceship) {
-			if (deltaX === deltaY) {
-				trans = LifeConstants.modRot90FlipX;
+		if (isSpaceship) {
+			if (trans === LifeConstants.modFlipDiag) {
+				if (deltaX === deltaY) {
+					trans = LifeConstants.modRot90FlipX;
+				}
+				if (deltaX === -deltaY) {
+					trans = LifeConstants.modRot90FlipY;
+				}
 			}
-			if (deltaX === -deltaY) {
-				trans = LifeConstants.modRot90FlipY;
+
+			if (trans === LifeConstants.modRot90FlipY && deltaX === deltaY) {
+				trans = -1;
+			}
+			if (trans === LifeConstants.modRot90FlipX && deltaX === -deltaY) {
+				trans = -1;
 			}
 		}
 

@@ -1,3 +1,6 @@
+Build 941
+- fixed diagonal spaceships diagonal flip
+
 Build 940
 - fixed spaceships allowing Rot180
 
