@@ -1,3 +1,12 @@
+Build 943
+- added state 6 [R]History and [R]Super cells to Cell Period Map
+- remove dimensions from "Pattern too big" message
+- only allow even Bounded Grid shifts for Margolus rules
+
+Build 942
+- fixed digonal spaceship Mod orentiation
+- state 6 [R]History and [R]Super cells are now included in Identify detection
+
 Build 941
 - fixed diagonal spaceships diagonal flip
 

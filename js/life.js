@@ -398,6 +398,7 @@
 		/** @type {number} */ this.cellPeriodNumCols = 0;
 		/** @type {number} */ this.cellPeriodCellSize = 8;
 		/** @type {number} */ this.cellBorderSize = 1;
+		/** @type {boolean} */ this.cellPeriodState6 = false;
 
 		// identify temporary results
 		/** @type {string} */ this.identifyMessage = "";
@@ -417,7 +418,7 @@
 		/** @type {number} */ this.heatVal = 0;
 
 		// last period per cell for oscillator
-		/** @type {Uint32Array} */ this.cellPeriod = null;
+		/** @type {Int32Array} */ this.cellPeriod = null;
 		/** @type {number} */ this.cellPeriodWidth = 0;
 		/** @type {number} */ this.cellPeriodHeight = 0;
 
@@ -1732,91 +1733,6 @@
 		return result;
 	};
 
-	// get state 6 mod hash from pattern
-	/** @returns {number} */
-	Life.prototype.getModHashState6 = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform) {
-		var	/** @type {number} */ hash = 31415962,
-			/** @const {number} */ factor = 1000003,
-			/** @type {number} */ left = box.leftX,
-			/** @type {number} */ bottom = box.bottomY,
-			/** @type {number} */ right = box.rightX,
-			/** @type {number} */ top = box.topY,
-			/** @type {number} */ width = right - left + 1,
-			/** @type {number} */ height = top - bottom + 1,
-			/** @type {number} */ wm1 = width - 1,
-			/** @type {number} */ hm1 = height - 1,
-			/** @type {number} */ checkWidth = width,
-			/** @type {number} */ checkHeight = height,
-			/** @type {number} */ swap = 0,
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ cx = 0,
-			/** @type {number} */ cy = 0,
-			/** @type {number} */ iDivHeight = 0,
-			/** @type {number} */ iModHeight = 0,
-			/** @type {Array<Uint8Array>} */ colourGrid = this.overlayGrid,
-			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
-
-		// if rotate is used then swap check width and height
-		if (transform === LifeConstants.modRot90 || transform === LifeConstants.modRot270 || transform === LifeConstants.modRot90FlipX || transform === LifeConstants.modRot90FlipY) {
-			swap = checkWidth;
-			checkWidth = checkHeight;
-			checkHeight = swap;
-		}
-
-		for (y = 0; y < checkHeight; y += 1) {
-			for (x = 0; x < checkWidth; x += 1) {
-				// adjust the coordinates based on the transformation
-				switch (transform) {
-				case LifeConstants.modRot270:
-					cx = iDivHeight;
-					cy = hm1 - iModHeight;
-					break;
-				case LifeConstants.modRot180:
-					cx = wm1 - x;
-					cy = hm1 - y;
-					break;
-				case LifeConstants.modRot90:
-					cx = wm1 - iDivHeight;
-					cy = iModHeight;
-					break;
-				case LifeConstants.modFlipX:
-					cx = wm1 - x;
-					cy = y;
-					break;
-				case LifeConstants.modFlipY:
-					cx = x;
-					cy = hm1 - y;
-					break;
-				case LifeConstants.modRot90FlipX:
-					cx = iDivHeight;
-					cy = iModHeight;
-					break;
-				case LifeConstants.modRot90FlipY:
-					cx = wm1 - iDivHeight;
-					cy = hm1 - iModHeight;
-					break;
-				}
-
-				// get the cell state
-				if (colourGrid[cy + bottom][cx + left] === state6) {
-					// update the hash
-					hash = (hash * factor) ^ y;
-					hash = (hash * factor) ^ x;
-				}
-
-				// update index
-				iModHeight += 1;
-				if (iModHeight === height) {
-					iModHeight = 0;
-					iDivHeight += 1;
-				}
-			}
-		}
-
-		return hash | 0;
-	};
-
 	// get mod hash from pattern
 	/** @returns {number} */
 	Life.prototype.getModHashN = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform) {
@@ -1834,7 +1750,6 @@
 			/** @type {number} */ checkHeight = height,
 			/** @type {number} */ swap = 0,
 			/** @type {number} */ state = 0,
-			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ cx = 0,
@@ -1842,7 +1757,9 @@
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @type {number} */ aliveStart = LifeConstants.aliveStart;
+			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
+			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
 
 		// check for PCA, RuleTree or Super rules
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
@@ -1898,15 +1815,15 @@
 				}
 
 				// get the cell state
-				if (twoState) {
-					if (colourGrid[cy + bottom][cx + left] >= aliveStart) {
+				if (this.isLifeHistory) {
+					if (colourGrid[cy + bottom][cx + left] >= aliveStart || overlayGrid[cy + bottom][cx + left] === state6) {
 						// update the hash
 						hash = (hash * factor) ^ y;
 						hash = (hash * factor) ^ x;
 					}
 				} else {
 					if (this.isSuper) {
-						if (colourGrid[cy + bottom][cx + left] & 1) {
+						if ((colourGrid[cy + bottom][cx + left] & 1) || colourGrid[cy + bottom][cx + left] === 6) {
 							hash = (hash * factor) ^ y;
 							hash = (hash * factor) ^ x;
 						}
@@ -2004,7 +1921,7 @@
 	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ trans, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ hash = 0,
 			/** @type {number} */ hashY = 0,
-			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree && !this.isLifeHistory),
 			/** @type {boolean} */ isSpaceship = (deltaX !==0 && deltaY !== 0);
 
 		// get the hash at the specific transformation
@@ -2185,7 +2102,7 @@
 	/** @returns {Array<number>} */
 	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ deltaX, /** @type{number} */ deltaY) {
 		var	/** @type {number} */ trans = 0,
-			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree && !this.isLifeHistory),
 			/** @type {number} */ hash = 0,
 			/** @type {number} */ i = 0,
 			/** @type {boolean} */ valid = true,
@@ -2234,42 +2151,6 @@
 		return results;
 	};
 
-	// get hash from state 6 cells
-	/** @returns {number} */
-	Life.prototype.getHashState6 = function(/** @type {BoundingBox} */ box) {
-		var	/** @type {number} */ hash = 31415962,
-			/** @const {number} */ factor = 1000003,
-			/** @type {number} */ x = box.leftX,
-			/** @type {number} */ y = box.bottomY,
-			/** @type {number} */ right = box.rightX,
-			/** @type {number} */ top = box.topY,
-			/** @type {number} */ cx = 0,
-			/** @type {number} */ cy = 0,
-			/** @type {number} */ yshift = 0,
-			/** @type {number} */ hashX = 0,
-			/** @type {number} */ hashY = 0,
-			/** @type {Array<Uint8Array>} */ colourGrid = this.overlayGrid,
-			/** @type {Uint8Array} */ colourRow = null,
-			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
-
-		// create a hash from every alive cell
-		hashX = x;
-		hashY = y;
-
-		for (cy = y; cy <= top; cy += 1) {
-			yshift = cy - hashY;
-			colourRow = colourGrid[cy];
-			for (cx = x; cx <= right; cx += 1) {
-				if (colourRow[cx] === state6) {
-					hash = (hash * factor) ^ yshift;
-					hash = (hash * factor) ^ (cx - hashX);
-				}
-			}
-		}
-
-		return hash | 0;
-	};
-
 	// get hash from pattern
 	/** @returns {number} */
 	Life.prototype.getHash = function(/** @type {BoundingBox} */ box) {
@@ -2288,7 +2169,10 @@
 			/** @type {number} */ hashY = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @type {number} */ aliveStart = LifeConstants.aliveStart;
+			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
+			/** @type {Uint8Array} */ overlayRow = null,
+			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
 
 		// check for PCA, RuleTree or Super rules
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
@@ -2305,48 +2189,58 @@
 		for (cy = y; cy <= top; cy += 1) {
 			yshift = cy - hashY;
 			colourRow = colourGrid[cy];
-			if (twoState) {
+			if (this.isLifeHistory) {
+				overlayRow = overlayGrid[cy];
 				for (cx = x; cx <= right; cx += 1) {
-					if (colourRow[cx] >= aliveStart) {
+					if (colourRow[cx] >= aliveStart || overlayRow[cx] === state6) {
 						hash = (hash * factor) ^ yshift;
 						hash = (hash * factor) ^ (cx - hashX);
 					}
 				}
 			} else {
-				if (this.isSuper) {
+				if (twoState) {
 					for (cx = x; cx <= right; cx += 1) {
-						if ((colourRow[cx] & 1) === 1) {
+						if (colourRow[cx] >= aliveStart) {
 							hash = (hash * factor) ^ yshift;
 							hash = (hash * factor) ^ (cx - hashX);
 						}
 					}
 				} else {
-					if (this.isRuleTree) {
+					if (this.isSuper) {
 						for (cx = x; cx <= right; cx += 1) {
-							// get the raw state
-							state = colourRow[cx];
-							if (state > this.historyStates) {
-								state -= this.historyStates;
+							if ((colourRow[cx] & 1) || colourRow[cx] === 6) {
 								hash = (hash * factor) ^ yshift;
 								hash = (hash * factor) ^ (cx - hashX);
-								hash = (hash * factor) ^ state;
 							}
 						}
 					} else {
-						for (cx = x; cx <= right; cx += 1) {
-							// get the raw state
-							state = colourRow[cx];
-							if (state > this.historyStates) {
-								state -= this.historyStates;
-								if (this.isPCA) {
+						if (this.isRuleTree) {
+							for (cx = x; cx <= right; cx += 1) {
+								// get the raw state
+								state = colourRow[cx];
+								if (state > this.historyStates) {
+									state -= this.historyStates;
 									hash = (hash * factor) ^ yshift;
 									hash = (hash * factor) ^ (cx - hashX);
 									hash = (hash * factor) ^ state;
-								} else {
-									state = this.multiNumStates - state;
-									hash = (hash * factor) ^ yshift;
-									hash = (hash * factor) ^ (cx - hashX);
-									hash = (hash * factor) ^ state;
+								}
+							}
+						} else {
+							for (cx = x; cx <= right; cx += 1) {
+								// get the raw state
+								state = colourRow[cx];
+								if (state > this.historyStates) {
+									state -= this.historyStates;
+									if (this.isPCA) {
+										hash = (hash * factor) ^ yshift;
+										hash = (hash * factor) ^ (cx - hashX);
+										hash = (hash * factor) ^ state;
+									} else {
+										state = this.multiNumStates - state;
+										hash = (hash * factor) ^ yshift;
+										hash = (hash * factor) ^ (cx - hashX);
+										hash = (hash * factor) ^ state;
+									}
 								}
 							}
 						}
@@ -2492,6 +2386,7 @@
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ row = 0,
+			/** @type {number} */ numState6 = 0,
 			/** @type {number} */ p = 0,
 			/** @type {number} */ s = 0,
 			/** @type {number} */ hue = 0,
@@ -2566,21 +2461,33 @@
 
 		// set colours for period 1 and oscillator period
 		periodCols[0] = "black";
-		periodCols[1] = "rgb(128,128,128)";
+		periodCols[1] = "rgb(136,136,136)";
 		periodCols[this.popSubPeriod.length - 1] = "rgb(238,238,238)";
 
+		// create a colour for state 6 cells
+		if (this.cellPeriodState6) {
+			periodCols[-1] = "rgb(96,96,96)";
+			x = -1;
+		} else {
+			x = 0;
+		}
+
 		// convert colours into RGB
-		for (x = 0; x < this.popSubPeriod.length; x += 1) {
-			this.cellPeriodContext.fillStyle = periodCols[x];
-			rgbString = /** @type {!string} */ (this.cellPeriodContext.fillStyle);
-			red = parseInt(rgbString.substring(1, 3), 16);
-			green = parseInt(rgbString.substring(3, 5), 16);
-			blue = parseInt(rgbString.substring(5, 7), 16);
-			if (this.littleEndian) {
-				this.cellPeriodRGB[x] = (255 << 24) | (blue << 16) | (green << 8) | red;
-			} else {
-				this.cellPeriodRGB[x] = (red << 24) | (green << 16) | (blue << 8) | 255;
+		while (x < this.popSubPeriod.length) {
+			if (x === -1 || x === 0 || this.popSubPeriod[x] > 0) {
+				this.cellPeriodContext.fillStyle = periodCols[x];
+				rgbString = /** @type {!string} */ (this.cellPeriodContext.fillStyle);
+				red = parseInt(rgbString.substring(1, 3), 16);
+				green = parseInt(rgbString.substring(3, 5), 16);
+				blue = parseInt(rgbString.substring(5, 7), 16);
+				if (this.littleEndian) {
+					this.cellPeriodRGB[x] = (255 << 24) | (blue << 16) | (green << 8) | red;
+				} else {
+					this.cellPeriodRGB[x] = (red << 24) | (green << 16) | (blue << 8) | 255;
+				}
 			}
+
+			x += 1;
 		}
 
 		// resize the image and canvas to fix the period map with "cellSize" cells
@@ -2642,18 +2549,28 @@
 		}
 
 		// convert RGB array
-		for (x = 0; x < this.popSubPeriod.length; x += 1) {
-			pixCol = this.cellPeriodRGB[x];
-			if (this.littleEndian) {
-				red = pixCol & 255;
-				green = (pixCol >> 8) & 255;
-				blue = (pixCol >> 16) & 255;
-			} else {
-				red = pixCol >> 24;
-				green = (pixCol >> 16) & 255;
-				blue = (pixCol >> 8) & 255;
+		if (this.cellPeriodState6) {
+			x = -1;
+		} else {
+			x = 0;
+		}
+
+		while (x < this.popSubPeriod.length) {
+			if (x === -1 || this.popSubPeriod[x] > 0) {
+				pixCol = this.cellPeriodRGB[x];
+				if (this.littleEndian) {
+					red = pixCol & 255;
+					green = (pixCol >> 8) & 255;
+					blue = (pixCol >> 16) & 255;
+				} else {
+					red = pixCol >> 24;
+					green = (pixCol >> 16) & 255;
+					blue = (pixCol >> 8) & 255;
+				}
+				this.cellPeriodRGB[x] = (red << 16) | (green << 8) | blue;
 			}
-			this.cellPeriodRGB[x] = (red << 16) | (green << 8) | blue;
+			
+			x += 1;
 		}
 
 		// update the image
@@ -2833,6 +2750,9 @@
 		if (this.popSubPeriod[1] === 0) {
 			numCols -= 1;
 		}
+		if (this.cellPeriodState6) {
+			numCols += 1;
+		}
 
 		// draw the legend box
 		bottomY = (this.displayHeight - (numCols + 2) * rowSize) / 2;
@@ -2843,6 +2763,24 @@
 
 		// draw each legend entry
 		y = 0;
+
+		// check for state 6 cells
+		if (this.cellPeriodState6) {
+			// draw colour
+			ctx.fillStyle = this.view.menuManager.bgCol;
+			ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2, boxSize, boxSize);
+			ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[-1].toString(16)).slice(-6);
+			ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize, boxSize, boxSize);
+
+			// draw period
+			ctx.fillStyle = bgCol;
+			ctx.fillText("St.6", leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+			ctx.fillStyle = fgCol;
+			ctx.fillText("St.6", leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+
+			y += 1;
+		}
+
 		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
 			p = this.popSubPeriod[x];
 			if (p > 0) {
@@ -3561,7 +3499,7 @@
 	};
 
 	// compute cell factors
-	Life.prototype.computeCellFactors = function(/** @type {Uint32Array} */ cellPeriod, /** @type {number} */ period, /** @type {Uint16Array} */ frames, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitStart) {
+	Life.prototype.computeCellFactors = function(/** @type {Int32Array} */ cellPeriod, /** @type {number} */ period, /** @type {Uint16Array} */ frames, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitStart) {
 		var	/** @type {number} */ f = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ p = 0,
@@ -3611,43 +3549,51 @@
 		}
 	};
 
-	// get state 6 bounding box
-	/** @returns {BoundingBox} */
-	Life.prototype.getState6BoundingBox = function() {
-		var	/** @type {number} */ x = 0,
+	// add History state 6 cells to cell map
+	Life.prototype.addHistoryState6ToCellMap = function(/** @type {BoundingBox} */ box, /** @type {Int32Array} */ cellPeriod, /** @type {Array<Uint8Array>} */ grid) {
+		var	/** @type {number} */ leftX = box.leftX,
+			/** @type {number} */ bottomY = box.bottomY,
+			/** @type {number} */ rightX = box.rightX,
+			/** @type {number} */ topY = box.topY,
+			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
-			/** @type {Uint8Array} */ overlayRow = null,
-			/** @type {number} */ minX = 16384,
-			/** @type {number} */ maxX = 0,
-			/** @type {number} */ minY = 16384,
-			/** @type {number} */ maxY = 0,
+			/** @type {number} */ row = 0,
+			/** @type {Uint8Array} */ gridRow = null,
 			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
 
-		for (y = 0; y < this.height; y += 1) {
-			overlayRow = overlayGrid[y];
-			for (x = 0; x < this.width; x += 1) {
-				if (overlayRow[x] === state6) {
-					if (x < minX) {
-						minX = x;
-					}
-
-					if (x > maxX) {
-						maxX = x;
-					}
-
-					if (y < minY) {
-						minY = y;
-					}
-
-					if (y > maxY) {
-						maxY = y;
-					}
+		for (y = bottomY; y <= topY; y += 1) {
+			gridRow = grid[y];
+			row = (y - bottomY) * (rightX - leftX + 1);
+			for (x = leftX; x <= rightX; x += 1) {
+				if (gridRow[x] === state6) {
+					cellPeriod[row + x - leftX] = -1;
+					this.cellPeriodState6 = true;
 				}
 			}
 		}
+	};
 
-		return new BoundingBox(minX, minY, maxX, maxY);
+	// add Super state 6 cells to cell map
+	Life.prototype.addSuperState6ToCellMap = function(/** @type {BoundingBox} */ box, /** @type {Int32Array} */ cellPeriod, /** @type {Array<Uint8Array>} */ grid) {
+		var	/** @type {number} */ leftX = box.leftX,
+			/** @type {number} */ bottomY = box.bottomY,
+			/** @type {number} */ rightX = box.rightX,
+			/** @type {number} */ topY = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ row = 0,
+			/** @type {Uint8Array} */ gridRow = null;
+
+		for (y = bottomY; y <= topY; y += 1) {
+			gridRow = grid[y];
+			row = (y - bottomY) * (rightX - leftX + 1);
+			for (x = leftX; x <= rightX; x += 1) {
+				if (gridRow[x] === 6) {
+					cellPeriod[row + x - leftX] = -1;
+					this.cellPeriodState6 = true;
+				}
+			}
+		}
 	};
 
 	// compute strict volatility and Mod
@@ -3665,19 +3611,17 @@
 			/** @type {number} */ cy = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint32Array} */ popSubPeriod = new Uint32Array(period + 1),
-			/** @type {Uint32Array} */ cellPeriod = null,
+			/** @type {Int32Array} */ cellPeriod = null,
 			/** @type {number} */ boxWidth = 0,
 			/** @type {number} */ boxHeight = 0,
 			/** @type {number} */ popTotal = 0,
 			/** @type {number} */ row = 0,
 			/** @type {BoundingBox} */ extent = null,
-			/** @type {BoundingBox} */ extentState6 = null,
 			/** @type {number} */ frameTypeMSB = 0,
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
 			/** @type {number} */ gen1 = 1,
 			/** @type {number} */ hash0 = 0,
-			/** @type {number} */ state6Hash0 = 0,
 			/** @type {number} */ width0 = 0,
 			/** @type {number} */ height0 = 0,
 			/** @type {number} */ hash1 = 0,
@@ -3688,15 +3632,19 @@
 			/** @type {Array<number>} */ modMatches = [];
 
 		this.identifyDetectionTime = (performance.now() - this.identifyStartTime) / 1000;
+
 		//console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
+
+		// check for PCA, RuleTree or Super rules
+		if (this.isPCA || this.isRuleTree || this.isSuper) {
+			// swap grids every generation
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
 
 		// compute bounding box extent over entire period
 		extent = this.getOscillatorBounds(period, i);
-
-		// create [R]History extent if needed
-		if (this.isLifeHistory) {
-			extentState6 = this.getState6BoundingBox();
-		}
 
 		// determine whether Strict Volatility can be calculated based on amount of RAM needed
 		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
@@ -3710,7 +3658,7 @@
 			if (bitFrameInBytes * period <= LifeConstants.maxStrictMemory) {
 				// allocate memory for each generation in the period (allocation is one bit per cell)
 				frames = new Uint16Array(period * bitFrameInBytes);
-				cellPeriod = new Uint32Array(boxWidth * boxHeight);
+				cellPeriod = new Int32Array(boxWidth * boxHeight);
 				occupiedFrame = new Uint16Array(bitFrameInBytes);
 	
 				// get the frame data width most significant bit number
@@ -3796,10 +3744,6 @@
 				width0 = (extent.rightX - extent.leftX + 1);
 				height0 = (extent.topY - extent.bottomY + 1);
 
-				if (this.isLifeHistory) {
-					state6Hash0 = this.getHashState6(extentState6);
-				}
-
 				//console.log(p, "gen", this.counter, "hash0", hash0);
 
 			} else {
@@ -3826,21 +3770,10 @@
 								// check the source generation against this one
 								this.modType = this.checkModHashType(extent, hash1, modChecks[0].modType, deltaX, deltaY);
 								if (this.modType !== -1) {
-									// verify state 6 if needed
-									if (this.isLifeHistory) {
-										if (this.getModHashState6(extentState6, modChecks[0].modType) !== state6Hash0) {
-											this.modType = -1;
 
-											//console.log(p, "gen", this.counter, "state6 verify failed");
-										}
-									}
-
-									if (this.modType !== -1) {
+									//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
 	
-										//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
-	
-										this.modValue = p - gen1;
-									}
+									this.modValue = p - gen1;
 								} else {
 
 									//console.log(p, "gen", this.counter, "verify failed");
@@ -3864,7 +3797,7 @@
 										// potential Mod found so create verification record
 										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatches[j]);
 	
-										//console.log(p, "gen", this.counter, "type", modMatches[j], LifeConstants.modTypeName[modMatches[j]], "check at", p + gen1);
+										//console.log(p, "gen", this.counter, "type", modMatches[j], LifeConstants.modTypeName[modMatches[j]], "check at", p + gen1, "delta", deltaX, deltaY);
 	
 									}
 								}
@@ -3946,6 +3879,19 @@
 				}
 			}
 
+			// for [R]History and [R]Super add state 6 cells to map
+			if (isOscillator) {
+				this.cellPeriodState6 = false;
+
+				if (this.isLifeHistory) {
+					this.addHistoryState6ToCellMap(extent, cellPeriod, this.overlayGrid);
+				}
+
+				if (this.isSuper) {
+					this.addSuperState6ToCellMap(extent, cellPeriod, colourGrid);
+				}
+			}
+
 			// display integer strict volatility without decimal places
 			p = popSubPeriod[period] / popTotal;
 			this.strictVol = this.toPlaces(p, 2);
@@ -3963,7 +3909,9 @@
 
 		// save elapsed time
 		this.identifyElapsedTime = ((performance.now() - this.identifyStartTime) / 1000);
+
 		//console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
+
 	};
 
 	// return identify results
@@ -4046,10 +3994,10 @@
 		}
 
 		// check for movement
-		deltaX = Math.abs(deltaX);
-		deltaY = Math.abs(deltaY);
 		deltaXOrig = deltaX;
 		deltaYOrig = deltaY;
+		deltaX = Math.abs(deltaX);
+		deltaY = Math.abs(deltaY);
 
 		// if a spaceship then compute simpified speed
 		if (deltaX > 0 || deltaY > 0) {
@@ -4384,7 +4332,7 @@
 		return result;
 	};
 
-	// get alive cell bounding box for [R]History patterns
+	// get alive cell and state6 cell bounding box for [R]History patterns
 	/** @returns {BoundingBox} */
 	Life.prototype.getHistoryAliveBox = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY) {
 		var 	/** @type {number} */ minx = 0,
@@ -4394,29 +4342,45 @@
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ state = 0,
+			/** @type {number} */ over = 0,
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
 
 			// colour grid
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @type {Uint8Array} */ colourRow = null;
+			/** @type {Uint8Array} */ colourRow = null,
+
+			// overlay grid
+			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
+			/** @type {Uint8Array} */ overlayRow = null,
+			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
+
+
+		bottomY = 0;
+		topY = this.height - 1;
+		leftX = 0;
+		rightX = this.width - 1;
 
 		// find the first alive cell from the bottom left
-		minx = rightX;
-		maxx = leftX;
-		miny = topY;
-		maxy = bottomY;
+		minx = this.width;
+		maxx = 0;
+		miny = this.height;
+		maxy = 0;
 
 		//var msgRow = "";
 
 		for (y = bottomY; y <= topY; y += 1) {
 			colourRow = colourGrid[y];
+			overlayRow = overlayGrid[y];
+
 			//msgRow = "";
+
 			for (x = leftX; x <= rightX; x += 1) {
 				state = colourRow[x];
+				over = overlayRow[x];
 
 				//msgRow += String(state) + " ";
 
-				if (state >= aliveStart) {
+				if (state >= aliveStart || over === state6) {
 					if (x < minx) {
 						minx = x;
 					}
@@ -4434,6 +4398,7 @@
 			}
 
 			//console.log(y, msgRow);
+
 		}
 
 		// update the bounding box
@@ -4455,6 +4420,7 @@
 			/** @type {number} */ maxy = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
+			/** @type {number} */ state = 0,
 
 			// colour grid
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
@@ -4474,7 +4440,8 @@
 		for (y = bottomY; y <= topY; y += 1) {
 			colourRow = colourGrid[y];
 			for (x = leftX; x <= rightX; x += 1) {
-				if (colourRow[x] & 1) {
+				state = colourRow[x];
+				if ((state & 1) || state === 6) {
 					if (x < minx) {
 						minx = x;
 					}

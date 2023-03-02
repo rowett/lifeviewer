@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 941,
+		/** @const {number} */ versionBuild : 943,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -18241,7 +18241,7 @@ View.prototype.clearStepSamples = function() {
 		}
 
 		if (pattern && (pattern.width >= me.engine.maxGridSize - borderSize || pattern.height >= me.engine.maxGridSize - borderSize)) {
-			me.failureReason = "Pattern too big (maximum " + (me.engine.maxGridSize - borderSize) + "x" + (me.engine.maxGridSize - borderSize) + ")";
+			me.failureReason = "Pattern too big";
 			pattern.tooBig = true;
 			me.executable = false;
 		}
@@ -18259,7 +18259,7 @@ View.prototype.clearStepSamples = function() {
 			}
 			if (pattern.gridWidth >= me.engine.maxGridSize - borderSize || pattern.gridHeight >= me.engine.maxGridSize - borderSize) {
 				// make invalid
-				me.failureReason = "Bounded grid is too big";
+				me.failureReason = "Bounded grid too big";
 				me.executable = false;
 				me.engine.boundedGridType = -1;
 			}

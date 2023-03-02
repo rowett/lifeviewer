@@ -7813,7 +7813,7 @@
 			}
 			if (pattern.gridWidth >= this.maxWidth - border || pattern.gridHeight >= this.maxHeight - border) {
 				// make invalid
-				this.failureReason = "Bounded grid is too big";
+				this.failureReason = "Bounded grid too big";
 				this.executable = false;
 				pattern.gridType = -1;
 			}
@@ -7842,6 +7842,14 @@
 			}
 		}
 
+		// check whether odd-numbered shifts in bounded grids are given for Margolus rules
+		if (pattern.isMargolus && (pattern.gridType === 1 || pattern.gridType === 2)) {
+			if ((pattern.gridHorizontalShift & 1) || (pattern.gridVerticalShift & 1)) {
+				this.failureReason = "Margolus rules only support even shifts";
+				this.executable = false;
+				pattern.gridType = -1;
+			}
+		}
 		// check whether LTL bounded grid type is valid
 		if (pattern.isLTL && this.failureReason === "") {
 			if (pattern.gridType > 1) {
@@ -9561,7 +9569,7 @@
 
 		// check if the new pattern was too big
 		if (newPattern && newPattern.tooBig) {
-			this.failureReason = "Pattern too big (maximum " + this.maxWidth + "x" + this.maxHeight + ")";
+			this.failureReason = "Pattern too big";
 			newPattern.invalid = true;
 			this.tooBig = true;
 			this.executable = false;
