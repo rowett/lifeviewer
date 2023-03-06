@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 943,
+		/** @const {number} */ versionBuild : 945,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -17340,7 +17340,7 @@ View.prototype.clearStepSamples = function() {
 		// hide labels
 		this.xyLabel.deleted = true;
 		this.selSizeLabel.deleted = true;
-
+		
 		// attempt to load the pattern
 		this.origDisplayWidth = this.displayWidth;
 		this.origDisplayHeight = this.displayHeight;
@@ -19519,6 +19519,10 @@ View.prototype.clearStepSamples = function() {
 			// display the item
 			parentItem.style.display = "";
 		}
+
+		// reset Identify before resizing the Viewer to prevent Cell Period Map generations
+		view.lastIdentifyType = "";
+		view.engine.countList = null;
 
 		// set the standalone viewer size
 		view.displayWidth = ViewConstants.minViewerWidth;

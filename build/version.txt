@@ -1,3 +1,9 @@
+Build 945
+- fixed Identify failing
+
+Build 944
+- fixed crash when resizing Cell Period Map in PopUp Viewer after reset
+
 Build 943
 - added state 6 [R]History and [R]Super cells to Cell Period Map
 - remove dimensions from "Pattern too big" message
