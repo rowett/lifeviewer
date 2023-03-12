@@ -704,6 +704,9 @@
 			[[0, 1, 2, 3, 4, 5, 6, 7], [0, 2, 3, 4, 5, 6, 1, 7], [0, 3, 4, 5, 6, 1, 2, 7], [0, 4, 5, 6, 1, 2, 3, 7], [0, 5, 6, 1, 2, 3, 4, 7], [0, 6, 1, 2, 3, 4, 5, 7], [0, 6, 5, 4, 3, 2, 1, 7], [0, 5, 4, 3, 2, 1, 6, 7], [0, 4, 3, 2, 1, 6, 5, 7], [0, 3, 2, 1, 6, 5, 4, 7], [0, 2, 1, 6, 5, 4, 3, 7], [0, 1, 6, 5, 4, 3, 2, 7]]  // rotate6reflect
 		];
 
+		// whether rule table has B0
+		/** @type {boolean} */ this.ruleTableB0 = false;
+
 		// rule table names section
 		/** @const {string} */ this.ruleTableNamesName = "@NAMES";
 
@@ -8507,7 +8510,9 @@
 			/** @const {number} */ iBit = iRule % nBits,
 			/** @const {number} */ mask = 1 << iBit,
 			/** @type {Array<number>} */ possibles = null,
-			/** @type {number} */ iRuleC = (iRule - iBit) / nBits; // compress index of rule
+			/** @type {number} */ iRuleC = (iRule - iBit) / nBits, // compress index of rule
+			/** @type {boolean} */ zeroInput = false,
+			/** @type {number} */ numZeroInputs = 0;
 
 		// check if the transition is a duplicate
 		if (dedupe !== null) {
@@ -8552,12 +8557,25 @@
 				pattern.ruleTableCompressedRules += 1;
 			}
 
-			// populate the LUT
+			// populate the LUT and check for B0
 			for (i = 0; i < nInputs; i += 1) {
 				possibles = inputs[i];
+				zeroInput = false;
 				for (j = 0; j < possibles.length; j += 1) {
 					lut[i][possibles[j]][iRuleC] |= mask;
+					if (possibles[j] === 0) {
+						zeroInput = true;
+					}
 				}
+
+				if (zeroInput) {
+					numZeroInputs += 1;
+				}
+			}
+
+			// check for B0
+			if (output !== 0 && numZeroInputs === nInputs) {
+				this.ruleTableB0 = true;
 			}
 		}
 
@@ -8725,6 +8743,9 @@
 			/** @type {number} */ varCount = 0,
 			/** @type {boolean} */ found = false,
 			/** @type {boolean} */ valid = false;
+
+		// reset B0 flag
+		this.ruleTableB0 = false;
 
 		// read first three lines
 		i = 0;

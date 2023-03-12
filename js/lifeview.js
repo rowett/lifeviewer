@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 945,
+		/** @const {number} */ versionBuild : 946,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -12061,6 +12061,14 @@ View.prototype.clearStepSamples = function() {
 				y1 += yOff;
 				y2 += yOff;
 
+				// ensure grid is accurate
+				me.engine.shrinkNeeded = true;
+				me.engine.doShrink();
+				leftX = zoomBox.leftX;
+				bottomY = zoomBox.bottomY;
+				rightX = zoomBox.rightX;
+				topY = zoomBox.topY;
+
 				// clear cells outside selection
 				for (y = bottomY; y <= topY; y += 1) {
 					for (x = leftX; x <= rightX; x += 1) {
@@ -17574,6 +17582,12 @@ View.prototype.clearStepSamples = function() {
 		// clear icons
 		me.engine.ruleTableIcons = null;
 
+		// check for failed RuleTable
+		if (me.engine.ruleTableB0 && pattern && (pattern.gridType === -1 || (pattern.gridType !== -1 && (pattern.gridWidth === 0 || pattern.gridHeight === 0)))) {
+			me.manager.failureReason = "RuleTable B0 only valid with finite grid";
+			pattern = null;
+		}
+
 		// check if the pattern was created successfully
 		if (pattern) {
 			// copy the generation offset
@@ -17653,6 +17667,8 @@ View.prototype.clearStepSamples = function() {
 			me.engine.ruleTableOutput = null;
 			me.engine.ruleTableLUT = null;
 			me.stateNames = [];
+			me.engine.isRuleTree = false;
+
 			if (pattern.ruleTreeStates !== -1) {
 				me.engine.ruleTreeNeighbours = pattern.ruleTreeNeighbours;
 				me.engine.ruleTreeStates = pattern.ruleTreeStates;
@@ -17664,9 +17680,8 @@ View.prototype.clearStepSamples = function() {
 				me.engine.ruleTreeColours = pattern.ruleTreeColours;
 				me.engine.ruleTableIcons = pattern.ruleTableIcons;
 				me.stateNames = pattern.ruleTableNames;
+				me.engine.ruleTableB0 = false;
 				me.engine.isRuleTree = true;
-			} else {
-				me.engine.isRuleTree = false;
 			}
 
 			// check if the rule is a RuleTable rule
@@ -17680,6 +17695,7 @@ View.prototype.clearStepSamples = function() {
 				me.engine.ruleTreeColours = pattern.ruleTreeColours;
 				me.engine.ruleTableIcons = pattern.ruleTableIcons;
 				me.stateNames = pattern.ruleTableNames;
+				me.engine.ruleTableB0 = me.manager.ruleTableB0;
 				me.engine.isRuleTree = true;
 			}
 
@@ -19522,7 +19538,6 @@ View.prototype.clearStepSamples = function() {
 
 		// reset Identify before resizing the Viewer to prevent Cell Period Map generations
 		view.lastIdentifyType = "";
-		view.engine.countList = null;
 
 		// set the standalone viewer size
 		view.displayWidth = ViewConstants.minViewerWidth;

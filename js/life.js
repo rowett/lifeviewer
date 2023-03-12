@@ -489,6 +489,7 @@
 		/** @type {number} */ this.ruleTableCompressedRules = 0;
 		/** @type {number} */ this.ruleTableNeighbourhood = 0;
 		/** @type {number} */ this.ruleTableDups = 0;
+		/** @type {boolean} */ this.ruleTableB0 = false;
 
 		// identify lists
 		/** @type {Int32Array} */ this.hashList = null;
@@ -2461,7 +2462,7 @@
 
 		// set colours for period 1 and oscillator period
 		periodCols[0] = "black";
-		periodCols[1] = "rgb(136,136,136)";
+		periodCols[1] = "rgb(144,144,144)";
 		periodCols[this.popSubPeriod.length - 1] = "rgb(238,238,238)";
 
 		// create a colour for state 6 cells
@@ -3771,12 +3772,12 @@
 								this.modType = this.checkModHashType(extent, hash1, modChecks[0].modType, deltaX, deltaY);
 								if (this.modType !== -1) {
 
-									//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
+									console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
 	
 									this.modValue = p - gen1;
 								} else {
 
-									//console.log(p, "gen", this.counter, "verify failed");
+									console.log(p, "gen", this.counter, "verify failed");
 
 									this.modValue = -1;
 								}
@@ -3797,7 +3798,7 @@
 										// potential Mod found so create verification record
 										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatches[j]);
 	
-										//console.log(p, "gen", this.counter, "type", modMatches[j], LifeConstants.modTypeName[modMatches[j]], "check at", p + gen1, "delta", deltaX, deltaY);
+										console.log(p, "gen", this.counter, "type", modMatches[j], LifeConstants.modTypeName[modMatches[j]], "check at", p + gen1, "delta", deltaX, deltaY);
 	
 									}
 								}
@@ -7891,6 +7892,9 @@
 			/** @type {Array<Uint16Array>} */ currentStaticTileGrid = this.staticTileGrid,
 			/** @type {Array<Uint16Array>} */ currentColourTileGrid = this.colourTileGrid,
 			/** @type {Array<Uint16Array>} */ currentColourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ currentOccTileMap = this.occTileMap,
+			/** @type {Array<Uint16Array>} */ currentOccMergedTileMap = this.occMergedTileMap,
+
 
 			// current tile height
 			/** @type {number} */ currentTileHeight = this.tileRows,
@@ -7954,6 +7958,12 @@
 			this.staticTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.staticTileGrid");
 			this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
 			this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
+			if (currentOccTileMap) {
+				this.occTileMap = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.occTileMap");
+			}
+			if (currentOccMergedTileMap) {
+				this.occMergedTileMap = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.occMergedTileMap");
+			}
 
 			// blank row for life grid to prevent wrap
 			this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow"));
@@ -12329,6 +12339,91 @@
 		}
 	};
 
+	// clear outside boundary for RuleTable B0 rules
+	Life.prototype.clearOutsideRuleTableB0 = function() {
+			// bounding box
+		var	/** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2),
+			/** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2),
+			/** @type {number} */ rightX = leftX + this.boundedGridWidth - 1,
+			/** @type {number} */ topY = bottomY + this.boundedGridHeight - 1,
+
+			// border around bounded grid
+			/** @const {number} */ border = 1 << this.tilePower,
+
+			// box around bounded grid
+			/** @type {number} */ boxLeft = leftX - border,
+			/** @type {number} */ boxBottom = bottomY - border,
+			/** @type {number} */ boxRight = rightX + border,
+			/** @type {number} */ boxTop = topY + border,
+
+			// counters
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null;
+
+		// swap grids every generation
+		if ((this.counter & 1) !== 0) {
+			colourGrid = this.nextColourGrid;
+		}
+
+		// clip box around bounded grid to grid
+		if (boxLeft < 0) {
+			boxLeft = 0;
+		}
+
+		if (boxRight >= this.width) {
+			boxRight = this.width - 1;
+		}
+
+		if (boxBottom < 0) {
+			boxBottom = 0;
+		}
+
+		if (boxBottom >= this.height) {
+			boxBottom = this.height - 1;
+		}
+
+		// clear cells outside the grid
+		for (y = boxBottom; y <= boxTop; y += 1) {
+			colourRow = colourGrid[y];
+			if (y < bottomY || y > topY) {
+				for (x = boxLeft; x <= boxRight; x += 1) {
+					if (colourRow[x] !== 0) {
+						colourRow[x] = 0;
+					}
+				}
+			} else {
+				for (x = boxLeft; x <= boxRight; x += 1) {
+					if (x < leftX || x > rightX) {
+						if (colourRow[x] !== 0) {
+							colourRow[x] = 0;
+						}
+					}
+				}
+			}
+		}
+		
+		// now reset the tile map
+		this.tileGrid.whole.fill(0);
+		this.nextTileGrid.whole.fill(0);
+		this.colourTileGrid.whole.fill(0);
+		this.colourTileHistoryGrid.whole.fill(0);
+		this.setBoundedTiles();
+
+		// recalculate population
+		this.population = 0;
+		for (y = bottomY; y <= topY; y += 1) {
+			colourRow = colourGrid[y];
+			for (x = leftX; x <= rightX; x += 1) {
+				if (colourRow[x] !== 0) {
+					this.population += 1;
+				}
+			}
+		}
+	};
+
 	// clear boundary
 	Life.prototype.clearBoundary = function(/** @type {number} */ extra) {
 		// life grid
@@ -13081,13 +13176,19 @@
 			/** @type {number} */ rightX = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
-			/** @type {number} */ value = 0;
+			/** @type {number} */ value = 0,
+
+			// rows
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null;
 
 		// handle bounded grid on tile boundary
 		for (i = 0; i <= 1; i += 1) {
-		    leftX = (Math.round((this.width - width) / 2 - 1) + boxOffset + i) >> this.tilePower;
-		    rightX = (Math.round((this.width + width) / 2) + boxOffset - i) >> this.tilePower;
-		    bottomY = (Math.round((this.height - height) / 2 - 1 + i) + boxOffset) >> this.tilePower;
+			leftX = (Math.round((this.width - width) / 2 - 1) + boxOffset + i) >> this.tilePower;
+			rightX = (Math.round((this.width + width) / 2) + boxOffset - i) >> this.tilePower;
+			bottomY = (Math.round((this.height - height) / 2 - 1 + i) + boxOffset) >> this.tilePower;
 			topY = (Math.round((this.height + height) / 2) + boxOffset - i) >> this.tilePower;
 
 			// check for infinite height
@@ -13116,38 +13217,57 @@
 				topY = (this.height >> this.tilePower) - 1;
 			}
 
-			// set the top and bottom row of the bounded grid in the tile map
-			for (x = leftX; x <= rightX; x += 1) {
-				value = -1;
+			// check for RuleTable B0 in Bounded Grid
+			if (this.ruleTableB0) {
+				// for B0 set all tiles in the bounded grid
+				for (y = bottomY; y <= topY; y += 1) {
+					tileRow = this.tileGrid[y];
+					nextTileRow = this.nextTileGrid[y];
+					colourTileRow = this.colourTileGrid[y];
+					colourTileHistoryRow = this.colourTileHistoryGrid[y];
 
-				// bottom row
-				this.tileGrid[bottomY][x >> 4] |= value;
-				this.nextTileGrid[bottomY][x >> 4] |= value;
-				this.colourTileGrid[bottomY][x >> 4] |= value;
-				this.colourTileHistoryGrid[bottomY][x >> 4] |= value;
-
-				// top row
-				this.tileGrid[topY][x >> 4] |= value;
-				this.nextTileGrid[topY][x >> 4] |= value;
-				this.colourTileGrid[topY][x >> 4] |= value;
-				this.colourTileHistoryGrid[topY][x >> 4] |= value;
-			}
-
-			// set left and right column of the bounded grid in the tile map
-			for (y = bottomY; y <= topY; y += 1) {
-				// left column
-				value = 1 << (~leftX & 15);
-				this.tileGrid[y][leftX >> 4] |= value;
-				this.nextTileGrid[y][leftX >> 4] |= value;
-				this.colourTileGrid[y][leftX >> 4] |= value;
-				this.colourTileHistoryGrid[y][leftX >> 4] |= value;
-
-				// right column
-				value = 1 << (~rightX & 15);
-				this.tileGrid[y][rightX >> 4] |= value;
-				this.nextTileGrid[y][rightX >> 4] |= value;
-				this.colourTileGrid[y][rightX >> 4] |= value;
-				this.colourTileHistoryGrid[y][rightX >> 4] |= value;
+					for (x = leftX; x <= rightX ; x += 1) {
+						value = 1 << (~x & 15);
+						tileRow[x >> 4] |= value;
+						nextTileRow[x >> 4] |= value;
+						colourTileRow[x >> 4] |= value;
+						colourTileHistoryRow[x >> 4] |= value;
+					}
+				}
+			} else {
+				// set the top and bottom row of the bounded grid in the tile map
+				for (x = leftX; x <= rightX; x += 1) {
+					value = 1 << (~x & 15);
+	
+					// bottom row
+					this.tileGrid[bottomY][x >> 4] |= value;
+					this.nextTileGrid[bottomY][x >> 4] |= value;
+					this.colourTileGrid[bottomY][x >> 4] |= value;
+					this.colourTileHistoryGrid[bottomY][x >> 4] |= value;
+	
+					// top row
+					this.tileGrid[topY][x >> 4] |= value;
+					this.nextTileGrid[topY][x >> 4] |= value;
+					this.colourTileGrid[topY][x >> 4] |= value;
+					this.colourTileHistoryGrid[topY][x >> 4] |= value;
+				}
+	
+				// set left and right column of the bounded grid in the tile map
+				for (y = bottomY; y <= topY; y += 1) {
+					// left column
+					value = 1 << (~leftX & 15);
+					this.tileGrid[y][leftX >> 4] |= value;
+					this.nextTileGrid[y][leftX >> 4] |= value;
+					this.colourTileGrid[y][leftX >> 4] |= value;
+					this.colourTileHistoryGrid[y][leftX >> 4] |= value;
+	
+					// right column
+					value = 1 << (~rightX & 15);
+					this.tileGrid[y][rightX >> 4] |= value;
+					this.nextTileGrid[y][rightX >> 4] |= value;
+					this.colourTileGrid[y][rightX >> 4] |= value;
+					this.colourTileHistoryGrid[y][rightX >> 4] |= value;
+				}
 			}
 		}
 	};
@@ -15828,6 +15948,11 @@
 		// check for [R]History
 		if (this.isLifeHistory) {
 			this.clearBoundaryOfState6();
+		}
+
+		// check for RuleTable B0
+		if (this.ruleTableB0) {
+			this.clearOutsideRuleTableB0();
 		}
 	};
 

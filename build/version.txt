@@ -1,3 +1,8 @@
+Build 946
+- fixed Identify issue with grid growth when computing occupancy for spaceships
+- fixed Clear Outside bounding box issue for [R]History rules
+- added support for RuleTable B0 rules in Bounded Grids
+
 Build 945
 - fixed Identify failing
 
