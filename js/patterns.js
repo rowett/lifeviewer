@@ -153,7 +153,7 @@
 	};
 
 	// add a new rule to the cache
-	RuleTreeCache.add = function(/** @type {Pattern} */ pattern, /** @type {number} */ fetchTime, /** @type {number} */ decodeTime, /** @type {number} */ ruleSize, /** @type {string} */ definition) {
+	RuleTreeCache.add = function(/** @type {Pattern} */ pattern, /** @type {number} */ fetchTime, /** @type {number} */ decodeTime, /** @type {number} */ ruleSize, /** @type {string} */ definition, /** @type {boolean} */ ruleTableB0) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ l = this.rules.length,
 			/** @type {boolean} */ found = false,
@@ -180,13 +180,13 @@
 				this.rules[l] = {name: name, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
 					nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
 					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours, icons: pattern.ruleTableIcons,
-					names: pattern.ruleTableNames, isHex: pattern.ruleTreeIsHex};
+					names: pattern.ruleTableNames, isHex: pattern.ruleTreeIsHex, b0: ruleTableB0};
 			} else {
 				// add @TABLE
 				this.rules[l] = {name: name, isTree: false, states: pattern.ruleTableStates, neighbourhood: pattern.ruleTableNeighbourhood,
 					compressed: pattern.ruleTableCompressedRules, output: pattern.ruleTableOutput,
 					LUT: pattern.ruleTableLUT, colours: pattern.ruleTreeColours, dups: pattern.ruleTableDups,
-					icons: pattern.ruleTableIcons, names: pattern.ruleTableNames};
+					icons: pattern.ruleTableIcons, names: pattern.ruleTableNames, b0: ruleTableB0};
 			}
 
 			// create metadata
@@ -253,6 +253,7 @@
 			pattern.ruleTableIcons = record.icons;
 			pattern.ruleTableNames = record.names;
 			pattern.isNone = false;
+			pattern.manager.ruleTableB0 = record.b0;
 		}
 
 		// return whether populated
@@ -8758,7 +8759,7 @@
 				valid = false;
 				if (reader.getNextToken() === ":") {
 					if (reader.nextTokenIsNumeric()) {
-						states = reader.getNextTokenAsNumber();
+						states = reader.getNextTokenAsNumber() | 0;
 						if (states >= 2 && states <= 256) {
 							valid = true;
 						} else {
@@ -9225,7 +9226,7 @@
 				valid = false;
 				if (reader.getNextToken() === "=") {
 					if (reader.nextTokenIsNumeric()) {
-						states = reader.getNextTokenAsNumber();
+						states = reader.getNextTokenAsNumber() | 0;
 						if (states >= 2 && states <= 256) {
 							valid = true;
 						} else {
@@ -9244,7 +9245,7 @@
 				valid = false;
 				if (reader.getNextToken() === "=") {
 					if (reader.nextTokenIsNumeric()) {
-						neighbours = reader.getNextTokenAsNumber();
+						neighbours = reader.getNextTokenAsNumber() | 0;
 						if (neighbours === 4 || neighbours === 8) {
 							valid = true;
 						} else {
@@ -9263,7 +9264,7 @@
 				valid = false;
 				if (reader.getNextToken() === "=") {
 					if (reader.nextTokenIsNumeric()) {
-						nodes = reader.getNextTokenAsNumber();
+						nodes = reader.getNextTokenAsNumber() | 0;
 						if (nodes >= neighbours && nodes <= 100000000) {
 							valid = true;
 						} else {
@@ -9788,7 +9789,7 @@
 
 					// if rule tree decoded successfully then add to cache
 					if (pattern.ruleTreeStates !== -1 || pattern.ruleTableOutput !== null) {
-						RuleTreeCache.add(pattern, fetchTime, decodeTime, ruleText.length, me.ruleLoaderDefinition);
+						RuleTreeCache.add(pattern, fetchTime, decodeTime, ruleText.length, me.ruleLoaderDefinition, me.ruleTableB0);
 					} else {
 						RuleTreeCache.requestFailed(pattern);
 					}

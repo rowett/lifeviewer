@@ -12476,6 +12476,7 @@
 		// life grid
 		var	/** @type {Array<Uint16Array>} */ grid = null,
 			/** @type {Array<Uint8Array>} */ colourGrid = null,
+			/** @type {number} */ state = 0,
 
 			// box offset
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
@@ -12516,7 +12517,7 @@
 			/** @type {Uint16Array} */ gridy = null;
 
 		// determine the buffer for current generation
-		if (!this.isPCA || this.isRuleTree) {
+		if (!(this.isPCA || this.isRuleTree)) {
 			if ((this.counter & 1) !== 0) {
 				grid = this.nextGrid16;
 			} else {
@@ -12584,7 +12585,7 @@
 		}
 
 		// check for Generations or HROT
-		if (this.multiNumStates !== -1) {  // TBD what about population count?
+		if (this.multiNumStates !== -1) {
 			// clear the colour grid boundary
 			colourGrid = this.colourGrid;
 
@@ -12609,27 +12610,72 @@
 			// check for infinite width
 			if (this.boundedGridWidth === 0) {
 				// just clear top and bottom
-				bottomColourRow.fill(0);
-				topColourRow.fill(0);
+				for (x = 0; x < this.width; x += 1) {
+					state = bottomColourRow[x];
+					if (state !== 0) {
+						bottomColourRow[x] = 0;
+						remove += 1;
+					}
+
+					state = topColourRow[x];
+					if (state !== 0) {
+						topColourRow[x] = 0;
+						remove += 1;
+					}
+				}
 			} else {
 				// check for infinite height
 				if (this.boundedGridHeight === 0) {
 					// just clear left and right
 					for (y = 0; y < this.height; y += 1) {
-						colourGrid[y][leftX] = 0;
-						colourGrid[y][rightX] = 0;
+						state = colourGrid[y][leftX];
+						if (state !== 0) {
+							colourGrid[y][leftX] = 0;
+							remove += 1;
+						}
+
+						state = colourGrid[y][rightX];
+						if (state !== 0) {
+							colourGrid[y][rightX] = 0;
+							remove += 1;
+						}
 					}
 				} else {
 					// clear top and bottom boundary
-					bottomColourRow.fill(0, leftX, rightX + 1);
-					topColourRow.fill(0, leftX, rightX + 1);
+					for (x = 0; x < this.width; x += 1) {
+						state = bottomColourRow[x];
+						if (state !== 0) {
+							bottomColourRow[x] = 0;
+							remove += 1;
+						}
+
+						state = topColourRow[x];
+						if (state !== 0) {
+							topColourRow[x] = 0;
+							remove += 1;
+						}
+					}
 
 					// clear left and right boundary
 					for (y = bottomY + 1; y <= topY - 1; y += 1) {
-						colourGrid[y][leftX] = 0;
-						colourGrid[y][rightX] = 0;
+						state = colourGrid[y][leftX];
+						if (state !== 0) {
+							colourGrid[y][leftX] = 0;
+							remove += 1;
+						}
+
+						state = colourGrid[y][rightX];
+						if (state !== 0) {
+							colourGrid[y][rightX] = 0;
+							remove += 1;
+						}
 					}
 				}
+			}
+
+			// update population for RuleTable rules
+			if (this.isRuleTree) {
+				this.population -= remove;
 			}
 		}
 	};

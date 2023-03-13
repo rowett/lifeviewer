@@ -1,3 +1,8 @@
+Build 948
+- fixed RuleTable B0 error
+- fixed population calculation for RuleTable rules in Bounded Grids
+- ensure @TABLE and @TREE header values are read as integers
+
 Build 947
 - fixed RLE with initial Niemec state not being recognized
 - fixed [R]History with Bounded Grids
