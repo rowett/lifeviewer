@@ -9526,6 +9526,9 @@
 		// clear loading flag
 		this.loadingFromRepository = false;
 
+		// clear rule table B0 flag
+		this.ruleTableB0 = false;
+
 		// flag that no illegal states have been found
 		this.illegalState = false;
 

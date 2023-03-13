@@ -1,5 +1,6 @@
 Build 947
 - fixed RLE with initial Niemec state not being recognized
+- fixed [R]History with Bounded Grids
 
 Build 946
 - fixed Identify issue with grid growth when computing occupancy for spaceships

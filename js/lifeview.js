@@ -3642,7 +3642,8 @@
 			/** @type {number} */ gridHeight = this.engine.height,
 			/** @type {Array<Uint8Array>} */ stateMap = null,
 			/** @type {Uint8Array} */ stateRow = null,
-			/** @type {number} */ numStates = this.engine.multiNumStates - 1;
+			/** @type {number} */ numStates = this.engine.multiNumStates - 1,
+			/** @type {number} */ wasState6 = 0;
 
 		// get number of states
 		if (numStates === -2) {
@@ -3863,7 +3864,7 @@
 										destFlag = dest & 1;
 										result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 									}
-									this.engine.setState(xOff + x, yOff + y, result, true);
+									wasState6 |= this.engine.setState(xOff + x, yOff + y, result, true);
 
 									// check for grid growth
 									while (width !== this.engine.width || height !== this.engine.height) {
@@ -3931,6 +3932,12 @@
 					}
 				}
 			}
+		}
+
+		// check if [R]History state6 changed
+		if (this.engine.isLifeHistory && wasState6) {
+			// update state 6 grid
+			this.engine.populateState6MaskFromColGrid();
 		}
 
 		// paste any edits
@@ -17349,6 +17356,10 @@ View.prototype.clearStepSamples = function() {
 		this.xyLabel.deleted = true;
 		this.selSizeLabel.deleted = true;
 		
+		// clear rule table B0 flag
+		this.manager.ruleTableB0 = false;
+		this.engine.ruleTableB0 = false;
+
 		// attempt to load the pattern
 		this.origDisplayWidth = this.displayWidth;
 		this.origDisplayHeight = this.displayHeight;
@@ -17672,6 +17683,7 @@ View.prototype.clearStepSamples = function() {
 			me.engine.ruleTableLUT = null;
 			me.stateNames = [];
 			me.engine.isRuleTree = false;
+			me.engine.ruleTableB0 = false;
 
 			if (pattern.ruleTreeStates !== -1) {
 				me.engine.ruleTreeNeighbours = pattern.ruleTreeNeighbours;
