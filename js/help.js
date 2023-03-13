@@ -1696,6 +1696,10 @@
 							}
 						}
 					}
+					if (view.engine.cellPeriodState6) {
+						this.renderColourBox(view, 0x60, 0x60, 0x60, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						y = this.renderHelpLine(view, "  State6", "\t\t\t" + this.rgbString(0x60, 0x60, 0x60).trim(), ctx, x, y, height, helpLine);
+					}
 					this.renderColourBox(view, 0, 0, 0, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 					y = this.renderHelpLine(view, "  Back", "\t\t\t" + this.rgbString(0, 0, 0).trim(), ctx, x, y, height, helpLine);
 					this.renderColourBox(view, 0x50, 0x50, 0x50, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);

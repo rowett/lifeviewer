@@ -7732,39 +7732,38 @@
 				}
 				break;
 
-			// found size and rule definition
-			case "x":
-				// decode rule (size is ignored and computed from the read pattern)
-				index += this.decodeRule(pattern, source.substring(index), true, allocator);
-				sawRule = true;
-				break;
-
 			// newline
 			case "\n":
 				// ignore
 				index += 1;
 				break;
 
-			// other characters should be bitmap start
+			// other characters should be size and rule definition or bitmap start
 			default:
-				// check if already decoded
-				if (decoded) {
-					// add to title
-					index += this.addToTitle(pattern, "", source.substring(index), true);
+				if (current === "x" && !sawRule) {
+					// decode rule (size is ignored and computed from the read pattern)
+					index += this.decodeRule(pattern, source.substring(index), true, allocator);
+					sawRule = true;
 				} else {
-					// mark decoded
-					decoded = true;
-
-					// start of bitmap so attempt to size the pattern
-					j = this.decodeRLEString(pattern, source.substring(index), false, allocator);
-					if (j !== -1) {
-						// looks valid so check if pattern is too big
-						if (pattern.tooBig) {
-							// pattern too big so skip to process any after comments
-							index += j;
-						} else {
-							// pattern is good so decode the bitmap
-							index += this.decodeRLEString(pattern, source.substring(index), true, allocator);
+					// check if already decoded
+					if (decoded) {
+						// add to title
+						index += this.addToTitle(pattern, "", source.substring(index), true);
+					} else {
+						// mark decoded
+						decoded = true;
+	
+						// start of bitmap so attempt to size the pattern
+						j = this.decodeRLEString(pattern, source.substring(index), false, allocator);
+						if (j !== -1) {
+							// looks valid so check if pattern is too big
+							if (pattern.tooBig) {
+								// pattern too big so skip to process any after comments
+								index += j;
+							} else {
+								// pattern is good so decode the bitmap
+								index += this.decodeRLEString(pattern, source.substring(index), true, allocator);
+							}
 						}
 					}
 				}
@@ -9177,6 +9176,19 @@
 		return isHex;
 	};
 
+	// check for B0 in @TREE
+	PatternManager.prototype.checkRuleTreeB0 = function(/** @type {Uint32Array} */ a, /** @type {Uint8Array} */ b, /** @type {number} */ neighbours, /** @type {number} */ base) {
+		if (neighbours === 4) {
+			if (b[a[a[a[a[base]]]]] !== 0) {
+				this.ruleTableB0 = true;
+			}
+		} else {
+			if (b[a[a[a[a[a[a[a[a[base]]]]]]]]] !== 0) {
+				this.ruleTableB0 = true;
+			}
+		}
+	};
+
 	// decode rule table tree
 	/** @returns {boolean} */
 	PatternManager.prototype.decodeTree = function(/** @type {Pattern} */ pattern, /** @type {Script} */ reader) {
@@ -9197,6 +9209,9 @@
 			/** @type {number} */ vcnt = 0,
 			/** @type {number} */ v = 0,
 			/** @type {number} */ i = 0;
+
+		// reset B0 flag
+		this.ruleTableB0 = false;
 
 		// read first three lines
 		i = 0;
@@ -9390,6 +9405,9 @@
 			this.executable = true;
 			this.extendedFormat = false;
 			pattern.isNone = false;
+
+			// check for B0
+			this.checkRuleTreeB0(pattern.ruleTreeA, pattern.ruleTreeB, pattern.ruleTreeNeighbours, pattern.ruleTreeBase);
 
 			// create default colours
 			this.createDefaultTreeColours(pattern, pattern.ruleTreeStates);

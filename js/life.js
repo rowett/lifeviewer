@@ -1821,6 +1821,9 @@
 						// update the hash
 						hash = (hash * factor) ^ y;
 						hash = (hash * factor) ^ x;
+						if (overlayGrid[cy + bottom][cx + left] === state6) {
+							hash = (hash * factor) ^ 6;
+						}
 					}
 				} else {
 					if (this.isSuper) {
@@ -1919,108 +1922,123 @@
 
 	// check for a specific mod transformation
 	/** @returns {number} */
-	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ trans, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
-		var	/** @type {number} */ hash = 0,
-			/** @type {number} */ hashY = 0,
+	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ initialMatches, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
+		var	/** @type {number} */ modMatch = 0,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree && !this.isLifeHistory),
-			/** @type {boolean} */ isSpaceship = (deltaX !==0 && deltaY !== 0);
+			/** @type {boolean} */ isSpaceship = (deltaX !==0 && deltaY !== 0),
+			/** @type {number} */ trans = -1;
 
-		// get the hash at the specific transformation
-		hash = this.getModHash(box, trans, twoState);
+		// get the matching hashes
+		modMatch = this.checkModHash(box, initialHash, deltaX, deltaY);
 
-		if (hash === initialHash) {
+		// mask with the original matches
+		modMatch &= initialMatches;
+
+		if (modMatch) {
 			// if this is FlipX then check if it is also true for FlipY
-			if (trans === LifeConstants.modFlipX) {
-				hashY = this.getModHash(box, LifeConstants.modFlipY, twoState);
+			if (modMatch & (1 << LifeConstants.modFlipX)) {
+				trans = LifeConstants.modFlipX;
 
 				// check for 90 degree rotates
-				if (hashY === hash) {
+				if (modMatch & (1 << LifeConstants.modFlipY)) {
 					trans = LifeConstants.modFlipXorY;
 
 					// check for Rot90
-					hashY = this.getModHash(box, LifeConstants.modRot90, twoState);
-					if (hashY === hash) {
+					if (modMatch & (1 << LifeConstants.modRot90)) {
 						// check for Rot270
-						hashY = this.getModHash(box, LifeConstants.modRot90, twoState);
-						if (hashY === hash) {
+						if (modMatch & (1 << LifeConstants.modRot270)) {
 							trans = LifeConstants.modFlipXorYorRotCWorCCW;
 						}
 					} else {
 						// check for FlipDiag
-						hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
-						if (hashY === hash) {
-							hashY = this.getModHash(box, LifeConstants.modRot90FlipY, twoState);
-							if (hashY === hash) {
+						if (modMatch & (1 << LifeConstants.modRot90FlipX)) {
+							if (modMatch & (1 << LifeConstants.modRot90FlipY)) {
 								trans = LifeConstants.modFlipOrthorDiag;
 							}
 						}
 					}
 				} else {
 					// check for 180 degree rotates
-					hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
-					if (hashY === hash) {
+					if (modMatch & (1 << LifeConstants.modRot180)) {
 						trans = LifeConstants.modFlipXorRot180;
 					}
 				}
 			}	
 
 			// if FlipY then check for FlipX
-			if (trans === LifeConstants.modFlipY) {
-				hashY = this.getModHash(box, LifeConstants.modFlipX, twoState);
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modFlipY))) {
+				trans = LifeConstants.modFlipY;
 
 				// check for 90 degree rotates
-				if (hashY === hash) {
+				if (modMatch & (1 << LifeConstants.modFlipX)) {
 					trans = LifeConstants.modFlipXorY;
 
 					// check for Rot90
-					hashY = this.getModHash(box, LifeConstants.modRot90, twoState);
-					if (hashY === hash) {
+					if (modMatch & (1 << LifeConstants.modRot90)) {
 						// check for Rot270
-						hashY = this.getModHash(box, LifeConstants.modRot90, twoState);
-						if (hashY === hash) {
+						if (modMatch & (1 << LifeConstants.modRot270)) {
 							trans = LifeConstants.modFlipXorYorRotCWorCCW;
 						}
 					} else {
 						// check for FlipDiag
-						hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
-						if (hashY === hash) {
-							hashY = this.getModHash(box, LifeConstants.modRot90FlipY, twoState);
-							if (hashY === hash) {
+						if (modMatch & (1 << LifeConstants.modRot90FlipX)) {
+							if (modMatch & (1 << LifeConstants.modRot90FlipY)) {
 								trans = LifeConstants.modFlipOrthorDiag;
 							}
 						}
 					}
 				} else {
 					// check for 180 degree rotates
-					hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
-					if (hashY === hash) {
+					if (modMatch & (1 << LifeConstants.modRot180)) {
 						trans = LifeConstants.modFlipYorRot180;
 					}
 				}
 			}	
 
 			// if this is Rot90 then check if it also true for Rot270
-			if (trans === LifeConstants.modRot90) {
-				hashY = this.getModHash(box, LifeConstants.modRot270, twoState);
-				if (hashY === hash) {
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot90))) {
+				trans = LifeConstants.modRot90;
+
+				if (modMatch & (1 << LifeConstants.modRot270)) {
 					trans = LifeConstants.modRotCWorCCW;
 
 					// check for Flip X
-					hashY = this.getModHash(box, LifeConstants.modFlipX, twoState);
-					if (hashY === hash) {
+					if (modMatch & (1 << LifeConstants.modFlipX)) {
 						// check for Flip Y
-						hashY = this.getModHash(box, LifeConstants.modFlipY, twoState);
-						if (hashY === hash) {
+						if (modMatch & (1 << LifeConstants.modFlipY)) {
 							trans = LifeConstants.modFlipXorYorRotCWorCCW;
 						}
 					}
 
 					// check for Rot90FlipX
-					hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
-					if (hashY === hash) {
+					if (modMatch & (1 << LifeConstants.modRot90FlipX)) {
 						// check for Rot90FlipY
-						hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
-						if (hashY === hash) {
+						if (modMatch & (1 << LifeConstants.modRot90FlipY)) {
+							trans = LifeConstants.modFlipDiagorRot90;
+						}
+					}
+				}
+			}
+
+			// if this is Rot270 then check if it also true for Rot90
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot270))) {
+				trans = LifeConstants.modRot270;
+
+				if (modMatch & (1 << LifeConstants.modRot90)) {
+					trans = LifeConstants.modRotCWorCCW;
+
+					// check for Flip X
+					if (modMatch & (1 << LifeConstants.modFlipX)) {
+						// check for Flip Y
+						if (modMatch & (1 << LifeConstants.modFlipY)) {
+							trans = LifeConstants.modFlipXorYorRotCWorCCW;
+						}
+					}
+
+					// check for Rot90FlipX
+					if (modMatch & (1 << LifeConstants.modRot90FlipX)) {
+						// check for Rot90FlipY
+						if (modMatch & (1 << LifeConstants.modRot90FlipY)) {
 							trans = LifeConstants.modFlipDiagorRot90;
 						}
 					}
@@ -2028,15 +2046,15 @@
 			}
 
 			// if this is Flip / then check if it is also true for Flip \
-			if (trans === LifeConstants.modRot90FlipX) {
-				hashY = this.getModHash(box, LifeConstants.modRot90FlipY, twoState);
-				if (hash === hashY) {
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot90FlipX))) {
+				trans = LifeConstants.modRot90FlipX;
+
+				if (modMatch & (1 << LifeConstants.modRot90FlipY)) {
 					trans = LifeConstants.modFlipDiag;
 				} else {
 					// check for Rot180
 					if (!isSpaceship) {
-						hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
-						if (hash === hashY) {
+						if (modMatch & (1 << LifeConstants.modRot180)) {
 							trans = LifeConstants.modFlipDiagLRot180;
 						}
 					}
@@ -2044,15 +2062,15 @@
 			}
 
 			// if this is Flip \ then check if it is also true for Flip /
-			if (trans === LifeConstants.modRot90FlipY) {
-				hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
-				if (hash === hashY) {
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot90FlipY))) {
+				trans = LifeConstants.modRot90FlipY;
+
+				if (modMatch & (1 << LifeConstants.modRot90FlipX)) {
 					trans = LifeConstants.modFlipDiag;
 				} else {
 					// check for Rot180
 					if (!isSpaceship) {
-						hashY = this.getModHash(box, LifeConstants.modRot180, twoState);
-						if (hash === hashY) {
+						if (modMatch & (1 << LifeConstants.modRot180)) {
 							trans = LifeConstants.modFlipDiagLRot180;
 						}
 					}
@@ -2060,25 +2078,22 @@
 			}
 
 			// if this is Rot180 check for Flip / and Flip \
-			if (trans === LifeConstants.modRot180) {
-				hashY = this.getModHash(box, LifeConstants.modRot90FlipX, twoState);
-				if (hash === hashY) {
+			if (trans === -1 && (modMatch & LifeConstants.modRot180)) {
+				trans = LifeConstants.modRot180;
+
+				if (modMatch & (1 << LifeConstants.modRot90FlipX)) {
 					trans = LifeConstants.modFlipDiagLRot180;
 				} else {
-					hashY = this.getModHash(box, LifeConstants.modRot90FlipY, twoState);
-					if (hash === hashY) {
+					if (modMatch & (1 << LifeConstants.modRot90FlipY)) {
 						trans = LifeConstants.modFlipDiagRRot180;
 					}
 				}
 			}
-		} else{
-			// not found
-			trans = -1;
 		}
 
 		// check for diagonal spaceships
 		if (isSpaceship) {
-			if (trans === LifeConstants.modFlipDiag) {
+			if (modMatch & (1 << LifeConstants.modFlipDiag)) {
 				if (deltaX === deltaY) {
 					trans = LifeConstants.modRot90FlipX;
 				}
@@ -2087,10 +2102,10 @@
 				}
 			}
 
-			if (trans === LifeConstants.modRot90FlipY && deltaX === deltaY) {
+			if ((modMatch & (1 << LifeConstants.modRot90FlipY)) && deltaX === deltaY) {
 				trans = -1;
 			}
-			if (trans === LifeConstants.modRot90FlipX && deltaX === -deltaY) {
+			if ((modMatch & (1 << LifeConstants.modRot90FlipX)) && deltaX === -deltaY) {
 				trans = -1;
 			}
 		}
@@ -2100,7 +2115,7 @@
 	};
 
 	// check mod hashes
-	/** @returns {Array<number>} */
+	/** @returns {number} */
 	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ deltaX, /** @type{number} */ deltaY) {
 		var	/** @type {number} */ trans = 0,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree && !this.isLifeHistory),
@@ -2108,7 +2123,7 @@
 			/** @type {number} */ i = 0,
 			/** @type {boolean} */ valid = true,
 			/** @type {Array<number>} */ checkList = [],
-			/** @type {Array<number>} */ results = [];
+			/** @type {number} */ result = 0;
 
 		// check whether looking at oscillator or spaceship
 		if (deltaX === 0 && deltaY === 0) {
@@ -2144,12 +2159,12 @@
 
 				// add to results if valid
 				if (valid) {
-					results[results.length] = trans;
+					result |= 1 << trans;
 				}
 			}
 		}
 
-		return results;
+		return result;
 	};
 
 	// get hash from pattern
@@ -2196,6 +2211,9 @@
 					if (colourRow[cx] >= aliveStart || overlayRow[cx] === state6) {
 						hash = (hash * factor) ^ yshift;
 						hash = (hash * factor) ^ (cx - hashX);
+						if (overlayRow[cx] === state6) {
+							hash = (hash * factor) ^ 6;
+						}
 					}
 				}
 			} else {
@@ -2387,7 +2405,6 @@
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ row = 0,
-			/** @type {number} */ numState6 = 0,
 			/** @type {number} */ p = 0,
 			/** @type {number} */ s = 0,
 			/** @type {number} */ hue = 0,
@@ -3630,7 +3647,7 @@
 			/** @type {number} */ height1 = 0,
 			/** @type {number} */ nextHeat = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
-			/** @type {Array<number>} */ modMatches = [];
+			/** @type {number} */ modMatch = 0;
 
 		this.identifyDetectionTime = (performance.now() - this.identifyStartTime) / 1000;
 
@@ -3693,7 +3710,7 @@
 		}
 
 		// reset heat
-		this.minHeat = 16384 * 163484;
+		this.minHeat = 16384 * 16384;
 		this.maxHeat = 0;
 		this.heatVal = 0;
 
@@ -3707,6 +3724,20 @@
 			this.savePopulationData();
 
 			this.saveSnapshotIfNeeded(view);
+
+			// check if life just stopped
+			if (this.population === 0) {
+				// remember the generation that life stopped
+				if (view.diedGeneration === -1) {
+					view.diedGeneration = this.counter;
+
+					// if the pattern dies again then notify (this would be caused by drawing during playback)
+					view.emptyStart = false;
+				}
+
+				// exit loop
+				return;
+			}
 
 			//if (p && ((p & 4095) === 0)) {
 				//console.log(p, period, ((performance.now() - this.identifyStartTime) / 1000).toFixed(1) + " seconds");
@@ -3772,12 +3803,12 @@
 								this.modType = this.checkModHashType(extent, hash1, modChecks[0].modType, deltaX, deltaY);
 								if (this.modType !== -1) {
 
-									console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
+									//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
 	
 									this.modValue = p - gen1;
 								} else {
 
-									console.log(p, "gen", this.counter, "verify failed");
+									//console.log(p, "gen", this.counter, "verify failed");
 
 									this.modValue = -1;
 								}
@@ -3793,13 +3824,20 @@
 							if (p > 0 && (period % p === 0)) {
 								// ensure bounding box is the same size as the source
 								if ((((extent.rightX - extent.leftX + 1) === width0) && ((extent.topY - extent.bottomY) + 1) === height0) || ((extent.rightX - extent.leftX + 1) === height0) && ((extent.topY - extent.bottomY + 1) == width0)) {
-									modMatches = this.checkModHash(extent, hash0, deltaX, deltaY);
-									for (j = 0; j < modMatches.length; j += 1) {
+									modMatch = this.checkModHash(extent, hash0, deltaX, deltaY);
+									if (modMatch !== 0) {
 										// potential Mod found so create verification record
-										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatches[j]);
-	
-										console.log(p, "gen", this.counter, "type", modMatches[j], LifeConstants.modTypeName[modMatches[j]], "check at", p + gen1, "delta", deltaX, deltaY);
-	
+										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatch);
+		
+										//console.log(p, "gen", this.counter, "type", modMatch, "check at", p + gen1, "delta", deltaX, deltaY);
+
+										//for (j = 0; j <= LifeConstants.modRot90FlipY; j += 1) {
+											//if ((modMatch & (1 << j)) !== 0) {
+
+												//console.log(LifeConstants.modTypeName[j]);
+
+											//}
+										//}
 									}
 								}
 							}
@@ -4106,6 +4144,15 @@
 
 				// compute strict volatility and Mod for oscillator
 				this.computeStrictVolatility(period, i, view, true, 0, 0);
+			}
+		}
+
+		// check if Life died during volatility and mod calculation
+		if (this.population === 0) {
+			if (this.isPCA || this.isMargolus) {
+				return ["Life ended at generation " + this.counterMargolus, "Empty"];
+			} else {
+				return ["Life ended at generation " + this.counter, "Empty"];
 			}
 		}
 
@@ -17030,9 +17077,16 @@
 		index += 1;
 
 		// remove the cell
-		if (colourGrid[y][x] >= alive) {
-			colourGrid[y][x] = 0;
-			cleared += 1;
+		if (alive === 1) {
+			if (colourGrid[y][x] === alive) {
+				colourGrid[y][x] = dead;
+				cleared += 1;
+			}
+		} else {
+			if (colourGrid[y][x] >= alive) {
+				colourGrid[y][x] = dead;
+				cleared += 1;
+			}
 		}
 
 		// keep going until all cells processed
@@ -17063,7 +17117,7 @@
 					// check cell is on grid
 					if (tx === (tx & widthMask) && ty === (ty & heightMask)) {
 						// check if cell set
-						if (colourRow[tx] >= alive) {
+						if ((alive === 1 && colourRow[tx] === alive) || (alive > 1 && colourRow[tx] >= alive)) {
 							// remove the cell
 							colourRow[tx] = dead;
 							cleared += 1;

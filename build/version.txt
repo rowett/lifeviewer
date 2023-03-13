@@ -1,7 +1,11 @@
+Build 947
+- fixed RLE with initial Niemec state not being recognized
+
 Build 946
 - fixed Identify issue with grid growth when computing occupancy for spaceships
 - fixed Clear Outside bounding box issue for [R]History rules
 - added support for RuleTable B0 rules in Bounded Grids
+- fixed Life ending during Identify analysis
 
 Build 945
 - fixed Identify failing

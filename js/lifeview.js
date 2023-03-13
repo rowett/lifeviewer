@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 946,
+		/** @const {number} */ versionBuild : 947,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -17584,7 +17584,11 @@ View.prototype.clearStepSamples = function() {
 
 		// check for failed RuleTable
 		if (me.engine.ruleTableB0 && pattern && (pattern.gridType === -1 || (pattern.gridType !== -1 && (pattern.gridWidth === 0 || pattern.gridHeight === 0)))) {
-			me.manager.failureReason = "RuleTable B0 only valid with finite grid";
+			if (me.engine.ruleTableOutput === null) {
+				me.manager.failureReason = "@TREE B0 only valid with finite grid";
+			} else {
+				me.manager.failureReason = "@TABLE B0 only valid with finite grid";
+			}
 			pattern = null;
 		}
 
@@ -17680,7 +17684,7 @@ View.prototype.clearStepSamples = function() {
 				me.engine.ruleTreeColours = pattern.ruleTreeColours;
 				me.engine.ruleTableIcons = pattern.ruleTableIcons;
 				me.stateNames = pattern.ruleTableNames;
-				me.engine.ruleTableB0 = false;
+				me.engine.ruleTableB0 = me.manager.ruleTableB0;
 				me.engine.isRuleTree = true;
 			}
 
