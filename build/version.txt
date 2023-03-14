@@ -1,3 +1,18 @@
+Build 952
+- fixed Klein bottle with twist and shift
+- don't pause playback when all cells die if LOOP defined and enabled
+- when selection saved display "Selection Saved"
+- for cell info use [bounded] for Bounded Grid cells and [boundary] outside
+
+Build 951
+- ensure State 6 label fits in Cell Period Map legend
+- fixed Rot180 not being detected by Identify
+- disable Heat and Temperature for Identified patterns in Bounded Grids
+- make canonical version of Klein Bounded Grid show both dimensions
+
+Build 950
+- fixed PASTE not working at T=0 for HROT/LtL rules
+
 Build 949
 - allow Bounded Grid definitions with missing or all infinite dimensions
 - check for illegal pattern states in @TABLE rules

@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 949,
+		/** @const {number} */ versionBuild : 952,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5241,7 +5241,7 @@
 			y += h;
 		}
 
-		if (this.lastIdentifyType !== "Still Life" && !(this.engine.isMargolus || this.engine.altSpecified)) {
+		if (this.lastIdentifyType !== "Still Life" && !(this.engine.isMargolus || this.engine.altSpecified) && this.engine.boundedGridType === -1) {
 			// heat
 			this.identifyHeatLabel.setPosition(Menu.north, x, y);
 			this.identifyHeatValueLabel.setPosition(Menu.north, xv, y);
@@ -5249,10 +5249,12 @@
 		}
 
 		if (this.lastIdentifyType === "Oscillator") {
-			// temperature
-			this.identifyTemperatureLabel.setPosition(Menu.north, x, y);
-			this.identifyTemperatureValueLabel.setPosition(Menu.north, xv, y);
-			y += h;
+			if (this.engine.boundedGridType === -1) {
+				// temperature
+				this.identifyTemperatureLabel.setPosition(Menu.north, x, y);
+				this.identifyTemperatureValueLabel.setPosition(Menu.north, xv, y);
+				y += h;
+			}
 
 			// volatility
 			this.identifyVolatilityLabel.setPosition(Menu.north, x, y);
@@ -5527,7 +5529,12 @@ View.prototype.clearStepSamples = function() {
 				}
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
 					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[bounded] " + String(rawState);
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[bounded]";
+					if (((xPos === leftX - 1 || xPos === rightX + 1) && (yPos >= bottomY - 1 && yPos <= topY + 1)) ||
+						((yPos === bottomY - 1 || yPos === topY + 1) && (xPos >= leftX -1 && xPos <= rightX + 1))) {
+						this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[bounded]";
+					} else {
+						this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+					}
 				} else {
 					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
 					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
@@ -6073,8 +6080,8 @@ View.prototype.clearStepSamples = function() {
 						}
 					}
 
-					// stop the simulation unless the pattern was empty and this is after step 1
-					if (!wasEmpty) {
+					// stop the simulation unless the pattern was empty and this is after step 1 or looping
+					if (!wasEmpty && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 					}
 
@@ -6522,8 +6529,8 @@ View.prototype.clearStepSamples = function() {
 		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified);
-		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
+		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified) || (this.engine.boundedGridType !== -1);
+		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1);
 		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyCellsValueLabel.deleted = shown;
 		this.identifyBoxValueLabel.deleted = shown;
@@ -6533,8 +6540,8 @@ View.prototype.clearStepSamples = function() {
 		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified);
-		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
+		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified) || (this.engine.boundedGridType !== -1);
+		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1);
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
 		// undo and redo buttons
@@ -11739,7 +11746,11 @@ View.prototype.clearStepSamples = function() {
 	// save button
 	View.prototype.savePressed = function(/** @type {View} */ me) {
 		me.saveCurrentRLE(me);
-		me.menuManager.notification.notify("Saved", 15, 120, 15, true);
+		if (me.isSelection) {
+			me.menuManager.notification.notify("Selection Saved", 15, 120, 15, true);
+		} else {
+			me.menuManager.notification.notify("Saved", 15, 120, 15, true);
+		}
 	};
 
 	// load button

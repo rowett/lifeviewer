@@ -999,8 +999,7 @@
 					// check for ctrl key
 					if (ctrlKey) {
 						// save current pattern to source document node
-						me.saveCurrentRLE(me);
-						me.menuManager.notification.notify("Saved", 15, 120, 15, true);
+						me.savePressed(me);
 					} else {
 						// check for shift key
 						if (shiftKey) {

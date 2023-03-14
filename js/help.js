@@ -1667,11 +1667,13 @@
 					y = this.renderHelpLine(view, "Speed", view.lastIdentifySpeed, ctx, x, y, height, helpLine);
 				}	
 			}
-			if (view.lastIdentifyType !== "Still Life") {
+			if (view.lastIdentifyType !== "Still Life" && view.engine.boundedGridType === -1) {
 				y = this.renderHelpLine(view, "Heat", view.lastIdentifyHeat, ctx, x, y, height, helpLine);
 			}
 			if (view.lastIdentifyType === "Oscillator") {
-				y = this.renderHelpLine(view, "Temperature", view.lastIdentifyTemperature, ctx, x, y, height, helpLine);
+				if (view.engine.boundedGridType === -1) {
+					y = this.renderHelpLine(view, "Temperature", view.lastIdentifyTemperature, ctx, x, y, height, helpLine);
+				}
 				if (view.lastIdentifyStrict === "") {
 					y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility + " | N/A", ctx, x, y, height, helpLine);
 				} else {

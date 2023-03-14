@@ -11,6 +11,9 @@
 		/** @const {number} */ mode2History : 2,
 		/** @const {number} */ modeAny : 3,
 
+		// cell period table State 6 label
+		/** @const {string} */ state6Label : "St.6",
+
 		// number of snowflakes
 		/** @const {number} */ flakes : 50000,
 
@@ -2078,7 +2081,7 @@
 			}
 
 			// if this is Rot180 check for Flip / and Flip \
-			if (trans === -1 && (modMatch & LifeConstants.modRot180)) {
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot180))) {
 				trans = LifeConstants.modRot180;
 
 				if (modMatch & (1 << LifeConstants.modRot90FlipX)) {
@@ -2772,7 +2775,7 @@
 			numCols += 1;
 		}
 
-		// set the box width to the longest period value
+		// set the box width to the longest period value or the State 6 label
 		y = 0;
 		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
 			p = this.popSubPeriod[x];
@@ -2783,6 +2786,12 @@
 			}
 		}
 		x = ctx.measureText(String(y)).width;
+		if (this.cellPeriodState6) {
+			y = ctx.measureText(LifeConstants.state6Label).width;
+			if (y > x) {
+				x = y;
+			}
+		}
 
 		// draw the legend box
 		bottomY = (this.displayHeight - (numCols + 2) * rowSize) / 2;
@@ -2804,9 +2813,9 @@
 
 			// draw period
 			ctx.fillStyle = bgCol;
-			ctx.fillText("St.6", leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+			ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
 			ctx.fillStyle = fgCol;
-			ctx.fillText("St.6", leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+			ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
 
 			y += 1;
 		}
@@ -3780,7 +3789,7 @@
 				}
 			}
 
-			//console.log(p, "gen", this.counter, box, "width", (box.rightX - box.leftX + 1), "height", (box.topY - box.bottomY + 1));
+			//console.log(p, "gen", this.counter, extent, "width", (extent.rightX - extent.leftX + 1), "height", (extent.topY - extent.bottomY + 1));
 
 			// save hash for first two generations
 			if (p === 0) {
@@ -8873,7 +8882,7 @@
 			/** @type {number} */ bottomY = zoomBox.bottomY;
 
 		// ignore for PCA rules
-		if (!(this.isPCA || this.isRuleTree)) {
+		if (!(this.isPCA || this.isRuleTree || this.isHROT)) {
 			// set the colour grid from the grid
 			for (y = bottomY; y <= topY; y += 1) {
 				gridRow = grid[y];
@@ -13635,9 +13644,9 @@
 
 			// copy bottom row to above top
 			if (horizTwist) {
-				destX = rightX - ((i - horizShift + width) % width);
+				destX = rightX - ((i + horizShift + width) % width);
 			} else {
-				destX = leftX + ((i - horizShift + width) % width);
+				destX = leftX + ((i + horizShift + width) % width);
 			}
 
 			state = grid[bottomY][sourceX];
@@ -13664,9 +13673,9 @@
 
 			// check for vertical twist
 			if (vertTwist) {
-				destY = topY - ((i - vertShift + height) % height);
+				destY = topY - ((i + vertShift + height) % height);
 			} else {
-				destY = bottomY + ((i - vertShift + height) % height);
+				destY = bottomY + ((i + vertShift + height) % height);
 			}
 
 			state = grid[sourceY][leftX];
@@ -14392,9 +14401,9 @@
 
 			// copy bottom row to above top
 			if (horizTwist) {
-				destX = rightX - ((i - horizShift + width) % width);
+				destX = rightX - ((i + horizShift + width) % width);
 			} else {
-				destX = leftX + ((i - horizShift + width) % width);
+				destX = leftX + ((i + horizShift + width) % width);
 			}
 
 			state = grid[bottomY][sourceX];
@@ -14421,9 +14430,9 @@
 
 			// check for vertical twist
 			if (vertTwist) {
-				destY = topY - ((i - vertShift + height) % height);
+				destY = topY - ((i + vertShift + height) % height);
 			} else {
-				destY = bottomY + ((i - vertShift + height) % height);
+				destY = bottomY + ((i + vertShift + height) % height);
 			}
 
 			state = grid[sourceY][leftX];
@@ -15285,9 +15294,9 @@
 
 			// copy bottom row to above top
 			if (horizTwist) {
-				destX = rightX - ((i - horizShift + width) % width);
+				destX = rightX - ((i + horizShift + width) % width);
 			} else {
-				destX = leftX + ((i - horizShift + width) % width);
+				destX = leftX + ((i + horizShift + width) % width);
 			}
 
 			if ((grid[bottomY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
@@ -15313,9 +15322,9 @@
 
 			// check for vertical twist
 			if (vertTwist) {
-				destY = topY - ((i - vertShift + height) % height);
+				destY = topY - ((i + vertShift + height) % height);
 			} else {
-				destY = bottomY + ((i - vertShift + height) % height);
+				destY = bottomY + ((i + vertShift + height) % height);
 			}
 
 			// check if cell set

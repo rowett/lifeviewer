@@ -3270,8 +3270,8 @@
 				pattern.ruleName += "+" + pattern.gridHorizontalShift;
 			}
 
-			// add more if the height is not the same or vertical shift or twist are defined
-			if ((pattern.gridHeight !== pattern.gridWidth) || pattern.gridVerticalShift || pattern.gridVerticalTwist) {
+			// add more if the height is not the same or vertical shift or twist are defined or Klein
+			if ((pattern.gridHeight !== pattern.gridWidth) || pattern.gridVerticalShift || pattern.gridVerticalTwist || pattern.gridType === 2) {
 				// add the height
 				pattern.ruleName += "," + pattern.gridHeight;
 
@@ -7108,6 +7108,11 @@
 			width = -1;
 		}
 
+		// shift only valid if side is even
+		if ((shiftWidth !== 0 && (width & 1) !== 0) || (shiftHeight !== 0 && (height & 1) !== 0)) {
+			width = -1;
+		}
+
 		// if width and height are zero then removed bounded grid
 		if (width === 0 && height === 0) {
 			pattern.gridType = -1;
@@ -7121,6 +7126,15 @@
 		// one twist must be specified
 		if (!horizontalTwist && !verticalTwist) {
 			verticalTwist = true;	
+		}
+
+		// set shifts to a maxmimum of 1
+		if (shiftWidth > 1) {
+			shiftWidth = 1;
+		}
+
+		if (shiftHeight > 1) {
+			shiftHeight = 1;
 		}
 
 		// save read values
