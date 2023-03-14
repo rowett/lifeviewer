@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 948,
+		/** @const {number} */ versionBuild : 949,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5526,8 +5526,8 @@ View.prototype.clearStepSamples = function() {
 					topY = this.engine.maxGridSize;
 				}
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[bounded] " + String(rawState);
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[bounded]";
 				} else {
 					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
 					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
@@ -19554,6 +19554,7 @@ View.prototype.clearStepSamples = function() {
 
 		// reset Identify before resizing the Viewer to prevent Cell Period Map generations
 		view.lastIdentifyType = "";
+		view.engine.countList = null;
 
 		// set the standalone viewer size
 		view.displayWidth = ViewConstants.minViewerWidth;

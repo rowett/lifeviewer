@@ -6848,7 +6848,7 @@
 		var	/** @type {number} */ digit = 0,
 
 			// total value
-			/** @type {number} */ value = -1;
+			/** @type {number} */ value = 0;
 
 		// add space for peekahead
 		source += " ";
@@ -6893,8 +6893,12 @@
 			topLeft = false;
 			this.index += 1;
 		}
-
 		pattern.gridSphereAxisTopLeft = topLeft;
+
+		// if width and height are zero then removed bounded grid
+		if (width === 0 && height === 0) {
+			pattern.gridType = -1;
+		}
 	};
 
 	// decode torus and set width to -1 if invalid
@@ -6976,9 +6980,9 @@
 			width = -1;
 		}
 
-		// if width and height are zero then make invalid
+		// if width and height are zero then remove bounded grid
 		if (width === 0 && height === 0) {
-			width = -1;
+			pattern.gridType = -1;
 		}
 
 		// if shift is specified with infinite width or height then make invalid
@@ -7104,9 +7108,14 @@
 			width = -1;
 		}
 
-		// if width or height are zero then make invalid
-		if (width === 0 || height === 0) {
-			width = -1;
+		// if width and height are zero then removed bounded grid
+		if (width === 0 && height === 0) {
+			pattern.gridType = -1;
+		} else {
+			// if width or height are zero then make invalid
+			if (width === 0 || height === 0) {
+				width = -1;
+			}
 		}
 
 		// one twist must be specified
@@ -7150,6 +7159,11 @@
 			}
 		}
 
+		// if width and height are zero then removed bounded grid
+		if (width === 0 && height === 0) {
+			pattern.gridType = -1;
+		}
+
 		// save width and height
 		pattern.gridWidth = width;
 		pattern.gridHeight = height;
@@ -7182,9 +7196,9 @@
 			}
 		}
 
-		// if width and height are zero then make invalid
+		// if width and height are zero then make remove bounded grid
 		if (width === 0 && height === 0) {
-			width = -1;
+			pattern.gridType = -1;
 		}
 
 		// save width and height
@@ -7196,7 +7210,7 @@
 	/** @returns {boolean} */
 	PatternManager.prototype.decodeBoundedGrid = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// whether definition is valid
-		var	/** @type {boolean} */ valid = false;
+		var	/** @type {boolean} */ valid = true;
 
 		// remove whitespace from the grid
 		source = this.removeWhiteSpace(source).toLowerCase();
@@ -7204,6 +7218,8 @@
 		// check if any characters exist
 		if (source !== "") {
 			// check the grid type
+			valid = false;
+
 			pattern.gridType = this.boundedGridTypes.indexOf(source[0]);
 			if (pattern.gridType !== -1) {
 				// next character
@@ -8298,6 +8314,9 @@
 												isGreyScale = false;
 											}
 											valid = true;
+
+											// skip to end of line
+											reader.skipToNextLine();
 										}
 									}
 								}
@@ -9103,6 +9122,12 @@
 				reader.stepBack();
 				nextToken = "";
 			}
+		}
+
+		// check if the rule supports supplied pattern states
+		if (pattern.numStates > states) {
+			valid = false;
+			this.failureReason = "illegal state in pattern";
 		}
 
 		// check if decoded successfully

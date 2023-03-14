@@ -1,3 +1,11 @@
+Build 949
+- allow Bounded Grid definitions with missing or all infinite dimensions
+- check for illegal pattern states in @TABLE rules
+- allow comments in @ICONS colour definitions
+- scale Cell Period Map legend to text
+- remove RuleTable patterns when they hit the grid boundary
+- cell info now shows cells outside a Bounded Grid as [bounded]
+
 Build 948
 - fixed RuleTable B0 error
 - fixed population calculation for RuleTable rules in Bounded Grids
