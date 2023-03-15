@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 952,
+		/** @const {number} */ versionBuild : 957,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5720,6 +5720,8 @@ View.prototype.clearStepSamples = function() {
 			// saved bounding box
 			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
 			/** @type {BoundingBox} */ saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
+			/** @type {BoundingBox} */ historyBox = me.engine.historyBox,
+			/** @type {BoundingBox} */ saveHistoryBox = new BoundingBox(historyBox.leftX, historyBox.bottomY, historyBox.rightX, historyBox.topY),
 
 			// frame target time in ms
 			/** @type {number} */ frameTargetTime = (1000 / me.refreshRate),
@@ -6004,6 +6006,7 @@ View.prototype.clearStepSamples = function() {
 
 				// check if this is the last generation in the step
 				saveBox.set(zoomBox);
+				saveHistoryBox.set(historyBox);
 
 				// compute next generation
 				me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
@@ -6026,6 +6029,7 @@ View.prototype.clearStepSamples = function() {
 				// if nothing alive now then restore last bounding box
 				if (me.engine.population === 0) {
 					zoomBox.set(saveBox);
+					historyBox.set(saveHistoryBox);
 				}
 
 				// check for loop
@@ -6694,7 +6698,7 @@ View.prototype.clearStepSamples = function() {
 		shown = this.engine.isNone || !this.executable;
 		this.randomizeButton.locked = shown;
 		this.randomizePatternButton.locked = shown;
-		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom;
+		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom || (this.engine.boundedGridType !== -1 && (this.engine.boundedGridWidth === 0 || this.engine.boundedGridHeight === 0));
 		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";
 		this.copyRuleButton.locked = shown;
 		this.copyNeighbourhoodButton.locked = shown;
@@ -11749,7 +11753,7 @@ View.prototype.clearStepSamples = function() {
 		if (me.isSelection) {
 			me.menuManager.notification.notify("Selection Saved", 15, 120, 15, true);
 		} else {
-			me.menuManager.notification.notify("Saved", 15, 120, 15, true);
+			me.menuManager.notification.notify("Pattern Saved", 15, 120, 15, true);
 		}
 	};
 

@@ -1700,12 +1700,16 @@
 					}
 					if (view.engine.cellPeriodState6) {
 						this.renderColourBox(view, 0x60, 0x60, 0x60, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-						y = this.renderHelpLine(view, "  State6", "\t\t\t" + this.rgbString(0x60, 0x60, 0x60).trim(), ctx, x, y, height, helpLine);
+						y = this.renderHelpLine(view, "  State6", "    " + view.engine.cellPeriodState6 + "\t\t\t" + this.rgbString(0x60, 0x60, 0x60).trim(), ctx, x, y, height, helpLine);
 					}
 					this.renderColourBox(view, 0, 0, 0, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 					y = this.renderHelpLine(view, "  Back", "\t\t\t" + this.rgbString(0, 0, 0).trim(), ctx, x, y, height, helpLine);
 					this.renderColourBox(view, 0x50, 0x50, 0x50, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 					y = this.renderHelpLine(view, "  Grid", "\t\t\t" + this.rgbString(0x50, 0x50, 0x50).trim(), ctx, x, y, height, helpLine);
+					if (view.engine.boundedGridType !== -1) {
+						this.renderColourBox(view, 0x80, 0x80, 0x80, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						y = this.renderHelpLine(view, "  Bounded", "\t\t\t" + this.rgbString(0x80, 0x80, 0x80).trim(), ctx, x, y, height, helpLine);
+					}
 				}
 			}
 			if (view.lastIdentifyType === "Still Life") {
@@ -2062,7 +2066,7 @@
 		// check for bounded grid
 		if (view.engine.boundedGridType !== -1) {
 			// display bounded colour
-			if (view.engine.boundedGridType !== -1 && (view.engine.multiNumStates + view.engine.historyStates < 256)) {
+			if (view.engine.multiNumStates + view.engine.historyStates < 256) {
 				this.renderColourBox(view, view.customBoundedColour[0], view.customBoundedColour[1], view.customBoundedColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 				y = this.renderHelpLine(view, "Bounded", this.rgbString(view.customBoundedColour[0], view.customBoundedColour[1], view.customBoundedColour[2]), ctx, x, y, height, helpLine);
 			} else {

@@ -1,3 +1,22 @@
+Build 957
+- added Bounded Grid border to Cell Period Map
+- added State 6 period count to Help->Info->Identify
+
+Build 956
+- fixed empty hexagonal patterns with Bounded Grids not centering properly
+
+Build 955
+- KILLGLIDERS now respects state 4 in [R]History
+- remember camera zoom when all cells die in HistoryFit mode
+- fixed AutoFit for Hexagonal grids
+
+Build 954
+- disable Identify for Bounded Grids with an infinite dimension
+- Identify now considers all cells in a Bounded Grid (so only Oscillators or Still Life patterns are recognized)
+
+Build 953
+- change "Saved" to "Pattern Saved"
+
 Build 952
 - fixed Klein bottle with twist and shift
 - don't pause playback when all cells die if LOOP defined and enabled

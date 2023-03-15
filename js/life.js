@@ -401,7 +401,7 @@
 		/** @type {number} */ this.cellPeriodNumCols = 0;
 		/** @type {number} */ this.cellPeriodCellSize = 8;
 		/** @type {number} */ this.cellBorderSize = 1;
-		/** @type {boolean} */ this.cellPeriodState6 = false;
+		/** @type {number} */ this.cellPeriodState6 = 0;
 
 		// identify temporary results
 		/** @type {string} */ this.identifyMessage = "";
@@ -2408,6 +2408,7 @@
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ row = 0,
+			/** @type {number} */ row2 = 0,
 			/** @type {number} */ p = 0,
 			/** @type {number} */ s = 0,
 			/** @type {number} */ hue = 0,
@@ -2416,7 +2417,8 @@
 			/** @type {number} */ blue = 0,
 			/** @type {string} */ rgbString = "",
 			/** @type {number} */ pixCol = 0,
-			/** @type {number} */ gridCol = 0xFF505050,
+			/** @type {number} */ gridCol = 0xff505050,
+			/** @type {number} */ boundedCol = 0xff808080,
 			/** @type {number} */ cellBorderSize = this.cellBorderSize,
 			/** @type {number} */ gridBorderSize = 0,
 			/** @type {number} */ cellSize = 0,
@@ -2430,6 +2432,12 @@
 			/** @type {number} */ legendWidth = 50,
 			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
 			/** @type {number} */ height = this.displayHeight - (displayScale * 90);
+
+		// adjust the colours based on endian
+		if (!this.littleEndian) {
+			gridCol = 0x505050ff;
+			boundedCol = 0x808080ff;
+		}
 
 		// default to large cell size
 		this.cellPeriodCellSize = 8;
@@ -2482,7 +2490,7 @@
 
 		// set colours for period 1 and oscillator period
 		periodCols[0] = "black";
-		periodCols[1] = "rgb(144,144,144)";
+		periodCols[1] = "rgb(168,168,168)";
 		periodCols[this.popSubPeriod.length - 1] = "rgb(238,238,238)";
 
 		// create a colour for state 6 cells
@@ -2536,6 +2544,36 @@
 					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth + ((x + cellBorderSize) * cellSize);
 					for (cx = 0; cx < cellSize; cx += 1) {
 						data32[row + cx] = pixCol;
+					}
+				}
+			}
+		}
+
+		// draw the bounded grid if required
+		if (this.boundedGridType !== -1) {
+			// draw the bounded grid cells
+			y = 0;
+			for (cy = 0; cy < cellSize; cy += 1) {
+				// draw top row
+				row = cy * rowWidth;
+				for (x = 0; x < (this.cellPeriodWidth + 2) * cellSize; x += 1) {
+					data32[row + x] = boundedCol;
+				}
+
+				// draw bottom row
+				row += (this.cellPeriodHeight + 1) * cellSize * rowWidth;
+				for (x = 0; x < (this.cellPeriodWidth + 2) * cellSize; x += 1) {
+					data32[row + x] = boundedCol;
+				}
+			}
+
+			for (y = 0; y < this.cellPeriodHeight; y += 1) {
+				for (cy = 0; cy < cellSize; cy += 1) {
+					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth;
+					row2 = row + cellSize * (this.cellPeriodWidth + 1);
+					for (cx = 0; cx < cellSize; cx += 1) {
+						data32[row + cx] = boundedCol;
+						data32[row2 + cx] = boundedCol;
 					}
 				}
 			}
@@ -3600,13 +3638,14 @@
 			/** @type {Uint8Array} */ gridRow = null,
 			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
 
+		this.cellPeriodState6 = 0;
 		for (y = bottomY; y <= topY; y += 1) {
 			gridRow = grid[y];
 			row = (y - bottomY) * (rightX - leftX + 1);
 			for (x = leftX; x <= rightX; x += 1) {
 				if (gridRow[x] === state6) {
 					cellPeriod[row + x - leftX] = -1;
-					this.cellPeriodState6 = true;
+					this.cellPeriodState6 += 1;
 				}
 			}
 		}
@@ -3623,13 +3662,14 @@
 			/** @type {number} */ row = 0,
 			/** @type {Uint8Array} */ gridRow = null;
 
+		this.cellPeriodState6 = 0;
 		for (y = bottomY; y <= topY; y += 1) {
 			gridRow = grid[y];
 			row = (y - bottomY) * (rightX - leftX + 1);
 			for (x = leftX; x <= rightX; x += 1) {
 				if (gridRow[x] === 6) {
 					cellPeriod[row + x - leftX] = -1;
-					this.cellPeriodState6 = true;
+					this.cellPeriodState6 += 1;
 				}
 			}
 		}
@@ -3941,7 +3981,7 @@
 
 			// for [R]History and [R]Super add state 6 cells to map
 			if (isOscillator) {
-				this.cellPeriodState6 = false;
+				this.cellPeriodState6 = 0;
 
 				if (this.isLifeHistory) {
 					this.addHistoryState6ToCellMap(extent, cellPeriod, this.overlayGrid);
@@ -4617,6 +4657,9 @@
 			// message
 			/** @type {string} */ message = "",
 
+			// offset for Margolus
+			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
+
 			// result
 			/** @type {Array} */ result = [];
 
@@ -4634,32 +4677,45 @@
 				boxHeight = 0;
 				quit = true;
 			} else {
-				// for super rules create a bounding box of just the alive cells
-				if (this.isSuper) {
-					box = this.getSuperAliveBox(leftX, bottomY, rightX, topY);
-
-					leftX = box.leftX;
-					bottomY = box.bottomY;
-					rightX = box.rightX;
-					topY = box.topY;
+				// for Bounded Grids use the bounded grid extent
+				if (this.boundedGridType !== -1) {
+					leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset;
+					bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset;
+					rightX = leftX + this.boundedGridWidth - 1;
+					topY = bottomY + this.boundedGridHeight - 1;
+					box = new BoundingBox(leftX, bottomY, rightX, topY);
 					boxWidth = rightX - leftX + 1;
 					boxHeight = topY - bottomY + 1;
 					boxSize = (boxWidth << 16) | boxHeight;
 					boxLocation = (leftX << 16) | bottomY;
-				}
-
-				// for [R]History rules with state 6 ensure bounding box is correct
-				if (this.isLifeHistory && this.state6Mask !== null) {
-					box = this.getHistoryAliveBox(leftX, bottomY, rightX, topY);
-
-					leftX = box.leftX;
-					bottomY = box.bottomY;
-					rightX = box.rightX;
-					topY = box.topY;
-					boxWidth = rightX - leftX + 1;
-					boxHeight = topY - bottomY + 1;
-					boxSize = (boxWidth << 16) | boxHeight;
-					boxLocation = (leftX << 16) | bottomY;
+				} else {
+					// for super rules create a bounding box of just the alive cells
+					if (this.isSuper) {
+						box = this.getSuperAliveBox(leftX, bottomY, rightX, topY);
+	
+						leftX = box.leftX;
+						bottomY = box.bottomY;
+						rightX = box.rightX;
+						topY = box.topY;
+						boxWidth = rightX - leftX + 1;
+						boxHeight = topY - bottomY + 1;
+						boxSize = (boxWidth << 16) | boxHeight;
+						boxLocation = (leftX << 16) | bottomY;
+					}
+	
+					// for [R]History rules with state 6 ensure bounding box is correct
+					if (this.isLifeHistory && this.state6Mask !== null) {
+						box = this.getHistoryAliveBox(leftX, bottomY, rightX, topY);
+	
+						leftX = box.leftX;
+						bottomY = box.bottomY;
+						rightX = box.rightX;
+						topY = box.topY;
+						boxWidth = rightX - leftX + 1;
+						boxHeight = topY - bottomY + 1;
+						boxSize = (boxWidth << 16) | boxHeight;
+						boxLocation = (leftX << 16) | bottomY;
+					}
 				}
 
 				// for alternating rules or Margolus skip odd generations
@@ -12705,15 +12761,32 @@
 	Life.prototype.deleteGlider = function(/** @type {Array<Array<number>>} */glider, /** @type {number} */ x, /** @type {number} */ y) {
 		var	/** @type {number} */ xc = 0,
 			/** @type {number} */ yc = 0,
+			/** @type {number} */ state = 0,
 			/** @type {Array<number>} */ gliderRow = null;
 
 		this.numClearedGliders += 1;
 		for (yc = 0; yc < glider.length; yc += 1) {
 			gliderRow = glider[yc];
-			for (xc = 0; xc < gliderRow.length; xc += 1) {
-				if (gliderRow[xc] === 1) {
-					this.setState(x + xc, y + yc, 0, false);
-					this.deaths += 1;
+			// handle [R]History overlay states
+			if (this.isLifeHistory) {
+				for (xc = 0; xc < gliderRow.length; xc += 1) {
+					if (gliderRow[xc] === 1) {
+						state = this.getState(x + xc, y + yc, false);
+						if (state === 3) {
+							this.setState(x + xc, y + yc, 4, false);
+						} else {
+							this.setState(x + xc, y + yc, 0, false);
+						}
+						this.deaths += 1;
+					}
+				}
+			} else {
+				// all other rule types
+				for (xc = 0; xc < gliderRow.length; xc += 1) {
+					if (gliderRow[xc] === 1) {
+						this.setState(x + xc, y + yc, 0, false);
+						this.deaths += 1;
+					}
 				}
 			}
 		}
@@ -34810,7 +34883,8 @@
 			/** @type {number} */ hexX = 0,
 			/** @type {number} */ minX = 0,
 			/** @type {number} */ maxX = 0,
-			/** @type {number} */ count = 0;
+			/** @type {number} */ count = 0,
+			/** @type {number} */ aliveState = LifeConstants.aliveStart;
 
 		// check for PCA, RuleTree or Super rules
 		if (this.isPCA || this.isRuleTree || this.isSuper) {
@@ -34818,6 +34892,13 @@
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
 			}
+		}
+
+		// set the alive state based on the rule
+		if (this.multiNumStates <= 2) {
+			aliveState = LifeConstants.aliveStart;
+		} else {
+			aliveState = this.historyStates + 1;
 		}
 
 		// check for history mode
@@ -34912,11 +34993,17 @@
 				leftX |= 0;
 				rightX |= 0;
 
+				// draw the bounded grid border
+				if (this.boundedGridType !== -1) {
+					this.drawBoundedGridBorder(colourGrid, this.boundedBorderColour);
+				}
+
+				// find the pattern on the grid
 				for (y = bottomY; y <= topY; y += 1) {
 					colourRow = colourGrid[y];
 					for (x = leftX; x <= rightX; x += 1) {
 						state = colourRow[x];
-						if (state > 0) {
+						if (state >= aliveState) {
 							count += 1;
 							hexX = x - y / 2;
 							if (hexX < minX) {
@@ -34928,6 +35015,7 @@
 						}
 					}
 				}
+
 				leftX = minX;
 				rightX = maxX;
 				if (leftX > rightX) {
@@ -34935,14 +35023,13 @@
 					leftX = rightX;
 					rightX = swap;
 				}
+
 				// check for empty pattern
 				if (count === 0) {
-					width = 0;
-					leftX = (this.width / 2) - topY / 2;
-					rightX = leftX;
-				} else {
-					width = rightX - leftX + 1;
+					leftX = 0;
+					rightX = 0;
 				}
+				width = rightX - leftX + 1;
 			}
 		}
 
