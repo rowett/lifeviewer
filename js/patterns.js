@@ -3267,7 +3267,11 @@
 
 			// check for horizontal shift
 			if (pattern.gridHorizontalShift) {
-				pattern.ruleName += "+" + pattern.gridHorizontalShift;
+				if (pattern.gridHorizontalShift < 0) {
+					pattern.ruleName += pattern.gridHorizontalShift;
+				} else {
+					pattern.ruleName += "+" + pattern.gridHorizontalShift;
+				}
 			}
 
 			// add more if the height is not the same or vertical shift or twist are defined or Klein

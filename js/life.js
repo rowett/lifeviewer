@@ -16990,14 +16990,18 @@
 		by[index] = y;
 		index += 1;
 
+		// check for 2-state Life-like patterns
+		if (this.multiNumStates === -1) {
+			// set the dying state to the alive state since the cell will die on the bit
+			// grid and the next update of the colour grid will make it die
+			dyingState = this.aliveStart;
+		}
+
 		// remove the cell
 		if (grid16[y][x >> 4] & (1 << (~x & 15))) {
 			grid16[y][x >> 4] &= ~(1 << (~x & 15));
 			cleared += 1;
-
-			if (this.multiNumStates !== -1) {
-				colourGrid[y][x] = dyingState;
-			}
+			colourGrid[y][x] = dyingState;
 		}
 
 		// keep going until all cells processed
@@ -17031,9 +17035,7 @@
 							// remove the cell
 							grid16[ty][tx >> 4] &= ~(1 << (~tx & 15));
 							cleared += 1;
-							if (this.multiNumStates !== -1) {
-								colourGrid[ty][tx] = dyingState;
-							}
+							colourGrid[ty][tx] = dyingState;
 
 							// stack the cell
 							if (index === end) {

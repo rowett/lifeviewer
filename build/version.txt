@@ -1,3 +1,10 @@
+Build 959
+- fixed non-canonical Klein bounded grid format on save
+- fixed dying state for 2-state patterns when pattern killed at grid boundary
+
+Build 958
+- fixed AutoFit stuttering in some cases
+
 Build 957
 - added Bounded Grid border to Cell Period Map
 - added State 6 period count to Help->Info->Identify

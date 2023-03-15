@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 957,
+		/** @const {number} */ versionBuild : 959,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1264,7 +1264,7 @@
 		/** @type {number} */ this.autoFitDelta = 0;
 
 		// threshold for auto fit delta to be small enough not to matter
-		/** @type {number} */ this.autoFitThreshold = 0.01;
+		/** @type {number} */ this.autoFitThreshold = 0.001;
 
 		// weight for auto fit average (target is one part in n)
 		/** @type {number} */ this.autoFitWeight = 6;
