@@ -7132,12 +7132,12 @@
 			verticalTwist = true;	
 		}
 
-		// set shifts to a maxmimum of 1
-		if (shiftWidth > 1) {
+		// if shifts are set then set them to 1
+		if (shiftWidth !== 0) {
 			shiftWidth = 1;
 		}
 
-		if (shiftHeight > 1) {
+		if (shiftHeight !== 0) {
 			shiftHeight = 1;
 		}
 

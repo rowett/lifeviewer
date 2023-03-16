@@ -34968,9 +34968,11 @@
 
 		// check whether to use pattern dimensions
 		if (!usePattern) {
-			// compute the width and height
-			width = rightX - leftX + 1;
-			height = topY - bottomY + 1;
+			if (this.boundedGridType === -1) {
+				// compute the width and height
+				width = rightX - leftX + 1;
+				height = topY - bottomY + 1;
+			}
 		} else {
 			// use pattern width and height
 			width = patternWidth;

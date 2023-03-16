@@ -1,3 +1,8 @@
+Build 960
+- ensure Klein shifts are 1 if set
+- disable KILLGLIDERS for patterns in Bounded Grids
+- fixed Bounded Grid AutoFit
+
 Build 959
 - fixed non-canonical Klein bounded grid format on save
 - fixed dying state for 2-state patterns when pattern killed at grid boundary

@@ -910,8 +910,10 @@
 				// check for ctrl
 				if (ctrlKey) {
 					// toggle kill gliders
-					me.engine.clearGliders = !me.engine.clearGliders;
-					me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
+					if (!me.killButton.locked) {
+						me.engine.clearGliders = !me.engine.clearGliders;
+						me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
+					}
 				} else {
 					// check for shift
 					if (shiftKey) {

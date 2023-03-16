@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 959,
+		/** @const {number} */ versionBuild : 960,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6736,7 +6736,10 @@ View.prototype.clearStepSamples = function() {
 		}
 
 		// lock kill button if not 2-state moore
-		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.xrange === 1 && this.engine.HROT.type === this.manager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann;
+		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.xrange === 1 && this.engine.HROT.type === this.manager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann || this.engine.boundedGridType !== -1;
+		if (this.killButton.locked) {
+			this.killButton.current = [false];
+		}
 
 		// lock theme button if mode doesn't support themes
 		this.themeButton.locked = this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper;
@@ -6885,12 +6888,6 @@ View.prototype.clearStepSamples = function() {
 		// lock paste tools
 		shown = !this.canPaste || this.isPasting || this.pasteBuffers[this.currentPasteBuffer] === null || this.viewOnly;
 		this.pasteButton.locked = shown;
-
-		// lock kill gliders if not supported
-		this.killButton.locked = this.engine.multiNumStates !== -1;
-		if (this.killButton.locked) {
-			this.killButton.current = [false];
-		}
 
 		// drawing tools
 		shown = hide || !this.drawing || !this.showStates || settingsMenuOpen;
