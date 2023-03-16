@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 960,
+		/** @const {number} */ versionBuild : 961,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -9734,6 +9734,7 @@ View.prototype.clearStepSamples = function() {
 			}
 			// draw cells
 			me.drawCells(x, y, me.lastDragX, me.lastDragY);
+
 			// if playback was on then save undo record
 			if (wasPlaying) {
 				me.afterEdit("");

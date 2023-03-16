@@ -1704,12 +1704,12 @@
 					}
 					this.renderColourBox(view, 0, 0, 0, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 					y = this.renderHelpLine(view, "  Back", "\t\t\t" + this.rgbString(0, 0, 0).trim(), ctx, x, y, height, helpLine);
-					this.renderColourBox(view, 0x50, 0x50, 0x50, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-					y = this.renderHelpLine(view, "  Grid", "\t\t\t" + this.rgbString(0x50, 0x50, 0x50).trim(), ctx, x, y, height, helpLine);
 					if (view.engine.boundedGridType !== -1) {
 						this.renderColourBox(view, 0x80, 0x80, 0x80, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						y = this.renderHelpLine(view, "  Bounded", "\t\t\t" + this.rgbString(0x80, 0x80, 0x80).trim(), ctx, x, y, height, helpLine);
 					}
+					this.renderColourBox(view, 0x50, 0x50, 0x50, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+					y = this.renderHelpLine(view, "  Grid", "\t\t\t" + this.rgbString(0x50, 0x50, 0x50).trim(), ctx, x, y, height, helpLine);
 				}
 			}
 			if (view.lastIdentifyType === "Still Life") {

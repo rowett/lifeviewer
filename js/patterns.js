@@ -7180,6 +7180,11 @@
 		// if width and height are zero then removed bounded grid
 		if (width === 0 && height === 0) {
 			pattern.gridType = -1;
+		} else {
+			// if width or height are zero then make invalid
+			if (width === 0 || height === 0) {
+				width = -1;
+			}
 		}
 
 		// save width and height

@@ -1,3 +1,10 @@
+Build 961
+- clip drawing to Bounded Grid
+- fixed [R]Super cell state killed at the grid boundary
+- fixed Identify allowing Rot90 with a Mod that isn't quarter of the period
+- fixed Cross Surface allowing infinite dimension
+- moved Bounded cell colour in Help->Info->Identify
+
 Build 960
 - ensure Klein shifts are 1 if set
 - disable KILLGLIDERS for patterns in Bounded Grids
