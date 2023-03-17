@@ -4234,9 +4234,9 @@
 		// check if Life died during volatility and mod calculation
 		if (this.population === 0) {
 			if (this.isPCA || this.isMargolus) {
-				return ["Life ended at generation " + this.counterMargolus, "Empty"];
+				return ["Life ended at generation " + (this.counterMargolus + view.genOffset), "Empty"];
 			} else {
-				return ["Life ended at generation " + this.counter, "Empty"];
+				return ["Life ended at generation " + (this.counter + view.genOffset), "Empty"];
 			}
 		}
 
@@ -16999,7 +16999,7 @@
 			/** @type {number} */ heightMask = this.heightMask,
 
 			// dying state for Generations
-			/** @type {number} */ dyingState = (this.isSuper ? 2 : this.multiNumStates + this.historyStates - 2),
+			/** @type {number} */ dyingState = this.multiNumStates + this.historyStates - 2,
 
 			// number of cells cleared
 			/** @type {number} */ cleared = 0;
@@ -17020,6 +17020,35 @@
 		if (grid16[y][x >> 4] & (1 << (~x & 15))) {
 			grid16[y][x >> 4] &= ~(1 << (~x & 15));
 			cleared += 1;
+			if (this.isSuper) {
+				switch (colourGrid[y][x]) {
+					case 3:
+					case 4:
+						dyingState = 4;
+						break;
+
+					case 7:
+					case 8:
+						dyingState = 8;
+						break;
+
+					case 9:
+						dyingState = 10;
+						break;
+
+					case 11:
+						dyingState = 12;
+						break;
+
+					case 13:
+						dyingState = 0;
+						break;
+
+					default:
+						dyingState = 2;
+						break;
+				}
+			}
 			colourGrid[y][x] = dyingState;
 		}
 
@@ -17054,6 +17083,34 @@
 							// remove the cell
 							grid16[ty][tx >> 4] &= ~(1 << (~tx & 15));
 							cleared += 1;
+							if (this.isSuper) {
+								switch (colourGrid[ty][tx]) {
+									case 3:
+									case 4:
+										dyingState = 4;
+										break;
+
+									case 7:
+									case 8:
+										dyingState = 8;
+										break;
+
+									case 9:
+										dyingState = 10;
+										break;
+
+									case 11:
+										dyingState = 12;
+										break;
+
+									case 13:
+										dyingState = 0;
+										break;
+
+									default:
+										dyingState = 2;
+								}
+							}
 							colourGrid[ty][tx] = dyingState;
 
 							// stack the cell

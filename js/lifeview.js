@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 961,
+		/** @const {number} */ versionBuild : 963,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5543,8 +5543,8 @@ View.prototype.clearStepSamples = function() {
 				// compute the grid extent
 				leftX = -(this.engine.maxGridSize - this.patternWidth) >> 1;
 				rightX = leftX + this.engine.maxGridSize - 1;
-				bottomY = leftX;
-				topY = rightX;
+				bottomY = -(this.engine.maxGridSize - this.patternHeight) >> 1;
+				topY = bottomY + this.engine.maxGridSize - 1;
 
 				// display the state
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
@@ -6078,9 +6078,9 @@ View.prototype.clearStepSamples = function() {
 					// notify simulation stopped unless loop defined and enabled
 					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
 						if (me.engine.isPCA || me.engine.isMargolus) {
-							me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+							me.menuManager.notification.notify("Life ended at generation " + (me.engine.counterMargolus + me.genOffset), 15, 600, 15, false);
 						} else {
-							me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+							me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
 						}
 					}
 
@@ -7226,9 +7226,9 @@ View.prototype.clearStepSamples = function() {
 					// notify simulation stopped unless loop defined and enabled
 					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
 						if (me.engine.isPCA || me.engine.isMargolus) {
-							me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+							me.menuManager.notification.notify("Life ended at generation " + (me.engine.counterMargolus + me.genOffset), 15, 600, 15, false);
 						} else {
-							me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+							me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
 						}
 					}
 
@@ -7307,9 +7307,9 @@ View.prototype.clearStepSamples = function() {
 						// don't notify if there are pending pastes
 						if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
 							if (me.engine.isPCA || me.engine.isMargolus) {
-								me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+								me.menuManager.notification.notify("Life ended at generation " + (me.engine.counterMargolus + me.genOffset), 15, 600, 15, false);
 							} else {
-								me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+								me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
 							}
 						}
 					}
@@ -9369,9 +9369,9 @@ View.prototype.clearStepSamples = function() {
 									// notify simulation stopped unless loop defined and enabled
 									if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
 										if (me.engine.isPCA || me.engine.isMargolus) {
-											me.menuManager.notification.notify("Life ended at generation " + me.engine.counterMargolus, 15, 600, 15, false);
+											me.menuManager.notification.notify("Life ended at generation " + (me.engine.counterMargolus + me.genOffset), 15, 600, 15, false);
 										} else {
-											me.menuManager.notification.notify("Life ended at generation " + me.engine.counter, 15, 600, 15, false);
+											me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
 										}
 									}
 
