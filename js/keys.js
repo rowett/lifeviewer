@@ -1001,7 +1001,9 @@
 					// check for ctrl key
 					if (ctrlKey) {
 						// save current pattern to source document node
-						me.savePressed(me);
+						if (!me.saveButton.locked) {
+							me.savePressed(me);
+						}
 					} else {
 						// check for shift key
 						if (shiftKey) {

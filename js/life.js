@@ -1998,7 +1998,7 @@
 			}	
 
 			// if this is Rot90 then check if it also true for Rot270
-			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot90))) {
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot90)) && modFactor === 4) {
 				trans = LifeConstants.modRot90;
 
 				if (modMatch & (1 << LifeConstants.modRot270)) {
@@ -2019,23 +2019,11 @@
 							trans = LifeConstants.modFlipDiagorRot90;
 						}
 					}
-				} else {
-					// check for Rot90 and Flip / without a Mod Factor of 4
-					if ((modMatch & (1 << LifeConstants.modRot90FlipY)) && (modFactor !== 4)) {
-						// switch to Flip /
-						trans = LifeConstants.modRot90FlipY;
-					}
-
-					// check for Rot90 and Flip \ without a Mod Factor of 4
-					if ((modMatch & (1 << LifeConstants.modRot90FlipX)) && (modFactor !== 4)) {
-						// switch to Flip \
-						trans = LifeConstants.modRot90FlipX;
-					}
 				}
 			}
 
 			// if this is Rot270 then check if it also true for Rot90
-			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot270))) {
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot270)) && modFactor === 4) {
 				trans = LifeConstants.modRot270;
 
 				if (modMatch & (1 << LifeConstants.modRot90)) {
@@ -2055,18 +2043,6 @@
 						if (modMatch & (1 << LifeConstants.modRot90FlipY)) {
 							trans = LifeConstants.modFlipDiagorRot90;
 						}
-					}
-				} else {
-					// check for Rot270 and Flip \ without a Mod Factor of 4
-					if ((modMatch & (1 << LifeConstants.modRot90FlipX)) && (modFactor !== 4)) {
-						// switch to Flip z
-						trans = LifeConstants.modRot90FlipX;
-					}
-
-					// check for Rot270 and Flip / without a Mod Factor of 4
-					if ((modMatch & (1 << LifeConstants.modRot90FlipY)) && (modFactor !== 4)) {
-						// switch to Flip /
-						trans = LifeConstants.modRot90FlipY;
 					}
 				}
 			}
@@ -3887,12 +3863,12 @@
 								this.modType = this.checkModHashType(extent, hash1, modChecks[0].modType, deltaX, deltaY, period / (p - gen1));
 								if (this.modType !== -1) {
 
-									//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
+									console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
 	
 									this.modValue = p - gen1;
 								} else {
 
-									//console.log(p, "gen", this.counter, "verify failed");
+									console.log(p, "gen", this.counter, "verify failed");
 
 									this.modValue = -1;
 								}
@@ -3913,15 +3889,15 @@
 										// potential Mod found so create verification record
 										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatch);
 		
-										//console.log(p, "gen", this.counter, "type", modMatch, "check at", p + gen1, "delta", deltaX, deltaY);
+										console.log(p, "gen", this.counter, "type", modMatch, "check at", p + gen1, "delta", deltaX, deltaY);
 
-										//for (j = 0; j <= LifeConstants.modRot90FlipY; j += 1) {
-											//if ((modMatch & (1 << j)) !== 0) {
+										for (j = 0; j <= LifeConstants.modRot90FlipY; j += 1) {
+											if ((modMatch & (1 << j)) !== 0) {
 
-												//console.log(LifeConstants.modTypeName[j]);
+												console.log(LifeConstants.modTypeName[j]);
 
-											//}
-										//}
+											}
+										}
 									}
 								}
 							}
@@ -4881,7 +4857,7 @@
 			/** @type {number} */ m = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
-			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ w2 = this.width / 2,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @type {number} */ state = 0,
 			/** @type {Float32Array} */ coords = this.coords,
@@ -4931,13 +4907,13 @@
 			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
 				cy = (y - h2);
 				xOffset = xOff1 - w2;
-				for (x = leftX; x <= rightX; x += 1) {
+				for (x = leftX; x <= rightX + 1; x += 1) {
 					if (cells[m] > 0) {
 						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 						if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
 							// encode coordinate index into the colour state so it can be sorted later
 							colours[j] = (state << LifeConstants.coordBufferBits) + k;
-							cx = x - w2;
+							cx = x - w2 - 0.5;
 							oddEven = ((x + y) & 1);
 							coords[k] = cx - 1;
 							coords[k + 1] = cy + oddEven;
@@ -4991,7 +4967,7 @@
 			/** @type {number} */ k = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
-			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ w2 = this.width / 2,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @type {number} */ state = 0,
 			/** @type {Float32Array} */ coords = this.coords,
@@ -5041,12 +5017,12 @@
 			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
 				cy = (y - h2);
 				xOffset = xOff1 - w2;
-				for (x = leftX; x <= rightX; x += 1) {
+				for (x = leftX; x <= rightX + 1; x += 1) {
 					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 					if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
 						// encode coordinate index into the colour state so it can be sorted later
 						colours[j] = (state << LifeConstants.coordBufferBits) + k;
-						cx = x - w2;
+						cx = x - w2 - 0.5;
 						oddEven = ((x + y) & 1);
 						coords[k] = cx - 1;
 						coords[k + 1] = cy + oddEven;
@@ -5099,7 +5075,7 @@
 			/** @type {number} */ k = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
-			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ w2 = this.width / 2,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ overState = 0,
@@ -5177,7 +5153,7 @@
 				xOffset = xOff - w2;
 				for (x = leftX; x <= rightX; x += 1) {
 					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
-					if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
+					if (displayX >= -zoom && displayX <= this.displayWidth + zoom * 2) {
 						state = colourRow[x];
 						if (overlayRow) {
 							overState = overlayRow[x];
@@ -5200,7 +5176,7 @@
 						if (state > 0) {
 							// encode coordinate index into the colour state so it can be sorted later
 							colours[j] = (state << LifeConstants.coordBufferBits) + k;
-							cx = x - w2;
+							cx = x - w2 - 0.5;
 							oddEven = ((x + y) & 1);
 							coords[k] = cx - 1;
 							coords[k + 1] = cy + oddEven;
@@ -5269,10 +5245,10 @@
 					xOffset = xOff - w2;
 					leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
 					rightX = ((halfDisplayWidth / zoom) - xOffset + zoom) | 0;
-					for (x = leftX; x <= rightX; x += 1) {
+					for (x = leftX; x <= rightX + 1; x += 1) {
 						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
-						if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
-							cx = x - w2;
+						if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
+							cx = x - w2 - 0.5;
 							oddEven = ((x + y) & 1);
 							coords[k] = cx - 1;
 							coords[k + 1] = cy + oddEven;
@@ -11875,6 +11851,10 @@
 			// flag if something in the row was alive
 			/** @type {number} */ rowAlive = 0,
 
+			// dead cell values for [R]History rules
+			/** @const {number} */ deadMin = LifeConstants.deadMin,
+			/** @const {number} */ deadStart = LifeConstants.deadStart,
+
 			// flags if something in the column was alive
 			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16;
 
@@ -11906,13 +11886,18 @@
 				// use the overlay grid to set the bounding box (to cope with non-excecutable states)
 				for (h = 0; h < height; h += 1) {
 					overlayRow = overlayGrid[h];
+					colourGridRow = colourGrid[h];
 
 					// flag nothing in the row
 					rowAlive = 0;
 
 					// check each column
 					for (w = 0; w < width; w += 1) {
-						input = overlayRow[w];
+						if (overlayRow[w] || (colourGridRow[w] >= deadMin && colourGridRow[w] <= deadStart)) {
+							input = 1;
+						} else {
+							input = 0;
+						}
 						rowAlive |= input;
 
 						if (input) {
@@ -35024,20 +35009,16 @@
 				width = this.boundedGridWidth;
 				height = this.boundedGridHeight;
 				if (width > 0) {
-					if ((this.width / 2 - width / 2) < leftX) {
-						leftX = this.width / 2 - width / 2;
-					}
-					if ((this.width / 2 + width / 2) > rightX) {
-						rightX = this.width / 2 + width / 2;
-					}
+					leftX = this.width / 2 - width / 2;
+					rightX = this.width / 2 + width / 2;
+				} else {
+					width = rightX - leftX + 1;
 				}
 				if (height > 0) {
-					if ((this.height / 2 - height / 2) <  bottomY) {
-						bottomY = this.height / 2 - height / 2;
-					}
-					if ((this.height / 2 + height / 2) > topY) {
-						topY = this.height / 2 + height / 2;
-					}
+					bottomY = this.height / 2 - height / 2;
+					topY = this.height / 2 + height / 2;
+				} else {
+					height = topY - bottomY + 1;
 				}
 			}
 		}
@@ -35164,6 +35145,12 @@
 		// check if fit to middle required
 		if (fitType === ViewConstants.fitZoomMiddle) {
 			zoom = this.zoom;
+		}
+
+		// adjust for Margolus in Bounded Grid
+		if (this.isMargolus && this.boundedGridType !== -1) {
+			newX -= 1;
+			newY -= 1;
 		}
 
 		// return zoom

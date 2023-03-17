@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 963,
+		/** @const {number} */ versionBuild : 964,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6706,6 +6706,7 @@ View.prototype.clearStepSamples = function() {
 		this.pasteToSelectionButton.locked = shown;
 		this.goToGenButton.locked = !this.executable || this.viewOnly;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree);
+		this.saveButton.locked = shown;
 
 		// set theme section label text
 		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showClipboardSettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings || this.showActionsSettings);
@@ -9965,6 +9966,10 @@ View.prototype.clearStepSamples = function() {
 			/** @type {number} */ population = 0,
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+
+		// ensure bounding box is correct
+		me.engine.shrinkNeeded = true;
+		me.engine.doShrink();
 
 		// order bottom left to top right
 		if (leftX > rightX) {

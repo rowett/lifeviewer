@@ -1,3 +1,13 @@
+Build 964
+- fixed another case of Identify allowing Rot90 with a Mod that ins't quarter of the period
+- fixed COLOR BACKGROUND not setting the background colour in all rules
+- fixed COLOR setting for states 0-2 of the 'none' rule
+- disable Save button if invalid pattern loaded
+- fixed Shrink Selection and Select All for [R]History rules
+- fixed AutoFit for Margolus patterns in Bounded Grids
+- fixed AutoFit for patterns on Bounded Grids with an infinite dimension
+- fixed Triangular grid horizontal alignment on AutoFit
+
 Build 963
 - fixed incorrect cell Y coordinate display
 

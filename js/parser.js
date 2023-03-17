@@ -550,11 +550,11 @@
 			customTheme.gridMajor = view.engine.gridLineMajor;
 		}
 
-		// convert state 0, 1 and 2 to Custom Theme elements unless RuleTree rule used
-		if (view.customColours && !(view.engine.isRuleTree || view.engine.isSuper)) {
+		// convert state 0, 1 and 2 to Custom Theme elements unless RuleTree or [R]Super rule used
+		if (view.customColours && !(view.engine.isRuleTree || view.engine.isSuper || view.engine.isNone)) {
 			if (view.customColours.length > 0) {
 				if (view.customColours[0] !== -1) {
-					themeValue[ViewConstants.customThemeDead] = view.customColours[0];
+					themeValue[ViewConstants.customThemeBackground] = view.customColours[0];
 					view.customColours[0] = -1;
 				}
 			}
@@ -579,9 +579,21 @@
 		// set the background colour
 		colourValue = themeValue[ViewConstants.customThemeBackground];
 		if (colourValue !== -1) {
-			customTheme.unoccupied.red = colourValue >> 16;
-			customTheme.unoccupied.green = (colourValue >> 8) & 255;
-			customTheme.unoccupied.blue = colourValue & 255;
+			// check for [R]Super
+			if (view.engine.isSuper) {
+				// set as custom colour 0
+				if (!view.customColours) {
+					view.customColours = /** @type {!Int32Array} */ (view.engine.allocator.allocate(Type.Int32, 256, "View.customColours"));
+					view.customColours.fill(-1);
+				}
+				if (view.customColours[0] === -1) {
+					view.customColours[0] = colourValue;
+				}
+			} else {
+				customTheme.unoccupied.red = colourValue >> 16;
+				customTheme.unoccupied.green = (colourValue >> 8) & 255;
+				customTheme.unoccupied.blue = colourValue & 255;
+			}
 		}
 
 		// set the alive colour
