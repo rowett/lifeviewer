@@ -150,6 +150,12 @@
 		/** @const {number} */ gliderSE : 2,
 		/** @const {number} */ gliderSW : 3,
 
+		// glider bounding box edge
+		/** @const {number} */ gliderN: 0,
+		/** @const {number} */ gliderE: 1,
+		/** @const {number} */ gliderS: 2,
+		/** @const {number} */ gliderW: 3,
+
 		// hex and triangle cell coordinate buffer size
 		/** @const {number} */ coordBufferSize : 4096,
 
@@ -1998,7 +2004,7 @@
 			}	
 
 			// if this is Rot90 then check if it also true for Rot270
-			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot90)) && modFactor === 4) {
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot90))) {
 				trans = LifeConstants.modRot90;
 
 				if (modMatch & (1 << LifeConstants.modRot270)) {
@@ -2020,10 +2026,15 @@
 						}
 					}
 				}
+
+				// don't allow rotate by 90 unless mod is quarter period
+				if (trans === LifeConstants.modRot90 && modFactor !== 4) {
+					trans = -1;
+				}
 			}
 
 			// if this is Rot270 then check if it also true for Rot90
-			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot270)) && modFactor === 4) {
+			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot270))) {
 				trans = LifeConstants.modRot270;
 
 				if (modMatch & (1 << LifeConstants.modRot90)) {
@@ -2044,6 +2055,11 @@
 							trans = LifeConstants.modFlipDiagorRot90;
 						}
 					}
+				}
+
+				// don't allow rotate by 90 unless mod is quarter period
+				if (trans === LifeConstants.modRot270 && modFactor !== 4) {
+					trans = -1;
 				}
 			}
 
@@ -3863,12 +3879,12 @@
 								this.modType = this.checkModHashType(extent, hash1, modChecks[0].modType, deltaX, deltaY, period / (p - gen1));
 								if (this.modType !== -1) {
 
-									console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
+									//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
 	
 									this.modValue = p - gen1;
 								} else {
 
-									console.log(p, "gen", this.counter, "verify failed");
+									//console.log(p, "gen", this.counter, "verify failed");
 
 									this.modValue = -1;
 								}
@@ -3889,15 +3905,15 @@
 										// potential Mod found so create verification record
 										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatch);
 		
-										console.log(p, "gen", this.counter, "type", modMatch, "check at", p + gen1, "delta", deltaX, deltaY);
+										//console.log(p, "gen", this.counter, "type", modMatch, "check at", p + gen1, "delta", deltaX, deltaY);
 
-										for (j = 0; j <= LifeConstants.modRot90FlipY; j += 1) {
-											if ((modMatch & (1 << j)) !== 0) {
+										//for (j = 0; j <= LifeConstants.modRot90FlipY; j += 1) {
+											//if ((modMatch & (1 << j)) !== 0) {
 
-												console.log(LifeConstants.modTypeName[j]);
+												//console.log(LifeConstants.modTypeName[j]);
 
-											}
-										}
+											//}
+										//}
 									}
 								}
 							}
@@ -6807,6 +6823,7 @@
 			/** @type {number} */ cellAsTileBit = 0,
 			/** @type {boolean} */ growX = false,
 			/** @type {boolean} */ growY = false,
+			/** @type {number} */ borderSize = 0,
 
 			// bounded grid top left
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
@@ -6898,6 +6915,15 @@
 				colourTileHistoryGrid = this.colourTileHistoryGrid;
 				overlayGrid = this.overlayGrid;
 				staticTileGrid = this.staticTileGrid;
+			}
+		}
+
+		// check for HROT border width needed
+		if (this.isHROT) {
+			borderSize = this.view.getSafeBorderSize();
+
+			if (x - borderSize < 0 || x + borderSize >= this.width || y - borderSize < 0 || y + borderSize >= this.height) {
+				onGrid = false;
 			}
 		}
 
@@ -12778,34 +12804,37 @@
 	};
 
 	// delete a single glider
-	Life.prototype.deleteGlider = function(/** @type {Array<Array<number>>} */glider, /** @type {number} */ x, /** @type {number} */ y) {
+	Life.prototype.deleteGlider = function(/** @type {Array<Array<number>>} */glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ orientation, /** @type {number} */ edge) {
 		var	/** @type {number} */ xc = 0,
 			/** @type {number} */ yc = 0,
 			/** @type {number} */ state = 0,
 			/** @type {Array<number>} */ gliderRow = null;
 
-		this.numClearedGliders += 1;
-		for (yc = 0; yc < glider.length; yc += 1) {
-			gliderRow = glider[yc];
-			// handle [R]History overlay states
-			if (this.isLifeHistory) {
-				for (xc = 0; xc < gliderRow.length; xc += 1) {
-					if (gliderRow[xc] === 1) {
-						state = this.getState(x + xc, y + yc, false);
-						if (state === 3) {
-							this.setState(x + xc, y + yc, 4, false);
-						} else {
-							this.setState(x + xc, y + yc, 0, false);
+		// check if the glider is near bounding box edge
+		if (!this.nearEdge(x, y, orientation, edge)) {
+			this.numClearedGliders += 1;
+			for (yc = 0; yc < glider.length; yc += 1) {
+				gliderRow = glider[yc];
+				// handle [R]History overlay states
+				if (this.isLifeHistory) {
+					for (xc = 0; xc < gliderRow.length; xc += 1) {
+						if (gliderRow[xc] === 1) {
+							state = this.getState(x + xc, y + yc, false);
+							if (state === 3) {
+								this.setState(x + xc, y + yc, 4, false);
+							} else {
+								this.setState(x + xc, y + yc, 0, false);
+							}
+							this.deaths += 1;
 						}
-						this.deaths += 1;
 					}
-				}
-			} else {
-				// all other rule types
-				for (xc = 0; xc < gliderRow.length; xc += 1) {
-					if (gliderRow[xc] === 1) {
-						this.setState(x + xc, y + yc, 0, false);
-						this.deaths += 1;
+				} else {
+					// all other rule types
+					for (xc = 0; xc < gliderRow.length; xc += 1) {
+						if (gliderRow[xc] === 1) {
+							this.setState(x + xc, y + yc, 0, false);
+							this.deaths += 1;
+						}
 					}
 				}
 			}
@@ -12814,7 +12843,7 @@
 
 	// check pattern for glider
 	/** @returns {boolean} */
-	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {number} */ orientation, /** @type {number} */ off) {
+	Life.prototype.findAndDeleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {number} */ orientation, /** @type {number} */ off, /** @type {number} */ edge) {
 		var	/** @type {boolean} */ found = false,
 			/** @type {Array<number>} */ gliderRow = null,
 			/** @type {number} */ s1 = 0,
@@ -13092,9 +13121,156 @@
 			}
 
 			// add to potential clear list
-			this.potentialClears[this.potentialClears.length] = {glider: glider, x: x, y: y, xc: xFound, yc: yFound, orientation: orientation, detected: found, offset: off};
+			this.potentialClears[this.potentialClears.length] = {glider: glider, x: x, y: y, xc: xFound, yc: yFound, orientation: orientation, detected: found, offset: off, edge: edge};
 		}
 		return found;
+	};
+
+	// check if a single glider is near the bounding box edge
+	/** @returns {boolean} */
+	Life.prototype.nearEdge = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ orientation, /** @type {number} */ edge) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {number} */ leftX = this.zoomBox.leftX,
+			/** @type {number} */ rightX = this.zoomBox.rightX,
+			/** @type {number} */ bottomY = this.zoomBox.bottomY,
+			/** @type {number} */ topY = this.zoomBox.topY,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {number} */ aliveStart = this.aliveStart,
+			/** @type {number} */ i = 0,
+
+			// /** @type {number} */ mark = ViewConstants.stateMap[4] + 128,
+
+			/** @type {number} */ j = 0;
+
+		switch (orientation) {
+			case LifeConstants.gliderNE:
+				// glider is going NE
+				if (edge === LifeConstants.gliderE) {
+					// glider is at E boundary
+					i = y + 1;
+					j = x + 1;
+					while (i >= bottomY && !result) {
+	
+						//this.overlayGrid[i][j] = mark;
+	
+						if (colourGrid[i][j] >= aliveStart) {
+							result = true;
+						}
+						i -= 1;
+					}
+				} else {
+					// glider is at N boundary
+					i = y + 5;
+					j = x + 5;
+					while (j <= rightX && !result) {
+
+						//this.overlayGrid[i][j] = mark;
+	
+						if (colourGrid[i][j] >= aliveStart) {
+							result = true;
+						}
+						j += 1;
+					}
+				}
+				break;
+
+			case LifeConstants.gliderSE:
+				// glider is going SE
+				if (edge === LifeConstants.gliderE) {
+					// glider is at E boundary
+					i = y + 5;
+					j = x + 1;
+					while (i <= topY && !result) {
+	
+						//this.overlayGrid[i][j] = mark;
+	
+						if (colourGrid[i][j] >= aliveStart) {
+							result = true;
+						}
+						i += 1;
+					}
+				} else {
+					// glider is at S boundary
+					i = y + 1;
+					j = x + 5;
+					while (j <= rightX && !result) {
+
+						//this.overlayGrid[i][j] = mark;
+	
+						if (colourGrid[i][j] >= aliveStart) {
+							result = true;
+						}
+						j += 1;
+					}
+
+				}
+				break;
+
+			case LifeConstants.gliderSW:
+				// glider is going SW
+				if (edge === LifeConstants.gliderW) {
+					// glider is at W boundary
+					i = y + 5;
+					j = x + 5;
+					while (i <= topY && !result) {
+	
+						//this.overlayGrid[i][j] = mark;
+	
+						if (colourGrid[i][j] >= aliveStart) {
+							result = true;
+						}
+						i += 1;
+					}
+				} else {
+					// glider is at S boundary
+					i = y + 1;
+					j = x + 1;
+					while (j >= leftX && !result) {
+
+						//this.overlayGrid[i][j] = mark;
+	
+						if (colourGrid[i][j] >= aliveStart) {
+							result = true;
+						}
+						j -= 1;
+					}
+
+				}
+				break;
+
+			case LifeConstants.gliderNW:
+				// glider is going NW
+				if (edge === LifeConstants.gliderW) {
+					// glider is at W boundary
+					i = y + 1;
+					j = x + 5;
+					while (i >= bottomY && !result) {
+	
+						//this.overlayGrid[i][j] = mark;
+	
+						if (colourGrid[i][j] >= aliveStart) {
+							result = true;
+						}
+						i -= 1;
+					}
+				} else {
+					// glider is at N boundary
+					i = y + 5;
+					j = x + 1;
+					while (j >= leftX && !result) {
+
+						//this.overlayGrid[i][j] = mark;
+	
+						if (colourGrid[i][j] >= aliveStart) {
+							result = true;
+						}
+						j -= 1;
+					}
+				}
+				break;
+		}
+
+		return result;
 	};
 
 	// check potential glider clears
@@ -13139,7 +13315,7 @@
 							// check if the other glider contains the hit location
 							if (x >= otherX - 1 && x <= otherX + 1 && y >= otherY -1 && y <= otherY + 1 && target.orientation === orientation && current.offset === 0) {
 								// delete glider
-								this.deleteGlider(current.glider, current.x, current.y);
+								this.deleteGlider(current.glider, current.x, current.y, current.orientation, current.edge);
 								found = true;
 							}
 						}
@@ -13210,7 +13386,7 @@
 						j += 1;
 					}
 					if (!found && current.offset === 0) {
-						this.deleteGlider(current.glider, current.x, current.y);
+						this.deleteGlider(current.glider, current.x, current.y, current.orientation, current.edge);
 					}
 				}
 			}
@@ -13219,7 +13395,7 @@
 			if (l === 1) {
 				current = this.potentialClears[0];
 				if (!current.detected && current.offset === 0) {
-					this.deleteGlider(current.glider, current.x, current.y);
+					this.deleteGlider(current.glider, current.x, current.y, current.orientation, current.edge);
 				}
 			}
 		}
@@ -13269,14 +13445,14 @@
 
 					if (bottomRow[x] >= aliveStart) {
 						// NW and NE glider
-						if (!this.findAndDeleteGlider(this.gliderNW07x7, x, bottomY, -1, 1, LifeConstants.gliderNW, off)) {
-							if (!this.findAndDeleteGlider(this.gliderNW17x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW, off)) {
-								if (!this.findAndDeleteGlider(this.gliderNW27x7, x, bottomY, -1, 1, LifeConstants.gliderNW, off)) {
-									if (!this.findAndDeleteGlider(this.gliderNW37x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW, off)) {
-										if (!this.findAndDeleteGlider(this.gliderNE07x7, x, bottomY, 1, 1, LifeConstants.gliderNE, off)) {
-											if (!this.findAndDeleteGlider(this.gliderNE17x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE, off)) {
-												if (!this.findAndDeleteGlider(this.gliderNE27x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE, off)) {
-													this.findAndDeleteGlider(this.gliderNE37x7, x, bottomY, 1, 1, LifeConstants.gliderNE, off);
+						if (!this.findAndDeleteGlider(this.gliderNW07x7, x, bottomY, -1, 1, LifeConstants.gliderNW, off, LifeConstants.gliderS)) {
+							if (!this.findAndDeleteGlider(this.gliderNW17x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW, off, LifeConstants.gliderS)) {
+								if (!this.findAndDeleteGlider(this.gliderNW27x7, x, bottomY, -1, 1, LifeConstants.gliderNW, off, LifeConstants.gliderS)) {
+									if (!this.findAndDeleteGlider(this.gliderNW37x7, x - 1, bottomY, -1, 1, LifeConstants.gliderNW, off, LifeConstants.gliderS)) {
+										if (!this.findAndDeleteGlider(this.gliderNE07x7, x, bottomY, 1, 1, LifeConstants.gliderNE, off, LifeConstants.gliderS)) {
+											if (!this.findAndDeleteGlider(this.gliderNE17x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE, off, LifeConstants.gliderS)) {
+												if (!this.findAndDeleteGlider(this.gliderNE27x7, x - 1, bottomY, 1, 1, LifeConstants.gliderNE, off, LifeConstants.gliderS)) {
+													this.findAndDeleteGlider(this.gliderNE37x7, x, bottomY, 1, 1, LifeConstants.gliderNE, off, LifeConstants.gliderS);
 												}
 											}
 										}
@@ -13291,14 +13467,14 @@
 
 					if (topRow[x] >= aliveStart) {
 						// SW and SE glider
-						if (!this.findAndDeleteGlider(this.gliderSW07x7, x, topY - 2, -1, -1, LifeConstants.gliderSW, off)) {
-							if (!this.findAndDeleteGlider(this.gliderSW17x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW, off)) {
-								if (!this.findAndDeleteGlider(this.gliderSW27x7, x, topY - 2, -1, -1, LifeConstants.gliderSW, off)) {
-									if (!this.findAndDeleteGlider(this.gliderSW37x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW, off)) {
-										if (!this.findAndDeleteGlider(this.gliderSE07x7, x, topY - 2, 1, -1, LifeConstants.gliderSE, off)) {
-											if (!this.findAndDeleteGlider(this.gliderSE17x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE, off)) {
-												if (!this.findAndDeleteGlider(this.gliderSE27x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE, off)) {
-													this.findAndDeleteGlider(this.gliderSE37x7, x, topY - 2, 1, -1, LifeConstants.gliderSE, off);
+						if (!this.findAndDeleteGlider(this.gliderSW07x7, x, topY - 2, -1, -1, LifeConstants.gliderSW, off, LifeConstants.gliderN)) {
+							if (!this.findAndDeleteGlider(this.gliderSW17x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW, off, LifeConstants.gliderN)) {
+								if (!this.findAndDeleteGlider(this.gliderSW27x7, x, topY - 2, -1, -1, LifeConstants.gliderSW, off, LifeConstants.gliderN)) {
+									if (!this.findAndDeleteGlider(this.gliderSW37x7, x - 1, topY - 2, -1, -1, LifeConstants.gliderSW, off, LifeConstants.gliderN)) {
+										if (!this.findAndDeleteGlider(this.gliderSE07x7, x, topY - 2, 1, -1, LifeConstants.gliderSE, off, LifeConstants.gliderN)) {
+											if (!this.findAndDeleteGlider(this.gliderSE17x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE, off, LifeConstants.gliderN)) {
+												if (!this.findAndDeleteGlider(this.gliderSE27x7, x - 1, topY - 2, 1, -1, LifeConstants.gliderSE, off, LifeConstants.gliderN)) {
+													this.findAndDeleteGlider(this.gliderSE37x7, x, topY - 2, 1, -1, LifeConstants.gliderSE, off, LifeConstants.gliderN);
 												}
 											}
 										}
@@ -13319,14 +13495,14 @@
 
 					if (currentRow[leftX] >= aliveStart) {
 						// NW and SW glider
-						if (!this.findAndDeleteGlider(this.gliderNW07x7, leftX, y, 1, -1, LifeConstants.gliderNW, off)) {
-							if (!this.findAndDeleteGlider(this.gliderNW17x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW, off)) {
-								if (!this.findAndDeleteGlider(this.gliderNW27x7, leftX, y, 1, -1, LifeConstants.gliderNW, off)) {
-									if (!this.findAndDeleteGlider(this.gliderNW37x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW, off)) {
-										if (!this.findAndDeleteGlider(this.gliderSW07x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW, off)) {
-											if (!this.findAndDeleteGlider(this.gliderSW17x7, leftX, y, 1, 1, LifeConstants.gliderSW, off)) {
-												if (!this.findAndDeleteGlider(this.gliderSW27x7, leftX, y, 1, 1, LifeConstants.gliderSW, off)) {
-													this.findAndDeleteGlider(this.gliderSW37x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW, off);
+						if (!this.findAndDeleteGlider(this.gliderNW07x7, leftX, y, 1, -1, LifeConstants.gliderNW, off, LifeConstants.gliderW)) {
+							if (!this.findAndDeleteGlider(this.gliderNW17x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW, off, LifeConstants.gliderW)) {
+								if (!this.findAndDeleteGlider(this.gliderNW27x7, leftX, y, 1, -1, LifeConstants.gliderNW, off, LifeConstants.gliderW)) {
+									if (!this.findAndDeleteGlider(this.gliderNW37x7, leftX, y - 1, 1, -1, LifeConstants.gliderNW, off, LifeConstants.gliderW)) {
+										if (!this.findAndDeleteGlider(this.gliderSW07x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW, off, LifeConstants.gliderW)) {
+											if (!this.findAndDeleteGlider(this.gliderSW17x7, leftX, y, 1, 1, LifeConstants.gliderSW, off, LifeConstants.gliderW)) {
+												if (!this.findAndDeleteGlider(this.gliderSW27x7, leftX, y, 1, 1, LifeConstants.gliderSW, off, LifeConstants.gliderW)) {
+													this.findAndDeleteGlider(this.gliderSW37x7, leftX, y - 1, 1, 1, LifeConstants.gliderSW, off, LifeConstants.gliderW);
 												}
 											}
 										}
@@ -13339,14 +13515,14 @@
 					rightX = this.zoomBox.rightX - off;
 					if (currentRow[rightX] >= aliveStart) {
 						// NE and SE glider
-						if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE, off)) {
-							if (!this.findAndDeleteGlider(this.gliderNE17x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE, off)) {
-								if (!this.findAndDeleteGlider(this.gliderNE27x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE, off)) {
-									if (!this.findAndDeleteGlider(this.gliderNE37x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE, off)) {
-										if (!this.findAndDeleteGlider(this.gliderSE07x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE, off)) {
-											if (!this.findAndDeleteGlider(this.gliderSE17x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE, off)) {
-												if (!this.findAndDeleteGlider(this.gliderSE27x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE, off)) {
-													this.findAndDeleteGlider(this.gliderSE37x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE, off);
+						if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE, off, LifeConstants.gliderE)) {
+							if (!this.findAndDeleteGlider(this.gliderNE17x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE, off, LifeConstants.gliderE)) {
+								if (!this.findAndDeleteGlider(this.gliderNE27x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE, off, LifeConstants.gliderE)) {
+									if (!this.findAndDeleteGlider(this.gliderNE37x7, rightX - 2, y - 1, -1, -1, LifeConstants.gliderNE, off, LifeConstants.gliderE)) {
+										if (!this.findAndDeleteGlider(this.gliderSE07x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE, off, LifeConstants.gliderE)) {
+											if (!this.findAndDeleteGlider(this.gliderSE17x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE, off, LifeConstants.gliderE)) {
+												if (!this.findAndDeleteGlider(this.gliderSE27x7, rightX - 2, y, -1, 1, LifeConstants.gliderSE, off, LifeConstants.gliderE)) {
+													this.findAndDeleteGlider(this.gliderSE37x7, rightX - 2, y - 1, -1, 1, LifeConstants.gliderSE, off, LifeConstants.gliderE);
 												}
 											}
 										}
@@ -35925,7 +36101,8 @@
 			/** @type {Uint32Array} */ data32 = this.data32,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Array<Uint16Array>} */ colourGrid16 = this.colourGrid16,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = this.colourGrid32;
+			/** @type {Array<Uint32Array>} */ colourGrid32 = this.colourGrid32,
+			/** @type {number} */ camZoom = 1;
 
 		// mark that grid should be drawn
 		this.doDrawGrid = true;
@@ -35973,6 +36150,9 @@
 		this.camYOff = this.yOff + this.originY;
 		this.camLayerDepth = (this.layerDepth / 2) + 1;
 
+		// get a copy of the camera zoom
+		camZoom = this.camZoom;
+
 		// check for hex
 		if (this.isHex || this.isTriangular) {
 			// zero angle
@@ -35987,7 +36167,7 @@
 		}
 
 		// check if drawing grid with polygons
-		if (this.camZoom >= 4 && ((!this.forceRectangles && this.isHex) || (!this.forceRectangles && this.isTriangular))) {
+		if (camZoom >= 4 && ((!this.forceRectangles && this.isHex) || (!this.forceRectangles && this.isTriangular))) {
 			// clear grid
 			data32.fill(colour0);
 
@@ -35995,12 +36175,12 @@
 			this.createPixelColours(1);
 		} else {
 			// create small colour grids if zoomed out
-			if (this.camZoom < 1) {
+			if (camZoom < 1) {
 				this.createSmallColourGrids(colourGrid16, colourGrid32);
 			}
 
 			// check if zoom < 0.0625x
-			if (this.camZoom < 0.0625) {
+			if (camZoom < 0.0625) {
 				// check for LifeHistory overlay
 				if (this.drawOverlay) {
 					// render the grid with the overlay on top
@@ -36011,7 +36191,7 @@
 				}
 			} else {
 				// check if zoom < 0.125x
-				if (this.camZoom < 0.125) {
+				if (camZoom < 0.125) {
 					// check for LifeHistory overlay
 					if (this.drawOverlay) {
 						// render the grid with the overlay on top
@@ -36022,7 +36202,7 @@
 					}
 				} else {
 					// check if zoom < 0.25x
-					if (this.camZoom < 0.25) {
+					if (camZoom < 0.25) {
 						// check for LifeHistory overlay
 						if (this.drawOverlay) {
 							// render the grid with the overlay on top
@@ -36033,7 +36213,7 @@
 						}
 					} else {
 						// check if zoom < 0.5x
-						if (this.camZoom < 0.5) {
+						if (camZoom < 0.5) {
 							// check for LifeHistory overlay
 							if (this.drawOverlay) {
 								// render the grid with the overlay on top
@@ -36044,7 +36224,7 @@
 							}
 						} else {
 							// check for zoom < 1x
-							if (this.camZoom < 1) {
+							if (camZoom < 1) {
 								// check for LifeHistory overlay
 								if (this.drawOverlay) {
 									// render the grid with the overlay on top

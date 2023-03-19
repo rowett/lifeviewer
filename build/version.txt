@@ -1,3 +1,9 @@
+Build 965
+- fixed COLOR dead not referring to just died colour for 2-state rules
+- fixed Identify Rot90 detection
+- fixed drawing near the grid boundary causing a crash when pattern run for HROT rules
+- fixed an edge case in KILLGLIDERS
+
 Build 964
 - fixed another case of Identify allowing Rot90 with a Mod that ins't quarter of the period
 - fixed COLOR BACKGROUND not setting the background colour in all rules

@@ -3407,20 +3407,25 @@
 									}
 
 									// check state names
-									colNum = view.getStateFromName(peekToken);
+									if (peekToken === "dead" && view.engine.multiNumStates <= 2) {
+										scriptReader.stepBack();
+										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDead, whichColour);
+									} else {
+										colNum = view.getStateFromName(peekToken);
 
-									// decode the rgb value
-									if (colNum >= 0) {
-										this.decodeRGB(view, scriptReader, scriptErrors, colNum, nextToken, badColour, peekToken);
-										view.customTheme = true;
-									}
-
-									// illegal colour element
-									if (colNum < 0) {
-										scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "illegal element"];
-
-										// eat the invalid token
-										peekToken = scriptReader.getNextToken();
+										// decode the rgb value
+										if (colNum >= 0) {
+											this.decodeRGB(view, scriptReader, scriptErrors, colNum, nextToken, badColour, peekToken);
+											view.customTheme = true;
+										}
+	
+										// illegal colour element
+										if (colNum < 0) {
+											scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "illegal element"];
+	
+											// eat the invalid token
+											peekToken = scriptReader.getNextToken();
+										}
 									}
 									break;
 								}

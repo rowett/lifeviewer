@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 964,
+		/** @const {number} */ versionBuild : 965,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -4426,6 +4426,9 @@
 			// sum weight
 			/** @type {number} */ weight = this.autoFitWeight,
 
+			// height adjust for GUI
+			/** @type {number} */ heightAdjust = ViewConstants.guiExtraHeight,
+
 			// offset for selection
 			/** @type {number} */ swap = 0,
 			/** @type {BoundingBox} */ middleBox = this.middleBox,
@@ -4456,7 +4459,6 @@
 			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.state1Fit, this.autoFit);
 			fitZoom[0] /= this.thumbnailDivisor;
 		} else {
-			var	heightAdjust = ViewConstants.guiExtraHeight;
 			if (this.noGUI) {
 				heightAdjust = 0;
 			}
@@ -4688,26 +4690,36 @@
 		this.zoomItem.current = this.viewZoomRange([newZoom, newZoom], true, this);
 	};
 
+	// get safe HROT border size for grid
+	/** @returns {number} */
+	View.prototype.getSafeBorderSize = function() {
+		var	/** @type {number} */ result = this.engine.HROT.xrange * 4 + 1;
+
+		if (this.engine.boundedGridType !== -1) {
+			result += this.engine.HROT.xrange * 2;
+		}
+
+		if (this.engine.HROT.type === this.manager.vonNeumannHROT) {
+			if (this.engine.boundedGridType !== -1) {
+				result += this.engine.boundedGridHeight / 2;
+			} else {
+				result += this.engine.HROT.ncols / 2;
+			}
+		}
+		if (result < ViewConstants.maxStepSpeed) {
+			result = ViewConstants.maxStepSpeed;
+		}
+
+		return result;
+	};
+
 	// check if grid needs to grow
 	View.prototype.checkGridSize = function(/** @type {View} */ me, /** @type {BoundingBox} */ box) {
 		var	/** @type {number} */ borderSize = ViewConstants.maxStepSpeed; 
 
 		// compute border based on algorithm
 		if (me.engine.isHROT) {
-			borderSize = me.engine.HROT.xrange * 4 + 1;
-			if (me.engine.boundedGridType !== -1) {
-				borderSize += me.engine.HROT.xrange * 2;
-			}
-			if (me.engine.HROT.type === this.manager.vonNeumannHROT) {
-				if (me.engine.boundedGridType !== -1) {
-					borderSize += me.engine.boundedGridHeight / 2;
-				} else {
-					borderSize += me.engine.HROT.ncols / 2;
-				}
-			}
-			if (borderSize < ViewConstants.maxStepSpeed) {
-				borderSize = ViewConstants.maxStepSpeed;
-			}
+			borderSize = this.getSafeBorderSize();
 		}
 
 		// grow the grid if needed
@@ -18360,20 +18372,7 @@ View.prototype.clearStepSamples = function() {
 		// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
 		borderSize = ViewConstants.maxStepSpeed;
 		if (me.engine.isHROT) {
-			borderSize = me.engine.HROT.xrange * 4 + 1;
-			if (me.engine.boundedGridType !== -1) {
-				borderSize += me.engine.HROT.xrange * 2;
-			}
-			if (me.engine.HROT.type === me.manager.vonNeumannHROT) {
-				if (me.engine.boundedGridType !== -1) {
-					borderSize += me.engine.boundedGridHeight / 2;
-				} else {
-					borderSize += neededWidth / 2;
-				}
-			}
-			if (borderSize < ViewConstants.maxStepSpeed) {
-				borderSize = ViewConstants.maxStepSpeed;
-			}
+			borderSize = this.getSafeBorderSize();
 		}
 
 		// add CXRLE Pos if defined
