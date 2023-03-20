@@ -1,3 +1,11 @@
+Build 967
+- fixed another KILLGLIDERS edge case
+- fixed grid growth not being triggered correctly by HROT large range patterns
+- fixed PASTE with 3 states
+
+Build 966
+- better align Triangular with Rectangular cells on Triangular grid
+
 Build 965
 - fixed COLOR dead not referring to just died colour for 2-state rules
 - fixed Identify Rot90 detection

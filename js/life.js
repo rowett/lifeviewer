@@ -4929,7 +4929,7 @@
 						if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
 							// encode coordinate index into the colour state so it can be sorted later
 							colours[j] = (state << LifeConstants.coordBufferBits) + k;
-							cx = x - w2 - 0.5;
+							cx = x - w2 + 0.5;
 							oddEven = ((x + y) & 1);
 							coords[k] = cx - 1;
 							coords[k + 1] = cy + oddEven;
@@ -5038,7 +5038,7 @@
 					if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
 						// encode coordinate index into the colour state so it can be sorted later
 						colours[j] = (state << LifeConstants.coordBufferBits) + k;
-						cx = x - w2 - 0.5;
+						cx = x - w2 + 0.5;
 						oddEven = ((x + y) & 1);
 						coords[k] = cx - 1;
 						coords[k + 1] = cy + oddEven;
@@ -5192,7 +5192,7 @@
 						if (state > 0) {
 							// encode coordinate index into the colour state so it can be sorted later
 							colours[j] = (state << LifeConstants.coordBufferBits) + k;
-							cx = x - w2 - 0.5;
+							cx = x - w2 + 0.5;
 							oddEven = ((x + y) & 1);
 							coords[k] = cx - 1;
 							coords[k + 1] = cy + oddEven;
@@ -5264,7 +5264,7 @@
 					for (x = leftX; x <= rightX + 1; x += 1) {
 						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 						if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
-							cx = x - w2 - 0.5;
+							cx = x - w2 + 0.5;
 							oddEven = ((x + y) & 1);
 							coords[k] = cx - 1;
 							coords[k + 1] = cy + oddEven;
@@ -6924,6 +6924,41 @@
 
 			if (x - borderSize < 0 || x + borderSize >= this.width || y - borderSize < 0 || y + borderSize >= this.height) {
 				onGrid = false;
+
+				// check if grid can grow in the required direction
+				growX = (this.width < this.maxGridSize) && ((x - borderSize < 0 || x + borderSize >= this.width));
+				growY = (this.height < this.maxGridSize) && ((y - borderSize < 0 || y + borderSize >= this.height));
+
+				// attempt to grow the grid
+				while (growX || growY) {
+					if (growX || growY) {
+						this.growGrid(growX, growY);
+					}
+					if (growX) {
+						x += this.width >> 2;
+					}
+					if (growY) {
+						y += this.height >> 2;
+					}
+
+					growX = (this.width < this.maxGridSize) && ((x - borderSize < 0 || x + borderSize >= this.width));
+					growY = (this.height < this.maxGridSize) && ((y - borderSize < 0 || y + borderSize >= this.height));
+				}
+
+				// check if the cell is on the expanded grid
+				if (!(x - borderSize < 0 || x + borderSize >= this.width || y - borderSize < 0 || y + borderSize >= this.height)) {
+					// cell on expanded grid
+					onGrid = true;
+
+					// grid has changed so lookup again
+					grid = this.grid16;
+					tileGrid = this.tileGrid;
+					colourGrid = this.colourGrid;
+					colourTileGrid = this.colourTileGrid;
+					colourTileHistoryGrid = this.colourTileHistoryGrid;
+					overlayGrid = this.overlayGrid;
+					staticTileGrid = this.staticTileGrid;
+				}
 			}
 		}
 
@@ -13152,8 +13187,10 @@
 					while (i >= bottomY && !result) {
 	
 						//this.overlayGrid[i][j] = mark;
+						//this.overlayGrid[i][j + 1] = mark;
+						//this.overlayGrid[i][j + 2] = mark;
 	
-						if (colourGrid[i][j] >= aliveStart) {
+						if (colourGrid[i][j] >= aliveStart || colourGrid[i][j + 1] >= aliveStart || colourGrid[i][j + 2] >= aliveStart) {
 							result = true;
 						}
 						i -= 1;
@@ -13165,8 +13202,10 @@
 					while (j <= rightX && !result) {
 
 						//this.overlayGrid[i][j] = mark;
+						//this.overlayGrid[i - 1][j] = mark;
+						//this.overlayGrid[i - 2][j] = mark;
 	
-						if (colourGrid[i][j] >= aliveStart) {
+						if (colourGrid[i][j] >= aliveStart || colourGrid[i - 1][j] >= aliveStart || colourGrid[i - 2][j] >= aliveStart) {
 							result = true;
 						}
 						j += 1;
@@ -13183,8 +13222,10 @@
 					while (i <= topY && !result) {
 	
 						//this.overlayGrid[i][j] = mark;
+						//this.overlayGrid[i][j + 1] = mark;
+						//this.overlayGrid[i][j + 2] = mark;
 	
-						if (colourGrid[i][j] >= aliveStart) {
+						if (colourGrid[i][j] >= aliveStart || colourGrid[i][j + 1] >= aliveStart || colourGrid[i][j + 2] >= aliveStart) {
 							result = true;
 						}
 						i += 1;
@@ -13196,8 +13237,10 @@
 					while (j <= rightX && !result) {
 
 						//this.overlayGrid[i][j] = mark;
+						//this.overlayGrid[i + 1][j] = mark;
+						//this.overlayGrid[i + 2][j] = mark;
 	
-						if (colourGrid[i][j] >= aliveStart) {
+						if (colourGrid[i][j] >= aliveStart || colourGrid[i + 1][j] >= aliveStart || colourGrid[i + 2][j] >= aliveStart) {
 							result = true;
 						}
 						j += 1;
@@ -13215,8 +13258,10 @@
 					while (i <= topY && !result) {
 	
 						//this.overlayGrid[i][j] = mark;
+						//this.overlayGrid[i][j - 1] = mark;
+						//this.overlayGrid[i][j - 2] = mark;
 	
-						if (colourGrid[i][j] >= aliveStart) {
+						if (colourGrid[i][j] >= aliveStart || colourGrid[i][j - 1] >= aliveStart || colourGrid[i][j - 2] >= aliveStart) {
 							result = true;
 						}
 						i += 1;
@@ -13228,8 +13273,10 @@
 					while (j >= leftX && !result) {
 
 						//this.overlayGrid[i][j] = mark;
+						//this.overlayGrid[i + 1][j] = mark;
+						//this.overlayGrid[i + 2][j] = mark;
 	
-						if (colourGrid[i][j] >= aliveStart) {
+						if (colourGrid[i][j] >= aliveStart || colourGrid[i + 1][j] >= aliveStart || colourGrid[i + 2][j] >= aliveStart) {
 							result = true;
 						}
 						j -= 1;
@@ -13247,8 +13294,10 @@
 					while (i >= bottomY && !result) {
 	
 						//this.overlayGrid[i][j] = mark;
+						//this.overlayGrid[i][j - 1] = mark;
+						//this.overlayGrid[i][j - 2] = mark;
 	
-						if (colourGrid[i][j] >= aliveStart) {
+						if (colourGrid[i][j] >= aliveStart || colourGrid[i][j - 1] >= aliveStart || colourGrid[i][j - 2] >= aliveStart) {
 							result = true;
 						}
 						i -= 1;
@@ -13260,8 +13309,10 @@
 					while (j >= leftX && !result) {
 
 						//this.overlayGrid[i][j] = mark;
+						//this.overlayGrid[i - 1][j] = mark;
+						//this.overlayGrid[i - 2][j] = mark;
 	
-						if (colourGrid[i][j] >= aliveStart) {
+						if (colourGrid[i][j] >= aliveStart || colourGrid[i - 1][j] >= aliveStart || colourGrid[i - 2][j] >= aliveStart) {
 							result = true;
 						}
 						j -= 1;

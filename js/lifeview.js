@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 965,
+		/** @const {number} */ versionBuild : 967,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3675,7 +3675,7 @@
 				yOff += paste.bottomY;
 				for (y = 0; y < stateMap.length; y += 1) {
 					stateRow = stateMap[y];
-					if (numStates > 2 && !(this.engine.isLifeHistory || this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
+					if (numStates >= 2 && !(this.engine.isLifeHistory || this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
 						for (x = 0; x < stateRow.length; x += 1) {
 							source = stateRow[x];
 							dest = this.engine.getState(xOff + x, yOff + y, false);
@@ -5485,7 +5485,8 @@ View.prototype.clearStepSamples = function() {
 			// compute the x cell coordinate as an integer
 			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + originX;
 			if (this.engine.isTriangular) {
-				xPos -= (0.2 * (this.engine.zoom / 32));
+				console.log(xPos.toFixed(3), (0.30 * (this.engine.zoom / 32)).toFixed(3), (xPos - (0.30 * this.engine.zoom / 32)).toFixed(3));
+				xPos -= (0.30 * (this.engine.zoom / 32));
 			}
 			xFrac = xPos - Math.floor(xPos);
 			xPos -= xFrac;
