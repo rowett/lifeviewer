@@ -1,3 +1,37 @@
+Build 975
+- fixed Custom theme being locked if only Grid or Grid Major colour changed
+
+Build 974
+- map Niemiec states to [R]Super: x -> 15, y -> 17, z -> 19
+
+Build 973
+- only exclude multi-state RuleTable rules from Heat and Temperature
+- use [R]Super for patterns containing Niemiec states "x", "y", and "z"
+
+Build 972
+- fixed KILLGLIDERS deleted state for [R]History patterns
+- removed support for Niemiec state 'y' since there is no [R]History state to map to
+- hide Heat and Temperature for multi-state patterns
+- fixed a crash when the pattern is a single 'x'
+
+Build 971
+- lock Zoom control and disable Pan and Zoom if AutoFit is enabled
+- fixed AutoFit with empty patterns
+- made a minor adjustment to Cell Period Map colour contrast
+
+Build 970
+- reduced safe border for HROT/LtL patterns
+- disable KILLGLIDERS for HROT/LtL patterns
+- adjusted Cell Period Map period colour contrast
+- fixed Triangle Paste overlay
+
+Build 969
+- fixed spaceship Mod issue
+
+Build 968
+- fixed Mod for two cases
+- ignore PASTE for 'none' rule
+
 Build 967
 - fixed another KILLGLIDERS edge case
 - fixed grid growth not being triggered correctly by HROT large range patterns

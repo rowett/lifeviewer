@@ -2089,7 +2089,7 @@
 					// check for Rot180
 					if (!isSpaceship) {
 						if (modMatch & (1 << LifeConstants.modRot180)) {
-							trans = LifeConstants.modFlipDiagLRot180;
+							trans = LifeConstants.modFlipDiagRRot180;
 						}
 					}
 				}
@@ -2111,20 +2111,21 @@
 
 		// check for diagonal spaceships
 		if (isSpaceship) {
-			if (modMatch & (1 << LifeConstants.modFlipDiag)) {
+			if (trans == LifeConstants.modFlipDiag) {
 				if (deltaX === deltaY) {
 					trans = LifeConstants.modRot90FlipX;
 				}
 				if (deltaX === -deltaY) {
 					trans = LifeConstants.modRot90FlipY;
 				}
-			}
+			} else {
+				if ((modMatch & (1 << LifeConstants.modRot90FlipY)) && deltaX === deltaY) {
+					trans = -1;
+				}
 
-			if ((modMatch & (1 << LifeConstants.modRot90FlipY)) && deltaX === deltaY) {
-				trans = -1;
-			}
-			if ((modMatch & (1 << LifeConstants.modRot90FlipX)) && deltaX === -deltaY) {
-				trans = -1;
+				if ((modMatch & (1 << LifeConstants.modRot90FlipX)) && deltaX === -deltaY) {
+					trans = -1;
+				}
 			}
 		}
 
@@ -2494,11 +2495,7 @@
 		for (x = 2; x < this.popSubPeriod.length - 1; x++) {
 			if (this.popSubPeriod[x] > 0) {
 				hue = Math.floor(360 * (y / numCols));
-				if (y & 1) {
-					periodCols[x] = "hsl(" + hue + ",100%,70%)";
-				} else {
-					periodCols[x] = "hsl(" + hue + ",100%,40%)";
-				}
+				periodCols[x] = "hsl(" + hue + ",100%," + (70 - (y & 3) * 12) + "%)";
 				y += 1;
 			}
 		}
@@ -3694,7 +3691,6 @@
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {View} */ view, /** @type {boolean} */ isOscillator, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ p = 0,
 			/** @type {number} */ f = 0,
-			/** @type {number} */ j = 0,
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ bitRowInBytes = 0,
 			/** @type {number} */ bitFrameInBytes = 0,
@@ -3723,7 +3719,9 @@
 			/** @type {number} */ height1 = 0,
 			/** @type {number} */ nextHeat = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
-			/** @type {number} */ modMatch = 0;
+			/** @type {number} */ modMatch = 0,
+			/** @type {BoundingBox} */ saveBox = new BoundingBox(0, 0, 0, 0),
+			/** @type {BoundingBox} */ saveHistoryBox = new BoundingBox(0, 0, 0, 0);
 
 		this.identifyDetectionTime = (performance.now() - this.identifyStartTime) / 1000;
 
@@ -3793,6 +3791,10 @@
 		// save cell map for each generation in the period
 		// include extra generation to check Oscillator Mod period/2
 		for (p = 0; p <= period; p += 1) {
+			// save bounding box in case all cells die
+			saveBox.set(this.zoomBox);
+			saveHistoryBox.set(this.historyBox);
+
 			// compute the next generation
 			this.nextGeneration(view.noHistory, view.graphDisabled, view.identify, view);
 			this.convertToPensTile();
@@ -3803,6 +3805,10 @@
 
 			// check if life just stopped
 			if (this.population === 0) {
+				// restore last bounding box
+				this.zoomBox.set(saveBox);
+				this.historyBox.set(saveHistoryBox);
+
 				// remember the generation that life stopped
 				if (view.diedGeneration === -1) {
 					view.diedGeneration = this.counter;
@@ -4923,7 +4929,7 @@
 			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
 				cy = (y - h2);
 				xOffset = xOff1 - w2;
-				for (x = leftX; x <= rightX + 1; x += 1) {
+				for (x = leftX; x <= rightX; x += 1) {
 					if (cells[m] > 0) {
 						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 						if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
@@ -12855,7 +12861,7 @@
 					for (xc = 0; xc < gliderRow.length; xc += 1) {
 						if (gliderRow[xc] === 1) {
 							state = this.getState(x + xc, y + yc, false);
-							if (state === 3) {
+							if (state === 3 || state === 5) {
 								this.setState(x + xc, y + yc, 4, false);
 							} else {
 								this.setState(x + xc, y + yc, 0, false);
@@ -25120,10 +25126,7 @@
 
 			// clear ecaping gliders if enabled
 			if (this.clearGliders) {
-				// only supported for 2-state patterns
-				if (this.multiNumStates === -1) {
-					this.clearEscapingGliders();
-				}
+				this.clearEscapingGliders();
 			}
 		}
 	};
@@ -35304,19 +35307,20 @@
 					}
 				}
 
-				leftX = minX;
-				rightX = maxX;
-				if (leftX > rightX) {
-					swap = leftX;
-					leftX = rightX;
-					rightX = swap;
-				}
-
 				// check for empty pattern
 				if (count === 0) {
-					leftX = 0;
-					rightX = 0;
+					leftX = leftX - bottomY / 2;
+					rightX = leftX;
+				} else {
+					leftX = minX;
+					rightX = maxX;
+					if (leftX > rightX) {
+						swap = leftX;
+						leftX = rightX;
+						rightX = swap;
+					}
 				}
+
 				width = rightX - leftX + 1;
 			}
 		}

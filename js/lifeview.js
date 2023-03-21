@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 967,
+		/** @const {number} */ versionBuild : 975,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -3645,6 +3645,11 @@
 			/** @type {number} */ numStates = this.engine.multiNumStates - 1,
 			/** @type {number} */ wasState6 = 0;
 
+		// ignore PASTE for none rule
+		if (this.engine.isNone) {
+			return;
+		}
+
 		// get number of states
 		if (numStates === -2) {
 			if (this.engine.isLifeHistory) {
@@ -4471,9 +4476,12 @@
 			if (this.engine.zoom > 24) {
 				weight = 3;
 			}
-			if (this.gensPerStep > 1) {
+
+			// reduce the weight if playback is on at STEP is greater than 1
+			if (this.gensPerStep > 1 && this.generationOn) {
 				weight = 1;
 			}
+
 			// glide to target zoom
 			this.engine.zoom = (this.engine.zoom * (weight - 1) + fitZoom[0]) / weight;
 			this.engine.xOff = (this.engine.xOff * (weight - 1) + fitZoom[1]) / weight;
@@ -4705,9 +4713,6 @@
 			} else {
 				result += this.engine.HROT.ncols / 2;
 			}
-		}
-		if (result < ViewConstants.maxStepSpeed) {
-			result = ViewConstants.maxStepSpeed;
 		}
 
 		return result;
@@ -5253,7 +5258,7 @@
 			y += h;
 		}
 
-		if (this.lastIdentifyType !== "Still Life" && !(this.engine.isMargolus || this.engine.altSpecified) && this.engine.boundedGridType === -1) {
+		if (this.lastIdentifyType !== "Still Life" && (!(this.engine.isRuleTree && this.engine.multiNumStates > 2) || this.engine.isLifeHistory) && !(this.engine.isMargolus || this.engine.altSpecified) && this.engine.boundedGridType === -1) {
 			// heat
 			this.identifyHeatLabel.setPosition(Menu.north, x, y);
 			this.identifyHeatValueLabel.setPosition(Menu.north, xv, y);
@@ -5261,7 +5266,7 @@
 		}
 
 		if (this.lastIdentifyType === "Oscillator") {
-			if (this.engine.boundedGridType === -1) {
+			if (this.engine.boundedGridType === -1 && (!(this.engine.isRuleTree && this.engine.multiNumStates > 2))) {
 				// temperature
 				this.identifyTemperatureLabel.setPosition(Menu.north, x, y);
 				this.identifyTemperatureValueLabel.setPosition(Menu.north, xv, y);
@@ -5485,7 +5490,6 @@ View.prototype.clearStepSamples = function() {
 			// compute the x cell coordinate as an integer
 			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + originX;
 			if (this.engine.isTriangular) {
-				console.log(xPos.toFixed(3), (0.30 * (this.engine.zoom / 32)).toFixed(3), (xPos - (0.30 * this.engine.zoom / 32)).toFixed(3));
 				xPos -= (0.30 * (this.engine.zoom / 32));
 			}
 			xFrac = xPos - Math.floor(xPos);
@@ -5630,7 +5634,7 @@ View.prototype.clearStepSamples = function() {
 					}
 				} else {
 					// update the zoom if controls not locked
-					if (!this.controlsLocked) {
+					if (!(this.controlsLocked || this.zoomItem.locked)) {
 						zoomValue = this.zoomItem.current[0];
 						mouseZoom = (mouseZoom / 125) * 0.05;
 						this.adjustZoomPosition(zoomValue, mouseZoom);
@@ -6017,7 +6021,7 @@ View.prototype.clearStepSamples = function() {
 					me.afterEdit("reverse playback");
 				}
 
-				// check if this is the last generation in the step
+				// save bounding box in case all cells die
 				saveBox.set(zoomBox);
 				saveHistoryBox.set(historyBox);
 
@@ -6146,7 +6150,7 @@ View.prototype.clearStepSamples = function() {
 		me.speedRange.locked = me.controlsLocked && me.waypointsDefined;
 		me.speed1Button.locked = me.controlsLocked && me.waypointsDefined;
 		me.themeButton.locked = me.controlsLocked && me.waypointsDefined;
-		me.zoomItem.locked = me.controlsLocked;
+		me.zoomItem.locked = me.controlsLocked || me.autoFit;
 		me.layersItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
 		me.depthItem.locked = (me.controlsLocked && me.waypointsDefined) || me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
 		me.snapToNearest45Button.locked = me.engine.isHex || me.engine.isTriangular || me.engine.isNone;
@@ -6522,7 +6526,7 @@ View.prototype.clearStepSamples = function() {
 		// disable custom theme if not specified
 		for (i = 0; i < ViewConstants.themeOrder.length; i += 1) {
 			if (ViewConstants.themeOrder[i] === this.engine.numThemes) {
-				this.themeSelections[i].locked = !(this.customTheme || this.customGridMajor);
+				this.themeSelections[i].locked = !(this.customTheme || this.customGridMajor || this.customGridColour !== -1 || this.customGridMajorColour !== -1);
 			}
 		}
 
@@ -6546,8 +6550,8 @@ View.prototype.clearStepSamples = function() {
 		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified) || (this.engine.boundedGridType !== -1);
-		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1);
+		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified || (this.engine.isRuleTree && this.engine.multiNumStates > 2)) || (this.engine.boundedGridType !== -1);
+		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyCellsValueLabel.deleted = shown;
 		this.identifyBoxValueLabel.deleted = shown;
@@ -6557,8 +6561,8 @@ View.prototype.clearStepSamples = function() {
 		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified) || (this.engine.boundedGridType !== -1);
-		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1);
+		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified) || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
+		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
 		// undo and redo buttons
@@ -6750,7 +6754,7 @@ View.prototype.clearStepSamples = function() {
 		}
 
 		// lock kill button if not 2-state moore
-		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && !(this.engine.HROT.xrange === 1 && this.engine.HROT.type === this.manager.mooreHROT && this.engine.HROT.scount === 2)) || this.engine.isTriangular || this.engine.isVonNeumann || this.engine.boundedGridType !== -1;
+		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || this.engine.isHROT || this.engine.isTriangular || this.engine.isVonNeumann || this.engine.boundedGridType !== -1;
 		if (this.killButton.locked) {
 			this.killButton.current = [false];
 		}
@@ -7211,13 +7215,20 @@ View.prototype.clearStepSamples = function() {
 		var	/** @type {number} */ startTime = performance.now(),
 
 			// time budget in ms for this frame
-			/** @type {number} */ timeLimit = 13;
+			/** @type {number} */ timeLimit = 13,
+
+			/** @type {BoundingBox} */ saveBox = new BoundingBox(0, 0, 0, 0),
+			/** @type {BoundingBox} */ saveHistoryBox = new BoundingBox(0, 0, 0, 0);
 
 		// lock the menu
 		me.viewMenu.locked = true;
 
 		// compute the next set of generations
 		while (!me.lifeEnded() && me.engine.counter < me.startFrom && (me.startFromTiming !== -1 || (performance.now() - startTime < timeLimit))) {
+			// save bounding box in case all cells die
+			saveBox.set(me.engine.zoomBox);
+			saveHistoryBox.set(me.engine.historyBox);
+
 			// compute the next generation
 			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
@@ -7230,6 +7241,12 @@ View.prototype.clearStepSamples = function() {
 
 			// save population data
 			me.engine.savePopulationData();
+
+			// if nothing alive now then restore last bounding box
+			if (me.engine.population === 0) {
+				me.engine.zoomBox.set(saveBox);
+				me.engine.historyBox.set(saveHistoryBox);
+			}
 
 			// check if life just stopped
 			if (me.lifeEnded()) {
@@ -7292,13 +7309,21 @@ View.prototype.clearStepSamples = function() {
 			/** @type {number} */ timeLimit = 13,
 
 			// identify result
-			/** @type {Array<string>} */ identifyResult = [];
+			/** @type {Array<string>} */ identifyResult = [],
+
+			// saved bounding boxes
+			/** @type {BoundingBox} */ saveBox = new BoundingBox(0, 0, 0, 0),
+			/** @type {BoundingBox} */ saveHistoryBox = new BoundingBox(0, 0, 0, 0);
 
 		// lock the menu
 		me.viewMenu.locked = true;
 
 		// compute the next set of generations without stats for speed
 		while (me.identify && (performance.now() - startTime < timeLimit) && (me.engine.population > 0 || me.pasteEvery || me.engine.counter <= me.maxPasteGen)) {
+			// save bounding box in case all cells die
+			saveBox.set(me.engine.zoomBox);
+			saveHistoryBox.set(me.engine.historyBox);
+
 			// compute the next generation
 			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
@@ -7309,6 +7334,12 @@ View.prototype.clearStepSamples = function() {
 
 			// save snapshot if needed
 			this.engine.saveSnapshotIfNeeded(me);
+
+			// if nothing alive now then restore last bounding box
+			if (me.engine.population === 0) {
+				me.engine.zoomBox.set(saveBox);
+				me.engine.historyBox.set(saveHistoryBox);
+			}
 
 			// check if life just stopped
 			if (me.engine.population === 0) {
@@ -7501,7 +7532,11 @@ View.prototype.clearStepSamples = function() {
 			/** @type {boolean} */ noSnapshots = true,
 
 			// compute number of generations in snapshot buffer
-			/** @type {number} */ snapshotBufferGens = me.engine.snapshotManager.maxSnapshots * LifeConstants.snapshotInterval;
+			/** @type {number} */ snapshotBufferGens = me.engine.snapshotManager.maxSnapshots * LifeConstants.snapshotInterval,
+
+			// saved bounding boxes
+			/** @type {BoundingBox} */ saveBox = new BoundingBox(0, 0, 0, 0),
+			/** @type {BoundingBox} */ saveHistoryBox = new BoundingBox(0, 0, 0, 0);
 
 		// compute the next set of generations
 		while (me.engine.counter < targetGen && (performance.now() - startTime < timeLimit)) {
@@ -7512,6 +7547,10 @@ View.prototype.clearStepSamples = function() {
 				noSnapshots = true;
 			}
 
+			// save bounding box in case all cells die
+			saveBox.set(me.engine.zoomBox);
+			saveHistoryBox.set(me.engine.historyBox);
+
 			// compute the next generation
 			me.engine.nextGeneration(noSnapshots, me.graphDisabled, me.identify, me);
 			me.engine.convertToPensTile();
@@ -7521,6 +7560,12 @@ View.prototype.clearStepSamples = function() {
 			me.engine.savePopulationData();
 
 			me.engine.saveSnapshotIfNeeded(me);
+
+			// if nothing alive now then restore last bounding box
+			if (me.engine.population === 0) {
+				me.engine.zoomBox.set(saveBox);
+				me.engine.historyBox.set(saveHistoryBox);
+			}
 		}
 
 		// check if complete
@@ -9698,6 +9743,11 @@ View.prototype.clearStepSamples = function() {
 			/** @type {number} */ sinAngle = 0,
 			/** @type {number} */ cosAngle = 0;
 
+		// do nothing if AutoFit enabled
+		if (me.autoFit) {
+			return;
+		}
+
 		// pan grid
 		if (me.lastDragY !== -1) {
 			// check for hex or triangular grid
@@ -10206,6 +10256,11 @@ View.prototype.clearStepSamples = function() {
 
 	// move view in the given direction
 	View.prototype.moveView = function(/** @type {number} */ dx, /** @type {number} */ dy) {
+		// do nothing if AutoFit enabled
+		if (this.autoFit) {
+			return;
+		}
+
 		// scale movement based on zoom
 		if (this.engine.zoom < 8) {
 			if (dx < 0) {
@@ -10224,6 +10279,7 @@ View.prototype.clearStepSamples = function() {
 				}
 			}
 		}
+
 		this.lastDragX = 0;
 		this.lastDragY = 0;
 		this.viewDoDrag(dx, dy, true, this, true);

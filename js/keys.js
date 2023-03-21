@@ -1068,7 +1068,7 @@
 						me.menuManager.notification.notify("Saved camera position", 15, 100, 15, true);
 					} else {
 						// check if controls are disabled
-						if (!me.controlsLocked) {
+						if (!(me.controlsLocked || me.zoomItem.locked)) {
 							// reset camera
 							me.resetSavedCamera(me);
 							me.menuManager.notification.notify("Restored camera position", 15, 100, 15, true);
@@ -1085,7 +1085,7 @@
 			// ] for zoom in
 			case 221: 
 				// check for controls locked
-				if (!me.controlsLocked) {
+				if (!(me.controlsLocked || me.zoomItem.locked)) {
 					// check for shift key
 					if (shiftKey) {
 						// zoom in by a factor of 2
@@ -1100,7 +1100,7 @@
 			// [ for zoom out
 			case 219: 
 				// check for controls locked
-				if (!me.controlsLocked) {
+				if (!(me.controlsLocked || me.zoomItem.locked)) {
 					// check for shift key
 					if (shiftKey) {
 						// zoom out by a factor of 2
@@ -1144,16 +1144,18 @@
 				if (ctrlKey) {
 					me.switchToState(1);
 				} else {
-					// check for shift
-					if (shiftKey) {
-						// set zoom to nearest integer
-						me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
-
-						// display notification
-						me.menuManager.notification.notify("Integer Zoom", 15, 40, 15, true);
-					} else {
-						// change zoom to 100%
-						me.changeZoom(me, 1, false);
+					if (!me.zoomItem.locked) {
+						// check for shift
+						if (shiftKey) {
+							// set zoom to nearest integer
+							me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
+	
+							// display notification
+							me.menuManager.notification.notify("Integer Zoom", 15, 40, 15, true);
+						} else {
+							// change zoom to 100%
+							me.changeZoom(me, 1, false);
+						}
 					}
 				}
 				break;
@@ -1164,13 +1166,15 @@
 				if (ctrlKey) {
 					me.switchToState(2);
 				} else {
-					// check for shift
-					if (shiftKey) {
-						// zoom to -2x
-						me.changeZoom(me, 0.5, false);
-					} else {
-						// zoom to 200%
-						me.changeZoom(me, 2, false);
+					if (!me.zoomItem.locked) {
+						// check for shift
+						if (shiftKey) {
+							// zoom to -2x
+							me.changeZoom(me, 0.5, false);
+						} else {
+							// zoom to 200%
+							me.changeZoom(me, 2, false);
+						}
 					}
 				}
 				break;
@@ -1181,13 +1185,15 @@
 				if (ctrlKey) {
 					me.switchToState(3);
 				} else {
-					// check for shift
-					if (shiftKey) {
-						// zoom to -32x
-						me.changeZoom(me, 0.03125, false);
-					} else {
-						// zoom to 3200%
-						me.changeZoom(me, 32, false);
+					if (!me.zoomItem.locked) {
+						// check for shift
+						if (shiftKey) {
+							// zoom to -32x
+							me.changeZoom(me, 0.03125, false);
+						} else {
+							// zoom to 3200%
+							me.changeZoom(me, 32, false);
+						}
 					}
 				}
 				break;
@@ -1198,13 +1204,15 @@
 				if (ctrlKey) {
 					me.switchToState(4);
 				} else {
-					// check for shift
-					if (shiftKey) {
-						// zoom to -4x
-						me.changeZoom(me, 0.25, false);
-					} else {
-						// zoom to 400%
-						me.changeZoom(me, 4, false);
+					if (!me.zoomItem.locked) {
+						// check for shift
+						if (shiftKey) {
+							// zoom to -4x
+							me.changeZoom(me, 0.25, false);
+						} else {
+							// zoom to 400%
+							me.changeZoom(me, 4, false);
+						}
 					}
 				}
 				break;
@@ -1215,13 +1223,15 @@
 				if (ctrlKey) {
 					me.switchToState(6);
 				} else {
-					// check for shift
-					if (shiftKey) {
-						// zoom to -16x
-						me.changeZoom(me, 0.0625, false);
-					} else {
-						// zoom to 1600%
-						me.changeZoom(me, 16, false);
+					if (!me.zoomItem.locked) {
+						// check for shift
+						if (shiftKey) {
+							// zoom to -16x
+							me.changeZoom(me, 0.0625, false);
+						} else {
+							// zoom to 1600%
+							me.changeZoom(me, 16, false);
+						}
 					}
 				}
 				break;
@@ -1252,13 +1262,15 @@
 				if (ctrlKey) {
 					me.switchToState(8);
 				} else {
-					// check for shift
-					if (shiftKey) {
-						// zoom to -8x
-						me.changeZoom(me, 0.125, false);
-					} else {
-						// zoom to 800%
-						me.changeZoom(me, 8, false);
+					if (!me.zoomItem.locked) {
+						// check for shift
+						if (shiftKey) {
+							// zoom to -8x
+							me.changeZoom(me, 0.125, false);
+						} else {
+							// zoom to 800%
+							me.changeZoom(me, 8, false);
+						}
 					}
 				}
 				break;

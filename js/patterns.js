@@ -6281,9 +6281,9 @@
 
 			// Niemiec z cell
 			case "z":
-				// state 7 cell
-				stateNum = 7;
-				pattern.isHistory = true;
+				// map to [R]Super state 19
+				stateNum = 19;
+				pattern.isSuper = true;
 				pattern.isNiemiec = true;
 				break;
 
@@ -6352,9 +6352,11 @@
 							// check for Niemiec
 							if (current === "x") {
 								valid = true;
-								pattern.isHistory = true;
+								pattern.isSuper = true;
 								pattern.isNiemiec = true;
-								stateNum = 3;
+
+								// map to [R]Super state 15
+								stateNum = 15;
 							}
 						}
 					} else {
@@ -6371,9 +6373,11 @@
 							} else {
 								// check for Niemiec
 								valid = true;
-								pattern.isHistory = true;
+								pattern.isSuper = true;
 								pattern.isNiemiec = true;
-								stateNum = 5;
+
+								// map to [R]Super state 17
+								stateNum = 17;
 							}
 						}
 
@@ -7321,29 +7325,37 @@
 		// check for name 
 		if (source[index] === name) {
 			index += 1;
+
 			// skip spaces
 			while (index < length && source[index] === " ") {
 				index += 1;
 			}
+
 			// check for = sign
 			if (index < length && source[index] === "=") {
 				index += 1;
 			}
+
 			// skip spaces
 			while (index < length && source[index] === " ") {
 				index += 1;
 			}
+
 			// decode number
 			value = 0;
 			valueFound = false;
+
 			// check for minus
 			isMinus = false;
-			if (source[index] === "-") {
+			if (index < length && source[index] === "-") {
 				index += 1;
 				isMinus = true;
 			}
 			// decode digits
-			sourceCode = source[index].charCodeAt(0);
+			if (index < length) {
+				sourceCode = source[index].charCodeAt(0);
+			}
+
 			while (index < length && (sourceCode >= asciiZero && sourceCode <= asciiNine)) {
 				value = 10 * value + (sourceCode - asciiZero);
 				index += 1;
@@ -7366,10 +7378,12 @@
 			while (index < length && source[index] === " ") {
 				index += 1;
 			}
+
 			// skip comma
 			if (index < length && source[index] === ",") {
 				index += 1;
 			}
+
 			// skip whitespace
 			while (index < length && source[index] === " ") {
 				index += 1;
@@ -7565,7 +7579,11 @@
 			this.extendedFormat = true;
 		}
 
-		// return the next line
+		// if no rule specified then return the current line
+		if (ruleString === "") {
+			endIndex = -1;
+		}
+
 		return endIndex + 1;
 	};
 
@@ -7908,11 +7926,6 @@
 			}
 		}
 
-		// check for [R]Super rules with Niemiec states
-		if (pattern.isSuper && pattern.isNiemiec) {
-			pattern.isHistory = false;
-		}
-
 		// triangular rules can only have even width bounded grids
 		if (pattern.isTriangular && pattern.gridType !== -1) {
 			if ((pattern.gridWidth & 1) !== 0) {
@@ -8123,52 +8136,43 @@
 
 		// check for illegal state numbers
 		if (this.executable) {
-			// check for Niemiec
-			if (pattern.isNiemiec) {
-				if (pattern.numStates > 8) {
-					this.failureReason = "Illegal state in pattern for Niemiec";
+			// check for [R]History
+			if (pattern.isHistory) {
+				if (pattern.numStates > 7) {
+					this.failureReason = "Illegal state in pattern for [R]History";
 					this.executable = false;
 					this.illegalState = true;
 				}
 			} else {
-				// check for [R]History
-				if (pattern.isHistory) {
-					if (pattern.numStates > 7) {
-						this.failureReason = "Illegal state in pattern for [R]History";
+				// check for [R]Super
+				if (pattern.isSuper) {
+					if (pattern.numStates > 26) {
+						this.failureReason = "Illegal state in pattern for [R]Super";
 						this.executable = false;
 						this.illegalState = true;
 					}
 				} else {
-					// check for [R]Super
-					if (pattern.isSuper) {
-						if (pattern.numStates > 26) {
-							this.failureReason = "Illegal state in pattern for [R]Super";
-							this.executable = false;
-							this.illegalState = true;
-						}
-					} else {
-						// check for other rules
-						if (pattern.multiNumStates !== -1) {
-							if (pattern.numStates > pattern.multiNumStates) {
-								if (pattern.isLTL) {
-									this.failureReason = "Illegal state in pattern for LtL";
+					// check for other rules
+					if (pattern.multiNumStates !== -1) {
+						if (pattern.numStates > pattern.multiNumStates) {
+							if (pattern.isLTL) {
+								this.failureReason = "Illegal state in pattern for LtL";
+								this.illegalState = true;
+							} else {
+								if (pattern.isHROT) {
+									this.failureReason = "Illegal state in pattern for HROT";
 									this.illegalState = true;
 								} else {
-									if (pattern.isHROT) {
-										this.failureReason = "Illegal state in pattern for HROT";
+									if (pattern.isPCA) {
+										this.failureReason = "Illegal state in pattern for PCA";
 										this.illegalState = true;
 									} else {
-										if (pattern.isPCA) {
-											this.failureReason = "Illegal state in pattern for PCA";
-											this.illegalState = true;
-										} else {
-											this.failureReason = "Illegal state in pattern for Generations";
-											this.illegalState = true;
-										}
+										this.failureReason = "Illegal state in pattern for Generations";
+										this.illegalState = true;
 									}
 								}
-								this.executable = false;
 							}
+							this.executable = false;
 						}
 					}
 				}
@@ -9562,6 +9566,22 @@
 		}
 	};
 
+	// add a Super postfix to the rule name in the supplied pattern
+	PatternManager.prototype.addSuperPostfix = function(/** @type {Pattern} */ pattern) {
+		var 	/** @type {number} */ superIndex = 0;
+
+		// check if the pattern already contains a Super postfix
+		superIndex = pattern.ruleName.toLowerCase().lastIndexOf(this.superPostfix);
+		if (superIndex === -1) {
+			pattern.ruleName += "Super";
+		}
+
+		superIndex = pattern.aliasName.toLowerCase().lastIndexOf(this.superPostfix);
+		if (superIndex === -1) {
+			pattern.aliasName += "Super";
+		}
+	};
+
 	// add a pattern to the list
 	/** @returns {Pattern} */
 	PatternManager.prototype.create = function(/** @type {string} */ name, /** @type {string} */ source, /** @type {Allocator} */ allocator, /** @type {null|function(Pattern,Array,View):void} */ succeedCallback, /** @type {null|function(Pattern,Array,View):void} */ failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
@@ -9691,6 +9711,11 @@
 
 		// add terminating newline to comments if required
 		if (newPattern) {
+			// if pattern contained Niemiec states then ensure rule name contains Super postfix
+			if (newPattern.isNiemiec) {
+				this.addSuperPostfix(newPattern);
+			}
+
 			if (newPattern.beforeTitle !== "") {
 				if (newPattern.beforeTitle[newPattern.beforeTitle.length - 1] !== "\n") {
 					newPattern.beforeTitle += "\n";
