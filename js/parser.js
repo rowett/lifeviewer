@@ -408,6 +408,7 @@
 				} else {
 					view.engine.boundaryColour = redValue << 24 | greenValue << 16 | blueValue << 8 | 255;
 				}
+				view.engine.boundaryColourString = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
 				break;
 
 			case ViewConstants.customThemeBounded:

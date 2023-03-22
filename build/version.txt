@@ -1,3 +1,16 @@
+Build 979
+- fixed issue with PASTE on HROT/LtL patterns being ignored for first and last tile in a row
+
+Build 978
+- undo now restores [R]History and [R]Standard dead cells
+
+Build 977
+- fixed issue with Zoom and enabling Waypoints
+
+Build 976
+- disable Kill Gliders button for unsupported rules
+- draw off grid regions for Triangles and Hexagons
+
 Build 975
 - fixed Custom theme being locked if only Grid or Grid Major colour changed
 

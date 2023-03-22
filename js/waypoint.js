@@ -1979,7 +1979,7 @@
 		temp.targetTime = elapsedTime - 1000;
 
 		// get the current position
-		this.update(null, elapsedTime, generation);
+		this.update(null, elapsedTime, generation, true);
 
 		// set the temporary end waypoint as the current position
 		this.tempEnd.set(this.current);
@@ -2341,7 +2341,7 @@
 
 	// update the current position and return whether waypoints ended
 	/** @returns {boolean} */
-	WaypointManager.prototype.update = function(/** @type {View} */ view, /** @type {number} */ elapsedTime, /** @type {number} */ generation) {
+	WaypointManager.prototype.update = function(/** @type {View} */ view, /** @type {number} */ elapsedTime, /** @type {number} */ generation, /** @type {boolean} */ interpolate) {
 		var	/** @type {number} */ length = this.waypointList.length,
 			/** @type {boolean} */ found = false,
 			/** @type {number} */ i = this.tempIndex,
@@ -2397,7 +2397,9 @@
 					}
 
 					// interpolate between waypoints
-					this.current.interpolate(this.waypointList[i - 1], this.waypointList[i], elapsedTime);
+					if (interpolate) {
+						this.current.interpolate(this.waypointList[i - 1], this.waypointList[i], elapsedTime);
+					}
 				} else {
 					// at first waypoint
 					i = 0;

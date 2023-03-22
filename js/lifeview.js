@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 975,
+		/** @const {number} */ versionBuild : 979,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2165,14 +2165,14 @@
 	};
 
 	// allocate new chunk for undo/redo buffer
-	/** @returns {Int16Array} */
+	/** @returns {Int32Array} */
 	View.prototype.allocateChunk = function() {
 		var	/** @type {number} */ chunkSize = 1 << ViewConstants.editChunkPower,
 			/** @type {number} */ chunk = this.currentEditIndex >> ViewConstants.editChunkPower;
 
 		// check if a new buffer is needed
 		if (chunk === this.currentEdit.length) {
-			this.currentEdit[chunk] = /** @type {!Int16Array} */ (this.engine.allocator.allocate(Type.Int16, chunkSize, "View.currentEdit" + chunk));
+			this.currentEdit[chunk] = /** @type {!Int32Array} */ (this.engine.allocator.allocate(Type.Int32, chunkSize, "View.currentEdit" + chunk));
 		}
 
 		// return the chunk
@@ -2184,6 +2184,7 @@
 	View.prototype.setStateWithUndo = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ colour, /** @type {boolean} */ deadZero) {
 		// get current state
 		var	/** @type {number} */ state = this.engine.getState(x, y, false),
+			/** @type {number} */ rawState = this.engine.getState(x, y, true),
 			/** @type {number} */ i = this.currentEditIndex,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ chunkPower = ViewConstants.editChunkPower,
@@ -2191,14 +2192,17 @@
 			/** @type {number} */ chunkSize = 1 << chunkPower,
 			/** @type {number} */ chunkMask = chunkSize - 1,
 			/** @type {Array} */ currentEdit = this.currentEdit,
-			/** @type {Int16Array} */ currentChunk = null,
+			/** @type {Int32Array} */ currentChunk = null,
 			/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
 			/** @type {number} */ states = this.engine.multiNumStates,
 			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
 			/** @type {number} */ newRecord = 0,
 			/** @type {boolean} */ addedToRun = false,
-			/** @type {number} */ runCount = 0;
+			/** @type {number} */ runCount = 0,
+			/** @type {number} */ runIndicator = 1 << 22,
+			/** @type {number} */ result = 0,
+			/** @type {number} */ pop = this.engine.population;
 
 		// handle generations
 		if (state > 0 && invertForGenerations) {
@@ -2234,16 +2238,16 @@
 				currentChunk = currentEdit[chunk];
 				i &= chunkMask;
 
-				// write both the new state and original state into one 16 bit integer
-				newRecord = (colour << 8) | state;
+				// write both the new state, original state and raw original state into one integer
+				newRecord = (colour << 16) | (state << 8) | rawState;
 
 				// check if the new cell is adjacent to the previous one and the same states
 				if (i > 0) {
 					// check if previous record is part of a run
 					if (i >= 4) {
 						runCount = currentChunk[i - 1];
-						if (runCount >= 16384) {
-							runCount -= 16384;
+						if (runCount >= runIndicator) {
+							runCount -= runIndicator;
 							// check if this is just to the right of previous
 							if ((currentChunk[i - 3] === newRecord) && (currentChunk[i - 2] === y - yOff) && (currentChunk[i - 4] === (x - xOff) - runCount - 2)) {
 								// increment run count
@@ -2253,7 +2257,7 @@
 						} else {
 							if ((currentChunk[i - 2] === newRecord) && (currentChunk[i - 1] === y - yOff) && (currentChunk[i - 3] === (x - xOff) - 1)) {
 								// start a new run
-								currentChunk[i] = 16384;
+								currentChunk[i] = runIndicator;
 								i += 1;
 								this.currentEditIndex += 1;
 								if (i === chunkSize) {
@@ -2266,8 +2270,8 @@
 						// need to check for previous chunk
 						j = this.currentEditIndex;
 						runCount = currentEdit[(j - 1) >> chunkPower][(j - 1) & chunkMask];
-						if (runCount >= 16384) {
-							runCount -= 16384;
+						if (runCount >= runIndicator) {
+							runCount -= runIndicator;
 							// check if this is just to the right of previous
 							if ((currentChunk[(j - 3) >> chunkPower][(j - 3) & chunkMask] === newRecord) && (currentChunk[(j - 2) >> chunkPower][(j - 2) & chunkMask] === y - yOff) && (currentChunk[(j - 4) >> chunkPower][(j - 4) & chunkMask] === (x - xOff) - runCount - 2)) {
 								// increment run count
@@ -2277,7 +2281,7 @@
 						} else {
 							if ((currentEdit[(j - 2) >> chunkPower][(j - 2) & chunkMask] === newRecord) && (currentEdit[(j - 1) >> chunkPower][(j - 1) & chunkMask] === y - yOff) && (currentEdit[(j - 3) >> chunkPower][(j - 3) & chunkMask] === (x - xOff) - 1)) {
 								// start a new run
-								currentChunk[i] = 16384;
+								currentChunk[i] = runIndicator;
 								i += 1;
 								this.currentEditIndex += 1;
 								if (i === chunkSize) {
@@ -2297,7 +2301,7 @@
 						currentChunk = this.allocateChunk();
 						i = 0;
 					}
-					currentChunk[i] = (colour << 8) | state;
+					currentChunk[i] = (colour << 16) | (state << 8) | rawState;
 					i += 1;
 					this.currentEditIndex += 1;
 					if (i === chunkSize) {
@@ -2320,12 +2324,14 @@
 			}
 
 			// set the state
-			this.diedGeneration = -1;
-			return this.engine.setState(x, y, colour, deadZero);
+			result = this.engine.setState(x, y, colour, deadZero);
+			if (this.engine.population !== pop) {
+				this.diedGeneration = -1;
+			}
 		}
 
 		// nothing changed
-		return 0;
+		return result;
 	};
 
 	// paste raw cells for undo/redo
@@ -2337,7 +2343,10 @@
 			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
 			/** @type {number} */ runCount = 0,
 			/** @type {number} */ state = 0,
-			/** @type {number} */ wasState6 = 0;
+			/** @type {number} */ rawState = 0,
+			/** @type {number} */ wasState6 = 0,
+			/** @type {number} */ runIndicator = 1 << 22,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// check for cells
 		if (cells) {
@@ -2347,23 +2356,27 @@
 				while (i > 0) {
 					// check for run
 					runCount = cells[i - 1];
-					if (runCount >= 16384) {
+					if (runCount >= runIndicator) {
 						i -= 1;
 					}
 					i -= 3;
 					x = cells[i] + xOff;
-					state = cells[i + 1] & 255;
+					state = (cells[i + 1] >> 8) & 255;
+					rawState = cells[i + 1] & 255;
 					y = cells[i + 2] + yOff;
 
 					// draw the first cell
 					wasState6 |= this.engine.setState(x, y, state, true);
-					if (runCount >= 16384) {
-						runCount -= 16384;
+					colourGrid[y][x] = rawState;
+
+					if (runCount >= runIndicator) {
+						runCount -= runIndicator;
 
 						// draw the run
 						while (runCount >= 0) {
 							x += 1;
 							wasState6 |= this.engine.setState(x, y, state, true);
+							colourGrid[y][x] = rawState;
 							runCount -= 1;
 						}
 					}
@@ -2374,7 +2387,7 @@
 					x = cells[i] + xOff;
 
 					// get the top byte as unsigned
-					state = (cells[i + 1]  & 0xff00) >> 8;
+					state = (cells[i + 1]  & 0xff0000) >> 16;
 
 					y = cells[i + 2] + yOff;
 					wasState6 |= this.engine.setState(x, y, state, true);
@@ -2382,9 +2395,9 @@
 
 					// check for run
 					runCount = cells[i];
-					if (runCount >= 16384) {
+					if (runCount >= runIndicator) {
 						i += 1;
-						runCount -= 16384;
+						runCount -= runIndicator;
 
 						// draw the run
 						while (runCount >= 0) {
@@ -2549,7 +2562,7 @@
 	};
 
 	// add edit record discarding duplicates
-	View.prototype.addEdit = function(/** @type {number} */ counter, /** @type {Int16Array} */ editCells, /** @type {string} */ comment, /** @type {BoundingBox} */ box) {
+	View.prototype.addEdit = function(/** @type {number} */ counter, /** @type {Int32Array} */ editCells, /** @type {string} */ comment, /** @type {BoundingBox} */ box) {
 		var	/** @type {boolean} */ isDuplicate = false,
 			record = null;
 
@@ -2573,7 +2586,7 @@
 	// after edit
 	View.prototype.afterEdit = function(/** @type {string} */ comment) {
 		var	/** @type {number} */ counter = this.engine.counter,
-			/** @type {Int16Array} */ editCells = null,
+			/** @type {Int32Array} */ editCells = null,
 			/** @type {BoundingBox} */ box = null,
 			/** @type {BoundingBox} */ selBox = this.selectionBox,
 			record = null,
@@ -2609,7 +2622,7 @@
 
 			// allocate memory for redo and undo cells and populate
 			if (this.currentEditIndex > 0) {
-				editCells = /** @type {!Int16Array} */ (this.engine.allocator.allocate(Type.Int16, this.currentEditIndex, "View.editCells" + this.editNum));
+				editCells = /** @type {!Int32Array} */ (this.engine.allocator.allocate(Type.Int32, this.currentEditIndex, "View.editCells" + this.editNum));
 				i = 0;
 				j = 0;
 				while (i < finalChunk) {
@@ -5848,7 +5861,7 @@ View.prototype.clearStepSamples = function() {
 			}
 
 			// update based on elapsed time
-			waypointsEnded = me.waypointManager.update(me, me.elapsedTime + timeSinceLastUpdate, me.engine.counter);
+			waypointsEnded = me.waypointManager.update(me, me.elapsedTime + timeSinceLastUpdate, me.engine.counter, true);
 
 			// check if waypoints ended
 			if (waypointsEnded) {
@@ -6099,15 +6112,15 @@ View.prototype.clearStepSamples = function() {
 						} else {
 							me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
 						}
+
+						// if the pattern dies again then notify (this would be caused by drawing during playback)
+						me.emptyStart = false;
 					}
 
 					// stop the simulation unless the pattern was empty and this is after step 1 or looping
 					if (!wasEmpty && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
 						me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
 					}
-
-					// if the pattern dies again then notify (this would be caused by drawing during playback)
-					me.emptyStart = false;
 				}
 			}
 
@@ -6183,7 +6196,7 @@ View.prototype.clearStepSamples = function() {
 	// render the world
 	View.prototype.renderWorld = function(/** @type {View} */ me, /** @type {boolean} */ tooSlow, /** @type {number} */ deltaTime, /** @type {boolean} */ manualStepping) {
 		// check for autofit
-		if (me.autoFit && (me.generationOn || me.waypointsDefined)) {
+		if (me.autoFit && me.generationOn) {
 			me.fitZoomDisplay(false, false, ViewConstants.fitZoomPattern);
 		}
 
@@ -6754,7 +6767,7 @@ View.prototype.clearStepSamples = function() {
 		}
 
 		// lock kill button if not 2-state moore
-		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || this.engine.isHROT || this.engine.isTriangular || this.engine.isVonNeumann || this.engine.boundedGridType !== -1;
+		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || this.engine.isHROT || this.engine.isTriangular || this.engine.isVonNeumann || this.engine.isHex || this.engine.boundedGridType !== -1 || this.engine.isMargolus || this.engine.multiNumStates > 2 || this.engine.isRuleTree;
 		if (this.killButton.locked) {
 			this.killButton.current = [false];
 		}
@@ -14890,6 +14903,10 @@ View.prototype.clearStepSamples = function() {
 						// mark manual change if waypoints just enabled
 						me.manualChange = true;
 						me.elapsedTime = me.waypointManager.findClosestWaypoint(me.engine.counter);
+
+						// update twice without interpolation
+						me.waypointManager.update(me, me.elapsedTime, me.engine.counter, false);
+						me.waypointManager.update(me, me.elapsedTime, me.engine.counter, false);
 					}
 
 					// check for loop
@@ -17553,6 +17570,9 @@ View.prototype.clearStepSamples = function() {
 			me.isEdge = false;
 		}
 
+		// zero population
+		me.engine.population = 0;
+
 		// reset starfield colour
 		if (me.starField) {
 			me.starField.starColour = new Colour(255, 255, 255);
@@ -18100,6 +18120,7 @@ View.prototype.clearStepSamples = function() {
 		} else {
 			me.engine.boundaryColour = 0x606060ff;
 		}
+		me.engine.boundaryColourString = "rgb(" + me.customBoundaryColour[0] + "," + me.customBoundaryColour[1] + "," + me.customBoundaryColour[2] + ")";
 
 		// reset bounded colour
 		me.customBoundedColour = [128, 128, 128];

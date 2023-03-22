@@ -630,6 +630,9 @@
 		// boundary colour
 		/** @type {number} */ this.boundaryColour = 0xffffffff;
 
+		// boundary colour string (for hexagons and triangles)
+		/** @type {string} */ this.boundaryColourString = "rgb(255,255,255)";
+
 		// bounded grid border colour
 		/** @type {number} */ this.boundedColour = 0xff808080;
 
@@ -5119,7 +5122,12 @@
 			/** @type {number} */ displayX = 0,
 			/** @type {number} */ xOffset = 0,
 			/** @type {number} */ oddEven = 0,
-			/** @type {boolean} */ drawFilledCellBorders = !this.displayGrid && !this.cellBorders;
+			/** @type {boolean} */ drawFilledCellBorders = !this.displayGrid && !this.cellBorders,
+			/** @type {number} */ xg = this.width,
+			/** @type {number} */ yg = this.height,
+			/** @type {number} */ xadj = 0,
+			/** @type {number} */ yadj = 0,
+			/** @type {number} */ maxGridSize = this.maxGridSize;
 
 		// switch buffers if required
 		if ((this.isSuper || this.isRuleTree) && ((this.counter & 1) !== 0)) {
@@ -5195,6 +5203,7 @@
 								}
 							}
 						}
+
 						if (state > 0) {
 							// encode coordinate index into the colour state so it can be sorted later
 							colours[j] = (state << LifeConstants.coordBufferBits) + k;
@@ -5209,6 +5218,90 @@
 							k += 6;
 							j += 1;
 						}
+
+						// check if buffer is full
+						if (j === LifeConstants.coordBufferSize) {
+							// draw buffer
+							this.numCells = j;
+							this.drawTriangleCells(true, drawFilledCellBorders, false);
+
+							// draw cell borders if enabled and grid lines disabled
+							if (this.cellBorders && !this.displayGrid) {
+								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
+								this.drawTriangleCells(false, false, false);
+							}
+
+							// clear buffer
+							j = 0;
+							k = 0;
+						}
+					}
+				}
+			}
+		}
+
+		// draw any remaining cells
+		this.numCells = j;
+		if (j > 0) {
+			// draw buffer
+			this.drawTriangleCells(true, drawFilledCellBorders, false);
+
+			// draw cell borders if enabled and grid lines disabled
+			if (this.cellBorders && !this.displayGrid) {
+				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
+				this.drawTriangleCells(false, false, false);
+			}
+
+			// clear buffer
+			j = 0;
+			k = 0;
+		}
+
+		// draw off grid cells
+		j = 0;
+		k = 0;
+
+		// compute the x and y adjustments for full grid size
+		while (xg < maxGridSize) {
+			xadj += xg >> 1;
+			xg <<= 1;
+		}
+		while (yg < maxGridSize) {
+			yadj += yg >> 1;
+			yg <<= 1;
+		}
+
+		// create cell coordinates for window
+		bottomY = ((-halfDisplayHeight / zoom) - yOff + h2) | 0;
+		topY = ((halfDisplayHeight / zoom) - yOff + h2) | 0;
+
+		for (y = bottomY; y <= topY; y += 1) {
+			// clip y to window
+			displayY = (((y - h2) + yOff) * zoom) + halfDisplayHeight;
+			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+				cy = (y - h2);
+				xOffset = xOff - w2;
+				leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
+				rightX = ((halfDisplayWidth / zoom) - xOffset + zoom) | 0;
+				for (x = leftX; x <= rightX; x += 1) {
+					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
+					if (displayX >= -zoom && displayX <= this.displayWidth + zoom * 2) {
+						// check if the cell is on the grid
+						if (x + xadj < 0 || x + xadj >= maxGridSize || y + yadj < 0 || y + yadj >= maxGridSize) {
+							// encode coordinate index into the colour state so it can be sorted later
+							colours[j] = (256 << LifeConstants.coordBufferBits) + k;
+							cx = x - w2 + 0.5;
+							oddEven = ((x + y) & 1);
+							coords[k] = cx - 1;
+							coords[k + 1] = cy + oddEven;
+							coords[k + 2] = cx + 1;
+							coords[k + 3] = cy + oddEven;
+							coords[k + 4] = cx;
+							coords[k + 5] = cy + 1 - oddEven;
+							k += 6;
+							j += 1;
+						}
+
 						// check if buffer is full
 						if (j === LifeConstants.coordBufferSize) {
 							// draw buffer
@@ -5262,7 +5355,6 @@
 				// clip y to window
 				displayY = (((y - h2) + yOff) * zoom) + halfDisplayHeight;
 				if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
-					colourRow = colourGrid[y];
 					cy = (y - h2);
 					xOffset = xOff - w2;
 					leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
@@ -5794,7 +5886,12 @@
 			/** @type {number} */ displayY = 0,
 			/** @type {number} */ displayX = 0,
 			/** @type {number} */ xOffset = 0,
-			/** @type {boolean} */ drawFilledCellBorders = !this.displayGrid && !this.cellBorders;
+			/** @type {boolean} */ drawFilledCellBorders = !this.displayGrid && !this.cellBorders,
+			/** @type {number} */ xg = this.width,
+			/** @type {number} */ yg = this.height,
+			/** @type {number} */ xadj = 0,
+			/** @type {number} */ yadj = 0,
+			/** @type {number} */ maxGridSize = this.maxGridSize;
 
 		// switch buffers if required
 		if ((this.isSuper || this.isRuleTree) && ((this.counter & 1) !== 0)) {
@@ -5948,6 +6045,93 @@
 			k = 0;
 		}
 
+		// draw off grid cells
+		j = 0;
+		k = 0;
+
+		// compute the x and y adjustments for full grid size
+		while (xg < maxGridSize) {
+			xadj += xg >> 1;
+			xg <<= 1;
+		}
+		while (yg < maxGridSize) {
+			yadj += yg >> 1;
+			yg <<= 1;
+		}
+
+		// create cell coordinates for window
+		bottomY = ((-halfDisplayHeight / zoom) - yOff + h2) | 0;
+		topY = ((halfDisplayHeight / zoom) - yOff + h2) | 0;
+
+		for (y = bottomY; y <= topY; y += 1) {
+			// clip y to window
+			displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
+			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+				cy = y - h2;
+				xOffset = xOff - w2 - ((cy + yOff) / 2);
+				leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
+				rightX = ((halfDisplayWidth / zoom) - xOffset + zoom) | 0;
+				for (x = leftX; x <= rightX; x += 1) {
+					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
+					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+						// check if the cell is on the grid
+						if (x + xadj < 0 || x + xadj >= maxGridSize || y + yadj < 0 || y + yadj >= maxGridSize) {
+							// encode coordinate index into the colour state so it can be sorted later
+							colours[j] = (256 << LifeConstants.coordBufferBits) + k;
+							cx = x - w2;
+							coords[k] = xa0 + cx;
+							coords[k + 1] = ya0 + cy;
+							coords[k + 2] = xa1 + cx;
+							coords[k + 3] = ya1 + cy;
+							coords[k + 4] = xa2 + cx;
+							coords[k + 5] = ya2 + cy;
+							coords[k + 6] = xa3 + cx;
+							coords[k + 7] = ya3 + cy;
+							coords[k + 8] = xa4 + cx;
+							coords[k + 9] = ya4 + cy;
+							coords[k + 10] = xa5 + cx;
+							coords[k + 11] = ya5 + cy;
+							k += 12;
+							j += 1;
+						}
+						// check if buffer is full
+						if (j === LifeConstants.coordBufferSize) {
+							// draw buffer
+							this.numCells = j;
+							this.drawHexCells(true, drawFilledCellBorders, false, false);
+
+							// draw cell borders if enabled and grid lines disabled
+							if (this.cellBorders && !this.displayGrid) {
+								this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
+								this.drawHexCells(false, false, false, false);
+							}
+
+							// clear buffer
+							j = 0;
+							k = 0;
+						}
+					}
+				}
+			}
+		}
+
+		// draw any remaining cells
+		this.numCells = j;
+		if (j > 0) {
+			// draw buffer
+			this.drawHexCells(true, drawFilledCellBorders, false, false);
+
+			// draw cell borders if enabled and grid lines disabled
+			if (this.cellBorders && !this.displayGrid) {
+				this.context.strokeStyle = "rgb(" + this.redChannel[0] + "," + this.blueChannel[0] + "," + this.greenChannel[0] + ")";
+				this.drawHexCells(false, false, false, false);
+			}
+
+			// clear buffer
+			j = 0;
+			k = 0;
+		}
+
 		// draw grid if enabled
 		if (this.displayGrid) {
 			// set grid line colour
@@ -5963,7 +6147,6 @@
 				// clip y to window
 				displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
 				if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
-					colourRow = colourGrid[y];
 					cy = y - h2;
 					xOffset = xOff - w2 - ((cy + yOff) / 2);
 					leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
@@ -9982,6 +10165,9 @@
 				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 			}
 		}
+
+		// create off grid colour string
+		colourStrings[256] = this.boundaryColourString;
 	};
 
 	// create pixel colours
@@ -10108,6 +10294,9 @@
 				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 			}
 		}
+
+		// create off grid colour string
+		colourStrings[256] = this.boundaryColourString;
 	};
 
 	// set the bounded grid border cell
@@ -11317,8 +11506,10 @@
 			}
 
 			// disable the tile at the start and end of each row to prevent overflow
-			tileRow[0] &= 0x7fff;
-			tileRow[tileCols16 - 1] &= 0xfffe;
+			if (!this.isHROT) {
+				tileRow[0] &= 0x7fff;
+				tileRow[tileCols16 - 1] &= 0xfffe;
+			}
 
 			// scan each set of tiles
 			for (tw = 0; tw < tileCols16; tw += 1) {
@@ -37926,6 +38117,12 @@
 		}
 		if (bottomRightY < boundBottom) {
 			boundBottom = bottomRightY;
+		}
+
+		// adjust for hex grid
+		if (this.isHex) {
+			boundLeft += boundBottom / 2;
+			boundRight += boundTop / 2;
 		}
 
 		// check whether clipping is required
