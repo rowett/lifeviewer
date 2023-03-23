@@ -1,3 +1,6 @@
+Build 980
+- fixed incorrect error message when local @RULE in pattern RLE is invalid
+
 Build 979
 - fixed issue with PASTE on HROT/LtL patterns being ignored for first and last tile in a row
 

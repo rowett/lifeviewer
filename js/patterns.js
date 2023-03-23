@@ -9789,6 +9789,9 @@
 						// attempt to decode and if successful do not add to cache since this is a local rule
 						ruleText = newPattern.afterTitle.substring(ruleIndex);
 						this.decodeRuleTable(newPattern, ruleText);
+
+						// keep any error message
+						newPattern.originalFailure = this.failureReason;
 					}
 
 					// check if local rule was found
