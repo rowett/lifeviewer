@@ -708,9 +708,6 @@
 		// next snapshot generation target
 		/** @type {number} */ this.nextSnapshotTarget = LifeConstants.snapshotInterval;
 
-		// whether current theme has history
-		/** @type {boolean} */ this.themeHistory = false;
-
 		// whether to display grid lines
 		/** @type {boolean} */ this.displayGrid = false;
 
@@ -734,6 +731,11 @@
 
 		// track box bounding box
 		/** @type {BoundingBox} */ this.trackBox = null;
+
+		// saved bounding box
+		/** @type {BoundingBox} */ this.saveBox = new BoundingBox(0, 0, 0, 0);
+
+		/** @type {BoundingBox} */ this.saveHistoryBox = new BoundingBox(0, 0, 0, 0);
 
 		// width of life grid in pixels
 		/** @type {number} */ this.width = gridWidth;
@@ -3815,9 +3817,6 @@
 				// remember the generation that life stopped
 				if (view.diedGeneration === -1) {
 					view.diedGeneration = this.counter;
-
-					// if the pattern dies again then notify (this would be caused by drawing during playback)
-					view.emptyStart = false;
 				}
 
 				// exit loop
@@ -7010,9 +7009,6 @@
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
 			/** @type {number} */ cellAsBit = 0,
 			/** @type {number} */ cellAsTileBit = 0,
-			/** @type {boolean} */ growX = false,
-			/** @type {boolean} */ growY = false,
-			/** @type {number} */ borderSize = 0,
 
 			// bounded grid top left
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
@@ -7031,9 +7027,6 @@
 
 			// whether cell should be alive in bit grid
 			/** @type {boolean} */ bitAlive = false,
-
-			// whether the cell is on the grid
-			/** @type {boolean} */ onGrid = true,
 
 			// whether a cell was or became LifeHistory state6
 			/** @type {number} */ result = 0,
@@ -7067,263 +7060,104 @@
 			}
 		}
 
-		// check if the cell is on the grid
-		if (!((x === (x & this.widthMask)) && (y === (y & this.heightMask)))) {
-			onGrid = false;
-
-			// check if grid can grow in the required direction
-			growX = (this.width < this.maxGridSize) && (x !== (x & this.widthMask));
-			growY = (this.height < this.maxGridSize) && (y !== (y & this.heightMask));
-
-			// attempt to grow the grid
-			while (growX || growY) {
-				if (growX || growY) {
-					this.growGrid(growX, growY);
-				}
-				if (growX) {
-					x += this.width >> 2;
-				}
-				if (growY) {
-					y += this.height >> 2;
-				}
-
-				growX = (this.width < this.maxGridSize) && (x !== (x & this.widthMask));
-				growY = (this.height < this.maxGridSize) && (y !== (y & this.heightMask));
+		// if bounded grid defined check the coordinates are within it
+		if (this.boundedGridType !== -1 && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
+			// clip to bounded grid
+			if (x < leftX) {
+				x = leftX;
 			}
-
-			// check if the cell is on the expanded grid
-			if ((x === (x & this.widthMask)) && (y === (y & this.heightMask))) {
-				// cell on expanded grid
-				onGrid = true;
-
-				// grid has changed so lookup again
-				grid = this.grid16;
-				tileGrid = this.tileGrid;
-				colourGrid = this.colourGrid;
-				colourTileGrid = this.colourTileGrid;
-				colourTileHistoryGrid = this.colourTileHistoryGrid;
-				overlayGrid = this.overlayGrid;
-				staticTileGrid = this.staticTileGrid;
+			if (x > rightX) {
+				x = rightX;
+			}
+			if (y < bottomY) {
+				y = bottomY;
+			}
+			if (y > topY) {
+				y = topY;
 			}
 		}
 
-		// check for HROT border width needed
-		if (this.isHROT) {
-			borderSize = this.view.getSafeBorderSize();
-
-			if (x - borderSize < 0 || x + borderSize >= this.width || y - borderSize < 0 || y + borderSize >= this.height) {
-				onGrid = false;
-
-				// check if grid can grow in the required direction
-				growX = (this.width < this.maxGridSize) && ((x - borderSize < 0 || x + borderSize >= this.width));
-				growY = (this.height < this.maxGridSize) && ((y - borderSize < 0 || y + borderSize >= this.height));
-
-				// attempt to grow the grid
-				while (growX || growY) {
-					if (growX || growY) {
-						this.growGrid(growX, growY);
-					}
-					if (growX) {
-						x += this.width >> 2;
-					}
-					if (growY) {
-						y += this.height >> 2;
-					}
-
-					growX = (this.width < this.maxGridSize) && ((x - borderSize < 0 || x + borderSize >= this.width));
-					growY = (this.height < this.maxGridSize) && ((y - borderSize < 0 || y + borderSize >= this.height));
-				}
-
-				// check if the cell is on the expanded grid
-				if (!(x - borderSize < 0 || x + borderSize >= this.width || y - borderSize < 0 || y + borderSize >= this.height)) {
-					// cell on expanded grid
-					onGrid = true;
-
-					// grid has changed so lookup again
-					grid = this.grid16;
-					tileGrid = this.tileGrid;
-					colourGrid = this.colourGrid;
-					colourTileGrid = this.colourTileGrid;
-					colourTileHistoryGrid = this.colourTileHistoryGrid;
-					overlayGrid = this.overlayGrid;
-					staticTileGrid = this.staticTileGrid;
-				}
-			}
-		}
-
-		// draw if on the grid
-		if (onGrid) {
-			// if bounded grid defined check the coordinates are within it
-			if (this.boundedGridType !== -1 && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
-				// clip to bounded grid
-				if (x < leftX) {
-					x = leftX;
-				}
-				if (x > rightX) {
-					x = rightX;
-				}
-				if (y < bottomY) {
-					y = bottomY;
-				}
-				if (y > topY) {
-					y = topY;
-				}
-			}
-
-			// check for PCA
-			if (this.isPCA || this.isRuleTree) {
-				current = colourGrid[y][x];
-				if (deadZero && state === 0) {
-					colourGrid[y][x] = 0;
-				} else {
-					colourGrid[y][x] = this.historyStates + state;
-				}
-				colourTileHistoryGrid[y >> 4][x >> 8] = 65535;
-				if (this.isRuleTree) {
-					if ((this.counter & 1) !== 0) {
-						grid = this.nextGrid16;
-						tileGrid = this.nextTileGrid;
-					}
-
-					// get the tile mask
-					cellAsTileBit = 1 << (~(x >> 4) & 15);
-
-					// mark the tile as not static
-					tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-					staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
-				}
-
-				// update population
-				if (state === 0) {
-					if (current > this.historyStates) {
-						if (this.isPCA) {
-							this.population -= this.bitCounts16[current - this.historyStates];
-						} else {
-							this.population -= 1;
-						}
-					}
-				} else {
-					if (this.isPCA) {
-						if (current <= this.historyStates) {
-							this.population += this.bitCounts16[state];
-						} else {
-							this.population -= this.bitCounts16[current - this.historyStates];
-							this.population += this.bitCounts16[state];
-						}
-					} else {
-						tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						// mark tile as not static since it has changed
-						staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
-						if (current === 0) {
-							this.population += 1;
-						}
-						// check left boundary
-						cx = x & 15;
-						if ((x > 0) && (cx <= leftTarget)) {
-							x -= (cx + 1);
-							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-							x += (cx + 1);
-						} else {
-							// check right boundary
-							if ((x < this.width - 1) && (cx >= rightTarget)) {
-								x += (16 - cx);
-								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-								x -= (16 - cx);
-							}
-						}
-						// check bottom boundary
-						if ((y > 0) && ((y & 15) === 0)) {
-							y -= 1;
-							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-							if ((x > 0) && (cx <= leftTarget)) {
-								x -= (cx + 1);
-								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-								x += (cx + 1);
-							} else {
-								if ((x < this.width - 1) && (cx >= rightTarget)) {
-									x += (16 - cx);
-									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-									x -= (16 - cx);
-								}
-							}
-							y += 1;
-						} else {
-							// check top boundary
-							if ((y < this.height - 1) && ((y & 15) === 15)) {
-								y += 1;
-								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-								if ((x > 0) && (cx <= leftTarget)) {
-									x -= (cx + 1);
-									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-									x += (cx + 1);
-								} else {
-									if ((x < this.width - 1) && (cx >= rightTarget)) {
-										x += (16 - cx);
-										tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-										x -= (16 - cx);
-									}
-								}
-								y -= 1;
-							}
-						}
-					}
-				}
+		// check for PCA
+		if (this.isPCA || this.isRuleTree) {
+			current = colourGrid[y][x];
+			if (deadZero && state === 0) {
+				colourGrid[y][x] = 0;
 			} else {
-				// get correct grid for current generation
+				colourGrid[y][x] = this.historyStates + state;
+			}
+			colourTileHistoryGrid[y >> 4][x >> 8] = 65535;
+			if (this.isRuleTree) {
 				if ((this.counter & 1) !== 0) {
 					grid = this.nextGrid16;
 					tileGrid = this.nextTileGrid;
 				}
 
-				// get the cell as a bit mask and tile mask
-				cellAsBit = 1 << (~x & 15);
+				// get the tile mask
 				cellAsTileBit = 1 << (~(x >> 4) & 15);
 
-				// check for multi-state rules
-				if (!this.isHROT) {
-					if (this.multiNumStates <= 2 || this.isSuper) {
-						// 2-state
-						bitAlive = ((state & 1) === 1);
-					} else {
-						// generations
-						bitAlive = (state === this.multiNumStates - 1);
-					}
+				// mark the tile as not static
+				tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
+			}
 
-					// draw alive or dead
-					if (bitAlive) {
-						// adjust population if cell was dead
-						if ((grid[y][x >> 4] & cellAsBit) === 0) {
-							this.population += 1;
+			// update population
+			if (state === 0) {
+				if (current > this.historyStates) {
+					if (this.isPCA) {
+						this.population -= this.bitCounts16[current - this.historyStates];
+					} else {
+						this.population -= 1;
+					}
+				}
+			} else {
+				if (this.isPCA) {
+					if (current <= this.historyStates) {
+						this.population += this.bitCounts16[state];
+					} else {
+						this.population -= this.bitCounts16[current - this.historyStates];
+						this.population += this.bitCounts16[state];
+					}
+				} else {
+					tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+					// mark tile as not static since it has changed
+					staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
+					if (current === 0) {
+						this.population += 1;
+					}
+					// check left boundary
+					cx = x & 15;
+					if ((x > 0) && (cx <= leftTarget)) {
+						x -= (cx + 1);
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						x += (cx + 1);
+					} else {
+						// check right boundary
+						if ((x < this.width - 1) && (cx >= rightTarget)) {
+							x += (16 - cx);
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							x -= (16 - cx);
 						}
-						// set cell
-						if (this.rainbow) {
-							colourGrid[y][x] = ((x + y) & 127) + 64;
-						} else {
-							colourGrid[y][x] = this.aliveStart;
-						}
-						colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						grid[y][x >> 4] |= cellAsBit;
-						tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						// mark tile as not static since it has changed
-						staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
-						// check left boundary
-						cx = x & 15;
+					}
+					// check bottom boundary
+					if ((y > 0) && ((y & 15) === 0)) {
+						y -= 1;
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 						if ((x > 0) && (cx <= leftTarget)) {
 							x -= (cx + 1);
 							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 							x += (cx + 1);
 						} else {
-							// check right boundary
 							if ((x < this.width - 1) && (cx >= rightTarget)) {
 								x += (16 - cx);
 								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 								x -= (16 - cx);
 							}
 						}
-						// check bottom boundary
-						if ((y > 0) && ((y & 15) === 0)) {
-							y -= 1;
+						y += 1;
+					} else {
+						// check top boundary
+						if ((y < this.height - 1) && ((y & 15) === 15)) {
+							y += 1;
 							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
 							if ((x > 0) && (cx <= leftTarget)) {
 								x -= (cx + 1);
@@ -7336,166 +7170,238 @@
 									x -= (16 - cx);
 								}
 							}
-							y += 1;
-						} else {
-							// check top boundary
-							if ((y < this.height - 1) && ((y & 15) === 15)) {
-								y += 1;
-								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-								if ((x > 0) && (cx <= leftTarget)) {
-									x -= (cx + 1);
-									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-									x += (cx + 1);
-								} else {
-									if ((x < this.width - 1) && (cx >= rightTarget)) {
-										x += (16 - cx);
-										tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
-										x -= (16 - cx);
-									}
-								}
-								y -= 1;
-							}
-						}
-					} else {
-						// adjust population if cell was alive
-						if ((grid[y][x >> 4] & cellAsBit) !== 0) {
-							this.population -= 1;
-						}
-						// clear cell
-						if (deadZero) {
-							colourGrid[y][x] = this.unoccupied;
-						} else {
-							colourGrid[y][x] = this.deadStart;
-						}
-						colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
-						grid[y][x >> 4] &= ~cellAsBit;
-					}
-
-					// check for [R]History
-					if (this.isLifeHistory && overlayGrid) {
-						// check if the cell used to be or has become state 6
-						current = overlayGrid[y][x];
-						if (current > 0) {
-							current = ViewConstants.stateMap.indexOf(current - 128);
-						}
-						if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
-							result = 1;
-						}
-
-						// update colour grid if history state
-						if (state === 2) {
-							colourGrid[y][x] = LifeConstants.deadMin;
-						} else {
-							// update overlay grid if not
-							if (state === 0) {
-								overlayGrid[y][x] = 0;
-							} else {
-								overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
-							}
-						}
-					}
-
-					// check for generations style rule
-					if (this.multiNumStates > 2) {
-						// write the correct state to the colour grid
-						if (state > 0) {
-							state = this.historyStates + state;
-						}
-						colourGrid[y][x] = state;
-						// check for [R]Super
-						if (this.isSuper) {
-							// mark tile as not static since it has changed
-							staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
-						}
-					}
-				} else {
-					// update population for HROT
-					current = colourGrid[y][x];
-					if (this.multiNumStates === 2) {
-						aliveState = this.aliveStart;
-						if (state === 1) {
-							state = this.aliveStart;
-						}
-						colourGrid[y][x] = state;
-					} else {
-						aliveState = this.multiNumStates - 1 + this.historyStates;
-						if (state > 0) {
-							state = this.historyStates + state;
-						}
-						colourGrid[y][x] = state;
-					}
-					colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
-					colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
-					if (current !== aliveState && state === aliveState) {
-						this.population += 1;
-					} else {
-						if (current === aliveState && state !== aliveState) {
-							this.population -= 1;
+							y -= 1;
 						}
 					}
 				}
 			}
+		} else {
+			// get correct grid for current generation
+			if ((this.counter & 1) !== 0) {
+				grid = this.nextGrid16;
+				tileGrid = this.nextTileGrid;
+			}
 
-			// if the state is not dead (or history) then update bounding box
-			if (state > 0) {
-				// check for initial cell
-				if (this.population === 1) {
-					// use shrink since there might be Generations dying cells
-					this.shrinkNeeded = true;
+			// get the cell as a bit mask and tile mask
+			cellAsBit = 1 << (~x & 15);
+			cellAsTileBit = 1 << (~(x >> 4) & 15);
+
+			// check for multi-state rules
+			if (!this.isHROT) {
+				if (this.multiNumStates <= 2 || this.isSuper) {
+					// 2-state
+					bitAlive = ((state & 1) === 1);
+				} else {
+					// generations
+					bitAlive = (state === this.multiNumStates - 1);
 				}
-				if (x < zoomBox.leftX) {
-					zoomBox.leftX = x;
-				}
-				if (x > zoomBox.rightX) {
-					zoomBox.rightX = x;
-				}
-				if (y < zoomBox.bottomY) {
-					zoomBox.bottomY = y;
-				}
-				if (y > zoomBox.topY) {
-					zoomBox.topY = y;
-				}
-				if (x < historyBox.leftX) {
-					historyBox.leftX = x;
-				}
-				if (x > historyBox.rightX) {
-					historyBox.rightX = x;
-				}
-				if (y < historyBox.bottomY) {
-					historyBox.bottomY = y;
-				}
-				if (y > historyBox.topY) {
-					historyBox.topY = y;
-				}
-				// if the state is alive then update HROT alive bounding box
-				if (this.isHROT && state === this.multiNumStates - 1 + this.historyStates) {
-					if (this.population === 1) {
-						HROTBox.leftX = x;
-						HROTBox.rightX = x;
-						HROTBox.bottomY = y;
-						HROTBox.topY = y;
+
+				// draw alive or dead
+				if (bitAlive) {
+					// adjust population if cell was dead
+					if ((grid[y][x >> 4] & cellAsBit) === 0) {
+						this.population += 1;
+					}
+					// set cell
+					if (this.rainbow) {
+						colourGrid[y][x] = ((x + y) & 127) + 64;
 					} else {
-						if (x < HROTBox.leftX) {
-							HROTBox.leftX = x;
+						colourGrid[y][x] = this.aliveStart;
+					}
+					colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+					colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+					grid[y][x >> 4] |= cellAsBit;
+					tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+					// mark tile as not static since it has changed
+					staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
+					// check left boundary
+					cx = x & 15;
+					if ((x > 0) && (cx <= leftTarget)) {
+						x -= (cx + 1);
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						x += (cx + 1);
+					} else {
+						// check right boundary
+						if ((x < this.width - 1) && (cx >= rightTarget)) {
+							x += (16 - cx);
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							x -= (16 - cx);
 						}
-						if (x > HROTBox.rightX) {
-							HROTBox.rightX = x;
+					}
+					// check bottom boundary
+					if ((y > 0) && ((y & 15) === 0)) {
+						y -= 1;
+						tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+						if ((x > 0) && (cx <= leftTarget)) {
+							x -= (cx + 1);
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							x += (cx + 1);
+						} else {
+							if ((x < this.width - 1) && (cx >= rightTarget)) {
+								x += (16 - cx);
+								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								x -= (16 - cx);
+							}
 						}
-						if (y < HROTBox.bottomY) {
-							HROTBox.bottomY = y;
+						y += 1;
+					} else {
+						// check top boundary
+						if ((y < this.height - 1) && ((y & 15) === 15)) {
+							y += 1;
+							tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+							if ((x > 0) && (cx <= leftTarget)) {
+								x -= (cx + 1);
+								tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+								x += (cx + 1);
+							} else {
+								if ((x < this.width - 1) && (cx >= rightTarget)) {
+									x += (16 - cx);
+									tileGrid[y >> 4][x >> 8] |= (1 << (~(x >> 4) & 15));
+									x -= (16 - cx);
+								}
+							}
+							y -= 1;
 						}
-						if (y > HROTBox.topY) {
-							HROTBox.topY = y;
+					}
+				} else {
+					// adjust population if cell was alive
+					if ((grid[y][x >> 4] & cellAsBit) !== 0) {
+						this.population -= 1;
+					}
+					// clear cell
+					if (deadZero) {
+						colourGrid[y][x] = this.unoccupied;
+					} else {
+						colourGrid[y][x] = this.deadStart;
+					}
+					colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+					colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+					grid[y][x >> 4] &= ~cellAsBit;
+				}
+
+				// check for [R]History
+				if (this.isLifeHistory && overlayGrid) {
+					// check if the cell used to be or has become state 6
+					current = overlayGrid[y][x];
+					if (current > 0) {
+						current = ViewConstants.stateMap.indexOf(current - 128);
+					}
+					if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
+						result = 1;
+					}
+
+					// update colour grid if history state
+					if (state === 2) {
+						colourGrid[y][x] = LifeConstants.deadMin;
+					} else {
+						// update overlay grid if not
+						if (state === 0) {
+							overlayGrid[y][x] = 0;
+						} else {
+							overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
 						}
 					}
 				}
-			} else {
-				// state cleared only shrink if the cell was on the boundary of the bounding box
-				if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
-					// mark shrink needed
-					this.shrinkNeeded = true;
+
+				// check for generations style rule
+				if (this.multiNumStates > 2) {
+					// write the correct state to the colour grid
+					if (state > 0) {
+						state = this.historyStates + state;
+					}
+					colourGrid[y][x] = state;
+					// check for [R]Super
+					if (this.isSuper) {
+						// mark tile as not static since it has changed
+						staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
+					}
 				}
+			} else {
+				// update population for HROT
+				current = colourGrid[y][x];
+				if (this.multiNumStates === 2) {
+					aliveState = this.aliveStart;
+					if (state === 1) {
+						state = this.aliveStart;
+					}
+					colourGrid[y][x] = state;
+				} else {
+					aliveState = this.multiNumStates - 1 + this.historyStates;
+					if (state > 0) {
+						state = this.historyStates + state;
+					}
+					colourGrid[y][x] = state;
+				}
+				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+				if (current !== aliveState && state === aliveState) {
+					this.population += 1;
+				} else {
+					if (current === aliveState && state !== aliveState) {
+						this.population -= 1;
+					}
+				}
+			}
+		}
+
+		// if the state is not dead (or history) then update bounding box
+		if (state > 0) {
+			// check for initial cell
+			if (this.population === 1) {
+				// use shrink since there might be Generations dying cells
+				this.shrinkNeeded = true;
+			}
+			if (x < zoomBox.leftX) {
+				zoomBox.leftX = x;
+			}
+			if (x > zoomBox.rightX) {
+				zoomBox.rightX = x;
+			}
+			if (y < zoomBox.bottomY) {
+				zoomBox.bottomY = y;
+			}
+			if (y > zoomBox.topY) {
+				zoomBox.topY = y;
+			}
+			if (x < historyBox.leftX) {
+				historyBox.leftX = x;
+			}
+			if (x > historyBox.rightX) {
+				historyBox.rightX = x;
+			}
+			if (y < historyBox.bottomY) {
+				historyBox.bottomY = y;
+			}
+			if (y > historyBox.topY) {
+				historyBox.topY = y;
+			}
+			// if the state is alive then update HROT alive bounding box
+			if (this.isHROT && state === this.multiNumStates - 1 + this.historyStates) {
+				if (this.population === 1) {
+					HROTBox.leftX = x;
+					HROTBox.rightX = x;
+					HROTBox.bottomY = y;
+					HROTBox.topY = y;
+				} else {
+					if (x < HROTBox.leftX) {
+						HROTBox.leftX = x;
+					}
+					if (x > HROTBox.rightX) {
+						HROTBox.rightX = x;
+					}
+					if (y < HROTBox.bottomY) {
+						HROTBox.bottomY = y;
+					}
+					if (y > HROTBox.topY) {
+						HROTBox.topY = y;
+					}
+				}
+			}
+		} else {
+			// state cleared only shrink if the cell was on the boundary of the bounding box
+			if (x === zoomBox.leftX || x === zoomBox.rightX || y === zoomBox.topY || y === zoomBox.bottomY) {
+				// mark shrink needed
+				this.shrinkNeeded = true;
 			}
 		}
 
@@ -8565,9 +8471,12 @@
 	};
 
 	// check if the grid buffer needs to grow for as many steps as needed
-	Life.prototype.checkForGrowth = function(/** @type {View} */ view, /** @type {BoundingBox} */ box, /** @type {number} */ maxStep) {
+	Life.prototype.checkForGrowth = function(/** @type {View} */ view, /** @type {BoundingBox} */ box, /** @type {number} */ borderSize) {
+		// divide border by 2 since it includes space both sides of the pattern
+		borderSize >>= 1;
+
 		// check the next step
-		while (this.checkForGrowthStep(view, box, maxStep)) {
+		while (this.checkForGrowthStep(view, box, borderSize)) {
 			// until no more steps required
 		}
 	};
@@ -9599,7 +9508,6 @@
 	// set the theme
 	Life.prototype.setTheme = function(/** @type {number} */ theme, /** @type {number} */ switchTime, /** @type {View} */ view) {
 		var	/** @type {Theme} */ newTheme = this.themes[theme],
-			/** @type {boolean} */ currentHistory = this.themeHistory,
 			/** @type {number} */ i = 0;
 
 		// save the theme
@@ -9631,16 +9539,6 @@
 
 		// set the change time
 		this.colourChange = switchTime;
-
-		// check whether new theme has history
-		this.themeHistory = newTheme.hasHistory(this.isLifeHistory);
-
-		// check if history was just switched off
-		if (currentHistory && !this.themeHistory && !this.isHROT && this.multiNumStates <= 2) {
-			if (!this.rainbow) {
-				this.clearHistoryCells();
-			}
-		}
 
 		// copy grid line colours from theme
 		this.gridLineRaw  = newTheme.gridColour;
@@ -10185,38 +10083,28 @@
 
 		// check for Generations, HROT or [R]Super
 		if (this.multiNumStates > 2) {
-			// check for [R]Super
-			if (this.isSuper) {
-				if (this.littleEndian) {
-					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
-						if (needStrings) {
-							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
-						}
-					}
-				} else {
-					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
-						if (needStrings) {
-							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
-						}
+			if (this.littleEndian) {
+				pixelColours[0] = (alpha << 24) | (blueChannel[0] << 16) | (greenChannel[0] << 8) | redChannel[0];
+				if (needStrings) {
+					colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+				}
+	
+				for (i = 1; i <= this.multiNumStates + this.historyStates; i += 1) {
+					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+					if (needStrings) {
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 					}
 				}
 			} else {
-				// create state colours
-				if (this.littleEndian) {
-					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
-						if (needStrings) {
-							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
-						}
-					}
-				} else {
-					for (i = 0; i <= this.multiNumStates + this.historyStates; i += 1) {
-						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
-						if (needStrings) {
-							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
-						}
+				pixelColours[0] = (redChannel[0] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | alpha;
+				if (needStrings) {
+					colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+				}
+
+				for (i = 1; i <= this.multiNumStates + this.historyStates; i += 1) {
+					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+					if (needStrings) {
+						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 					}
 				}
 			}
@@ -20745,136 +20633,6 @@
 		this.deaths = deaths;
 	};
 
-	// create 2x2 colour grid with no history for 0.5 <= zoom < 1
-	Life.prototype.create2x2ColourGridNoHistory16 = function(/** @type {Array<Uint16Array>} */ colourGrid, /** @type {Array<Uint8Array>} */ smallColourGrid) {
-		var	/** @type {number} */ cr = 0,
-			/** @type {number} */ h = 0,
-			/** @type {Uint16Array} */ sourceRow = null,
-			/** @type {Uint16Array} */ sourceRow1 = null,
-			/** @type {Uint8Array} */ destRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {number} */ value = 0,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ topY = 0,
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ tiles = 0,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4;
-
-		// set the initial tile row
-		bottomY = 0;
-		topY = bottomY + ySize;
-
-		// scan each row of tiles
-		for (th = 0; th < tileRows; th += 1) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the tile row and colour tile rows
-			colourTileHistoryRow = colourTileHistoryGrid[th];
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = colourTileHistoryRow[tw];
-
-				// check if any are occupied
-				if (tiles) {
-					// compute next colour for each tile in the set
-					for (b = 15; b >= 0; b -= 1) {
-						// check if this tile is occupied
-						if ((tiles & (1 << b)) !== 0) {
-							// update the small colour grid
-							for (h = bottomY; h < topY; h += 2) {
-								// get destination row
-								destRow = smallColourGrid[h];
-
-								// get the next two rows
-								sourceRow = colourGrid[h];
-								sourceRow1 = colourGrid[h + 1];
-								cr = (leftX << 3);
-
-								// find any set cells in each 2x2 block
-								// first two cells in first row
-								value = sourceRow[cr];
-
-								// next two cells in next row
-								value |= sourceRow1[cr];
-								destRow[cr + cr] = value | (value >> 8);
-								cr += 1;
-
-								// loop unroll
-								value = sourceRow[cr];
-								value |= sourceRow1[cr];
-								destRow[cr + cr] = value | (value >> 8);
-								cr += 1;
-
-								// loop unroll
-								value = sourceRow[cr];
-								value |= sourceRow1[cr];
-								destRow[cr + cr] = value | (value >> 8);
-								cr += 1;
-
-								// loop unroll
-								value = sourceRow[cr];
-								value |= sourceRow1[cr];
-								destRow[cr + cr] = value | (value >> 8);
-								cr += 1;
-
-								// loop unroll
-								value = sourceRow[cr];
-								value |= sourceRow1[cr];
-								destRow[cr + cr] = value | (value >> 8);
-								cr += 1;
-
-								// loop unroll
-								value = sourceRow[cr];
-								value |= sourceRow1[cr];
-								destRow[cr + cr] = value | (value >> 8);
-								cr += 1;
-
-								// loop unroll
-								value = sourceRow[cr];
-								value |= sourceRow1[cr];
-								destRow[cr + cr] = value | (value >> 8);
-								cr += 1;
-
-								// loop unroll
-								value = sourceRow[cr];
-								value |= sourceRow1[cr];
-								destRow[cr + cr] = value | (value >> 8);
-							}
-						}
-
-						// next tile columns
-						leftX += xSize;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile row
-			bottomY += ySize;
-			topY += ySize;
-		}
-	};
-
 	// create 2x2 colour grid for 0.5 <= zoom < 1 for [R]Super patterns
 	Life.prototype.create2x2ColourGrid16Super = function(/** @type {Array<Uint16Array>} */ colourGrid, /** @type {Array<Uint8Array>} */ smallColourGrid) {
 		var	/** @type {number} */ cr = 0,
@@ -21226,114 +20984,6 @@
 		}
 	};
 
-	// create 4x4 colour grid with no history for 0.25 <= zoom < 0.5
-	Life.prototype.create4x4ColourGridNoHistory32 = function(/** @type {Array<Uint32Array>} */ colourGrid, /** @type {Array<Uint8Array>} */ smallColourGrid) {
-		var	/** @type {number} */ h = 0,
-			/** @type {number} */ cr = 0,
-			/** @type {number} */ dr = 0,
-			/** @type {Uint32Array} */ sourceRow = null,
-			/** @type {Uint32Array} */ sourceRow1 = null,
-			/** @type {Uint32Array} */ sourceRow2 = null,
-			/** @type {Uint32Array} */ sourceRow3 = null,
-			/** @type {Uint8Array} */ destRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ topY = 0,
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ tiles = 0,
-			/** @type {number} */ value = 0,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4;
-
-		// set the initial tile row
-		bottomY = 0;
-		topY = bottomY + ySize;
-
-		// scan each row of tiles
-		for (th = 0; th < tileRows; th += 1) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the tile row and colour tile rows
-			colourTileHistoryRow = colourTileHistoryGrid[th];
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = colourTileHistoryRow[tw];
-
-				// check if any are occupied
-				if (tiles) {
-					// compute next colour for each tile in the set
-					for (b = 15; b >= 0; b -= 1) {
-						// check if this tile is occupied
-						if ((tiles & (1 << b)) !== 0) {
-							// update the small colour grid
-							for (h = bottomY; h < topY; h += 4) {
-								// get destination row
-								destRow = smallColourGrid[h];
-
-								// get the next four rows
-								sourceRow = colourGrid[h];
-								sourceRow1 = colourGrid[h + 1];
-								sourceRow2 = colourGrid[h + 2];
-								sourceRow3 = colourGrid[h + 3];
-								cr = (leftX << 2);
-								dr = (leftX << 4);
-
-								// find any set cells in each 4x4 block
-								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
-								destRow[dr] = ((value ? 1 : 0) << 6);
-								cr += 1;
-								dr += 4;
-
-								// loop unroll
-								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
-								destRow[dr] = (value ? 1 : 0) << 6;
-								cr += 1;
-								dr += 4;
-
-								// loop unroll
-								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
-								destRow[dr] = (value ? 1 : 0) << 6;
-								cr += 1;
-								dr += 4;
-
-								// loop unroll
-								value = sourceRow[cr] | sourceRow1[cr] | sourceRow2[cr] | sourceRow3[cr];
-								destRow[dr] = (value ? 1 : 0) << 6;
-							}
-						}
-
-						// next tile columns
-						leftX += xSize;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile row
-			bottomY += ySize;
-			topY += ySize;
-		}
-	};
-
 	// create 4x4 colour grid for 0.25 <= zoom < 0.5
 	Life.prototype.create4x4ColourGrid32Super = function(/** @type {Array<Uint32Array>} */ colourGrid, /** @type {Array<Uint8Array>} */ smallColourGrid) {
 		var	/** @type {number} */ h = 0,
@@ -21615,128 +21265,6 @@
 									cr += 1;
 									dr += 4;
 								}
-							}
-						}
-
-						// next tile columns
-						leftX += xSize;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile row
-			bottomY += ySize;
-			topY += ySize;
-		}
-	};
-
-	// create 8x8 colour grid with no history for 0.125 <= zoom < 0.25
-	Life.prototype.create8x8ColourGridNoHistory32 = function(/** @type {Array<Uint32Array>} */ colourGrid, /** @type {Array<Uint8Array>} */ smallColourGrid) {
-		var	/** @type {number} */ h = 0,
-			/** @type {number} */ cr = 0,
-			/** @type {number} */ dr = 0,
-			/** @type {Uint32Array} */ sourceRow = null,
-			/** @type {Uint32Array} */ sourceRow1 = null,
-			/** @type {Uint32Array} */ sourceRow2 = null,
-			/** @type {Uint32Array} */ sourceRow3 = null,
-			/** @type {Uint32Array} */ sourceRow4 = null,
-			/** @type {Uint32Array} */ sourceRow5 = null,
-			/** @type {Uint32Array} */ sourceRow6 = null,
-			/** @type {Uint32Array} */ sourceRow7 = null,
-			/** @type {Uint8Array} */ destRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ topY = 0,
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ tiles = 0,
-			/** @type {number} */ value = 0,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4;
-
-		// set the initial tile row
-		bottomY = 0;
-		topY = bottomY + ySize;
-
-		// scan each row of tiles
-		for (th = 0; th < tileRows; th += 1) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the tile row and colour tile rows
-			colourTileHistoryRow = colourTileHistoryGrid[th];
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = colourTileHistoryRow[tw];
-
-				// check if any are occupied
-				if (tiles) {
-					// compute next colour for each tile in the set
-					for (b = 15; b >= 0; b -= 1) {
-						// check if this tile is occupied
-						if ((tiles & (1 << b)) !== 0) {
-							// update the small colour grid
-							for (h = bottomY; h < topY; h += 8) {
-								// get destination row
-								destRow = smallColourGrid[h];
-
-								// get the next 8 rows
-								sourceRow = colourGrid[h];
-								sourceRow1 = colourGrid[h + 1];
-								sourceRow2 = colourGrid[h + 2];
-								sourceRow3 = colourGrid[h + 3];
-								sourceRow4 = colourGrid[h + 4];
-								sourceRow5 = colourGrid[h + 5];
-								sourceRow6 = colourGrid[h + 6];
-								sourceRow7 = colourGrid[h + 7];
-								cr = (leftX << 2);
-								dr = (leftX << 4);
-
-								// find any set cells in each 8x8 block
-								value = sourceRow[cr] | sourceRow[cr + 1];
-								value |= sourceRow1[cr] | sourceRow1[cr + 1];
-								value |= sourceRow2[cr] | sourceRow2[cr + 1];
-								value |= sourceRow3[cr] | sourceRow3[cr + 1];
-								if (value === 0) {
-									value |= sourceRow4[cr] | sourceRow4[cr + 1];
-									value |= sourceRow5[cr] | sourceRow5[cr + 1];
-									value |= sourceRow6[cr] | sourceRow6[cr + 1];
-									value |= sourceRow7[cr] | sourceRow7[cr + 1];
-								}
-								destRow[dr] = (value ? 1 : 0) << 6;
-								cr += 2;
-								dr += 8;
-
-								// loop unroll
-								value = sourceRow[cr] | sourceRow[cr + 1];
-								value |= sourceRow1[cr] | sourceRow1[cr + 1];
-								value |= sourceRow2[cr] | sourceRow2[cr + 1];
-								value |= sourceRow3[cr] | sourceRow3[cr + 1];
-								if (value === 0) {
-									value |= sourceRow4[cr] | sourceRow4[cr + 1];
-									value |= sourceRow5[cr] | sourceRow5[cr + 1];
-									value |= sourceRow6[cr] | sourceRow6[cr + 1];
-									value |= sourceRow7[cr] | sourceRow7[cr + 1];
-								}
-								destRow[dr] = (value ? 1 : 0) << 6;
 							}
 						}
 
@@ -22380,136 +21908,6 @@
 		}
 	};
 
-	// create 16x16 colour grid with no history for 0.0625 <= zoom < 0.125
-	Life.prototype.create16x16ColourGridNoHistory32 = function(/** @type {Array<Uint32Array>} */ colourGrid, /** @type {Array<Uint8Array>} */ smallColourGrid) {
-		var	/** @type {number} */ cr = 0,
-			/** @type {number} */ dr = 0,
-			/** @type {Uint32Array} */ sourceRow = null,
-			/** @type {Uint32Array} */ sourceRow1 = null,
-			/** @type {Uint32Array} */ sourceRow2 = null,
-			/** @type {Uint32Array} */ sourceRow3 = null,
-			/** @type {Uint32Array} */ sourceRow4 = null,
-			/** @type {Uint32Array} */ sourceRow5 = null,
-			/** @type {Uint32Array} */ sourceRow6 = null,
-			/** @type {Uint32Array} */ sourceRow7 = null,
-			/** @type {Uint32Array} */ sourceRow8 = null,
-			/** @type {Uint32Array} */ sourceRow9 = null,
-			/** @type {Uint32Array} */ sourceRow10 = null,
-			/** @type {Uint32Array} */ sourceRow11 = null,
-			/** @type {Uint32Array} */ sourceRow12 = null,
-			/** @type {Uint32Array} */ sourceRow13 = null,
-			/** @type {Uint32Array} */ sourceRow14 = null,
-			/** @type {Uint32Array} */ sourceRow15 = null,
-			/** @type {Uint8Array} */ destRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ tiles = 0,
-			/** @type {number} */ value = 0,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4;
-
-		// set the initial tile row
-		bottomY = 0;
-
-		// scan each row of tiles
-		for (th = 0; th < tileRows; th += 1) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the tile row and colour tile rows
-			colourTileHistoryRow = colourTileHistoryGrid[th];
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = colourTileHistoryRow[tw];
-
-				// check if any are occupied
-				if (tiles) {
-					// compute next colour for each tile in the set
-					for (b = 15; b >= 0; b -= 1) {
-						// check if this tile is occupied
-						if ((tiles & (1 << b)) !== 0) {
-							// get the destination row
-							destRow = smallColourGrid[bottomY];
-
-							// get the next 16 rows
-							sourceRow = colourGrid[bottomY];
-							sourceRow1 = colourGrid[bottomY + 1];
-							sourceRow2 = colourGrid[bottomY + 2];
-							sourceRow3 = colourGrid[bottomY + 3];
-							sourceRow4 = colourGrid[bottomY + 4];
-							sourceRow5 = colourGrid[bottomY + 5];
-							sourceRow6 = colourGrid[bottomY + 6];
-							sourceRow7 = colourGrid[bottomY + 7];
-							sourceRow8 = colourGrid[bottomY + 8];
-							sourceRow9 = colourGrid[bottomY + 9];
-							sourceRow10 = colourGrid[bottomY + 10];
-							sourceRow11 = colourGrid[bottomY + 11];
-							sourceRow12 = colourGrid[bottomY + 12];
-							sourceRow13 = colourGrid[bottomY + 13];
-							sourceRow14 = colourGrid[bottomY + 14];
-							sourceRow15 = colourGrid[bottomY + 15];
-							cr = (leftX << 2);
-							dr = (leftX << 4);
-
-							// find any set cells in the 16x16 block
-							value = sourceRow[cr] | sourceRow[cr + 1] | sourceRow[cr + 2] | sourceRow[cr + 3];
-							value |= sourceRow1[cr] | sourceRow1[cr + 1] | sourceRow1[cr + 2] | sourceRow1[cr + 3];
-							value |= sourceRow2[cr] | sourceRow2[cr + 1] | sourceRow2[cr + 2] | sourceRow2[cr + 3];
-							value |= sourceRow3[cr] | sourceRow3[cr + 1] | sourceRow3[cr + 2] | sourceRow3[cr + 3];
-							if (value === 0) {
-								value |= sourceRow4[cr] | sourceRow4[cr + 1] | sourceRow4[cr + 2] | sourceRow4[cr + 3];
-								value |= sourceRow5[cr] | sourceRow5[cr + 1] | sourceRow5[cr + 2] | sourceRow5[cr + 3];
-								value |= sourceRow6[cr] | sourceRow6[cr + 1] | sourceRow6[cr + 2] | sourceRow6[cr + 3];
-								value |= sourceRow7[cr] | sourceRow7[cr + 1] | sourceRow7[cr + 2] | sourceRow7[cr + 3];
-								if (value === 0) {
-									value |= sourceRow8[cr] | sourceRow8[cr + 1] | sourceRow8[cr + 2] | sourceRow8[cr + 3];
-									value |= sourceRow9[cr] | sourceRow9[cr + 1] | sourceRow9[cr + 2] | sourceRow9[cr + 3];
-									value |= sourceRow10[cr] | sourceRow10[cr + 1] | sourceRow10[cr + 2] | sourceRow10[cr + 3];
-									value |= sourceRow11[cr] | sourceRow11[cr + 1] | sourceRow11[cr + 2] | sourceRow11[cr + 3];
-									if (value === 0) {
-										value |= sourceRow12[cr] | sourceRow12[cr + 1] | sourceRow12[cr + 2] | sourceRow12[cr + 3];
-										value |= sourceRow13[cr] | sourceRow13[cr + 1] | sourceRow13[cr + 2] | sourceRow13[cr + 3];
-										value |= sourceRow14[cr] | sourceRow14[cr + 1] | sourceRow14[cr + 2] | sourceRow14[cr + 3];
-										value |= sourceRow15[cr] | sourceRow15[cr + 1] | sourceRow15[cr + 2] | sourceRow15[cr + 3];
-									}
-								}
-							}
-
-							// output the cell
-							destRow[dr] = (value ? 1 : 0) << 6;
-						}
-
-						// next tile columns
-						leftX += xSize;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile row
-			bottomY += ySize;
-		}
-	};
-
 	// create 16x16 colour grid for 0.0625 <= zoom < 0.125
 	Life.prototype.create16x16ColourGrid32Super = function(/** @type {Array<Uint32Array>} */ colourGrid, /** @type {Array<Uint8Array>} */ smallColourGrid) {
 		var	/** @type {number} */ cr = 0,
@@ -22780,95 +22178,6 @@
 			// next tile row
 			bottomY += ySize;
 			topY += ySize;
-		}
-	};
-
-	// create 16x16 colour grid with no history for zoom < 0.0625
-	Life.prototype.create32x32ColourGridNoHistory32 = function(/** @type {Array<Uint32Array>} */ colourGrid, /** @type {Array<Uint8Array>} */ smallColourGrid) {
-		var	/** @type {number} */ cr = 0,
-			/** @type {number} */ dr = 0,
-			/** @type {Uint32Array} */ sourceRow = null,
-			/** @type {Uint8Array} */ destRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow1 = null,
-			/** @type {Uint16Array} */ colourTileHistoryRow2 = null,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ topY = 0,
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ tiles = 0,
-			/** @type {number} */ value = 0,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4;
-
-		// set the initial tile row
-		bottomY = 0;
-		topY = bottomY + ySize + ySize;
-
-		// scan each row pair of tiles
-		for (th = 0; th < tileRows; th += 2) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the tile row and colour tile rows
-			colourTileHistoryRow1 = colourTileHistoryGrid[th];
-			colourTileHistoryRow2 = colourTileHistoryGrid[th + 1];
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = colourTileHistoryRow1[tw] | colourTileHistoryRow2[tw];
-
-				// check if any are occupied
-				if (tiles !== 0) {
-					// compute next colour for each tile in the set
-					for (b = (1 << 15) | (1 << 14); b > 0; b >>= 2) {
-						// check if this tile is occupied
-						if ((tiles & b) !== 0) {
-							// get the destination row
-							dr = (leftX << 4);
-							destRow = smallColourGrid[bottomY];
-
-							// process each row
-							cr = (leftX << 2);
-							y = bottomY;
-							value = 0;
-							while (y < topY && value === 0) {
-								sourceRow = colourGrid[y];
-								value |= sourceRow[cr] | sourceRow[cr + 1] | sourceRow[cr + 2] | sourceRow[cr + 3]
-									| sourceRow[cr + 4] | sourceRow[cr +5] | sourceRow[cr + 6] | sourceRow[cr + 7];
-								y += 1;
-							}
-
-							// output the cell
-							destRow[dr] = (value ? 1 : 0) << 6;
-						}
-
-						// next tile columns
-						leftX += xSize + xSize;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile row
-			bottomY += ySize + ySize;
-			topY += ySize + ySize;
 		}
 	};
 
@@ -23269,14 +22578,10 @@
 			// create 2x2 colour grid
 			this.clearSmallGridOnZoom(this.smallColourGrid);
 
-			if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
-				if (this.isSuper) {
-					this.create2x2ColourGrid16Super(colourGrid16, this.smallColourGrid);
-				} else {
-					this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
-				}
+			if (this.isSuper) {
+				this.create2x2ColourGrid16Super(colourGrid16, this.smallColourGrid);
 			} else {
-				this.create2x2ColourGridNoHistory16(colourGrid16, this.smallColourGrid);
+				this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
 			}
 		} else {
 			// check if 0.25 <= zoom < 0.5
@@ -23284,14 +22589,10 @@
 				// create 4x4 colour grid
 				this.clearSmallGridOnZoom(this.smallColourGrid);
 
-				if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
-					if (this.isSuper) {
-						this.create4x4ColourGrid32Super(colourGrid32, this.smallColourGrid);
-					} else {
-						this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
-					}
+				if (this.isSuper) {
+					this.create4x4ColourGrid32Super(colourGrid32, this.smallColourGrid);
 				} else {
-					this.create4x4ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
+					this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
 				}
 			} else {
 				// check if 0.125 <= zoom < 0.25
@@ -23299,14 +22600,10 @@
 					// create 8x8 colour grid
 					this.clearSmallGridOnZoom(this.smallColourGrid);
 
-					if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
-						if (this.isSuper) {
-							this.create8x8ColourGrid32Super(colourGrid32, this.smallColourGrid);
-						} else {
-							this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
-						}
+					if (this.isSuper) {
+						this.create8x8ColourGrid32Super(colourGrid32, this.smallColourGrid);
 					} else {
-						this.create8x8ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
+						this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
 					}
 				} else {
 					// check if 0.0625 <= zoom < 0.125
@@ -23314,25 +22611,17 @@
 						// create 16x16 colour grid
 						this.clearSmallGridOnZoom(this.smallColourGrid);
 
-						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
-							if (this.isSuper) {
-								this.create16x16ColourGrid32Super(colourGrid32, this.smallColourGrid);
-							} else {
-								this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
-							}
+						if (this.isSuper) {
+							this.create16x16ColourGrid32Super(colourGrid32, this.smallColourGrid);
 						} else {
-							this.create16x16ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
+							this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
 						}
 					} else {
 						// zoom < 0.0625
-						if (this.themeHistory || this.isHROT || this.isPCA || this.isRuleTree || this.isSuper || this.rainbow) {
-							if (this.isSuper) {
-								this.create32x32ColourGrid32Super(colourGrid32, this.smallColourGrid);
-							} else {
-								this.create32x32ColourGrid32(colourGrid32, this.smallColourGrid);
-							}
+						if (this.isSuper) {
+							this.create32x32ColourGrid32Super(colourGrid32, this.smallColourGrid);
 						} else {
-							this.create32x32ColourGridNoHistory32(colourGrid32, this.smallColourGrid);
+							this.create32x32ColourGrid32(colourGrid32, this.smallColourGrid);
 						}
 					}
 				}
@@ -25305,13 +24594,8 @@
 				if (this.rainbow) {
 					this.convertToPensTileRainbow();
 				} else {
-					// check for theme history
-					if (this.themeHistory) {
-						// use regular converter
-						this.convertToPensTileRegular();
-					} else {
-						this.convertToPensTileNoHistory();
-					}
+					// use regular converter
+					this.convertToPensTileRegular();
 				}
 			}
 
@@ -34739,157 +34023,6 @@
 		zoomBox.topY = zTopY;
 	};
 
-	// convert life grid region to pens using tiles but without history
-	Life.prototype.convertToPensTileNoHistory = function() {
-		var	/** @type {number} */ h = 0,
-			/** @type {number} */ cr = 0,
-			/** @type {number} */ nextCell = 0,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = this.colourGrid32,
-			/** @type {Uint32Array} */ colourGridRow = null,
-			/** @type {Uint16Array} */ colourTileRow = null,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Array<Uint16Array>} */ grid = null,
-			/** @type {Uint16Array} */ gridRow = null,
-			/** @type {Array<Uint16Array>} */ tileGrid = null,
-			/** @type {Uint16Array} */ tileGridRow = null,
-			/** @type {number} */ th = 0,
-			/** @type {number} */ tw = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ topY = 0,
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ tiles = 0,
-			/** @type {number} */ nextTiles = 0,
-
-			// whether the tile is alive
-			/** @type {number} */ tileAlive = 0,
-
-			// set tile height
-			/** @type {number} */ ySize = this.tileY,
-
-			// tile width (in 16bit chunks)
-			/** @type {number} */ xSize = this.tileX >> 1,
-
-			// tile rows
-			/** @type {number} */ tileRows = this.tileRows,
-
-			// tile columns in 16 bit values
-			/** @type {number} */ tileCols16 = this.tileCols >> 4,
-
-			// starting and ending tile row
-			/** @type {number} */ tileStartRow = 0,
-			/** @type {number} */ tileEndRow = tileRows;
-
-		// select the correct grid
-		if ((this.counter & 1) !== 0) {
-			grid = this.nextGrid16;
-			tileGrid = this.nextTileGrid;
-		} else {
-			grid = this.grid16;
-			tileGrid = this.tileGrid;
-		}
-
-		// check start and end row are in range
-		if (tileStartRow < 0) {
-			tileStartRow = 0;
-		}
-		if (tileEndRow > tileRows) {
-			tileEndRow = tileRows;
-		}
-
-		// set the initial tile row
-		bottomY = tileStartRow << this.tilePower;
-		topY = bottomY + ySize;
-
-		// scan each row of tiles
-		for (th = tileStartRow; th < tileEndRow; th += 1) {
-			// set initial tile column
-			leftX = 0;
-
-			// get the tile row and colour tile rows
-			tileGridRow = tileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
-
-			// scan each set of tiles
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				// get the next tile group (16 tiles)
-				tiles = tileGridRow[tw] | colourTileHistoryRow[tw];
-				nextTiles = 0;
-
-				// check if any are occupied
-				if (tiles) {
-					// compute next colour for each tile in the set
-					for (b = 15; b >= 0; b -= 1) {
-						// check if this tile is occupied
-						if ((tiles & (1 << b)) !== 0) {
-							// flag nothing alive in the tile
-							tileAlive = 0;
-
-							// process each row
-							h = bottomY;
-							while (h < topY) {
-								// get the grid and colour grid row
-								gridRow = grid[h];
-								colourGridRow = colourGrid32[h];
-
-								// get correct starting colour index
-								cr = (leftX << 2);
-
-								// process each 16bit chunk (16 cells) along the row
-								nextCell = gridRow[leftX];
-								if (nextCell) {
-									// determine if anything is alive on the grid
-									tileAlive |= nextCell;
-
-									// lookup next colour
-									colourGridRow[cr] = ((nextCell & 32768) >> 9) | (nextCell & 16384) | ((nextCell & 8192) << 9) | ((nextCell & 4096) << 18);
-									cr += 1;
-									colourGridRow[cr] = ((nextCell & 2048) >> 5) | ((nextCell & 1024) << 4) | ((nextCell & 512) << 13) | ((nextCell & 256) << 22);
-									cr += 1;
-									colourGridRow[cr] = ((nextCell & 128) >> 1) | ((nextCell & 64) << 8) | ((nextCell & 32) << 17) | ((nextCell & 16) << 26);
-									cr += 1;
-									colourGridRow[cr] = ((nextCell & 8) << 3) | ((nextCell & 4) << 12) | ((nextCell & 2) << 21) | ((nextCell & 1) << 30);
-									// cr += 1   - no need for final increment it will be reset next row
-								} else {
-									colourGridRow[cr] = 0;
-									colourGridRow[cr + 1] = 0;
-									colourGridRow[cr + 2] = 0;
-									colourGridRow[cr + 3] = 0;
-								}
-
-								// next row
-								h += 1;
-							}
-
-							// check if the tile was alive
-							if (tileAlive) {
-								// update tile flag
-								nextTiles |= (1 << b);
-							}
-						}
-
-						// next tile columns
-						leftX += xSize;
-					}
-				} else {
-					// skip tile set
-					leftX += xSize << 4;
-				}
-
-				// save the tile group
-				colourTileRow[tw] = nextTiles;
-				colourTileHistoryRow[tw] |= nextTiles;
-			}
-
-			// next tile row
-			bottomY += ySize;
-			topY += ySize;
-		}
-	};
-
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTileRegular = function() {
 		var	/** @type {number} */ h = 0,
@@ -36341,6 +35474,38 @@
 		}
 	};
 
+	// compute the transparent target for layers
+	/** @returns {number} */
+	Life.prototype.getTransparentTarget = function(/** @type {number} */ layerTarget, /** @type {number} */i) {
+		var	/** @type {number} */ result = 1;
+		
+		// compute the transparent target
+		if (this.multiNumStates > 2) {
+			if (this.isSuper || this.isRuleTree) {
+				result = 1;
+			} else {
+				// use number of generations states as maximum
+				if (this.historyStates === 0) {
+					result = (i * (this.multiNumStates / this.layers)) | 0;
+				} else {
+					if (i < layerTarget / 2) {
+						result = (i * 2 * (this.historyStates / this.layers)) | 0;
+					} else {
+						result = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
+					}
+				}
+			}
+		} else {
+			if (this.rainbow) {
+				result = 1;
+			} else {
+				result = (i * ((this.aliveMax + 1) / this.layers)) | 0;
+			}
+		}
+
+		return result;
+	};
+
 	// project the life grid onto the canvas
 	Life.prototype.renderGrid = function(/** @type {boolean} */ drawingSnow, /** @type {boolean} */ drawingStars) {
 		var	/** @type {number} */ colour0 = this.pixelColours[0],
@@ -36739,29 +35904,8 @@
 
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
-			// compute the transparent target
-			if (this.multiNumStates > 2) {
-				if (this.isSuper) {
-					transparentTarget = 1;
-				} else {
-					// use number of generations states as maximum
-					if (this.historyStates === 0) {
-						transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-					} else {
-						if (i < layerTarget / 2) {
-							transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
-						} else {
-							transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
-						}
-					}
-				}
-			} else {
-				if (this.rainbow) {
-					transparentTarget = 1;
-				} else {
-					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
-				}
-			}
+			// get the transparent target
+			transparentTarget = this.getTransparentTarget(layerTarget, i);
 
 			// update brightness
 			brightness += brightInc;
@@ -37204,29 +36348,8 @@
 
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
-			// compute the transparent target
-			if (this.multiNumStates > 2) {
-				if (this.isSuper) {
-					transparentTarget = 1;
-				} else {
-					// use number of generations states as maximum
-					if (this.historyStates === 0) {
-						transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-					} else {
-						if (i < layerTarget / 2) {
-							transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
-						} else {
-							transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
-						}
-					}
-				}
-			} else {
-				if (this.rainbow) {
-					transparentTarget = 1;
-				} else {
-					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
-				}
-			}
+			// get the transparent target
+			transparentTarget = this.getTransparentTarget(layerTarget, i);
 
 			// update brightness
 			brightness += brightInc;
@@ -37548,29 +36671,8 @@
 
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
-			// compute the transparent target
-			if (this.multiNumStates > 2) {
-				if (this.isSuper) {
-					transparentTarget = 1;
-				} else {
-					// use number of generations states as maximum
-					if (this.historyStates === 0) {
-						transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-					} else {
-						if (i < layerTarget / 2) {
-							transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
-						} else {
-							transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
-						}
-					}
-				}
-			} else {
-				if (this.rainbow) {
-					transparentTarget = 1;
-				} else {
-					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
-				}
-			}
+			// get the transparent target
+			transparentTarget = this.getTransparentTarget(layerTarget, i);
 
 			// update brightness
 			brightness += brightInc;
@@ -37873,29 +36975,8 @@
 
 		// render each layer
 		for (i = 1; i < layerTarget; i += 1) {
-			// compute the transparent target
-			if (this.multiNumStates > 2) {
-				if (this.isSuper) {
-					transparentTarget = 1;
-				} else {
-					// use number of generations states as maximum
-					if (this.historyStates === 0) {
-						transparentTarget = (i * (this.multiNumStates / this.layers)) | 0;
-					} else {
-						if (i < layerTarget / 2) {
-							transparentTarget = (i * 2 * (this.historyStates / this.layers)) | 0;
-						} else {
-							transparentTarget = this.historyStates + (i * (this.multiNumStates / this.layers)) | 0;
-						}
-					}
-				}
-			} else {
-				if (this.rainbow) {
-					transparentTarget = 1;
-				} else {
-					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
-				}
-			}
+			// get the transparent target
+			transparentTarget = this.getTransparentTarget(layerTarget, i);
 
 			// update brightness
 			brightness += brightInc;

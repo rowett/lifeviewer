@@ -5319,6 +5319,13 @@
 				scriptErrors[scriptErrors.length] = [Keywords.stringDelimiter + stringValue, "unterminated string"];
 			}
 
+			// disable Theme if specified and not supported by the rule
+			if (currentWaypoint.themeDefined) {
+				if (view.engine.isSuper || view.engine.isRuleTree || view.engine.isNone) {
+					currentWaypoint.themeDefined = false;
+				}
+			}
+
 			// check if waypoints and one of track, track box or track loop defined
 			if (waypointsFound && view.trackDefined) {
 				// check which track mode was defined

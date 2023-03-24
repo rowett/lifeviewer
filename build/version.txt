@@ -1,3 +1,25 @@
+Build 986
+- fixed PASTE overwriting dead cells with empty cells
+
+Build 985
+- addded Copy Position and Copy View buttons to Settings->Clipboard menu
+- fixed "Life ended at" messages not appearing consistently
+
+Build 984
+- fixed Layers for RuleTable rules
+- all Themes now compute history
+
+Build 983
+- fixed Undo/Redo and Reverse Playback buttons
+
+Build 982
+- ignore THEME command for rules that don't support Themes
+- fixed background colour brightness on multi-state patterns with Layers
+- fixed an issue with Thumbnails
+
+Build 981
+- fixed pattern border checking for loading, drawing, and PASTE
+
 Build 980
 - fixed incorrect error message when local @RULE in pattern RLE is invalid
 

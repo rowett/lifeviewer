@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 980,
+		/** @const {number} */ versionBuild : 986,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -635,6 +635,9 @@
 
 		// whether Chrome bug is in effect
 		/** @type {boolean} */ this.chromeBug = false;
+
+		// whether Life just died
+		/** @type {boolean} */ this.justDied = false;
 
 		// whether secret snow is disabled
 		/** @type {boolean} */ this.snowDisabled = false;
@@ -1044,9 +1047,6 @@
 		// cell X and Y coordinate
 		/** @type {number} */ this.cellX = 0;
 		/** @type {number} */ this.cellY = 0;
-
-		// whether pattern was empty on load
-		/** @type {boolean} */ this.emptyStart = false;
 
 		// maximum number of history states (can be less for multi-state patterns)
 		/** @type {number} */ this.maxHistoryStates = 63;
@@ -1844,6 +1844,12 @@
 		// paste to selection button
 		/** @type {MenuItem} */ this.pasteToSelectionButton = null;
 
+		// copy position button
+		/** @type {MenuItem} */ this.copyPositionButton = null;
+
+		// copy view button
+		/** @type {MenuItem} */ this.copyViewButton = null;
+
 		// copy original pattern button
 		/** @type {MenuItem} */ this.copyOriginalButton = null;
 
@@ -2179,12 +2185,96 @@
 		return this.currentEdit[chunk];
 	};
 
+
+	// check if a cell is on the grid (and grow grid if needed)
+	/** @returns {Array} */
+	View.prototype.cellOnGrid = function(/** @type {number} */x, /** @type {number} */ y) {
+		var	/** @type {Array} */ result = [true, x, y],
+			/** @type {number} */ wm = this.engine.widthMask,
+			/** @type {number} */ hm = this.engine.heightMask,
+			/** @type {number} */ maxGridSize = this.engine.maxGridSize,
+			/** @type {boolean} */ growX = false,
+			/** @type {boolean} */ growY = false,
+			/** @type {number} */ borderSize = 0;
+
+		// check if the cell is on the grid
+		if (!((x === (x & wm)) && (y === (y & hm)))) {
+			result[0] = false;
+
+			// check if grid can grow in the required direction
+			growX = (this.engine.width < this.engine.maxGridSize) && (x !== (x & wm));
+			growY = (this.engine.height < this.engine.maxGridSize) && (y !== (y & hm));
+
+			// attempt to grow the grid
+			while (growX || growY) {
+				if (growX || growY) {
+					this.engine.growGrid(growX, growY);
+				}
+				if (growX) {
+					x += this.engine.width >> 2;
+				}
+				if (growY) {
+					y += this.engine.height >> 2;
+				}
+
+				growX = (this.engine.width < maxGridSize) && (x !== (x & wm));
+				growY = (this.engine.height < maxGridSize) && (y !== (y & hm));
+			}
+
+			// check if the cell is on the expanded grid
+			if ((x === (x & wm)) && (y === (y & hm))) {
+				// cell on expanded grid
+				result[0] = true;
+			}
+		}
+
+		// check for HROT border width needed
+		if (this.engine.isHROT) {
+			borderSize = this.getSafeBorderSize();
+
+			// divide by two since it contains needed space both sides of the pattern
+			borderSize >>= 1;
+
+			if (x - borderSize < 0 || x + borderSize >= this.engine.width || y - borderSize < 0 || y + borderSize >= this.engine.height) {
+				result[0] = false;
+
+				// check if grid can grow in the required direction
+				growX = (this.engine.width < maxGridSize) && ((x - borderSize < 0 || x + borderSize >= this.engine.width));
+				growY = (this.engine.height < maxGridSize) && ((y - borderSize < 0 || y + borderSize >= this.engine.height));
+
+				// attempt to grow the grid
+				while (growX || growY) {
+					if (growX || growY) {
+						this.engine.growGrid(growX, growY);
+					}
+					if (growX) {
+						x += this.engine.width >> 2;
+					}
+					if (growY) {
+						y += this.engine.height >> 2;
+					}
+
+					growX = (this.engine.width < maxGridSize) && ((x - borderSize < 0 || x + borderSize >= this.engine.width));
+					growY = (this.engine.height < maxGridSize) && ((y - borderSize < 0 || y + borderSize >= this.engine.height));
+				}
+
+				// check if the cell is on the expanded grid
+				if (!(x - borderSize < 0 || x + borderSize >= this.engine.width || y - borderSize < 0 || y + borderSize >= this.engine.height)) {
+					// cell on expanded grid
+					result[0] = true;
+				}
+			}
+		}
+
+		return result;
+	};
+
 	// draw cell and create undo/redo
 	/** @returns {number} */
 	View.prototype.setStateWithUndo = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ colour, /** @type {boolean} */ deadZero) {
 		// get current state
 		var	/** @type {number} */ state = this.engine.getState(x, y, false),
-			/** @type {number} */ rawState = this.engine.getState(x, y, true),
+			/** @type {number} */ rawState = 0,
 			/** @type {number} */ i = this.currentEditIndex,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ chunkPower = ViewConstants.editChunkPower,
@@ -2202,7 +2292,31 @@
 			/** @type {number} */ runCount = 0,
 			/** @type {number} */ runIndicator = 1 << 22,
 			/** @type {number} */ result = 0,
-			/** @type {number} */ pop = this.engine.population;
+			/** @type {Array} */ checkGridResult = [],
+			/** @type {number} */ pop = this.engine.population,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
+
+		// check if the cell is on the grid
+		checkGridResult = this.cellOnGrid(x, y);
+		if (checkGridResult[0]) {
+			// cell is on grid so update x and y in case grid grew
+			x = checkGridResult[1];
+			y = checkGridResult[2];
+		} else {
+			// cell is not on grid so exit
+			return 0;
+		}
+
+		// check for PCA, RuleTree or Super rules
+		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
+			// swap grids every generation
+			if ((this.engine.counter & 1) !== 0) {
+				colourGrid = this.engine.nextColourGrid;
+			}
+		}
+
+		// get the raw state
+		rawState = colourGrid[y][x];
 
 		// handle generations
 		if (state > 0 && invertForGenerations) {
@@ -2658,7 +2772,8 @@
 			/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {BoundingBox} */ selection = null,
 			/** @type {number} */ steps = 1,
-			/** @type {boolean} */ multiStep = false;
+			/** @type {boolean} */ multiStep = false,
+			/** @type {boolean} */ savedReverse = me.engine.reverseMargolus;
 
 		// do nothing if step back disabled
 		if (!me.noHistory) {
@@ -2698,12 +2813,20 @@
 
 					// if it is for an earlier generation then go there
 					if (gen < counter) {
+						// save reverse playback mode so it can be restored
+						savedReverse = me.engine.reverseMargolus;
+
+						// go to the earlier generation
 						if (gen === 0) {
 							me.reset(me);
 						} else {
 							me.runTo(gen);
 						}
 						counter = me.engine.counter;
+
+						// restore the reverse playback mode
+						me.engine.reverseMargolus = savedReverse;
+						me.setPauseIcon(me.generationOn);
 					} else {
 						// paste cells in reverse order
 						me.pasteRaw(record.editCells, true);
@@ -2724,7 +2847,9 @@
 
 					// check for reverse playback
 					if (record.action === "reverse playback") {
-						me.engine.reversePending = true;
+						me.engine.reverseMargolus = !me.engine.reverseMargolus;
+						me.engine.reversePending = false;
+						me.setPauseIcon(me.generationOn);
 					}
 
 					// decrement stack using saved value since a record may have been added above
@@ -2800,7 +2925,8 @@
 
 				// check for reverse playback
 				if (record.action === "reverse playback") {
-					me.engine.reversePending = true;
+					me.engine.reverseMargolus = !me.engine.reverseMargolus;
+					me.setPauseIcon(me.generationOn);
 				}
 
 				// next record
@@ -3633,6 +3759,26 @@
 		return needsPaste;
 	};
 
+	// set state and check if it is on the grid
+	/** @returns {number} */
+	View.prototype.setStateWithCheck = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
+		var	/** @type {number} */ result = 0,
+			/** @type {Array} */ checkGridResult = [];
+
+		// check if the cell is on the grid
+		checkGridResult = this.cellOnGrid(x, y);
+		if (checkGridResult[0]) {
+			// cell is on grid so update x and y in case grid grew
+			x = checkGridResult[1];
+			y = checkGridResult[2];
+
+			// draw the cell
+			result = this.engine.setState(x, y, state, deadZero);
+		}
+
+		return result;
+	};
+
 	// paste rle list to grid
 	View.prototype.pasteRLEList = function() {
 		var	/** @type {number} */ j = 0,
@@ -3754,7 +3900,11 @@
 									result = numStates;
 								}
 							}
-							this.engine.setState(xOff + x, yOff + y, result, true);
+
+							// draw the cell if it changed or in COPY mode
+							if ((source !== dest) || mode === ViewConstants.pasteModeCopy) {
+								this.setStateWithCheck(xOff + x, yOff + y, result, true);
+							}
 
 							// check for grid growth
 							while (width !== this.engine.width || height !== this.engine.height) {
@@ -3843,7 +3993,7 @@
 										result = numStates;
 									}
 								}
-								this.engine.setState(xOff + x, yOff + y, result, true);
+								this.setStateWithCheck(xOff + x, yOff + y, result, true);
 
 								// check for grid growth
 								while (width !== this.engine.width || height !== this.engine.height) {
@@ -3876,13 +4026,17 @@
 									source = stateRow[x];
 									if (mode === ViewConstants.pasteModeCopy) {
 										result = source;
+										sourceFlag = 1;
+										destFlag = 0;
 									} else {
 										sourceFlag = source & 1;
 										dest = this.engine.getState(xOff + x, yOff + y, false);
 										destFlag = dest & 1;
 										result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 									}
-									wasState6 |= this.engine.setState(xOff + x, yOff + y, result, true);
+									if (sourceFlag !== destFlag) {
+										wasState6 |= this.setStateWithCheck(xOff + x, yOff + y, result, true);
+									}
 
 									// check for grid growth
 									while (width !== this.engine.width || height !== this.engine.height) {
@@ -3916,8 +4070,8 @@
 									dest = this.engine.getState(xOff + x, yOff + y, false);
 									destFlag = (dest === 0 ? 0 : 1);
 									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
-									if (result !== dest) {
-										this.engine.setState(xOff + x, yOff + y, result, true);
+									if ((result !== dest) || mode === ViewConstants.pasteModeCopy) {
+										this.setStateWithCheck(xOff + x, yOff + y, result, true);
 
 										// check for grid growth
 										while (width !== this.engine.width || height !== this.engine.height) {
@@ -4711,20 +4865,25 @@
 		this.zoomItem.current = this.viewZoomRange([newZoom, newZoom], true, this);
 	};
 
-	// get safe HROT border size for grid
+	// get safe border size for grid (returns double the size to include amount needed to add to X or Y pattern dimension)
 	/** @returns {number} */
 	View.prototype.getSafeBorderSize = function() {
-		var	/** @type {number} */ result = this.engine.HROT.xrange * 4 + 1;
+		// set default border to tile width
+		var	/** @type {number} */ result = (1 << this.engine.tilePower) * 2;
 
-		if (this.engine.boundedGridType !== -1) {
-			result += this.engine.HROT.xrange * 2;
-		}
+		if (this.engine.isHROT) {
+			result = this.engine.HROT.xrange * 4 + 1;
 
-		if (this.engine.HROT.type === this.manager.vonNeumannHROT) {
 			if (this.engine.boundedGridType !== -1) {
-				result += this.engine.boundedGridHeight / 2;
-			} else {
-				result += this.engine.HROT.ncols / 2;
+				result += this.engine.HROT.xrange * 2;
+			}
+	
+			if (this.engine.HROT.type === this.manager.vonNeumannHROT) {
+				if (this.engine.boundedGridType !== -1) {
+					result += this.engine.boundedGridHeight / 2;
+				} else {
+					result += this.engine.HROT.ncols / 2;
+				}
 			}
 		}
 
@@ -4733,12 +4892,7 @@
 
 	// check if grid needs to grow
 	View.prototype.checkGridSize = function(/** @type {View} */ me, /** @type {BoundingBox} */ box) {
-		var	/** @type {number} */ borderSize = ViewConstants.maxStepSpeed; 
-
-		// compute border based on algorithm
-		if (me.engine.isHROT) {
-			borderSize = this.getSafeBorderSize();
-		}
+		var	/** @type {number} */ borderSize = me.getSafeBorderSize();
 
 		// grow the grid if needed
 		me.engine.checkForGrowth(me, box, borderSize);
@@ -5711,7 +5865,7 @@ View.prototype.clearStepSamples = function() {
 	// check if Life has ended (including any future PASTE commands)
 	/** @returns {boolean} */
 	View.prototype.lifeEnded = function() {
-		return !(this.engine.population > 0 || this.isPasteEvery || this.engine.counter <= this.maxPasteGen);
+		return this.justDied && (!(this.pasteEvery || this.engine.counter <= this.maxPasteGen));
 	};
 
 	// update view mode for normal processing
@@ -5749,9 +5903,7 @@ View.prototype.clearStepSamples = function() {
 
 			// saved bounding box
 			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
-			/** @type {BoundingBox} */ saveBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
 			/** @type {BoundingBox} */ historyBox = me.engine.historyBox,
-			/** @type {BoundingBox} */ saveHistoryBox = new BoundingBox(historyBox.leftX, historyBox.bottomY, historyBox.rightX, historyBox.topY),
 
 			// frame target time in ms
 			/** @type {number} */ frameTargetTime = (1000 / me.refreshRate),
@@ -6034,33 +6186,11 @@ View.prototype.clearStepSamples = function() {
 					me.afterEdit("reverse playback");
 				}
 
-				// save bounding box in case all cells die
-				saveBox.set(zoomBox);
-				saveHistoryBox.set(historyBox);
-
 				// compute next generation
-				me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
+				me.computeNextGeneration();
 
 				// next step
 				stepsTaken += 1;
-
-				// check theme has history or this is the last generation in the step
-				me.engine.convertToPensTile();
-
-				// paste any RLE snippets
-				me.pasteRLEList();
-
-				// save snapshot if needed
-				me.engine.saveSnapshotIfNeeded(me);
-
-				// save population data
-				me.engine.savePopulationData();
-
-				// if nothing alive now then restore last bounding box
-				if (me.engine.population === 0) {
-					zoomBox.set(saveBox);
-					historyBox.set(saveHistoryBox);
-				}
 
 				// check for loop
 				if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
@@ -6106,15 +6236,12 @@ View.prototype.clearStepSamples = function() {
 					me.diedGeneration = me.engine.counter;
 
 					// notify simulation stopped unless loop defined and enabled
-					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
+					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
 						if (me.engine.isPCA || me.engine.isMargolus) {
 							me.menuManager.notification.notify("Life ended at generation " + (me.engine.counterMargolus + me.genOffset), 15, 600, 15, false);
 						} else {
 							me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
 						}
-
-						// if the pattern dies again then notify (this would be caused by drawing during playback)
-						me.emptyStart = false;
 					}
 
 					// stop the simulation unless the pattern was empty and this is after step 1 or looping
@@ -6669,6 +6796,8 @@ View.prototype.clearStepSamples = function() {
 		this.copyNeighbourhoodButton.deleted = shown;
 		this.pasteToSelectionButton.deleted = shown;
 		this.copyWithCommentsButton.deleted = shown;
+		this.copyPositionButton.deleted = shown;
+		this.copyViewButton.deleted = shown;
 
 		// pattern category
 		shown = hide || !this.showPatternSettings;
@@ -7119,6 +7248,43 @@ View.prototype.clearStepSamples = function() {
 		this.elapsedTimes[counter] = this.elapsedTime;
 	};
 
+	// compute next generation and set flag if Life just died
+	View.prototype.computeNextGeneration = function() {
+		var	/** @type {BoundingBox} */ zoomBox = this.engine.zoomBox,
+			/** @type {BoundingBox} */ historyBox = this.engine.historyBox,
+			/** @type {number} */ initialPopulation = this.engine.population;
+
+		// save bounding box in case all cells die
+		this.engine.saveBox.set(zoomBox);
+		this.engine.saveHistoryBox.set(historyBox);
+
+		// compute next generation
+		this.engine.nextGeneration(this.noHistory, this.graphDisabled, this.identify, this);
+		this.engine.convertToPensTile();
+
+		// paste any RLE snippets
+		this.pasteRLEList();
+
+		// save snapshot if needed
+		this.engine.saveSnapshotIfNeeded(this);
+
+		// save population data
+		this.engine.savePopulationData();
+
+		// if nothing alive now then restore last bounding box
+		if (this.engine.population === 0) {
+			zoomBox.set(this.engine.saveBox);
+			historyBox.set(this.engine.saveHistoryBox);
+		}
+
+		// check if Life just died
+		if (this.engine.population === 0 && initialPopulation !== 0) {
+			this.justDied = true;
+		} else {
+			this.justDied = false;
+		}
+	};
+
 	// view update for copy to clipboard
 	View.prototype.viewAnimateClipboard = function(/** @type {View} */ me) {
 		var	/** @type {number} */ amountToAdd = me.tempRLEChunkSize,
@@ -7228,38 +7394,15 @@ View.prototype.clearStepSamples = function() {
 		var	/** @type {number} */ startTime = performance.now(),
 
 			// time budget in ms for this frame
-			/** @type {number} */ timeLimit = 13,
-
-			/** @type {BoundingBox} */ saveBox = new BoundingBox(0, 0, 0, 0),
-			/** @type {BoundingBox} */ saveHistoryBox = new BoundingBox(0, 0, 0, 0);
+			/** @type {number} */ timeLimit = 13;
 
 		// lock the menu
 		me.viewMenu.locked = true;
 
 		// compute the next set of generations
 		while (!me.lifeEnded() && me.engine.counter < me.startFrom && (me.startFromTiming !== -1 || (performance.now() - startTime < timeLimit))) {
-			// save bounding box in case all cells die
-			saveBox.set(me.engine.zoomBox);
-			saveHistoryBox.set(me.engine.historyBox);
-
-			// compute the next generation
-			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
-			me.engine.convertToPensTile();
-
-			// paste any RLE snippets
-			me.pasteRLEList();
-
-			// save snapshot if needed
-			me.engine.saveSnapshotIfNeeded(me);
-
-			// save population data
-			me.engine.savePopulationData();
-
-			// if nothing alive now then restore last bounding box
-			if (me.engine.population === 0) {
-				me.engine.zoomBox.set(saveBox);
-				me.engine.historyBox.set(saveHistoryBox);
-			}
+			// compute next generation
+			me.computeNextGeneration();
 
 			// check if life just stopped
 			if (me.lifeEnded()) {
@@ -7268,16 +7411,13 @@ View.prototype.clearStepSamples = function() {
 					me.diedGeneration = me.engine.counter;
 
 					// notify simulation stopped unless loop defined and enabled
-					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
+					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
 						if (me.engine.isPCA || me.engine.isMargolus) {
 							me.menuManager.notification.notify("Life ended at generation " + (me.engine.counterMargolus + me.genOffset), 15, 600, 15, false);
 						} else {
 							me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
 						}
 					}
-
-					// if the pattern dies again then notify (this would be caused by drawing during playback)
-					me.emptyStart = false;
 				}
 			}
 
@@ -7322,37 +7462,15 @@ View.prototype.clearStepSamples = function() {
 			/** @type {number} */ timeLimit = 13,
 
 			// identify result
-			/** @type {Array<string>} */ identifyResult = [],
-
-			// saved bounding boxes
-			/** @type {BoundingBox} */ saveBox = new BoundingBox(0, 0, 0, 0),
-			/** @type {BoundingBox} */ saveHistoryBox = new BoundingBox(0, 0, 0, 0);
+			/** @type {Array<string>} */ identifyResult = [];
 
 		// lock the menu
 		me.viewMenu.locked = true;
 
 		// compute the next set of generations without stats for speed
 		while (me.identify && (performance.now() - startTime < timeLimit) && (me.engine.population > 0 || me.pasteEvery || me.engine.counter <= me.maxPasteGen)) {
-			// save bounding box in case all cells die
-			saveBox.set(me.engine.zoomBox);
-			saveHistoryBox.set(me.engine.historyBox);
-
-			// compute the next generation
-			me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
-			me.engine.convertToPensTile();
-			me.pasteRLEList();
-
-			// save population data
-			me.engine.savePopulationData();
-
-			// save snapshot if needed
-			this.engine.saveSnapshotIfNeeded(me);
-
-			// if nothing alive now then restore last bounding box
-			if (me.engine.population === 0) {
-				me.engine.zoomBox.set(saveBox);
-				me.engine.historyBox.set(saveHistoryBox);
-			}
+			// compute next generation
+			me.computeNextGeneration();
 
 			// check if life just stopped
 			if (me.engine.population === 0) {
@@ -7361,7 +7479,7 @@ View.prototype.clearStepSamples = function() {
 					me.diedGeneration = me.engine.counter;
 
 					// notify simulation stopped unless loop defined and enabled
-					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
+					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
 						// don't notify if there are pending pastes
 						if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
 							if (me.engine.isPCA || me.engine.isMargolus) {
@@ -7371,9 +7489,6 @@ View.prototype.clearStepSamples = function() {
 							}
 						}
 					}
-
-					// if the pattern dies again then notify (this would be caused by drawing during playback)
-					me.emptyStart = false;
 				}
 			}
 
@@ -7545,11 +7660,7 @@ View.prototype.clearStepSamples = function() {
 			/** @type {boolean} */ noSnapshots = true,
 
 			// compute number of generations in snapshot buffer
-			/** @type {number} */ snapshotBufferGens = me.engine.snapshotManager.maxSnapshots * LifeConstants.snapshotInterval,
-
-			// saved bounding boxes
-			/** @type {BoundingBox} */ saveBox = new BoundingBox(0, 0, 0, 0),
-			/** @type {BoundingBox} */ saveHistoryBox = new BoundingBox(0, 0, 0, 0);
+			/** @type {number} */ snapshotBufferGens = me.engine.snapshotManager.maxSnapshots * LifeConstants.snapshotInterval;
 
 		// compute the next set of generations
 		while (me.engine.counter < targetGen && (performance.now() - startTime < timeLimit)) {
@@ -7560,25 +7671,8 @@ View.prototype.clearStepSamples = function() {
 				noSnapshots = true;
 			}
 
-			// save bounding box in case all cells die
-			saveBox.set(me.engine.zoomBox);
-			saveHistoryBox.set(me.engine.historyBox);
-
-			// compute the next generation
-			me.engine.nextGeneration(noSnapshots, me.graphDisabled, me.identify, me);
-			me.engine.convertToPensTile();
-			me.pasteRLEList();
-
-			// save population data
-			me.engine.savePopulationData();
-
-			me.engine.saveSnapshotIfNeeded(me);
-
-			// if nothing alive now then restore last bounding box
-			if (me.engine.population === 0) {
-				me.engine.zoomBox.set(saveBox);
-				me.engine.historyBox.set(saveHistoryBox);
-			}
+			// compute next generation
+			me.computeNextGeneration();
 		}
 
 		// check if complete
@@ -8232,6 +8326,9 @@ View.prototype.clearStepSamples = function() {
 		var	/** @type {boolean} */ hardReset = false,
 			/** @type {boolean} */ looping = false,
 			/** @type {Waypoint} */ currentWaypoint = me.waypointManager.firstWaypoint();
+
+		// clear just died flag
+		this.justDied = false;
 
 		// reset snow if enabled
 		if (this.drawingSnow) {
@@ -9200,13 +9297,6 @@ View.prototype.clearStepSamples = function() {
 				if (me.autoStart && !me.autoStartDisabled) {
 					newValue = ViewConstants.modePlay;
 					me.generationOn = true;
-
-					// set flag whether pattern was empty and playback is on
-					if (me.engine.population === 0 && me.engine.counter === 0) {
-						me.emptyStart = true;
-					} else {
-						me.emptyStart = false;
-					}
 				} else {
 					newValue = ViewConstants.modePause;
 					me.generationOn = false;
@@ -9379,13 +9469,6 @@ View.prototype.clearStepSamples = function() {
 					me.generationOn = true;
 					me.afterEdit("");
 
-					// set flag whether pattern was empty and playback is on
-					if (me.engine.population === 0 && me.engine.counter === 0) {
-						me.emptyStart = true;
-					} else {
-						me.emptyStart = false;
-					}
-
 					// check for exclusive playback mode
 					if (me.exclusivePlayback) {
 						Controller.stopOtherViewers(me);
@@ -9422,13 +9505,8 @@ View.prototype.clearStepSamples = function() {
 						}
 						me.afterEdit("");
 						for (i = 0; i < me.gensPerStep; i += 1) {
-							me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
-							me.engine.convertToPensTile();
-							me.pasteRLEList();
-							me.engine.saveSnapshotIfNeeded(me);
-
-							// save population data
-							me.engine.savePopulationData();
+							// compute next generation
+							me.computeNextGeneration();
 
 							me.fixedPointCounter = me.engine.counter * me.refreshRate;
 
@@ -9439,16 +9517,13 @@ View.prototype.clearStepSamples = function() {
 									me.diedGeneration = me.engine.counter;
 
 									// notify simulation stopped unless loop defined and enabled
-									if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled) && !me.emptyStart) {
+									if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
 										if (me.engine.isPCA || me.engine.isMargolus) {
 											me.menuManager.notification.notify("Life ended at generation " + (me.engine.counterMargolus + me.genOffset), 15, 600, 15, false);
 										} else {
 											me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
 										}
 									}
-
-									// if the pattern dies again then notify (this would be caused by drawing during playback)
-									me.emptyStart = false;
 								}
 							}
 						}
@@ -9513,13 +9588,6 @@ View.prototype.clearStepSamples = function() {
 					// step
 					me.nextStep = true;
 					me.afterEdit("");
-
-					// set flag whether pattern was empty and playback is on
-					if (me.engine.population === 0 && me.engine.counter === 0) {
-						me.emptyStart = true;
-					} else {
-						me.emptyStart = false;
-					}
 				}
 				break;
 
@@ -12558,6 +12626,16 @@ View.prototype.clearStepSamples = function() {
 	// copy neighbourhood pressed
 	View.prototype.copyNeighbourhoodPressed = function(/** @type {View} */ me) {
 		me.copyNeighbourhood(me);
+	};
+
+	// copy position pressed
+	View.prototype.copyPositionPressed = function(/** @type {View} */ me) {
+		me.copyPosition(me, false);
+	};
+
+	// copy viewpressed
+	View.prototype.copyViewPressed = function(/** @type {View} */ me) {
+		me.copyPosition(me, true);
 	};
 
 	// open clipboard pressed
@@ -16216,28 +16294,36 @@ View.prototype.clearStepSamples = function() {
 		this.saveGraphButton.toolTip = "save population graph image [Shift O]";
 
 		// open clipboard button
-		this.openClipboardButton = this.viewMenu.addButtonItem(this.openClipboardPressed, Menu.middle, -100, -50, 180, 40, "Open Clipboard");
+		this.openClipboardButton = this.viewMenu.addButtonItem(this.openClipboardPressed, Menu.middle, -100, -75, 180, 40, "Open Clipboard");
 		this.openClipboardButton.toolTip = "open clipboard as pattern [Ctrl Shift O]";
 
 		// copy original pattern button
-		this.copyOriginalButton = this.viewMenu.addButtonItem(this.copyOriginalPressed, Menu.middle, 100, -50, 180, 40, "Copy Original");
+		this.copyOriginalButton = this.viewMenu.addButtonItem(this.copyOriginalPressed, Menu.middle, 100, -75, 180, 40, "Copy Original");
 		this.copyOriginalButton.toolTip = "copy original pattern [Ctrl Shift C]";
 
 		// copy rule button
-		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, 0, 180, 40, "Copy Rule");
+		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, -25, 180, 40, "Copy Rule");
 		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
 
 		// copy neighbourhood button
-		this.copyNeighbourhoodButton = this.viewMenu.addButtonItem(this.copyNeighbourhoodPressed, Menu.middle, 100, 0, 180, 40, "Copy Nhood");
+		this.copyNeighbourhoodButton = this.viewMenu.addButtonItem(this.copyNeighbourhoodPressed, Menu.middle, 100, -25, 180, 40, "Copy Nhood");
 		this.copyNeighbourhoodButton.toolTip = "copy CoordCA neighbourhood definition [Ctrl B]";
 
 		// copy with comments button
-		this.copyWithCommentsButton = this.viewMenu.addButtonItem(this.copyWithCommentsPressed, Menu.middle, -100, 50, 180, 40, "Copy All");
+		this.copyWithCommentsButton = this.viewMenu.addButtonItem(this.copyWithCommentsPressed, Menu.middle, -100, 25, 180, 40, "Copy All");
 		this.copyWithCommentsButton.toolTip = "copy with comments [Ctrl Alt C]";
 
 		// paste to selection button
-		this.pasteToSelectionButton = this.viewMenu.addButtonItem(this.pasteToSelectionPressed, Menu.middle, 100, 50, 180, 40, "Paste To Seln");
+		this.pasteToSelectionButton = this.viewMenu.addButtonItem(this.pasteToSelectionPressed, Menu.middle, 100, 25, 180, 40, "Paste To Seln");
 		this.pasteToSelectionButton.toolTip = "paste to selection [Ctrl Shift V]";
+
+		// copy position button
+		this.copyPositionButton = this.viewMenu.addButtonItem(this.copyPositionPressed, Menu.middle, -100, 75, 180, 40, "Copy Position");
+		this.copyPositionButton.toolTip = "copy position [K]";
+
+		// copy view button
+		this.copyViewButton = this.viewMenu.addButtonItem(this.copyViewPressed, Menu.middle, 100, 75, 180, 40, "Copy View");
+		this.copyViewButton.toolTip = "copy position and view [Shift K]";
 
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -100, 120, 40, "Prev");
@@ -17464,6 +17550,9 @@ View.prototype.clearStepSamples = function() {
 		this.manager.ruleTableB0 = false;
 		this.engine.ruleTableB0 = false;
 
+		// clear just died flag
+		this.justDied = false;
+
 		// attempt to load the pattern
 		this.origDisplayWidth = this.displayWidth;
 		this.origDisplayHeight = this.displayHeight;
@@ -17587,8 +17676,7 @@ View.prototype.clearStepSamples = function() {
 		// turn off pretty rendering
 		me.engine.pretty = false;
 
-		// flag not empty start
-		me.emptyStart = false;
+		// set died generation
 		me.diedGeneration = -1;
 
 		// mark bailout possible
@@ -18372,15 +18460,9 @@ View.prototype.clearStepSamples = function() {
 		me.engine.allocateGraphData(!me.graphDisabled);
 
 		// check pattern size (script command may have increased maximum allowed size)
-		borderSize = 6;
-		if (pattern && pattern.isHROT) {
-			borderSize = pattern.rangeHROT * 6;
-		}
-		if (pattern && pattern.isLTL) {
-			borderSize = pattern.rangeLTL * 6;
-		}
+		borderSize = me.getSafeBorderSize();
 
-		if (pattern && (pattern.width >= me.engine.maxGridSize - borderSize || pattern.height >= me.engine.maxGridSize - borderSize)) {
+		if (pattern && (pattern.width > me.engine.maxGridSize - borderSize || pattern.height > me.engine.maxGridSize - borderSize)) {
 			me.failureReason = "Pattern too big";
 			pattern.tooBig = true;
 			me.executable = false;
@@ -18388,16 +18470,9 @@ View.prototype.clearStepSamples = function() {
 
 		// check bounded grid size (script command may have increased maximum allowed size)
 		if (pattern && (pattern.gridType !== -1)) {
-			borderSize = 6;
+			borderSize = this.getSafeBorderSize();
 
-			// check for LtL or HROT rules
-			if (pattern.isHROT) {
-				borderSize = pattern.rangeHROT * 6;
-			}
-			if (pattern.isLTL) {
-				borderSize = pattern.rangeLTL * 6;
-			}
-			if (pattern.gridWidth >= me.engine.maxGridSize - borderSize || pattern.gridHeight >= me.engine.maxGridSize - borderSize) {
+			if (pattern.gridWidth > me.engine.maxGridSize - borderSize || pattern.gridHeight > me.engine.maxGridSize - borderSize) {
 				// make invalid
 				me.failureReason = "Bounded grid too big";
 				me.executable = false;
@@ -18447,25 +18522,29 @@ View.prototype.clearStepSamples = function() {
 			}
 		}
 
-		// check if the grid is smaller than the pattern and/or bounded grid plus the maximum step speed
-		borderSize = ViewConstants.maxStepSpeed;
-		if (me.engine.isHROT) {
-			borderSize = this.getSafeBorderSize();
-		}
+		// check if the grid is smaller than the pattern and/or bounded grid plus the border
+		borderSize = me.getSafeBorderSize();
 
 		// add CXRLE Pos if defined
-		i = me.engine.maxGridSize / 2 - borderSize;
+		i = (me.engine.maxGridSize - borderSize) / 2;
+
 		if (me.posDefined) {
 			if (me.posXOffset < -i) {
 				me.posXOffset = -i;
-			} else if (me.posXOffset >= i) {
-				me.posXOffset = i - 1;
+			} else {
+				if (me.posXOffset >= i) {
+					me.posXOffset = i - 1;
+				}
 			}
+
 			if (me.posYOffset < -i) {
 				me.posYOffset = -i;
-			} else if (me.posYOffset >= i) {
-				me.posYOffset = i - 1;
+			} else {
+				if (me.posYOffset >= i) {
+					me.posYOffset = i - 1;
+				}
 			}
+
 			me.xOffset += me.posXOffset;
 			me.yOffset += me.posYOffset;
 		}
@@ -18473,13 +18552,18 @@ View.prototype.clearStepSamples = function() {
 		// ensure offset in range
 		if (me.xOffset < -i) {
 			me.xOffset = -i;
-		} else if (me.xOffset >= i) {
-			me.xOffset = i - 1;
+		} else {
+			if (me.xOffset >= i) {
+				me.xOffset = i - 1;
+			}
 		}
+
 		if (me.yOffset < -i) {
 			me.yOffset = -i;
-		} else if (me.yOffset >= i) {
-			me.yOffset = i - 1;
+		} else {
+			if (me.yOffset >= i) {
+				me.yOffset = i - 1;
+			}
 		}
 
 		// grow the grid if the pattern is too big to fit
@@ -18761,7 +18845,6 @@ View.prototype.clearStepSamples = function() {
 
 			// display message if pattern is too big or has no alive cells
 			if (pattern && me.engine.population === 0 && !me.isPasteEvery) {
-				me.emptyStart = true;
 				if (stateCount === 0) {
 					if (!me.engine.isNone) {
 						if (pattern.tooBig) {
@@ -18771,8 +18854,6 @@ View.prototype.clearStepSamples = function() {
 						}
 					}
 				}
-			} else {
-				me.emptyStart = false;
 			}
 
 			// set the bounded grid tiles if specified
