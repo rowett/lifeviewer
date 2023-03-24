@@ -3744,7 +3744,8 @@
 		extent = this.getOscillatorBounds(period, i);
 
 		// determine whether Strict Volatility can be calculated based on amount of RAM needed
-		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
+		//if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
+		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree) {
 			// compute the maximum box width and height for the oscillator
 			extent = this.getOscillatorBounds(period, i);
 			boxWidth = extent.rightX - extent.leftX + 1;
@@ -3796,20 +3797,11 @@
 		// save cell map for each generation in the period
 		// include extra generation to check Oscillator Mod period/2
 		for (p = 0; p <= period; p += 1) {
-			// save bounding box in case all cells die
-			saveBox.set(this.zoomBox);
-			saveHistoryBox.set(this.historyBox);
-
-			// compute the next generation
-			this.nextGeneration(view.noHistory, view.graphDisabled, view.identify, view);
-			this.convertToPensTile();
-			view.pasteRLEList();
-			this.savePopulationData();
-
-			this.saveSnapshotIfNeeded(view);
+			// compute next generation
+			view.computeNextGeneration();
 
 			// check if life just stopped
-			if (this.population === 0) {
+			if (view.justDied) {
 				// restore last bounding box
 				this.zoomBox.set(saveBox);
 				this.historyBox.set(saveHistoryBox);
@@ -3868,8 +3860,21 @@
 					width1 = (extent.rightX - extent.leftX + 1);
 					height1 = (extent.topY - extent.bottomY + 1);
 
-					//console.log(p, "gen", this.counter, "hash1", hash1);
+					// if Margolus and first two generations are the same then used the next one
+					if (this.isMargolus && (hash0 === hash1)) {
+						gen1 += 1;
 
+						//console.log(p, "gen", this.counter, "deferring for 1 gen");
+
+					} else {
+
+						//console.log(p, "gen", this.counter, "hash1", hash1);
+
+						// reset the generation if Margolus
+						if (this.isMargolus) {
+							gen1 = 1;
+						}
+					}
 				}
 			}
 
@@ -3914,14 +3919,8 @@
 										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatch);
 		
 										//console.log(p, "gen", this.counter, "type", modMatch, "check at", p + gen1, "delta", deltaX, deltaY);
+										//for (cx = 0; cx <= LifeConstants.modRot90FlipY; cx += 1) { if ((modMatch & (1 << cx)) !== 0) { console.log(LifeConstants.modTypeName[cx]); } }
 
-										//for (j = 0; j <= LifeConstants.modRot90FlipY; j += 1) {
-											//if ((modMatch & (1 << j)) !== 0) {
-
-												//console.log(LifeConstants.modTypeName[j]);
-
-											//}
-										//}
 									}
 								}
 							}
@@ -4741,8 +4740,9 @@
 					}
 				}
 
-				// for alternating rules or Margolus skip odd generations
-				if ((this.isMargolus || this.altSpecified) && ((this.counter & 1) !== 0)) {
+				// for alternating rules
+				//if ((this.isMargolus || this.altSpecified) && ((this.counter & 1) !== 0)) {
+				if (this.altSpecified && ((this.counter & 1) !== 0)) {
 					// create the new record marking it to be skipped in searches
 					this.addIdentifyRecord(-1, boxSize, leftX, bottomY, lastI, true);
 
@@ -4787,12 +4787,18 @@
 									period = this.counter - this.genList[i];
 
 									if (this.boxList[j + 1] === boxLocation) {
-										// pattern hasn't moved
-										if (period === 1 || ((this.altSpecified || this.isMargolus) && period === 2)) {
-											message = "Still Life";
-											period = 1;
+										// check for period 1 Margolus
+										if (period === 1 && this.isMargolus) {
+											saveResults = false;
 										} else {
-											message = "Oscillator period " + period;
+											// pattern hasn't moved
+											//if (period === 1 || ((this.altSpecified || this.isMargolus) && period === 2)) {
+											if (period === 1 || (this.altSpecified && period === 2)) {
+												message = "Still Life";
+												period = 1;
+											} else {
+												message = "Oscillator period " + period;
+											}
 										}
 									} else {
 										// pattern is moving so check if we are verifying spaceship
@@ -35425,6 +35431,56 @@
 		return (this.camZoom >= 4);
 	};
 
+	// draw the bounded grid border using mask for sub-sampled grids
+	Life.prototype.drawBoundedGridBorderMask = function(/** @type {Array<Uint8Array>} */ colourGrid, /** @type {number} */ border, /** @type {number} */ mask) {
+		// get width and height
+		var	/** @type {number} */ width = this.boundedGridWidth,
+			/** @type {number} */ height = this.boundedGridHeight,
+
+			// box offset
+			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
+
+			// coordinates of box
+			/** @type {number} */ leftX = (Math.round((this.width - width) / 2 - 1) + boxOffset),
+			/** @type {number} */ rightX = leftX + width + 1,
+			/** @type {number} */ bottomY = (Math.round((this.height - height) / 2 - 1) + boxOffset),
+			/** @type {number} */ topY = bottomY + height + 1,
+
+			// counter
+			/** @type {number} */ i = 0;
+
+		// apply mask
+		bottomY &= ~mask;
+		topY &= ~mask;
+		leftX &= ~mask;
+		rightX &= ~mask;
+
+		// check for infinite width
+		if (width === 0) {
+			// draw top and bottom only
+			colourGrid[bottomY].fill(border, 0, this.width);
+			colourGrid[topY].fill(border, 0, this.width);
+		} else {
+			// check for infinite height
+			if (height === 0) {
+				// draw left and right only
+				for (i = 0; i < this.height; i += 1) {
+					colourGrid[i][leftX] = border;
+					colourGrid[i][rightX] = border;
+				}
+			} else {
+				// draw top and bottom
+				colourGrid[bottomY].fill(border, leftX, rightX + 1);
+				colourGrid[topY].fill(border, leftX, rightX + 1);
+
+				// draw left and right
+				for (i = bottomY + 1; i <= topY - 1; i += 1) {
+					colourGrid[i][leftX] = border;
+					colourGrid[i][rightX] = border;
+				}
+			}
+		}
+	};
 	// draw the bounded grid border
 	Life.prototype.drawBoundedGridBorder = function(/** @type {Array<Uint8Array>} */ colourGrid, /** @type {number} */ border) {
 		// get width and height
@@ -35899,6 +35955,12 @@
 			this.drawGridLines();
 		}
 
+		// delete bounded grid border if enabled
+		if (this.boundedGridType !== -1) {
+			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
+			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
+		}
+
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -35949,6 +36011,7 @@
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
 				colourGrid = this.colourGrid;
+				this.drawBoundedGridBorderMask(colourGrid, 0, mask);
 			}
 
 			// create the width and height masks
@@ -36343,6 +36406,12 @@
 			this.drawGridLines();
 		}
 
+		// delete bounded grid border if enabled
+		if (this.boundedGridType !== -1) {
+			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
+			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
+		}
+
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -36393,6 +36462,7 @@
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
 				colourGrid = this.colourGrid;
+				this.drawBoundedGridBorderMask(colourGrid, 0, mask);
 			}
 
 			// create the width and height masks
@@ -36666,6 +36736,12 @@
 			this.drawGridLines();
 		}
 
+		// delete bounded grid border if enabled
+		if (this.boundedGridType !== -1) {
+			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
+			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
+		}
+
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -36717,6 +36793,7 @@
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
 				colourGrid = this.colourGrid;
+				this.drawBoundedGridBorderMask(colourGrid, 0, mask);
 			}
 
 			// create the width and height masks
@@ -36970,6 +37047,12 @@
 			this.drawGridLines();
 		}
 
+		// delete bounded grid border if enabled
+		if (this.boundedGridType !== -1) {
+			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
+			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
+		}
+
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -37020,6 +37103,7 @@
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
 				colourGrid = this.colourGrid;
+				this.drawBoundedGridBorderMask(colourGrid, 0, mask);
 			}
 
 			// create the width and height masks

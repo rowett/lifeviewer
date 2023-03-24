@@ -1,3 +1,12 @@
+Build 989
+- fixed period 1 case for Margolus rules
+
+Build 988
+- added Strict Volatility for Margolus rules
+
+Build 987
+- only draw Bounded Grid in the bottom layer
+
 Build 986
 - fixed PASTE overwriting dead cells with empty cells
 

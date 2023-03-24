@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 986,
+		/** @const {number} */ versionBuild : 989,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5404,7 +5404,8 @@
 			y += h;
 
 			// mod
-			if (!(this.engine.isHex || this.engine.isTriangular) && !this.engine.isMargolus) {
+			//if (!(this.engine.isHex || this.engine.isTriangular) && !this.engine.isMargolus) {
+			if (!(this.engine.isHex || this.engine.isTriangular)) {
 				this.identifyModLabel.setPosition(Menu.north, x, y);
 				this.identifyModValueLabel.setPosition(Menu.north, xv, y);
 				y += h;
@@ -5425,7 +5426,8 @@
 			y += h;
 		}
 
-		if (this.lastIdentifyType !== "Still Life" && (!(this.engine.isRuleTree && this.engine.multiNumStates > 2) || this.engine.isLifeHistory) && !(this.engine.isMargolus || this.engine.altSpecified) && this.engine.boundedGridType === -1) {
+		//if (this.lastIdentifyType !== "Still Life" && (!(this.engine.isRuleTree && this.engine.multiNumStates > 2) || this.engine.isLifeHistory) && !(this.engine.isMargolus || this.engine.altSpecified) && this.engine.boundedGridType === -1) {
+		if (this.lastIdentifyType !== "Still Life" && (!(this.engine.isRuleTree && this.engine.multiNumStates > 2) || this.engine.isLifeHistory) && !this.engine.altSpecified && this.engine.boundedGridType === -1) {
 			// heat
 			this.identifyHeatLabel.setPosition(Menu.north, x, y);
 			this.identifyHeatValueLabel.setPosition(Menu.north, xv, y);
@@ -6686,22 +6688,26 @@ View.prototype.clearStepSamples = function() {
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || (this.lastIdentifyType !== "Still Life" && this.engine.isMargolus);
+		//this.identifyModLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || (this.lastIdentifyType !== "Still Life" && this.engine.isMargolus);
+		this.identifyModLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified || (this.engine.isRuleTree && this.engine.multiNumStates > 2)) || (this.engine.boundedGridType !== -1);
+		//this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified || (this.engine.isRuleTree && this.engine.multiNumStates > 2)) || (this.engine.boundedGridType !== -1);
+		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.altSpecified || (this.engine.isRuleTree && this.engine.multiNumStates > 2)) || (this.engine.boundedGridType !== -1);
 		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyCellsValueLabel.deleted = shown;
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		this.identifyModValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || (this.lastIdentifyType !== "Still Life" && this.engine.isMargolus);
+		//this.identifyModValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || (this.lastIdentifyType !== "Still Life" && this.engine.isMargolus);
+		this.identifyModValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified) || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
+		//this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified) || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
+		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.engine.altSpecified || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
