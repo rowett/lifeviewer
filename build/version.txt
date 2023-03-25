@@ -1,3 +1,9 @@
+Build 993
+- fixed Identify for Margolus rules that have an identical pattern in two consecutive generations
+
+Build 992
+- several fixes for Identify Mod for Margolus rules
+
 Build 991
 - hide Help->Script->Colours items that are not relevant to the current rule
 - fixed Undo not restoring dead states for PCA rules

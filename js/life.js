@@ -159,6 +159,9 @@
 		// hex and triangle cell coordinate buffer size
 		/** @const {number} */ coordBufferSize : 4096,
 
+		// triangle line width
+		/** @const {number} */ triangleLineWidth : 1.6,
+
 		// hex cell bits for buffer (must be coordBufferSize * 16 bits big)
 		/** @const {number} */ coordBufferBits : 16,
 
@@ -212,7 +215,7 @@
 		/** @const {number} */ topLeftSet : 16,
 		/** @const {number} */ topRightSet : 32,
 		/** @const {number} */ bottomLeftSet : 64,
-		/** @const {number} */ bottomRightSet : 128,
+		/** @const {number} */ bottomRightSet : 128
 	};
 
 	// ModCheck object
@@ -2111,6 +2114,11 @@
 						trans = LifeConstants.modFlipDiagRRot180;
 					}
 				}
+
+				// don't allow rotate by 180 unless mod is half period
+				if (trans === LifeConstants.modRot180 && modFactor !== 2) {
+					trans = -1;
+				}
 			}
 		}
 
@@ -3715,13 +3723,19 @@
 			/** @type {number} */ frameTypeMSB = 0,
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
-			/** @type {number} */ gen1 = 1,
 			/** @type {number} */ hash0 = 0,
 			/** @type {number} */ width0 = 0,
 			/** @type {number} */ height0 = 0,
 			/** @type {number} */ hash1 = 0,
 			/** @type {number} */ width1 = 0,
 			/** @type {number} */ height1 = 0,
+			/** @type {number} */ hash2 = 0,
+			/** @type {number} */ width2 = 0,
+			/** @type {number} */ height2 = 0,
+			/** @type {number} */ checkWidth = 0,
+			/** @type {number} */ checkHeight = 0,
+			/** @type {number} */ checkGenDelta = 0,
+			/** @type {number} */ checkHash = 0,
 			/** @type {number} */ nextHeat = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {number} */ modMatch = 0,
@@ -3782,13 +3796,6 @@
 
 		//var t = performance.now();
 
-		// setup the second generation
-		if (this.altSpecified) {
-			gen1 = 2;
-		} else {
-			gen1 = 1;
-		}
-
 		// reset heat
 		this.minHeat = 16384 * 16384;
 		this.maxHeat = 0;
@@ -3796,7 +3803,7 @@
 
 		// save cell map for each generation in the period
 		// include extra generation to check Oscillator Mod period/2
-		for (p = 0; p <= period; p += 1) {
+		for (p = 0; p <= period + 1; p += 1) {
 			// compute next generation
 			view.computeNextGeneration();
 
@@ -3855,73 +3862,84 @@
 				//console.log(p, "gen", this.counter, "hash0", hash0);
 
 			} else {
-				if (p === gen1) {
+				if (p === 1) {
 					hash1 = this.getHash(extent);
 					width1 = (extent.rightX - extent.leftX + 1);
 					height1 = (extent.topY - extent.bottomY + 1);
 
-					// if Margolus and first two generations are the same then used the next one
-					if (this.isMargolus && (hash0 === hash1)) {
-						gen1 += 1;
+					//console.log(p, "gen", this.counter, "hash1", hash1);
 
-						//console.log(p, "gen", this.counter, "deferring for 1 gen");
+				} else {
+					if (p === 2 && this.isMargolus && hash0 === hash1) {
+						hash2 = this.getHash(extent);
+						width2 = (extent.rightX - extent.leftX + 1);
+						height2 = (extent.topY - extent.bottomY + 1);
+	
+						//console.log(p, "gen", this.counter, "hash2", hash2);
 
-					} else {
-
-						//console.log(p, "gen", this.counter, "hash1", hash1);
-
-						// reset the generation if Margolus
-						if (this.isMargolus) {
-							gen1 = 1;
-						}
 					}
 				}
 			}
 
-			// for alternating rules skip every other generation
-			if (!(this.altSpecified && ((p & 1) !== 0))) {
-				// ignore hex or triangular patterns
-				if (!(this.isHex || this.isTriangular)) {
-					// check if Mod has already been found
-					if (this.modValue === -1) {
-						// check if verifying
-						while (this.modValue === -1 && modChecks.length > 0 && modChecks[0].checkGen === p) {
-							// check if the bounding box is the same size as the source
-							if ((((extent.rightX - extent.leftX + 1) === width1) && ((extent.topY - extent.bottomY) + 1) === height1) || ((extent.rightX - extent.leftX + 1) === height1) && ((extent.topY - extent.bottomY + 1) === width1)) {
-								// check the source generation against this one
-								this.modType = this.checkModHashType(extent, hash1, modChecks[0].modType, deltaX, deltaY, period / (p - gen1));
-								if (this.modType !== -1) {
-
-									//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
-	
-									this.modValue = p - gen1;
-								} else {
-
-									//console.log(p, "gen", this.counter, "verify failed");
-
-									this.modValue = -1;
-								}
-							}
-
-							// remove the mod check
-							modChecks.shift();
+			// ignore hex or triangular patterns
+			if (!(this.isHex || this.isTriangular)) {
+				// check if Mod has already been found
+				if (this.modValue === -1) {
+					// check if verifying
+					while (this.modValue === -1 && modChecks.length > 0 && modChecks[0].checkGen === p) {
+						// get the correct generation values
+						if (this.isMargolus && hash0 === hash1) {
+							checkWidth = width2;
+							checkHeight = height2;
+							checkGenDelta = 2;
+							checkHash = hash2;
+						} else {
+							checkWidth = width1;
+							checkHeight = height1;
+							checkGenDelta = 1;
+							checkHash = hash1;
 						}
 
-						// check if Mod found after verification
-						if (this.modValue === -1) {
-							// no Mod found so check if at a subperiod
-							if (p > 0 && (period % p === 0)) {
-								// ensure bounding box is the same size as the source
-								if ((((extent.rightX - extent.leftX + 1) === width0) && ((extent.topY - extent.bottomY) + 1) === height0) || ((extent.rightX - extent.leftX + 1) === height0) && ((extent.topY - extent.bottomY + 1) == width0)) {
-									modMatch = this.checkModHash(extent, hash0, deltaX, deltaY);
-									if (modMatch !== 0) {
-										// potential Mod found so create verification record
-										modChecks[modChecks.length] = new ModCheck(p + gen1, modMatch);
-		
-										//console.log(p, "gen", this.counter, "type", modMatch, "check at", p + gen1, "delta", deltaX, deltaY);
-										//for (cx = 0; cx <= LifeConstants.modRot90FlipY; cx += 1) { if ((modMatch & (1 << cx)) !== 0) { console.log(LifeConstants.modTypeName[cx]); } }
+						// check if the bounding box is the same size as the source
+						if ((((extent.rightX - extent.leftX + 1) === checkWidth) && ((extent.topY - extent.bottomY) + 1) === checkHeight) || ((extent.rightX - extent.leftX + 1) === checkHeight) && ((extent.topY - extent.bottomY + 1) === checkWidth)) {
+							// check the source generation against this one
+							this.modType = this.checkModHashType(extent, checkHash, modChecks[0].modType, deltaX, deltaY, period / (p - checkGenDelta));
 
+							if (this.modType !== -1) {
+
+								//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
+
+								this.modValue = p - checkGenDelta;
+							} else {
+
+								//console.log(p, "gen", this.counter, "verify failed");
+
+								this.modValue = -1;
+							}
+						}
+
+						// remove the mod check
+						modChecks.shift();
+					}
+
+					// check if Mod found after verification
+					if (this.modValue === -1) {
+						// no Mod found so check if at a subperiod
+						if (p > 0 && (period % p === 0)) {
+							// ensure bounding box is the same size as the source
+							if ((((extent.rightX - extent.leftX + 1) === width0) && ((extent.topY - extent.bottomY) + 1) === height0) || ((extent.rightX - extent.leftX + 1) === height0) && ((extent.topY - extent.bottomY + 1) == width0)) {
+								modMatch = this.checkModHash(extent, hash0, deltaX, deltaY);
+								if (modMatch !== 0 && !(this.isMargolus && hash0 === hash1 && p < 2)) {
+									// potential Mod found so create verification record
+									if (this.isMargolus && hash0 === hash1) {
+										modChecks[modChecks.length] = new ModCheck(p + 2, modMatch);
+									} else {
+										modChecks[modChecks.length] = new ModCheck(p + 1, modMatch);
 									}
+	
+									//console.log(p, "gen", this.counter, "type", modMatch, "check at", p + (this.isMargolus && hash0 === hash1 ? 2 : 1), "delta", deltaX, deltaY);
+									//for (cx = 0; cx <= LifeConstants.modRot90FlipY; cx += 1) { if ((modMatch & (1 << cx)) !== 0) { console.log(LifeConstants.modTypeName[cx]); } }
+
 								}
 							}
 						}
@@ -3941,12 +3959,12 @@
 				}
 
 				this.heatVal += nextHeat;
-			}
 
-			// save statistics for this generation
-			this.popList[p] = this.population;
-			this.boxList[p << 1] = ((extent.rightX - extent.leftX + 1) << 16) | (extent.topY - extent.bottomY + 1);
-			this.boxList[(p << 1) + 1] = (extent.leftX << 16) | extent.bottomY;
+				// save statistics for this generation
+				this.popList[p] = this.population;
+				this.boxList[p << 1] = ((extent.rightX - extent.leftX + 1) << 16) | (extent.topY - extent.bottomY + 1);
+				this.boxList[(p << 1) + 1] = (extent.leftX << 16) | extent.bottomY;
+			}
 		}
 
 		//t = performance.now() - t;
@@ -4219,7 +4237,7 @@
 			// compute Mod for spaceship
 			this.computeStrictVolatility(period, i, view, false, deltaXOrig, deltaYOrig);
 		} else {
-			if (period === 1 || (this.altSpecified && period === 2)) {
+			if (period === 1) {
 				type = "Still Life";
 			} else {
 				// oscillator
@@ -4601,7 +4619,7 @@
 	};
 
 	// create new Identify record
-	Life.prototype.addIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ lastI, /** @type {boolean} */ skipAlt) {
+	Life.prototype.addIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ lastI) {
 		// create the new record
 		this.hashList[this.oscLength] = hash;
 		this.genList[this.oscLength] = this.counter;
@@ -4610,17 +4628,14 @@
 		this.boxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
 		this.nextList[this.oscLength] = -1;
 
-		// check if this record should be skipped
-		if (!skipAlt) {
-			// do not skip so point the previous record at this one
-			if (this.startItem === -1) {
-				this.startItem = 0;
+		// do not skip so point the previous record at this one
+		if (this.startItem === -1) {
+			this.startItem = 0;
+		} else {
+			if (lastI === -1) {
+				this.startItem = this.oscLength;
 			} else {
-				if (lastI === -1) {
-					this.startItem = this.oscLength;
-				} else {
-					this.nextList[lastI] = this.oscLength;
-				}
+				this.nextList[lastI] = this.oscLength;
 			}
 		}
 	};
@@ -4685,11 +4700,6 @@
 			// result
 			/** @type {Array} */ result = [];
 
-		// ensure altSpecified propagates from HROT since for some reason it doesn't work on the forum
-		if (this.isHROT) {
-			this.altSpecified = this.HROT.altSpecified;
-		}
-
 		// check buffer
 		if (this.oscLength < LifeConstants.maxOscillatorGens) {
 			// check population
@@ -4740,22 +4750,6 @@
 					}
 				}
 
-				// for alternating rules
-				//if ((this.isMargolus || this.altSpecified) && ((this.counter & 1) !== 0)) {
-				if (this.altSpecified && ((this.counter & 1) !== 0)) {
-					// create the new record marking it to be skipped in searches
-					this.addIdentifyRecord(-1, boxSize, leftX, bottomY, lastI, true);
-
-					// check for buffer full
-					this.oscLength += 1;
-					if (this.oscLength === LifeConstants.maxOscillatorGens) {
-						this.oscLength = 0;
-						result = [LifeConstants.bufferFullMessage];
-					}
-
-					return result;
-				}
-
 				// get the hash of the current pattern
 				hash = this.getHash(box);
 
@@ -4792,10 +4786,8 @@
 											saveResults = false;
 										} else {
 											// pattern hasn't moved
-											//if (period === 1 || ((this.altSpecified || this.isMargolus) && period === 2)) {
-											if (period === 1 || (this.altSpecified && period === 2)) {
+											if (period === 1) {
 												message = "Still Life";
-												period = 1;
 											} else {
 												message = "Oscillator period " + period;
 											}
@@ -4859,8 +4851,8 @@
 
 				// add to the lists
 				if (!quit) {
-					// create the new record marking it not to be skipped in searches
-					this.addIdentifyRecord(hash, boxSize, leftX, bottomY, lastI, false);
+					// create the new record
+					this.addIdentifyRecord(hash, boxSize, leftX, bottomY, lastI);
 
 					// check for buffer full
 					this.oscLength += 1;
@@ -4926,7 +4918,7 @@
 		}
 
 		// create triangles
-		this.context.lineWidth = 1.6;
+		this.context.lineWidth = LifeConstants.triangleLineWidth;
 		this.context.lineCap = "butt";
 		this.context.lineJoin = "bevel";
 		j = 0;
@@ -5036,7 +5028,7 @@
 		}
 
 		// create triangles
-		this.context.lineWidth = 1.6;
+		this.context.lineWidth = LifeConstants.triangleLineWidth;
 		this.context.lineCap = "butt";
 		this.context.lineJoin = "bevel";
 		j = 0;
@@ -5171,9 +5163,10 @@
 		}
 
 		// create triangles from live cells
-		this.context.lineWidth = 1.6;
+		this.context.lineWidth = LifeConstants.triangleLineWidth;
 		this.context.lineCap = "butt";
 		this.context.lineJoin = "bevel";
+
 		j = 0;
 		k = 0;
 		for (y = bottomY; y <= topY; y += 1) {
@@ -5441,6 +5434,7 @@
 			state = 0;
 			lastState = 0;
 		}
+
 		for (i = 0; i < numCoords; i += 1) {
 			// get next triangle offset
 			if (filled) {

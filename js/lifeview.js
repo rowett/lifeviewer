@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 991,
+		/** @const {number} */ versionBuild : 993,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -6871,7 +6871,7 @@ View.prototype.clearStepSamples = function() {
 		shown = this.engine.isNone || !this.executable;
 		this.randomizeButton.locked = shown;
 		this.randomizePatternButton.locked = shown;
-		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom || (this.engine.boundedGridType !== -1 && (this.engine.boundedGridWidth === 0 || this.engine.boundedGridHeight === 0));
+		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom || (this.engine.boundedGridType !== -1 && (this.engine.boundedGridWidth === 0 || this.engine.boundedGridHeight === 0)) || this.engine.altSpecified;
 		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";
 		this.copyRuleButton.locked = shown;
 		this.copyNeighbourhoodButton.locked = shown;
