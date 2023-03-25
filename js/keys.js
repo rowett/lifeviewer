@@ -266,6 +266,7 @@
 					case 66:
 						// toggle cell borders
 						me.bordersButton.current = me.viewBordersToggle([!me.engine.cellBorders], true, me);
+						me.menuManager.notification.notify("Cell Borders " + (me.engine.cellBorders ? "On" : "Off"), 15, 40, 15, true);
 						break;
 
 					// c for default theme

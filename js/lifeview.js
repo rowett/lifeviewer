@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 993,
+		/** @const {number} */ versionBuild : 994,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2225,6 +2225,8 @@
 			if ((x === (x & wm)) && (y === (y & hm))) {
 				// cell on expanded grid
 				result[0] = true;
+				result[1] = x;
+				result[2] = y;
 			}
 		}
 
@@ -2262,6 +2264,8 @@
 				if (!(x - borderSize < 0 || x + borderSize >= this.engine.width || y - borderSize < 0 || y + borderSize >= this.engine.height)) {
 					// cell on expanded grid
 					result[0] = true;
+					result[1] = x;
+					result[2] = y;
 				}
 			}
 		}

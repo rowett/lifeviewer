@@ -1,3 +1,7 @@
+Build 994
+- added notification when Cell Borders switched on or off via hotkey
+- fixed potential crash when drawing triggering a grid growth
+
 Build 993
 - fixed Identify for Margolus rules that have an identical pattern in two consecutive generations
 
