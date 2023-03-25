@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 989,
+		/** @const {number} */ versionBuild : 991,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2461,6 +2461,14 @@
 			/** @type {number} */ wasState6 = 0,
 			/** @type {number} */ runIndicator = 1 << 22,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
+
+		// check for PCA, RuleTree or Super rules
+		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
+			// swap grids every generation
+			if ((this.engine.counter & 1) !== 0) {
+				colourGrid = this.engine.nextColourGrid;
+			}
+		}
 
 		// check for cells
 		if (cells) {

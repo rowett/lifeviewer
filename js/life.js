@@ -4787,8 +4787,8 @@
 									period = this.counter - this.genList[i];
 
 									if (this.boxList[j + 1] === boxLocation) {
-										// check for period 1 Margolus
-										if (period === 1 && this.isMargolus) {
+										// check for odd period Margolus
+										if ((period & 1) === 1 && this.isMargolus) {
 											saveResults = false;
 										} else {
 											// pattern hasn't moved
