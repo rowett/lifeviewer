@@ -1901,6 +1901,9 @@
 		// reset all viewers button
 		/** @type {MenuItem} */ this.resetAllButton = null;
 
+		// fit to selection button
+		/** @type {MenuItem} */ this.fitSelectionButton = null;
+
 		// snap to nearest 45 angle button
 		/** @type {MenuItem} */ this.snapToNearest45Button = null;
 
@@ -6839,6 +6842,7 @@ View.prototype.clearStepSamples = function() {
 		this.stopAllButton.deleted = shown;
 		this.stopOthersButton.deleted = shown;
 		this.resetAllButton.deleted = shown;
+		this.infoBarButton.deleted = shown;
 
 		// display categoy
 		shown = hide || !this.showDisplaySettings;
@@ -6851,16 +6855,16 @@ View.prototype.clearStepSamples = function() {
 		this.altGridButton.deleted = shown;
 		this.rainbowButton.deleted = shown;
 		this.qualityToggle.deleted = shown;
-		this.infoBarButton.deleted = shown;
+		this.integerZoomButton.deleted = shown;
 
 		// general categroy
 		shown = hide || !this.showActionsSettings;
-		this.integerZoomButton.deleted = shown;
 		this.centerPatternButton.deleted = shown;
 		this.clearDrawingStateButton.deleted = shown;
 		this.snapToNearest45Button.deleted = shown;
 		this.saveViewButton.deleted = shown;
 		this.restoreViewButton.deleted = shown;
+		this.fitSelectionButton.deleted = shown;
 
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
@@ -6884,6 +6888,7 @@ View.prototype.clearStepSamples = function() {
 		this.goToGenButton.locked = !this.executable || this.viewOnly;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree);
 		this.saveButton.locked = shown;
+		this.fitSelectionButton.locked = shown;
 
 		// set theme section label text
 		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showClipboardSettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings || this.showActionsSettings);
@@ -12373,6 +12378,11 @@ View.prototype.clearStepSamples = function() {
 		me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
 	};
 
+	// fit selection pressed
+	View.prototype.fitSelectionPressed = function(/** @type {View} */ me) {
+		me.fitZoomDisplay(true, true, ViewConstants.fitZoomSelection);
+	};
+
 	// center pattern pressed
 	View.prototype.centerPatternPressed = function(/** @type {View} */ me) {
 		me.fitZoomDisplay(true, true, ViewConstants.fitZoomMiddle);
@@ -16239,9 +16249,9 @@ View.prototype.clearStepSamples = function() {
 		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 50, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
 		this.altGridButton.toolTip = ["toggle alternating gridlines [Alt D]"]; 
 
-		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 100, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
-		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
+		// integer zoom button
+		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, 100, 180, 40, "Integer Zoom");
+		this.integerZoomButton.toolTip = "set zoom to nearest integer [Shift 1]";
 
 		// quality rendering toggle button
 		this.qualityToggle = this.viewMenu.addListItem(this.viewQualityToggle, Menu.middle, 100, 100, 180, 40, ["Render Quality"], [this.engine.pretty], Menu.multi);
@@ -16455,9 +16465,9 @@ View.prototype.clearStepSamples = function() {
 		this.actionsButton = this.viewMenu.addButtonItem(this.actionsPressed, Menu.middle, -100, 25,  150, 40, "General");
 		this.actionsButton.toolTip = "general actions";
 
-		// integer zoom button
-		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, -50, 180, 40, "Integer Zoom");
-		this.integerZoomButton.toolTip = "set zoom to nearest integer [Shift 1]";
+		// fit selection button
+		this.fitSelectionButton = this.viewMenu.addButtonItem(this.fitSelectionPressed, Menu.middle, -100, -50, 180, 40, "Fit Selection");
+		this.fitSelectionButton.toolTip = "fit selection to display [Ctrl F]";
 
 		// center pattern button
 		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, -50, 180, 40, "Center Pattern");
@@ -16484,28 +16494,32 @@ View.prototype.clearStepSamples = function() {
 		this.infoButton.toolTip = "advanced settings and actions";
 
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -50, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display [T]"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -50, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -75, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details [Shift T]"];
 
 		// relative toggle button
-		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, 0, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
+		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -25, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
 		this.relativeToggle.toolTip = ["toggle absolute/relative generation display [Shift G]"];
 
 		// reset all viewers button
-		this.resetAllButton = this.viewMenu.addButtonItem(this.resetAllPressed, Menu.middle, 100, 0, 180, 40, "Reset All");
+		this.resetAllButton = this.viewMenu.addButtonItem(this.resetAllPressed, Menu.middle, 100, -25, 180, 40, "Reset All");
 		this.resetAllButton.toolTip = "reset all Viewers [Shift R]";
 
 		// stop all viewers button
-		this.stopAllButton = this.viewMenu.addButtonItem(this.stopAllPressed, Menu.middle, -100, 50, 180, 40, "Stop All");
+		this.stopAllButton = this.viewMenu.addButtonItem(this.stopAllPressed, Menu.middle, -100, 25, 180, 40, "Stop All");
 		this.stopAllButton.toolTip = "stop all Viewers [Shift Z]";
 
 		// stop other viewers button
-		this.stopOthersButton = this.viewMenu.addButtonItem(this.stopOthersPressed, Menu.middle, 100, 50, 180, 40, "Stop Others");
+		this.stopOthersButton = this.viewMenu.addButtonItem(this.stopOthersPressed, Menu.middle, 100, 25, 180, 40, "Stop Others");
 		this.stopOthersButton.toolTip = "stop other Viewers [Z]";
+
+		// infobar toggle button
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 75, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
 
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");

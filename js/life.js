@@ -37349,6 +37349,8 @@
 			/** @type {boolean} */ drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled),
 			/** @type {number} */ majorX = 0,
 			/** @type {number} */ majorY = 0,
+			/** @type {number} */ majorXStart = 0,
+			/** @type {number} */ odd = this.counter & 1,
 			/** @const {number} */ intZoom = intZoom2 >> 1,
 			/** @type {number} */ intWidth2 = 0,
 			/** @type {number} */ xg = this.width,
@@ -37356,6 +37358,9 @@
 			/** @type {number} */ xadj = 0,
 			/** @type {number} */ yadj = 0,
 			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid();
+
+		var	gridCols = [],
+			gridRows = [];
 
 		// check for cell borders
 		if (this.cellBorders && !this.displayGrid && this.canDisplayGrid()) {
@@ -37472,6 +37477,20 @@
 			// draw NxN cells
 			j = sZWidth;
 			intWidth2 = width * intZoom2;
+			
+			// compute major gridlines row and column start
+			if (drawMajor) {
+				// for Margolus alternate major/minor grid lines for odd/even generations
+				if (!this.isMargolus || this.gridLineMajor !== 2 || !this.altGrid) {
+					odd = 0;
+				}
+
+				majorXStart = (-(this.displayWidth / 2 / this.camZoom) - (this.width / 2 - this.xOff - this.originX) + (this.view.patternWidth / 2) + 0.05) | 0;
+				majorXStart += odd;
+
+				majorY = (-(this.displayHeight / 2 / this.camZoom) - (this.height / 2 - this.yOff - this.originY) + (this.view.patternHeight / 2) + 0.05) | 0;
+				majorY += odd;
+			}
 
 			// draw each row of cells
 			for (y = bottomY; y < topY; y += 1) {
@@ -37480,7 +37499,7 @@
 				}
 				l = i;
 
-				majorX = 0;
+				majorX = majorXStart;
 
 				// draw each cell on the row
 				for (x = leftX; x < rightX; x += 1) {
@@ -37497,33 +37516,25 @@
 						}
 					}
 
-					for (xz = 0; xz < intZoom - 2; xz += 1) {
+					for (xz = 0; xz < intZoom; xz += 1) {
 						sData32[i] = col;
 						sData32[i + 1] = col;
 						i += 2;
 					}
 
-					if (drawGridLines) {
+					if (drawGridLines && y === bottomY) {
 						if (drawMajor && ((majorX % this.gridLineMajor) === 0)) {
-							col = gridBoldCol;
+							gridCols[gridCols.length] = gridBoldCol;
 						} else {
-							col = gridCol;
+							gridCols[gridCols.length] = gridCol;
 						}
 					}
-
-					sData32[i] = col;
-					sData32[i + 1] = col;
-					i += 2;
-
-					sData32[i] = col;
-					sData32[i + 1] = col;
-					i += 2;
 
 					majorX += 1;
 				}
 
 				i = l + sWidth;
-				for (yz = 1; yz < intZoom2 - 2; yz += 1) {
+				for (yz = 1; yz < intZoom2; yz += 1) {
 					sData32.copyWithin(i, l, l + intWidth2);
 					l += sWidth;
 					i += sWidth;
@@ -37531,20 +37542,12 @@
 
 				if (drawGridLines) {
 					if (drawMajor && ((majorY % this.gridLineMajor) === 0)) {
-						col = gridBoldCol;
+						gridRows[gridRows.length] = gridBoldCol;
 					} else {
-						col = gridCol;
+						gridRows[gridRows.length] = gridCol;
 					}
-					sData32.fill(col, i, i + intWidth2);
-					l += sWidth;
-					i += sWidth;
-					sData32.fill(col, i, i + intWidth2);
-				} else {
-					sData32.copyWithin(i, l, l + intWidth2);
-					l += sWidth;
-					i += sWidth;
-					sData32.copyWithin(i, l, l + intWidth2);
 				}
+
 				i = j;
 				j += sZWidth;
 
@@ -37562,10 +37565,30 @@
 		this.context.imageSmoothingEnabled = false;
 
 		// update the image data if further rendering is required
-		if (drawingSnow || drawingStars) {
+		if (drawingSnow || drawingStars || drawGridLines) {
 			// update the image data array from the rendered image
 			this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
 			this.data32 = new Uint32Array(this.imageData.data.buffer);
+
+			// draw vertical grid lines
+			i = 0;
+			var xOff = (((this.width / 2 - (this.xOff + this.originX)) * this.camZoom) + (this.displayWidth / 2)) % this.camZoom;
+			x = -this.camZoom + xOff;
+			for (j = leftX; j <= rightX; j += 1) {
+				this.drawVLine(x | 0, 0, this.displayHeight - 1, gridCols[i]);
+				x += this.camZoom;
+				i += 1;
+			}
+
+			// draw horizontal grid lines
+			i = 0;
+			var yOff = (((this.height / 2 - (this.yOff + this.originY)) * this.camZoom) + (this.displayHeight / 2)) % this.camZoom;
+			y = -this.camZoom + yOff;
+			for (j = bottomY; j <= topY; j += 1) {
+				this.drawHLine(0, this.displayWidth - 1, y | 0, gridRows[i]);
+				y += this.camZoom;
+				i += 1;
+			}
 
 			// draw snow if enabled
 			if (drawingSnow) {
@@ -37615,6 +37638,7 @@
 			/** @type {boolean} */ drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled && !this.cellBorders),
 			/** @type {number} */ majorX = 0,
 			/** @type {number} */ majorY = 0,
+			/** @type {number} */ majorXStart = 0,
 			/** @const {number} */ intZoom = intZoom2 >> 1,
 			/** @type {number} */ intWidth2 = 0,
 			/** @type {number} */ xg = this.width,
@@ -37778,6 +37802,12 @@
 			j = sZWidth;
 			intWidth2 = width * intZoom2;
 
+			// compute major gridlines row and column start
+			if (drawMajor) {
+				majorXStart = (-(this.displayWidth / 2 / this.camZoom) - (this.width / 2 - this.xOff - this.originX) + (this.view.patternWidth / 2) + 0.05) | 0;
+				majorY = (-(this.displayHeight / 2 / this.camZoom) - (this.height / 2 - this.yOff - this.originY) + (this.view.patternHeight / 2) + 0.05) | 0;
+			}
+
 			// draw each row of cells
 			for (y = bottomY; y < topY; y += 1) {
 				if ((y & heightMask) === y) {
@@ -37786,7 +37816,7 @@
 				}
 				l = i;
 
-				majorX = 0;
+				majorX = majorXStart;
 
 				// draw each cell on the row
 				for (x = leftX; x < rightX; x += 1) {

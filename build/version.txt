@@ -1,6 +1,9 @@
 Build 994
 - added notification when Cell Borders switched on or off via hotkey
 - fixed potential crash when drawing triggering a grid growth
+- moved "Info Bar" button from "Settings->Display" to "Settings->Advanced"
+- moved "Integer Zoom" button from "Settings->General" to "Settings->Display"
+- added "Settings->General->Fit Selection" (hotkey Ctrl+F) to fit the selection to the display
 
 Build 993
 - fixed Identify for Margolus rules that have an identical pattern in two consecutive generations
