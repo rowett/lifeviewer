@@ -4,6 +4,9 @@ Build 994
 - moved "Info Bar" button from "Settings->Display" to "Settings->Advanced"
 - moved "Integer Zoom" button from "Settings->General" to "Settings->Display"
 - added "Settings->General->Fit Selection" (hotkey Ctrl+F) to fit the selection to the display
+- fixed pattern AutoFit after Identify with Track enabled
+- fixed Still Life detection for Margolus rules
+- fixed Bounding Box issue if pattern died during Identify analysis
 
 Build 993
 - fixed Identify for Margolus rules that have an identical pattern in two consecutive generations

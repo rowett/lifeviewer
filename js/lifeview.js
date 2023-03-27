@@ -7490,6 +7490,10 @@ View.prototype.clearStepSamples = function() {
 		// lock the menu
 		me.viewMenu.locked = true;
 
+		// update the origin
+		me.fixedPointCounter = me.engine.counter * me.refreshRate;
+		me.updateOrigin();
+
 		// compute the next set of generations without stats for speed
 		while (me.identify && (performance.now() - startTime < timeLimit) && (me.engine.population > 0 || me.pasteEvery || me.engine.counter <= me.maxPasteGen)) {
 			// compute next generation
@@ -7635,6 +7639,10 @@ View.prototype.clearStepSamples = function() {
 					} else {
 						me.menuManager.notification.clear(true, false);
 						me.menuManager.notification.clear(false, false);
+
+						me.fixedPointCounter = me.engine.counter * me.refreshRate;
+						me.updateOrigin();
+
 						me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 					}
 					me.engine.initSearch(me.identify);
