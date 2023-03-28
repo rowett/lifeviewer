@@ -3179,7 +3179,8 @@
 								colNum = scriptReader.getNextTokenAsNumber() | 0;
 
 								// check it is an allowed state colour index
-								if (colNum < 0 || colNum > 255) {
+								numberValue = (view.engine.multiNumStates === -1 ? 2 : view.engine.multiNumStates);
+								if (colNum < 0 || colNum >= numberValue) {
 									// invalid state
 									scriptErrors[scriptErrors.length] = [nextToken + " " + colNum, "STATE out of range"];
 									badColour = true;

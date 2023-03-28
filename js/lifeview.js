@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 994,
+		/** @const {number} */ versionBuild : 996,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5134,7 +5134,7 @@
 			yPos -= yFrac;
 			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + originX;
 			if (this.engine.isTriangular) {
-				xPos -= (0.2 * (this.engine.zoom / 32));
+				xPos -= 0.5;
 			}
 			xFrac = xPos - Math.floor(xPos);
 			xPos -= xFrac;
@@ -5209,7 +5209,7 @@
 			// compute the x cell coordinate as an integer
 			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + originX;
 			if (this.engine.isTriangular && !this.engine.forceRectangles) {
-				xPos -= (0.2 * (this.engine.zoom / 32));
+				xPos -= 0.5;
 			}
 			xFrac = xPos - Math.floor(xPos);
 			xPos -= xFrac;
@@ -5674,7 +5674,7 @@ View.prototype.clearStepSamples = function() {
 			// compute the x cell coordinate as an integer
 			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + originX;
 			if (this.engine.isTriangular) {
-				xPos -= (0.30 * (this.engine.zoom / 32));
+				xPos -= 0.5;
 			}
 			xFrac = xPos - Math.floor(xPos);
 			xPos -= xFrac;
@@ -6285,6 +6285,11 @@ View.prototype.clearStepSamples = function() {
 			if (me.engine.counter === me.stopGeneration && !me.stopDisabled) {
 				// stop
 				me.playList.current = me.viewPlayList(ViewConstants.modePause, true, me);
+
+				if (this.autoFit) {
+					me.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
+				}
+
 				if (me.genNotifications) {
 					me.menuManager.notification.notify("STOP reached - Play to continue ", 15, 180, 15, true);
 				}
@@ -7306,6 +7311,15 @@ View.prototype.clearStepSamples = function() {
 		} else {
 			this.justDied = false;
 		}
+
+		// check if grid buffer needs to grow
+		if (this.engine.counter && this.engine.population > 0) {
+			this.middleBox.leftX = this.engine.zoomBox.leftX;
+			this.middleBox.bottomY = this.engine.zoomBox.bottomY;
+			this.middleBox.rightX = this.engine.zoomBox.rightX;
+			this.middleBox.topY = this.engine.zoomBox.topY;
+			this.checkGridSize(this, this.middleBox);
+		}
 	};
 
 	// view update for copy to clipboard
@@ -7444,16 +7458,6 @@ View.prototype.clearStepSamples = function() {
 				}
 			}
 
-			// check if grid buffer needs to grow
-			// (normally this check happens at render time but we may have processed more generations than expected by that function)
-			if (me.engine.counter && me.engine.population > 0) {
-				me.middleBox.leftX = me.engine.zoomBox.leftX;
-				me.middleBox.bottomY = me.engine.zoomBox.bottomY;
-				me.middleBox.rightX = me.engine.zoomBox.rightX;
-				me.middleBox.topY = me.engine.zoomBox.topY;
-				me.checkGridSize(me, me.middleBox);
-			}
-
 			// save elapsed time
 			me.saveElapsedTime(me.engine.counter, 0, 1);
 		}
@@ -7517,16 +7521,6 @@ View.prototype.clearStepSamples = function() {
 						}
 					}
 				}
-			}
-
-			// check if grid buffer needs to grow
-			// (normally this check happens at render time but we may have processed more generations than expected by that function)
-			if (me.engine.counter && me.engine.population > 0) {
-				me.middleBox.leftX = me.engine.zoomBox.leftX;
-				me.middleBox.bottomY = me.engine.zoomBox.bottomY;
-				me.middleBox.rightX = me.engine.zoomBox.rightX;
-				me.middleBox.topY = me.engine.zoomBox.topY;
-				me.checkGridSize(me, me.middleBox);
 			}
 
 			// save elapsed time
@@ -17592,6 +17586,9 @@ View.prototype.clearStepSamples = function() {
 
 		// clear just died flag
 		this.justDied = false;
+
+		// reset HROT range
+		this.engine.HROT.yrange = 1;
 
 		// attempt to load the pattern
 		this.origDisplayWidth = this.displayWidth;

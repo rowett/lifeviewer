@@ -7579,8 +7579,9 @@
 			this.extendedFormat = true;
 		}
 
-		// if no rule specified then return the current line
-		if (ruleString === "") {
+		// check if no rule specified and no equals in header line
+		if (ruleString === "" && source.indexOf("=") === -1) {
+			// otherwise assume line is RLE Niemiec data
 			endIndex = -1;
 		}
 
@@ -7985,6 +7986,13 @@
 			}
 		}
 
+		// check for Niemiec and [R]History
+		if (pattern.isNiemiec && pattern.isHistory && this.failureReason === "") {
+			this.failureReason = "[R]History not valid with Niemiec states";
+			pattern.isHistory = false;
+			this.executable = false;
+		}
+
 		// check for "none" and [R]History
 		if (pattern.isNone && pattern.isHistory && this.failureReason === "") {
 			this.failureReason = "[R]History not valid with none rule";
@@ -8029,7 +8037,11 @@
 			if (pattern.isPCA) {
 				this.failureReason = "[R]Super not valid with PCA";
 			} else {
-				this.failureReason = "[R]Super not valid with Generations";
+				if (pattern.isHROT) {
+					this.failureReason = "[R]Super not valid with HROT";
+				} else {
+					this.failureReason = "[R]Super not valid with Generations";
+				}
 			}
 			pattern.isSuper = false;
 			this.executable = false;
@@ -9576,9 +9588,11 @@
 			pattern.ruleName += "Super";
 		}
 
-		superIndex = pattern.aliasName.toLowerCase().lastIndexOf(this.superPostfix);
-		if (superIndex === -1) {
-			pattern.aliasName += "Super";
+		if (pattern.aliasName !== "") {
+			superIndex = pattern.aliasName.toLowerCase().lastIndexOf(this.superPostfix);
+			if (superIndex === -1) {
+				pattern.aliasName += "Super";
+			}
 		}
 	};
 
@@ -9712,7 +9726,7 @@
 		// add terminating newline to comments if required
 		if (newPattern) {
 			// if pattern contained Niemiec states then ensure rule name contains Super postfix
-			if (newPattern.isNiemiec) {
+			if (newPattern.isNiemiec && !newPattern.isHistory) {
 				this.addSuperPostfix(newPattern);
 			}
 

@@ -1,3 +1,16 @@
+Build 996
+- fixed COLOUR command allowing invalid state numbers
+- fixed RLE decoder when size specified but no rule
+
+Build 995
+- fixed Help->Themes for multistate patterns with 255 or 256 states
+- fixed AutoFit on STOP
+- fixed Triangular grid cell location
+- fixed [R]History custom marked states being used with all Themes and not just Custom
+- fixed error message if [R]Super used with HROT rule definition
+- fixed PCA rules in Bounded Grid with infinite dimension
+- fixed incorrect range in rule neighbourhood tooltip
+
 Build 994
 - added notification when Cell Borders switched on or off via hotkey
 - fixed potential crash when drawing triggering a grid growth

@@ -9550,6 +9550,17 @@
 			this.gridLineBoldColour = ((this.gridLineBoldRaw >> 16) << 24) | (((this.gridLineBoldRaw >> 8) & 255) << 16) | ((this.gridLineBoldRaw & 255) << 8) | 255;
 		}
 
+		// set the [R]History overlay colours
+		if (this.isLifeHistory) {
+			// check for Custom theme
+			if (theme === this.numThemes) {
+				this.createLHOverlayColours(view.colourList, view.customColours);
+			} else {
+				// otherwise use default overlay colours
+				this.createLHOverlayColours(view.colourList, null);
+			}
+		}
+
 		// clear help cache
 		view.clearHelpCache();
 	};
@@ -33829,6 +33840,16 @@
 
 		// check for bounded grid
 		if (this.boundedGridType !== -1) {
+			if (this.boundedGridWidth === 0) {
+				bLeftX = 0;
+				bRightX = this.width - 1;
+			}
+
+			if (this.boundedGridHeight === 0) {
+				bBottomY = 0;
+				bTopY = this.height - 1;
+			}
+
 			leftX = bLeftX + 1;
 			bottomY = bBottomY + 1;
 			rightX = bRightX - 1;
