@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 996,
+		/** @const {number} */ versionBuild : 997,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1798,6 +1798,12 @@
 
 		// save button for identify cell map
 		/** @type {MenuItem} */ this.identifySaveCellMapButton = null;
+
+		// page up button for identify
+		/** @type {MenuItem} */ this.identifyPageUpButton = null;
+
+		// page down button for identify
+		/** @type {MenuItem} */ this.identifyPageDownButton = null;
 
 		// infobar button
 		/** @type {MenuItem} */ this.infoBarButton = null;
@@ -5388,6 +5394,10 @@
 		// save cell period map button
 		this.identifySaveCellMapButton.setY(y - 48 + 170);
 
+		// page up and down buttons
+		this.identifyPageUpButton.setY(y - 48 + 215);
+		this.identifyPageDownButton.setY(y - 48 + 260);
+
 		// cells
 		this.identifyCellsLabel.setPosition(Menu.north, x, y);
 		this.identifyCellsValueLabel.setPosition(Menu.north, xv, y);
@@ -6362,8 +6372,8 @@ View.prototype.clearStepSamples = function() {
 			me.menuManager.setAutoUpdate(true);
 		}
 
-		// draw grid
-		me.engine.drawGrid();
+		// draw grid (disable tilt if selection displayed)
+		me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 		// check if hexagons or triangles should be drawn
 		if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
@@ -6387,8 +6397,8 @@ View.prototype.clearStepSamples = function() {
 
 			// check for grid capture
 			if (me.screenShotScheduled === 2) {
-				// restore grid
-				me.engine.drawGrid();
+				// restore grid (disable tilt if selection displayed)
+				me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 				// check if hexagons or triangles should be drawn
 				if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
@@ -6699,7 +6709,7 @@ View.prototype.clearStepSamples = function() {
 		// identify cell period display and save buttons
 		this.identifyStrictToggle.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
 		this.identifySaveCellMapButton.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
-
+		
 		// identify results
 		shown = shown || this.periodMapDisplayed === 2;
 		this.identifyBannerLabel.deleted = shown;
@@ -6708,12 +6718,10 @@ View.prototype.clearStepSamples = function() {
 		this.identifyBoxLabel.deleted = shown;
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		//this.identifyModLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || (this.lastIdentifyType !== "Still Life" && this.engine.isMargolus);
 		this.identifyModLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyActiveLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		//this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified || (this.engine.isRuleTree && this.engine.multiNumStates > 2)) || (this.engine.boundedGridType !== -1);
 		this.identifyHeatLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.altSpecified || (this.engine.isRuleTree && this.engine.multiNumStates > 2)) || (this.engine.boundedGridType !== -1);
 		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
@@ -6721,15 +6729,22 @@ View.prototype.clearStepSamples = function() {
 		this.identifyBoxValueLabel.deleted = shown;
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
-		//this.identifyModValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular) || (this.lastIdentifyType !== "Still Life" && this.engine.isMargolus);
 		this.identifyModValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyActiveValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifySlopeValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifySpeedValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship");
-		//this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || (this.engine.isMargolus || this.engine.altSpecified) || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyHeatValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life") || this.engine.altSpecified || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyTemperatureValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
+
+		// identify page up and down buttons
+		shown = hide || !this.resultsDisplayed || (this.periodMapDisplayed !== 1 || this.engine.tableMaxRow === 0);
+		this.identifyPageUpButton.deleted = shown;
+		this.identifyPageDownButton.deleted = shown;
+
+		// lock page up and down buttons
+		this.identifyPageUpButton.locked = (this.engine.tableStartRow === 0);
+		this.identifyPageDownButton.locked = (this.engine.tableStartRow === this.engine.tableMaxRow);
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
@@ -7368,8 +7383,8 @@ View.prototype.clearStepSamples = function() {
 		// update progress bar
 		me.updateProgressBarCopy(me);
 
-		// draw grid
-		me.engine.drawGrid();
+		// draw grid (disable Tilt if selection displayed)
+		me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 		// draw any arrows and labels
 		if (me.showLabels) {
@@ -7723,8 +7738,8 @@ View.prototype.clearStepSamples = function() {
 		// update progress bar
 		me.updateProgressBarHistory(me, targetGen);
 
-		// draw grid
-		me.engine.drawGrid();
+		// draw grid (disable Tilt if selection displayed)
+		me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 		// draw any arrows and labels
 		if (me.showLabels) {
@@ -7821,11 +7836,8 @@ View.prototype.clearStepSamples = function() {
 			me.viewMenu.locked = false;
 		}
 
-		// clear the grid
-		i = me.engine.tilt;
-		me.engine.tilt = 0;
-		me.engine.drawGrid();
-		me.engine.tilt = i;
+		// clear the grid (disable Tilt)
+		me.engine.drawGrid(false);
 	};
 
 	// update view mode dispatcher
@@ -12090,6 +12102,26 @@ View.prototype.clearStepSamples = function() {
 		me.downloadCellPeriodMap(me);
 	};
 
+	// identify page up button
+	View.prototype.identifyPageUpPressed = function(/** @type {View} */ me) {
+		me.engine.cellPeriodTablePageUp();
+	};
+
+	// identify page down button
+	View.prototype.identifyPageDownPressed = function(/** @type {View} */ me) {
+		me.engine.cellPeriodTablePageDown();
+	};
+
+	// identify home
+	View.prototype.identifyHomePressed = function(/** @type {View} */ me) {
+		me.engine.cellPeriodTableHome();
+	};
+
+	// identify end
+	View.prototype.identifyEndPressed = function(/** @type {View} */ me) {
+		me.engine.cellPeriodTableEnd();
+	};
+
 	// display last identify results
 	View.prototype.displayLastIdentifyResults = function(/** @type {View} */ me) {
 		// check if there are results
@@ -12109,6 +12141,7 @@ View.prototype.clearStepSamples = function() {
 			}
 
 			// show results
+			me.engine.tableStartRow = 0;
 			me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
 			me.resultsDisplayed = true;
 		}
@@ -14672,6 +14705,7 @@ View.prototype.clearStepSamples = function() {
 
 				// hide previous results
 				me.resultsDisplayed = false;
+				me.engine.tableStartRow = 0;
 
 				// start identification
 				me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
@@ -16400,6 +16434,16 @@ View.prototype.clearStepSamples = function() {
 		this.identifySaveCellMapButton.toolTip = "download cell period map [Shift D]";
 		this.identifySaveCellMapButton.icon = this.iconManager.icon("download");
 
+		// identify page up button
+		this.identifyPageUpButton = this.viewMenu.addButtonItem(this.identifyPageUpPressed, Menu.northEast, -40, 45, 40, 40, "");
+		this.identifyPageUpButton.icon = this.iconManager.icon("nudgeup");
+		this.identifyPageUpButton.toolTip = "scroll table up [PgUp]";
+
+		// identify page down button
+		this.identifyPageDownButton = this.viewMenu.addButtonItem(this.identifyPageDownPressed, Menu.northEast, -40, 45, 40, 40, "");
+		this.identifyPageDownButton.icon = this.iconManager.icon("nudgedown");
+		this.identifyPageDownButton.toolTip = "scroll table down [PgDown]";
+
 		// graph close button
 		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
 		this.graphCloseButton.toolTip = "close graph [Y]";
@@ -17267,7 +17311,7 @@ View.prototype.clearStepSamples = function() {
 
 		// resize the cell period map if available
 		if (!(this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "") && (this.engine.popSubPeriod !== null)) {
-			this.engine.createCellPeriodMap();
+			this.engine.createCellPeriodMap(this.identifyBannerLabel);
 		}
 	};
 

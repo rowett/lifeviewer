@@ -1936,6 +1936,8 @@
 								me.universe = Controller.patterns.length - 1;
 							}
 							me.startViewer(Controller.patterns[me.universe].pattern, false);
+						} else {
+							me.identifyPageUpPressed(me);
 						}
 					}
 				}
@@ -1966,6 +1968,8 @@
 								me.universe = 0;
 							}
 							me.startViewer(Controller.patterns[me.universe].pattern, false);
+						} else {
+							me.identifyPageDownPressed(me);
 						}
 					}
 				}
@@ -1987,6 +1991,8 @@
 						if (DocConfig.multi) {
 							me.universe = 0;
 							me.startViewer(Controller.patterns[me.universe].pattern, false);
+						} else {
+							me.identifyHomePressed(me);
 						}
 					}
 				}
@@ -2008,6 +2014,8 @@
 						if (DocConfig.multi) {
 							me.universe = Controller.patterns.length - 1;
 							me.startViewer(Controller.patterns[me.universe].pattern, false);
+						} else {
+							me.identifyEndPressed(me);
 						}
 					}
 				}

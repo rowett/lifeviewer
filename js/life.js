@@ -421,6 +421,10 @@
 		/** @type {number} */ this.identifyBoxWidth = 0;
 		/** @type {number} */ this.identifyBoxHeight = 0;
 
+		// period table start row and maximum row
+		/** @type {number} */ this.tableStartRow = 0;
+		/** @type {number} */ this.tableMaxRow = 0;
+
 		// last computed strict volatility
 		/** @type {string} */ this.strictVol = "";
 
@@ -2430,7 +2434,7 @@
 	};
 
 	// create cell period map
-	Life.prototype.createCellPeriodMap = function() {
+	Life.prototype.createCellPeriodMap = function(/** @type {MenuItem} */ label) {
 		var	/** @type {number} */ numCols = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -2660,6 +2664,9 @@
 		// update the image
 		this.cellPeriodContext.putImageData(data, 0, 0);
 		this.cellPeriodImage.src = this.cellPeriodCanvas.toDataURL("image/png");
+
+		// create the table row values for page up and page down
+		this.createTableRowNumbers(label);
 	};
 
 	// draw a right justified string
@@ -2678,10 +2685,67 @@
 		return x + fieldWidth;
 	};
 
+	// create period table start and end row numbers
+	Life.prototype.createTableRowNumbers = function(/** @type {MenuItem} */ label) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
+			/** @type {number} */ rowHeight = 24 * displayScale,
+			/** @type {number} */ startY = label.y + label.height,
+			/** @type {number} */ numRows = 0,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ y = startY;
+
+		// count number of table row
+		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
+			value = this.popSubPeriod[i];
+			if (value > 0) {
+				numRows += 1;
+			}
+		}
+
+		// see if the table would be off the bottom of the display
+		y = startY + (rowHeight >> 1) + (numRows * rowHeight);
+
+		if (y > this.displayHeight) {
+			this.tableMaxRow = numRows - 1;
+		} else {
+			this.tableMaxRow = 0;
+		}
+	};
+
+	// home on the cell period table
+	Life.prototype.cellPeriodTableHome = function() {
+		if (this.tableMaxRow !== 0) {
+			this.tableStartRow = 0;
+		}
+	};
+
+	// end of the cell period table
+	Life.prototype.cellPeriodTableEnd = function() {
+		if (this.tableMaxRow !== 0) {
+			this.tableStartRow = this.tableMaxRow;
+		}
+	};
+
+	// page up on the cell period table
+	Life.prototype.cellPeriodTablePageUp = function() {
+		if (this.tableStartRow > 0) {
+			this.tableStartRow -= 1;
+		}
+	};
+
+	// page up on the cell period table
+	Life.prototype.cellPeriodTablePageDown = function() {
+		if (this.tableStartRow < this.tableMaxRow) {
+			this.tableStartRow += 1;
+		}
+	};
+
 	// draw cell period table under and in the style of the supplied label
 	Life.prototype.drawCellPeriodTable = function(/** @type {MenuItem} */ label) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
+			/** @type {number} */ itemNum = 0,
 			/** @type {number} */ value = 0,
 			/** @type {number} */ offset = 2,
 			/** @type {number} */ x = 0,
@@ -2717,6 +2781,7 @@
 		ctx.globalAlpha = 1;
 		ctx.fillStyle = bgCol;
 		y += rowHeight >> 1;
+
 		for (j = 0; j < 2; j += 1) {
 			// draw the table header
 			x = leftX;
@@ -2727,19 +2792,24 @@
 			y += rowHeight;
 
 			// draw the table rows
+			itemNum = 0;
+
 			for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
 				value = this.popSubPeriod[i];
 				if (value > 0) {
-					// draw row data
-					x = leftX;
-					x = this.drawRightString(String(i), fieldWidth, x, y, offset);
-					x = this.drawRightString(String(value), fieldWidth, x, y, offset);
-					x = this.drawRightString((Math.floor(10000 * value / this.popTotal) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
-
-					if (i > 1) {
-						this.drawRightString((Math.floor(10000 * value / this.popRotor) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
+					if (itemNum >= this.tableStartRow) {
+						// draw row data
+						x = leftX;
+						x = this.drawRightString(String(i), fieldWidth, x, y, offset);
+						x = this.drawRightString(String(value), fieldWidth, x, y, offset);
+						x = this.drawRightString((Math.floor(10000 * value / this.popTotal) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
+	
+						if (i > 1) {
+							this.drawRightString((Math.floor(10000 * value / this.popRotor) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
+						}
+						y += rowHeight;
 					}
-					y += rowHeight;
+					itemNum += 1;
 				}
 			}
 
@@ -2750,18 +2820,22 @@
 		}
 
 		// draw the legend
-		offset = ((22 * displayScale) >> 1);
+		itemNum = 0;
+		offset = ((28 * displayScale) >> 1);
 		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
 			value = this.popSubPeriod[i];
 			if (value > 0) {
-				x = leftX;
+				if (itemNum >= this.tableStartRow) {
+					x = leftX;
 
-				// draw box
-				ctx.fillStyle = this.view.menuManager.bgCol;
-				ctx.fillRect(leftX + (boxSize >> 1) + 2, y + offset + 2, boxSize, boxSize);
-				ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[i].toString(16)).slice(-6);
-				ctx.fillRect(leftX + (boxSize >> 1), y + offset, boxSize, boxSize);
-				y += rowHeight;
+					// draw box
+					ctx.fillStyle = this.view.menuManager.bgCol;
+					ctx.fillRect(leftX + (boxSize >> 1) + 2, y + offset + 2, boxSize, boxSize);
+					ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[i].toString(16)).slice(-6);
+					ctx.fillRect(leftX + (boxSize >> 1), y + offset, boxSize, boxSize);
+					y += rowHeight;
+				}
+				itemNum += 1;
 			}
 		}
 	};
@@ -2888,9 +2962,9 @@
 			if (p > 0) {
 				// draw colour
 				ctx.fillStyle = this.view.menuManager.bgCol;
-				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2, boxSize, boxSize);
+				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2 + (1 * displayScale), boxSize, boxSize);
 				ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[x].toString(16)).slice(-6);
-				ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize, boxSize, boxSize);
+				ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize + (1 * displayScale), boxSize, boxSize);
 
 				// draw period
 				ctx.fillStyle = bgCol;
@@ -4036,7 +4110,7 @@
 			this.cellPeriodHeight = boxHeight;
 
 			// create the cell period map
-			this.createCellPeriodMap();
+			this.createCellPeriodMap(view.identifyBannerLabel);
 		} else {
 			this.popSubPeriod = null;
 		}
@@ -14123,72 +14197,11 @@
 			}
 		}
 
-		// bottom right corner
-		if (horizTwist) {
-			sourceX = rightX - ((-horizShift + width) % width);
-		} else {
-			sourceX = leftX + ((-horizShift + width) % width);
-		}
-		if (vertTwist) {
-			sourceY = topY - ((height - 1 + vertShift + height) % height);
-		} else {
-			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
-		}
-		state = grid[sourceY][sourceX];
-		if (state === state6Value) {
-			grid[bottomY - 1][rightX + 1] = state;
-			state6Found = true;
-		}
-
-		// bottom left corner
-		if (horizTwist) {
-			sourceX = rightX - ((width - 1 - horizShift + width) % width);
-		} else {
-			sourceX = leftX + ((width - 1 - horizShift + width) % width);
-		}
-		if (vertTwist) {
-			sourceY = topY - ((height - 1 + vertShift + height) % height);
-		} else {
-			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
-		}
-		state = grid[sourceY][sourceX];
-		if (state === state6Value) {
-			grid[bottomY - 1][leftX - 1] = state;
-			state6Found = true;
-		}
-
-		// top right corner
-		if (horizTwist) {
-			sourceX = rightX - ((horizShift + width) % width);
-		} else {
-			sourceX = leftX + ((horizShift + width) % width);
-		}
-		if (vertTwist) {
-			sourceY = topY - ((vertShift + height) % height);
-		} else {
-			sourceY = bottomY + ((vertShift + height) % height);
-		}
-		state = grid[sourceY][sourceX];
-		if (state === state6Value) {
-			grid[topY + 1][rightX + 1] = state;
-			state6Found = true;
-		}
-
-		// top left corner
-		if (horizTwist) {
-			sourceX = rightX - ((width - 1 + horizShift + width) % width);
-		} else {
-			sourceX = leftX + ((width - 1 + horizShift + width) % width);
-		}
-		if (vertTwist) {
-			sourceY = topY - ((vertShift + height) % height);
-		} else {
-			sourceY = bottomY + ((vertShift + height) % height);
-		}
-		state = grid[sourceY][sourceX];
-		if (state === state6Value) {
-			grid[topY + 1][leftX - 1] = state;
-			state6Found = true;
+		// only process corners if both dimensions are not infinite
+		if (this.boundedGridWidth !== 0 && this.boundedGridHeight !== 0) {
+			if (this.processKleinCornersLH(horizTwist, leftX, bottomY, rightX, topY, horizShift, vertShift, grid, colourTileGrid)) {
+				state6Found = true;
+			}
 		}
 
 		// check if any state 6 cells were found
@@ -14880,61 +14893,10 @@
 			}
 		}
 
-		// bottom right corner
-		if (horizTwist) {
-			sourceX = rightX - ((-horizShift + width) % width);
-		} else {
-			sourceX = leftX + ((-horizShift + width) % width);
+		// only process corners if both dimensions are not infinite
+		if (this.boundedGridWidth !== 0 && this.boundedGridHeight !== 0) {
+			this.processKleinCornersMS(horizTwist, leftX, bottomY, rightX, topY, horizShift, vertShift, grid, colourTileGrid, staticTileGrid);
 		}
-		if (vertTwist) {
-			sourceY = topY - ((height - 1 + vertShift + height) % height);
-		} else {
-			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
-		}
-		state = grid[sourceY][sourceX];
-		grid[bottomY - 1][rightX + 1] = state;
-
-		// bottom left corner
-		if (horizTwist) {
-			sourceX = rightX - ((width - 1 - horizShift + width) % width);
-		} else {
-			sourceX = leftX + ((width - 1 - horizShift + width) % width);
-		}
-		if (vertTwist) {
-			sourceY = topY - ((height - 1 + vertShift + height) % height);
-		} else {
-			sourceY = bottomY + ((height - 1 + vertShift + height) % height);
-		}
-		state = grid[sourceY][sourceX];
-		grid[bottomY - 1][leftX - 1] = state;
-
-		// top right corner
-		if (horizTwist) {
-			sourceX = rightX - ((horizShift + width) % width);
-		} else {
-			sourceX = leftX + ((horizShift + width) % width);
-		}
-		if (vertTwist) {
-			sourceY = topY - ((vertShift + height) % height);
-		} else {
-			sourceY = bottomY + ((vertShift + height) % height);
-		}
-		state = grid[sourceY][sourceX];
-		grid[topY + 1][rightX + 1] = state;
-
-		// top left corner
-		if (horizTwist) {
-			sourceX = rightX - ((width - 1 + horizShift + width) % width);
-		} else {
-			sourceX = leftX + ((width - 1 + horizShift + width) % width);
-		}
-		if (vertTwist) {
-			sourceY = topY - ((vertShift + height) % height);
-		} else {
-			sourceY = bottomY + ((vertShift + height) % height);
-		}
-		state = grid[sourceY][sourceX];
-		grid[topY + 1][leftX - 1] = state;
 	};
 
 	// process cross-surface for multi-state
@@ -15621,6 +15583,473 @@
 		}
 	};
 
+	// process klein corners for [R]History
+	/** @returns {boolean} */
+	Life.prototype.processKleinCornersLH = function(/** @type {boolean} */ horizTwist, /** @type {number} */ leftX, /* @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY,
+									/** @type {number} */ horizShift, /** @type {number} */ vertShift, /** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ colourTileGrid) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ sourceX = 0,
+			/** @type {number} */ sourceY = 0,
+			/** @type {number} */ destX = 0,
+			/** @type {number} */ destY = 0,
+			/** @type {number} */ state6Value = 129;
+
+		if (horizTwist) {
+			// bottom right corner
+			sourceX = rightX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = topY;
+			destX = rightX + 1;
+			destY = bottomY - 1;
+
+			state = grid[sourceY][sourceX];
+			if (state === state6Value) {
+				result = true;
+
+				// copy cell to below bottom
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if ((destY & 15) === 15) {
+					colourTileGrid[(destY >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+
+			// bottom left corner
+			sourceX = leftX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = topY;
+			destX = leftX - 1;
+			destY = bottomY - 1;
+
+			state = grid[sourceY][sourceX];
+			if (state === state6Value) {
+				result = true;
+
+				// copy cell to below bottom
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if ((destY & 15) === 15) {
+					colourTileGrid[(destY >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+
+			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+				grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+			}
+
+			// top right corner
+			sourceX = rightX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = bottomY;
+			destX = rightX + 1;
+			destY = topY + 1;
+
+			state = grid[sourceY][sourceX];
+			if (state === state6Value) {
+				result = true;
+
+				// copy cell to below bottom
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if ((destY & 15) === 15) {
+					colourTileGrid[(destY >> 4) - 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+
+			// top left corner
+			sourceX = leftX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = bottomY;
+			destX = leftX - 1;
+			destY = topY + 1;
+
+			state = grid[sourceY][sourceX];
+			if (state === state6Value) {
+				result = true;
+
+				// copy cell to below bottom
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if ((destY & 15) === 15) {
+					colourTileGrid[(destY >> 4) - 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+		} else {
+			// bottom right corner
+			sourceX = leftX;
+			sourceY = bottomY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			destX = rightX + 1;
+			destY = bottomY - 1;
+
+			state = grid[sourceY][sourceX];
+			if (state === state6Value) {
+				result = true;
+
+				// copy cell to below bottom
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if ((destY & 15) === 15) {
+					colourTileGrid[(destY >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+
+			// bottom left corner
+			sourceX = rightX;
+			sourceY = bottomY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			destX = leftX - 1;
+			destY = bottomY - 1;
+
+			state = grid[sourceY][sourceX];
+			if (state === state6Value) {
+				result = true;
+
+				// copy cell to below bottom
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if ((destY & 15) === 15) {
+					colourTileGrid[(destY >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+
+			// top right corner
+			sourceX = leftX;
+			sourceY = topY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			destX = rightX + 1;
+			destY = topY + 1;
+
+			state = grid[sourceY][sourceX];
+			if (state === state6Value) {
+				result = true;
+
+				// copy cell to below bottom
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if ((destY & 15) === 15) {
+					colourTileGrid[(destY >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+
+			// top left corner
+			sourceX = rightX;
+			sourceY = topY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			destX = leftX - 1;
+			destY = topY + 1;
+
+			state = grid[sourceY][sourceX];
+			if (state === state6Value) {
+				result = true;
+
+				// copy cell to below bottom
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+
+				// check for tile boundary
+				if ((destY & 15) === 15) {
+					colourTileGrid[(destY >> 4) + 1][destX >> 8] |= (1 << (~(destX >> 4) & 15));
+				}
+			}
+		}
+
+		// return whether state 6 cells were moved
+		return result;
+	};
+
+	// process klein corners multi-state
+	Life.prototype.processKleinCornersMS = function(/** @type {boolean} */ horizTwist, /** @type {number} */ leftX, /* @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY,
+									/** @type {number} */ horizShift, /** @type {number} */ vertShift, /** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ colourTileGrid, /** @type {Array<Uint16Array>} */ staticTileGrid) {
+		var	/** @type {number} */ sourceX = 0,
+			/** @type {number} */ sourceY = 0,
+			/** @type {number} */ destX = 0,
+			/** @type {number} */ destY = 0,
+			/** @type {number} */ state = 0;
+
+		if (horizTwist) {
+			// bottom right corner
+			sourceX = rightX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = topY;
+			destX = rightX + 1;
+			destY = bottomY - 1;
+
+			state = grid[sourceY][sourceX];
+			if (state !== 0) {
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+			}
+
+			// bottom left corner
+			sourceX = leftX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = topY;
+			destX = leftX - 1;
+			destY = bottomY - 1;
+
+			state = grid[sourceY][sourceX];
+			if (state !== 0) {
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+			}
+
+			// top right corner
+			sourceX = rightX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = bottomY;
+			destX = rightX + 1;
+			destY = topY + 1;
+
+			state = grid[sourceY][sourceX];
+			if (state !== 0) {
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+			}
+
+			// top left corner
+			sourceX = leftX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = bottomY;
+			destX = leftX - 1;
+			destY = topY + 1;
+
+			state = grid[sourceY][sourceX];
+			if (state !== 0) {
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+			}
+		} else {
+			// bottom right corner
+			sourceX = leftX;
+			sourceY = bottomY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			destX = rightX + 1;
+			destY = bottomY - 1;
+
+			state = grid[sourceY][sourceX];
+			if (state !== 0) {
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+			}
+
+			// bottom left corner
+			sourceX = rightX;
+			sourceY = bottomY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			destX = leftX - 1;
+			destY = bottomY - 1;
+
+			state = grid[sourceY][sourceX];
+			if (state !== 0) {
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+			}
+
+			// top right corner
+			sourceX = leftX;
+			sourceY = topY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			destX = rightX + 1;
+			destY = topY + 1;
+
+			state = grid[sourceY][sourceX];
+			if (state !== 0) {
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+			}
+
+			// top left corner
+			sourceX = rightX;
+			sourceY = topY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			destX = leftX - 1;
+			destY = topY + 1;
+
+			state = grid[sourceY][sourceX];
+			if (state !== 0) {
+				grid[destY][destX] = state;
+
+				// set tile grid
+				colourTileGrid[destY >> 4][(leftX - 1) >> 8] |= (1 << (~((leftX - 1) >> 4) & 15));
+				staticTileGrid[destY >> 4][(leftX - 1) >> 8] &= ~(1 << (~((leftX - 1) >> 4) & 15));
+			}
+		}
+	};
+
+	// process klein corners
+	Life.prototype.processKleinCorners = function(/** @type {boolean} */ horizTwist, /** @type {number} */ leftX, /* @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY,
+									/** @type {number} */ horizShift, /** @type {number} */ vertShift, /** @type {Array<Uint16Array>} */ grid) {
+		var	/** @type {number} */ sourceX = 0,
+			/** @type {number} */ sourceY = 0;
+
+		if (horizTwist) {
+			// bottom right corner
+			sourceX = rightX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = topY;
+			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+				grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+			}
+
+			// bottom left corner
+			sourceX = leftX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = topY;
+			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+				grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+			}
+
+			// top right corner
+			sourceX = rightX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = bottomY;
+			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+				grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+			}
+
+			// top left corner
+			sourceX = leftX - horizShift;
+			if (sourceX < leftX) {
+				sourceX = rightX;
+			}
+			sourceY = bottomY;
+			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+				grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+			}
+		} else {
+			// bottom right corner
+			sourceX = leftX;
+			sourceY = bottomY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+				grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+			}
+
+			// bottom left corner
+			sourceX = rightX;
+			sourceY = bottomY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+				grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+			}
+
+			// top right corner
+			sourceX = leftX;
+			sourceY = topY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+				grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
+			}
+
+			// top left corner
+			sourceX = rightX;
+			sourceY = topY - vertShift;
+			if (sourceY < bottomY) {
+				sourceY = topY;
+			}
+			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
+				grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
+			}
+		}
+	};
+
 	// process klein bottle
 	Life.prototype.processKlein = function() {
 		// life grid
@@ -15814,188 +16243,16 @@
 
 		// only process corners if both dimensions are not infinite
 		if (this.boundedGridWidth !== 0 && this.boundedGridHeight !== 0) {
-			// bottom right corner
-			if (horizTwist) {
-				// get from top right
-				sourceX = rightX + horizShift;
-				sourceY = topY;
-			} else {
-				// get from bottom left
-				sourceX = leftX;
-				sourceY = bottomY - vertShift;
-			}
-			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-				grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-			}
-
-			// bottom left corner
-			if (horizTwist) {
-				// get from top left
-				sourceX = leftX + horizShift;
-				sourceY = topY;
-			} else {
-				// get from bottom right
-				sourceX = rightX;
-				sourceY = bottomY - vertShift;
-			}
-			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-				grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-			}
-
-			// top right corner
-			if (horizTwist) {
-				// get from bottom right
-				sourceX = rightX + horizShift;
-				sourceY = bottomY;
-			} else {
-				// get from top left
-				sourceX = leftX;
-				sourceY = topY + vertShift;
-			}
-			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-				grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-			}
-
-			// top left corner
-			if (horizTwist) {
-				// get from bottom left
-				sourceX = leftX + horizShift;
-				sourceY = bottomY;
-			} else {
-				// get from top right
-				sourceX = rightX;
-				sourceY = topY + vertShift;
-			}
-			if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-				grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-			}
+			this.processKleinCorners(horizTwist, leftX, bottomY, rightX, topY, horizShift, vertShift, grid);
 
 			if (needExtra) {
 				leftX += 1;
 				rightX += 1;
-
-				// bottom right corner
-				if (horizTwist) {
-					sourceX = rightX - ((-horizShift + width) % width);
-				} else {
-					sourceX = leftX + ((-horizShift + width) % width);
-				}
-				if (vertTwist) {
-					sourceY = topY - ((height - 1 + vertShift + height) % height);
-				} else {
-					sourceY = bottomY + ((height - 1 + vertShift + height) % height);
-				}
-				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-					grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-				}
-
-				// bottom left corner
-				if (horizTwist) {
-					sourceX = rightX - ((width - 1 - horizShift + width) % width);
-				} else {
-					sourceX = leftX + ((width - 1 - horizShift + width) % width);
-				}
-				if (vertTwist) {
-					sourceY = topY - ((height - 1 + vertShift + height) % height);
-				} else {
-					sourceY = bottomY + ((height - 1 + vertShift + height) % height);
-				}
-				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-					grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-				}
-
-				// top right corner
-				if (horizTwist) {
-					sourceX = rightX - ((horizShift + width) % width);
-				} else {
-					sourceX = leftX + ((horizShift + width) % width);
-				}
-				if (vertTwist) {
-					sourceY = topY - ((vertShift + height) % height);
-				} else {
-					sourceY = bottomY + ((vertShift + height) % height);
-				}
-				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-					grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-				}
-
-				// top left corner
-				if (horizTwist) {
-					sourceX = rightX - ((width - 1 + horizShift + width) % width);
-				} else {
-					sourceX = leftX + ((width - 1 + horizShift + width) % width);
-				}
-				if (vertTwist) {
-					sourceY = topY - ((vertShift + height) % height);
-				} else {
-					sourceY = bottomY + ((vertShift + height) % height);
-				}
-				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-					grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-				}
+				this.processKleinCorners(horizTwist, leftX, bottomY, rightX, topY, horizShift, vertShift, grid);
 
 				leftX -= 2;
 				rightX -= 2;
-
-				// bottom right corner
-				if (horizTwist) {
-					sourceX = rightX - ((-horizShift + width) % width);
-				} else {
-					sourceX = leftX + ((-horizShift + width) % width);
-				}
-				if (vertTwist) {
-					sourceY = topY - ((height - 1 + vertShift + height) % height);
-				} else {
-					sourceY = bottomY + ((height - 1 + vertShift + height) % height);
-				}
-				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-					grid[bottomY - 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-				}
-
-				// bottom left corner
-				if (horizTwist) {
-					sourceX = rightX - ((width - 1 - horizShift + width) % width);
-				} else {
-					sourceX = leftX + ((width - 1 - horizShift + width) % width);
-				}
-				if (vertTwist) {
-					sourceY = topY - ((height - 1 + vertShift + height) % height);
-				} else {
-					sourceY = bottomY + ((height - 1 + vertShift + height) % height);
-				}
-				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-					grid[bottomY - 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-				}
-
-				// top right corner
-				if (horizTwist) {
-					sourceX = rightX - ((horizShift + width) % width);
-				} else {
-					sourceX = leftX + ((horizShift + width) % width);
-				}
-				if (vertTwist) {
-					sourceY = topY - ((vertShift + height) % height);
-				} else {
-					sourceY = bottomY + ((vertShift + height) % height);
-				}
-				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-					grid[topY + 1][(rightX + 1) >> 4] |= (1 << (~(rightX + 1) & 15));
-				}
-
-				// top left corner
-				if (horizTwist) {
-					sourceX = rightX - ((width - 1 + horizShift + width) % width);
-				} else {
-					sourceX = leftX + ((width - 1 + horizShift + width) % width);
-				}
-				if (vertTwist) {
-					sourceY = topY - ((vertShift + height) % height);
-				} else {
-					sourceY = bottomY + ((vertShift + height) % height);
-				}
-				if ((grid[sourceY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
-					grid[topY + 1][(leftX - 1) >> 4] |= (1 << (~(leftX - 1) & 15));
-				}
+				this.processKleinCorners(horizTwist, leftX, bottomY, rightX, topY, horizShift, vertShift, grid);
 
 				leftX += 1;
 				rightX += 1;
@@ -35184,6 +35441,7 @@
 		if (view.isSelection || view.drawingSelection) {
 			this.drawBox(view, view.selectionBox, this.selectColour);
 		}
+
 		if (view.evolvingPaste) {
 			if (this.boundedGridType !== -1 && view.posDefined) {
 				this.drawPasteWithCells(view, view.evolveBox.leftX - view.patternWidth, view.evolveBox.bottomY - view.patternHeight, ViewConstants.pastePositionNW, this.advanceColour);
@@ -35191,6 +35449,7 @@
 				this.drawPasteWithCells(view, view.evolveBox.leftX, view.evolveBox.bottomY, ViewConstants.pastePositionNW, this.advanceColour);
 			}
 		}
+
 		if (view.isPasting) {
 			mouseX = view.menuManager.mouseLastX;
 			mouseY = view.menuManager.mouseLastY;
@@ -40202,7 +40461,7 @@
 	};
 
 	// draw canvas
-	Life.prototype.drawGrid = function() {
+	Life.prototype.drawGrid = function(/** @type {boolean} */ allowTilt) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ l,
 			/** @type {Uint8ClampedArray} */ s,
@@ -40232,7 +40491,7 @@
 			}
 
 			// tilt
-			if (this.tilt !== 0) {
+			if (this.tilt !== 0 && allowTilt) {
 				var	/** @type {number} */ y,
 					/** @type {number} */ py,
 					/** @type {number} */ sy,

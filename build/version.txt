@@ -1,3 +1,9 @@
+Build 997
+- added buttons to scroll the Cell Period Table if it is too long to fit in the window
+- fixed Klein Bounded Grid with shift
+- fixed vertical alignment of legend boxes on Cell Period Table and Cell Period Map
+- disable Tilt when in Draw or Edit mode or when Selection or Paste box is active
+
 Build 996
 - fixed COLOUR command allowing invalid state numbers
 - fixed RLE decoder when size specified but no rule
