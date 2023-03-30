@@ -1851,7 +1851,7 @@
 			y = this.renderHelpLine(view, "Next Gen", view.engine.nextSnapshotTarget, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Undo", view.editNum, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Redo", view.numEdits - view.editNum, ctx, x, y, height, helpLine);
-			for (i = 0; i <= 9; i += 1) {
+			for (i = 0; i < ViewConstants.numPasteBuffers; i += 1) {
 				if (view.pasteBuffers[i] !== null) {
 					y = this.renderHelpLine(view, "Clip " + i + (i === view.currentPasteBuffer ? "*" : ""), view.pasteBuffers[i].width + " x " + view.pasteBuffers[i].height, ctx, x, y, height, helpLine);
 				}

@@ -1,5 +1,10 @@
 Build 1000
 - fixed a crash on LifeViewer home page when "View" clicked during pattern identification
+- fixed making a selection with zero population
+- fixed selection box on square grid at Angle 0
+- fixed Close Errors button not being hidden when Settings displayed
+- AutoFit now reacts to cell drawing when enabled
+- fixed Nudge overwriting current paste buffer
 
 Build 999
 - fixed Fit Zoom with odd dimension Bounded Grids

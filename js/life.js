@@ -8446,7 +8446,7 @@
 			/** @type {boolean} */ result = false;
 
 		// check if already at maximum size
-		if ((width < this.maxGridSize || height < this.maxGridSize) && this.population > 0) {
+		if ((width < this.maxGridSize || height < this.maxGridSize)) {
 			// check bounding box
 			if (width < this.maxGridSize && (box.leftX <= maxStep || box.rightX >= (width - maxStep))) {
 				growX = true;
@@ -35216,6 +35216,7 @@
 			/** @type {number} */ yOff = (this.height >> 1) - (view.patternHeight >> 1),
 			/** @type {number} */ engineY = view.panY - this.yOff,
 			/** @type {number} */ engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
+			/** @type {number} */ angleOff = (this.angle !== 0 ? 1 : 0),
 			/** @type {Array<number>} */ coords = [0, 0],
 			/** @type {number} */ dx1 = 0,
 			/** @type {number} */ dx2 = 0,
@@ -35277,11 +35278,11 @@
 				ctx.beginPath();
 				this.rotateCoords(x1, y1, coords);
 				ctx.moveTo(coords[0], coords[1]);
-				this.rotateCoords(x2 + 1, y1, coords);
+				this.rotateCoords(x2 + angleOff, y1, coords);
 				ctx.lineTo(coords[0], coords[1]);
-				this.rotateCoords(x2 + 1, y2 + 1, coords);
+				this.rotateCoords(x2 + angleOff, y2 + angleOff, coords);
 				ctx.lineTo(coords[0], coords[1]);
-				this.rotateCoords(x1, y2 + 1, coords);
+				this.rotateCoords(x1, y2 + angleOff, coords);
 				ctx.lineTo(coords[0], coords[1]);
 				ctx.fill();
 			}
@@ -35458,6 +35459,7 @@
 			/** @type {number} */ engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
 			/** @type {Array<number>} */ coords = [0, 0],
 			/** @type {number} */ i = 0,
+			/** @type {number} */ angleOff = (this.angle !== 0 ? 1 : 0),
 			/** @type {BoundingBox} */ selBox = view.selectionBox;
 
 		// order selection box coordinates
@@ -35495,11 +35497,11 @@
 				ctx.beginPath();
 				this.rotateCoords(x1, y1, coords);
 				ctx.moveTo(coords[0], coords[1]);
-				this.rotateCoords(x2 + 1, y1, coords);
+				this.rotateCoords(x2 + angleOff, y1, coords);
 				ctx.lineTo(coords[0], coords[1]);
-				this.rotateCoords(x2 + 1, y2 + 1, coords);
+				this.rotateCoords(x2 + angleOff, y2 + angleOff, coords);
 				ctx.lineTo(coords[0], coords[1]);
-				this.rotateCoords(x1, y2 + 1, coords);
+				this.rotateCoords(x1, y2 + angleOff, coords);
 				ctx.lineTo(coords[0], coords[1]);
 				ctx.fill();
 			}

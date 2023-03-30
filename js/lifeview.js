@@ -59,6 +59,9 @@
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
+		// number of user-selectable paste buffers
+		/** @const {number} */ numPasteBuffers : 10,
+
 		// key for localstorage setting of done flag (for chrome bug)
 		/** @const {string} */ doneKey : "workaround",
 
@@ -291,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 999,
+		/** @const {number} */ versionBuild : 1000,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -869,7 +872,7 @@
 
 		// paste buffers
 		/** @type {Array} */ this.pasteBuffers = [];
-		for (i = 0; i < 10; i += 1) {
+		for (i = 0; i < ViewConstants.numPasteBuffers; i += 1) {
 			this.pasteBuffers[i] = null;
 		}
 
@@ -1451,7 +1454,7 @@
 		/** @type {Array} */ this.scriptErrors = [];
 
 		// error display line
-		/** @type {number} */ this.displayErrors = 1;
+		/** @type {number} */ this.displayErrors = 0;
 
 		// help display line
 		/** @type {number} */ this.displayHelp = 0;
@@ -2150,7 +2153,7 @@
 			/** @type {string} */ tip = "",
 			/** @type {Array<string>} */ tips = [];
 
-		for (i = 0; i < 10; i += 1) {
+		for (i = 0; i < ViewConstants.numPasteBuffers; i += 1) {
 			if (i === current) {
 				tip = "current ";
 			} else {
@@ -2284,7 +2287,7 @@
 
 	// draw cell and create undo/redo
 	/** @returns {number} */
-	View.prototype.setStateWithUndo = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ colour, /** @type {boolean} */ deadZero) {
+	View.prototype.setStateWithUndo = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ colour, /** @type {boolean} */ deadZero, /** @type {boolean} */ clipToBounded) {
 		// get current state
 		var	/** @type {number} */ state = 0,
 			/** @type {number} */ rawState = 0,
@@ -2340,18 +2343,24 @@
 
 			// check the coordinates are within the bounded grid
 			if (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY)) {
-				// clip to bounded grid
-				if (x < leftX) {
-					x = leftX;
-				}
-				if (x > rightX) {
-					x = rightX;
-				}
-				if (y < bottomY) {
-					y = bottomY;
-				}
-				if (y > topY) {
-					y = topY;
+				// check if clip to bounded grid enabled
+				if (clipToBounded) {
+					// if so the clip
+					if (x < leftX) {
+						x = leftX;
+					}
+					if (x > rightX) {
+						x = rightX;
+					}
+					if (y < bottomY) {
+						y = bottomY;
+					}
+					if (y > topY) {
+						y = topY;
+					}
+				} else {
+					// otherwise don't draw the cell
+					return 0;
 				}
 			}
 		}
@@ -5333,7 +5342,7 @@
 			/** @type {number} */ result = 0;
 
 		// set the first point
-		result = this.setStateWithUndo(startX, startY, colour, true);
+		result = this.setStateWithUndo(startX, startY, colour, true, true);
 
 		// check for grid growth
 		while (width !== this.engine.width || height !== this.engine.height) {
@@ -5384,7 +5393,7 @@
 			}
 
 			// draw the point
-			result |= this.setStateWithUndo(startX, startY, colour, true);
+			result |= this.setStateWithUndo(startX, startY, colour, true, true);
 
 			// check for grid growth
 			while (width !== this.engine.width || height !== this.engine.height) {
@@ -6598,7 +6607,7 @@ View.prototype.clearStepSamples = function() {
 		*/
 
 		// hide the UI controls if help or errors are displayed
-		me.updateUIForHelp((me.displayHelp || me.displayErrors) !== 0);
+		me.updateUIForHelp(me.displayHelp !== 0 || me.displayErrors !== 0);
 
 		// dim display if settings displayed
 		if (me.navToggle.current[0] && !(me.hideGUI && me.generationOn)) {
@@ -7028,7 +7037,7 @@ View.prototype.clearStepSamples = function() {
 		this.infoBarLabelNValueRight.deleted = shown;
 
 		// close errors button
-		this.closeErrorsButton.deleted = (this.scriptErrors.length === 0 || this.displayHelp !== 0);
+		this.closeErrorsButton.deleted = (this.displayErrors === 0 || this.displayHelp !== 0);
 
 		// help done button
 		this.doneButton.deleted = !(this.chromeBug && this.displayHelp && this.helpTopic === ViewConstants.welcomeTopic);
@@ -9227,7 +9236,7 @@ View.prototype.clearStepSamples = function() {
 						state = this.engine.multiNumStates - state;
 					}
 					if (state === replace) {
-						this.setStateWithUndo(x, y, current, true);
+						this.setStateWithUndo(x, y, current, true, false);
 						numReplaced += 1;
 					}
 				}
@@ -9277,7 +9286,7 @@ View.prototype.clearStepSamples = function() {
 						for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
 							state = me.engine.getState(x, y, false);
 							if (state >= 3 && state <= 5) {
-								me.setStateWithUndo(x, y, state & 1, true);
+								me.setStateWithUndo(x, y, state & 1, true, false);
 								numCleared += 1;
 							}
 						}
@@ -9295,7 +9304,7 @@ View.prototype.clearStepSamples = function() {
 						for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
 							state = me.engine.getState(x, y, false);
 							if (state > 1) {
-								me.setStateWithUndo(x, y, state & 1, true);
+								me.setStateWithUndo(x, y, state & 1, true, false);
 								numCleared += 1;
 							}
 						}
@@ -9316,7 +9325,7 @@ View.prototype.clearStepSamples = function() {
 					for (x = historyBox.leftX; x <= historyBox.rightX; x += 1) {
 						state = me.engine.getState(x, y, false);
 						if (state === current) {
-							me.setStateWithUndo(x, y, clearValue, true);
+							me.setStateWithUndo(x, y, clearValue, true, false);
 							numCleared += 1;
 						}
 					}
@@ -9878,6 +9887,11 @@ View.prototype.clearStepSamples = function() {
 		// if the population is now non-zero then reset died generation
 		if (this.engine.population > 0) {
 			this.diedGeneration = -1;
+		}
+
+		// auto fit if enabled
+		if (this.autoFit) {
+			this.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 		}
 
 		return result;
@@ -12401,7 +12415,7 @@ View.prototype.clearStepSamples = function() {
 						if (!(y >= y1 && y <= y2 && x >= x1 && x <= x2)) {
 							state = me.engine.getState(x, y, false);
 							if (state !== 0) {
-								wasState6 |= me.setStateWithUndo(x, y, 0, true);
+								wasState6 |= me.setStateWithUndo(x, y, 0, true, false);
 							}
 						}
 					}
@@ -12457,7 +12471,7 @@ View.prototype.clearStepSamples = function() {
 						for (x = x1; x <= x2; x += 1) {
 							state = me.engine.getState(x + xOff, y + yOff, false);
 							if (state > 1) {
-								me.setStateWithUndo(x + xOff, y + yOff, state & 1, true);
+								me.setStateWithUndo(x + xOff, y + yOff, state & 1, true, false);
 							}
 						}
 					}
@@ -12467,7 +12481,7 @@ View.prototype.clearStepSamples = function() {
 						for (x = x1; x <= x2; x += 1) {
 							state = me.engine.getState(x + xOff, y + yOff, false);
 							if (state !== 0) {
-								me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+								me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 							}
 						}
 					}
@@ -12682,7 +12696,7 @@ View.prototype.clearStepSamples = function() {
 					if (state > 0) {
 						count += 1;
 					}
-					wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+					wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 					i += 1;
 				}
 			}
@@ -13420,10 +13434,10 @@ View.prototype.clearStepSamples = function() {
 					state = buffer[i];
 					if (this.engine.isPCA) {
 						current = this.engine.getState(cellX + x, cellY + y, false);
-						wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current | state, true);
+						wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current | state, true, false);
 					} else {
 						if (state > 0) {
-							wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, state, true);
+							wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, state, true, false);
 						}
 					}
 					i += 1;
@@ -13435,7 +13449,7 @@ View.prototype.clearStepSamples = function() {
 			for (y = 0; y < height; y += 1) {
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
-					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, state, true);
+					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, state, true, false);
 					i += 1;
 				}
 			}
@@ -13446,7 +13460,7 @@ View.prototype.clearStepSamples = function() {
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
 					current = this.engine.getState(cellX + x, cellY + y, false);
-					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current ^ state, true);
+					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current ^ state, true, false);
 					i += 1;
 				}
 			}
@@ -13457,7 +13471,7 @@ View.prototype.clearStepSamples = function() {
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
 					current = this.engine.getState(cellX + x, cellY + y, false);
-					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current & state, true);
+					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current & state, true, false);
 					i += 1;
 				}
 			}
@@ -13546,8 +13560,9 @@ View.prototype.clearStepSamples = function() {
 
 				// check if the pattern can move
 				if (leftX + xOff + dx > bLeftX && rightX + xOff + dx < bRightX && bottomY + yOff + dy > bBottomY && topY + yOff + dy < bTopY) {
-					// cut pattern in selection
-					me.cutSelection(me, me.currentPasteBuffer, false, true);
+					// cut pattern in selection to internal buffer
+					me.pasteBuffers[ViewConstants.numPasteBuffers] = null;
+					me.cutSelection(me, ViewConstants.numPasteBuffers, false, true);
 
 					// add the offset
 					xOff += dx;
@@ -13555,14 +13570,15 @@ View.prototype.clearStepSamples = function() {
 
 					// paste to the new location
 					i = 0;
-					buffer = me.pasteBuffers[me.currentPasteBuffer].buffer;
+					buffer = me.pasteBuffers[ViewConstants.numPasteBuffers].buffer;
 					for (y = 0; y < height; y += 1) {
 						for (x = 0; x < width; x += 1) {
 							state = buffer[i];
-							wasState6 |= me.setStateWithUndo(leftX + x + xOff, bottomY + y + yOff, state, true);
+							wasState6 |= me.setStateWithUndo(leftX + x + xOff, bottomY + y + yOff, state, true, false);
 							i += 1;
 						}
 					}
+					me.pasteBuffers[ViewConstants.numPasteBuffers] = null;
 
 					if (me.engine.isLifeHistory && wasState6) {
 						this.engine.populateState6MaskFromColGrid();
@@ -13829,7 +13845,7 @@ View.prototype.clearStepSamples = function() {
 							state |= 8;
 						}
 
-						wasState6 = me.setStateWithUndo(x + xOff, y + yOff, state, true);
+						wasState6 = me.setStateWithUndo(x + xOff, y + yOff, state, true, false);
 					}
 				}
 			} else {
@@ -13844,7 +13860,7 @@ View.prototype.clearStepSamples = function() {
 						} else {
 							state = 0;
 						}
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true, false);
 					}
 				}
 			}
@@ -13971,11 +13987,11 @@ View.prototype.clearStepSamples = function() {
 				if (me.engine.isPCA) {
 					for (x = x1; x <= x2; x += 1) {
 						state = row[x2 - x];
-						me.setStateWithUndo(x + xOff, y + yOff, (state & 5) | ((state & 2) << 2) | ((state & 8) >> 2), true);
+						me.setStateWithUndo(x + xOff, y + yOff, (state & 5) | ((state & 2) << 2) | ((state & 8) >> 2), true, false);
 					}
 				} else {
 					for (x = x1; x <= x2; x += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, row[x2 - x], true, false);
 					}
 				}
 			}
@@ -14078,11 +14094,11 @@ View.prototype.clearStepSamples = function() {
 				if (me.engine.isPCA) {
 					for (y = y1; y <= y2; y += 1) {
 						state = column[y2 - y];
-						me.setStateWithUndo(x + xOff, y + yOff, (state & 10) | ((state & 1) << 2) | ((state & 4) >> 2), true);
+						me.setStateWithUndo(x + xOff, y + yOff, (state & 10) | ((state & 1) << 2) | ((state & 4) >> 2), true, false);
 					}
 				} else {
 					for (y = y1; y <= y2; y += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, column[y2 - y], true, false);
 					}
 				}
 			}
@@ -14306,29 +14322,29 @@ View.prototype.clearStepSamples = function() {
 					//x = cells[i];
 					//y = cells[i + 1];
 					//state = cells[i + 2];
-					//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true);
+					//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true, false);
 					//i += 3;
 				//}
 
 				//// clear outside intersection between new selection and old
 				//for (x = x1; x < box.leftX; x += 1) {
 					//for (y = y1; y <= y2; y += 1) {
-						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 					//}
 				//}
 				//for (x = box.rightX + 1; x <= x2; x += 1) {
 					//for (y = y1; y <= y2; y += 1) {
-						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 					//}
 				//}
 				//for (y = y1; y < box.bottomY; y += 1) {
 					//for (x = x1; x <= x2; x += 1) {
-						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 					//}
 				//}
 				//for (y = box.topY + 1; y <= y2; y += 1) {
 					//for (x = x1; x <= x2; x += 1) {
-						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						//wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 					//}
 				//}
 
@@ -14513,29 +14529,29 @@ View.prototype.clearStepSamples = function() {
 					x = cells[i];
 					y = cells[i + 1];
 					state = cells[i + 2];
-					wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true);
+					wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, state, true, false);
 					i += 3;
 				}
 
 				// clear outside intersection between new selection and old
 				for (x = x1; x < box.leftX; x += 1) {
 					for (y = y1; y <= y2; y += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 					}
 				}
 				for (x = box.rightX + 1; x <= x2; x += 1) {
 					for (y = y1; y <= y2; y += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 					}
 				}
 				for (y = y1; y < box.bottomY; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 					}
 				}
 				for (y = box.topY + 1; y <= y2; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
 					}
 				}
 
@@ -14693,7 +14709,7 @@ View.prototype.clearStepSamples = function() {
 						if (!(me.engine.isSuper || me.engine.isPCA || me.engine.isRuleTree) && numStates > 2 && state > 0) {
 							state = numStates - state;
 						}
-						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true);
+						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true, false);
 					}
 				}
 
@@ -17899,9 +17915,13 @@ View.prototype.clearStepSamples = function() {
 
 		// clear any paste
 		me.pasteBuffers = [];
-		for (i = 0; i < 10; i += 1) {
+		for (i = 0; i < ViewConstants.numPasteBuffers; i += 1) {
 			me.pasteBuffers[i] = null;
 		}
+
+		// clear internal paste
+		me.pasteBuffers[ViewConstants.numPasteBuffers] = null;
+
 		me.currentPasteBuffer = 0;
 		me.canPaste = false;
 		me.pasteBuffer = null;
