@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 998,
+		/** @const {number} */ versionBuild : 999,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2286,7 +2286,7 @@
 	/** @returns {number} */
 	View.prototype.setStateWithUndo = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ colour, /** @type {boolean} */ deadZero) {
 		// get current state
-		var	/** @type {number} */ state = this.engine.getState(x, y, false),
+		var	/** @type {number} */ state = 0,
 			/** @type {number} */ rawState = 0,
 			/** @type {number} */ i = this.currentEditIndex,
 			/** @type {number} */ j = 0,
@@ -2306,6 +2306,11 @@
 			/** @type {number} */ runIndicator = 1 << 22,
 			/** @type {number} */ result = 0,
 			/** @type {Array} */ checkGridResult = [],
+			/** @type {number} */ boxOffset = (this.engine.isMargolus ? -1 : 0),
+			/** @type {number} */ leftX = Math.round((this.engine.width - this.engine.boundedGridWidth) / 2) + boxOffset,
+			/** @type {number} */ bottomY = Math.round((this.engine.height - this.engine.boundedGridHeight) / 2) + boxOffset,
+			/** @type {number} */ rightX = leftX + this.engine.boundedGridWidth - 1,
+			/** @type {number} */ topY = bottomY + this.engine.boundedGridHeight - 1,
 			/** @type {number} */ pop = this.engine.population,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
@@ -2322,6 +2327,35 @@
 			return 0;
 		}
 
+		// check for bounded grid cylinders
+		if (this.engine.boundedGridType !== -1) {
+			if (this.engine.boundedGridWidth === 0) {
+				leftX = 0;
+				rightX = this.engine.width - 1;
+			}
+			if (this.engine.boundedGridHeight === 0) {
+				bottomY = 0;
+				topY = this.engine.height - 1;
+			}
+
+			// check the coordinates are within the bounded grid
+			if (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY)) {
+				// clip to bounded grid
+				if (x < leftX) {
+					x = leftX;
+				}
+				if (x > rightX) {
+					x = rightX;
+				}
+				if (y < bottomY) {
+					y = bottomY;
+				}
+				if (y > topY) {
+					y = topY;
+				}
+			}
+		}
+
 		// check for PCA, RuleTree or Super rules
 		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
 			// swap grids every generation
@@ -2332,6 +2366,9 @@
 
 		// get the raw state
 		rawState = colourGrid[y][x];
+
+		// get the state
+		state = this.engine.getState(x, y, false);
 
 		// handle generations
 		if (state > 0 && invertForGenerations) {
@@ -6469,7 +6506,7 @@ View.prototype.clearStepSamples = function() {
 			Help.drawHelpText(me);
 		} else {
 			// display script errors if present
-			if (me.scriptErrors.length) {
+			if (me.displayErrors) {
 				Help.drawErrors(me);
 			}
 		}
@@ -6561,7 +6598,7 @@ View.prototype.clearStepSamples = function() {
 		*/
 
 		// hide the UI controls if help or errors are displayed
-		me.updateUIForHelp((me.displayHelp || me.scriptErrors.length) !== 0);
+		me.updateUIForHelp((me.displayHelp || me.displayErrors) !== 0);
 
 		// dim display if settings displayed
 		if (me.navToggle.current[0] && !(me.hideGUI && me.generationOn)) {
@@ -14923,10 +14960,15 @@ View.prototype.clearStepSamples = function() {
 	View.prototype.toggleSettings = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			// close help if settings opened
-			if ((me.displayHelp !== 0 || me.scriptErrors.length !== 0) && newValue[0]) {
+			if ((me.displayHelp !== 0 || me.displayErrors !== 0) && newValue[0]) {
 				me.displayHelp = 0;
 				me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
-				me.scriptErrors = [];
+				me.displayErrors = 0;
+			}
+
+			// if settings switched off and there were errors then display them
+			if (!newValue[0] && me.scriptErrors.length > 0) {
+				me.displayErrors = 1;
 			}
 
 			// close theme selection buttons if settings closed
@@ -19657,6 +19699,10 @@ View.prototype.clearStepSamples = function() {
 
 		// clean the pattern text
 		cleanItem = cleanPattern(textItem);
+
+		// reset Identify before resizing the Viewer to prevent Cell Period Map generations
+		viewer[1].lastIdentifyType = "";
+		viewer[1].engine.countList = null;
 
 		// reset the viewer
 		viewer[1].viewStart(viewer[1]);

@@ -6018,6 +6018,15 @@
 		this.context.lineJoin = "round";
 		j = 0;
 		k = 0;
+
+		if (bottomY > 0) {
+			bottomY -= 1;
+		}
+
+		if (topY < this.height - 1) {
+			topY += 1;
+		}
+
 		for (y = bottomY; y <= topY; y += 1) {
 			// clip y to window
 			displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
@@ -6122,8 +6131,8 @@
 		}
 
 		// create cell coordinates for window
-		bottomY = ((-halfDisplayHeight / zoom) - yOff + h2) | 0;
-		topY = ((halfDisplayHeight / zoom) - yOff + h2) | 0;
+		bottomY = (((-halfDisplayHeight / zoom) - yOff + h2) | 0) - 1;
+		topY = (((halfDisplayHeight / zoom) - yOff + h2) | 0) + 1;
 
 		for (y = bottomY; y <= topY; y += 1) {
 			// clip y to window
@@ -7073,15 +7082,6 @@
 			/** @type {number} */ cellAsBit = 0,
 			/** @type {number} */ cellAsTileBit = 0,
 
-			// bounded grid top left
-			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
-			/** @type {number} */ leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset,
-			/** @type {number} */ bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset,
-
-			// bounded grid bottom right
-			/** @type {number} */ rightX = leftX + this.boundedGridWidth - 1,
-			/** @type {number} */ topY = bottomY + this.boundedGridHeight - 1,
-
 			// multi-state alive cell
 			/** @type {number} */ aliveState = 0,
 
@@ -7108,35 +7108,6 @@
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
-			}
-		}
-
-		// check for bounded grid cylinders
-		if (this.boundedGridType !== -1) {
-			if (this.boundedGridWidth === 0) {
-				leftX = 0;
-				rightX = this.width - 1;
-			}
-			if (this.boundedGridHeight === 0) {
-				bottomY = 0;
-				topY = this.height - 1;
-			}
-		}
-
-		// if bounded grid defined check the coordinates are within it
-		if (this.boundedGridType !== -1 && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
-			// clip to bounded grid
-			if (x < leftX) {
-				x = leftX;
-			}
-			if (x > rightX) {
-				x = rightX;
-			}
-			if (y < bottomY) {
-				y = bottomY;
-			}
-			if (y > topY) {
-				y = topY;
 			}
 		}
 
@@ -10254,6 +10225,11 @@
 			}
 			if (needStrings) {
 				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+			}
+
+			// for [R]Super the bounded colour will become 31 at Zoom < 1 so set this colour to the bounded grid cell colour
+			if (this.isSuper) {
+				pixelColours[31] = pixelColours[i];
 			}
 		}
 
@@ -34827,16 +34803,16 @@
 
 			// check if bounded box defined
 			if (this.boundedGridType !== -1) {
-				width = this.boundedGridWidth;
-				height = this.boundedGridHeight;
+				width = this.boundedGridWidth + 2;
+				height = this.boundedGridHeight + 2;
 				if (width > 0) {
-					leftX = this.width / 2 - width / 2;
+					leftX = this.width / 2 - width / 2 + (width & 1) / 2;
 					rightX = this.width / 2 + width / 2;
 				} else {
 					width = rightX - leftX + 1;
 				}
 				if (height > 0) {
-					bottomY = this.height / 2 - height / 2;
+					bottomY = this.height / 2 - height / 2 + (height & 1) / 2;
 					topY = this.height / 2 + height / 2;
 				} else {
 					height = topY - bottomY + 1;

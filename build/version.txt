@@ -1,3 +1,13 @@
+Build 1000
+- fixed a crash on LifeViewer home page when "View" clicked during pattern identification
+
+Build 999
+- fixed Fit Zoom with odd dimension Bounded Grids
+- fixed Errors being hidden after toggling Settings on and off
+- fixed Hexagonal grid not always drawing top or bottom row of cells
+- fixed cell drawing and Undo with cells drawn because of clipping a Bounded Grid
+- fixed [R]Super bounded grid cell colour at ZOOM < 1
+
 Build 998
 - fixed grow grid trigger for HROT rules
 - fixed Undo/Redo records after grid grows
