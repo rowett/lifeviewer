@@ -1341,6 +1341,11 @@
 			// mark as executable
 			this.executable = true;
 
+			// remove empty comment
+			if (pattern.beforeTitle === "#C ") {
+				pattern.beforeTitle = "";
+			}
+
 			// set Conway rule
 			this.decodeRuleString(pattern, "", allocator);
 		}

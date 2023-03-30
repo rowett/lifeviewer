@@ -1,3 +1,8 @@
+Build 998
+- fixed grow grid trigger for HROT rules
+- fixed Undo/Redo records after grid grows
+- fixed starting drawing outside a bounded grid
+
 Build 997
 - added buttons to scroll the Cell Period Table if it is too long to fit in the window
 - fixed Klein Bounded Grid with shift

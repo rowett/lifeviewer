@@ -291,7 +291,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 997,
+		/** @const {number} */ versionBuild : 998,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2244,7 +2244,7 @@
 			borderSize = this.getSafeBorderSize();
 
 			// divide by two since it contains needed space both sides of the pattern
-			borderSize >>= 1;
+			borderSize = (borderSize + 1) >> 1;
 
 			if (x - borderSize < 0 || x + borderSize >= this.engine.width || y - borderSize < 0 || y + borderSize >= this.engine.height) {
 				result[0] = false;
@@ -2315,6 +2315,8 @@
 			// cell is on grid so update x and y in case grid grew
 			x = checkGridResult[1];
 			y = checkGridResult[2];
+			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1);
+			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1);
 		} else {
 			// cell is not on grid so exit
 			return 0;
@@ -4923,6 +4925,7 @@
 	/** @returns {boolean} */
 	View.prototype.checkSelectionSize = function(/** @type {View} */ me) {
 		var	/** @type {boolean} */ clipped = false,
+			/** @type {number} */ swap = 0,
 
 			// convert selection box to middle coordinates
 			/** @type {BoundingBox} */ selBox = me.selectionBox,
@@ -4934,6 +4937,17 @@
 		midBox.bottomY = selBox.bottomY + yOff;
 		midBox.rightX = selBox.rightX + xOff;
 		midBox.topY = selBox.topY + yOff;
+
+		if (midBox.leftX > midBox.rightX) {
+			swap = midBox.rightX;
+			midBox.rightX = midBox.leftX;
+			midBox.leftX = swap;
+		}
+		if (midBox.bottomY > midBox.topY) {
+			swap = midBox.topY;
+			midBox.topY = midBox.bottomY;
+			midBox.bottomY = swap;
+		}
 
 		me.checkGridSize(me, midBox);
 
@@ -9756,16 +9770,45 @@ View.prototype.clearStepSamples = function() {
 	};
 
 	// draw cells
+	/** @returns {boolean} */
 	View.prototype.drawCells = function(/** @type {number} */ toX, /** @type {number} */ toY, /** @type {number} */ fromX, /** @type {number} */ fromY) {
 		var	/** @type {number} */ startCellX = 0,
 			/** @type {number} */ startCellY = 0,
 			/** @type {number} */ endCellX = 0,
 			/** @type {number} */ endCellY = 0,
-			/** @type {number} */ testState = this.drawState;
+			/** @type {number} */ bLeftX = Math.round(-this.engine.boundedGridWidth / 2),
+			/** @type {number} */ bRightX = Math.floor((this.engine.boundedGridWidth - 1) / 2),
+			/** @type {number} */ bBottomY = Math.round(-this.engine.boundedGridHeight / 2),
+			/** @type {number} */ bTopY = Math.floor((this.engine.boundedGridHeight - 1) / 2),
+			/** @type {number} */ testState = this.drawState,
+			/** @type {boolean} */ result = false;
 
 		// check if this is the start of drawing
 		if (fromX === -1 && fromY === -1) {
+			// check if location within bounded box
+			if (this.engine.boundedGridType !== -1) {
+				if (this.engine.boundedGridWidth === 0) {
+					bLeftX = 0;
+					bRightX = this.engine.width - 1;
+				}
+
+				if (this.engine.boundedGridHeight === 0){ 
+					bBottomY = 0;
+					bTopY = this.engine.height - 1;
+				}
+
+				this.updateCellLocation(toX, toY);
+				startCellX = this.cellX - this.engine.width / 2;
+				startCellY = this.cellY - this.engine.height / 2;
+
+				// if outside bounded grid then do not start drawing
+				if (startCellX < bLeftX || startCellX > bRightX || startCellY < bBottomY || startCellY > bTopY) {
+					return true;
+				}
+			}
+
 			this.penColour = this.readCell();
+
 			// adjust test state if generations style
 			if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
 				testState = this.engine.multiNumStates - testState;
@@ -9799,6 +9842,8 @@ View.prototype.clearStepSamples = function() {
 		if (this.engine.population > 0) {
 			this.diedGeneration = -1;
 		}
+
+		return result;
 	};
 
 	// view menu wakeup callback
@@ -9897,9 +9942,11 @@ View.prototype.clearStepSamples = function() {
 	};
 
 	// drag draw
+	/** @returns {boolean} */
 	View.prototype.dragDraw = function(/** @type {View} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		var	/** @type {boolean} */ wasPlaying = me.generationOn,
-			/** @type {number} */ savedIndex = me.currentEditIndex;
+			/** @type {number} */ savedIndex = me.currentEditIndex,
+			/** @type {boolean} */ result = false;
 
 		if (!me.pickMode) {
 			// suspend playback
@@ -9907,6 +9954,7 @@ View.prototype.clearStepSamples = function() {
 				me.generationOn = false;
 				me.playbackDrawPause = true;
 			}
+
 			// if playback was on then save undo record
 			if (wasPlaying) {
 				// just save generation
@@ -9914,14 +9962,17 @@ View.prototype.clearStepSamples = function() {
 				me.afterEdit("");
 				me.currentEditIndex = savedIndex;
 			}
-			// draw cells
-			me.drawCells(x, y, me.lastDragX, me.lastDragY);
+
+			// draw cells and get a flag indicating if draw was cancelled (because draw is out of bounded grid)
+			result = me.drawCells(x, y, me.lastDragX, me.lastDragY);
 
 			// if playback was on then save undo record
 			if (wasPlaying) {
 				me.afterEdit("");
 			}
 		}
+
+		return result;
 	};
 
 	// drag select
@@ -10295,6 +10346,8 @@ View.prototype.clearStepSamples = function() {
 
 	// view menu background drag
 	View.prototype.viewDoDrag = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ dragOn, /** @type {View} */ me, /** @type {boolean} */ fromKey) {
+		var	/** @type {boolean} */ cancelled = false;
+
 		// check if on window (and window has focus - to prevent drawing when clicking to gain focus)
 		if (x !== -1 && y !== -1 && me.menuManager.hasFocus) {
 			// check if this is a drag or cancel drag
@@ -10309,14 +10362,14 @@ View.prototype.clearStepSamples = function() {
 						if (me.displayErrors) {
 							me.dragErrors(me, y);
 						} else {
-								// check if panning
+							// check if panning
 							if (!(me.drawing || me.selecting) || fromKey) {
 								me.dragPan(me, x, y);
 							} else {
 								// check if drawing
 								if (me.drawing) {
 									// drawing
-									me.dragDraw(me, x, y);
+									cancelled = me.dragDraw(me, x, y);
 								} else {
 									if (me.selecting) {
 										// selecting
@@ -10328,9 +10381,11 @@ View.prototype.clearStepSamples = function() {
 					}
 				}
 
-				// save last drag position
-				me.lastDragX = x;
-				me.lastDragY = y;
+				// save last drag position unless draw cancelled (by being out of bounded grid)
+				if (!cancelled) {
+					me.lastDragX = x;
+					me.lastDragY = y;
+				}
 			} else {
 				// check if just got focus
 				if (me.lastDragX !== -1) {
@@ -19598,9 +19653,7 @@ View.prototype.clearStepSamples = function() {
 			/**@type {View} */ viewer = Controller.viewers[0];
 
 		// copy the text item into the inner html
-		if (textItem.value) {
-			textItem.innerHTML = textItem.value;
-		}
+		textItem.innerHTML = textItem.value;
 
 		// clean the pattern text
 		cleanItem = cleanPattern(textItem);

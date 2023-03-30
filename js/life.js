@@ -8536,7 +8536,7 @@
 	// check if the grid buffer needs to grow for as many steps as needed
 	Life.prototype.checkForGrowth = function(/** @type {View} */ view, /** @type {BoundingBox} */ box, /** @type {number} */ borderSize) {
 		// divide border by 2 since it includes space both sides of the pattern
-		borderSize >>= 1;
+		borderSize = (borderSize + 1) >> 1;
 
 		// check the next step
 		while (this.checkForGrowthStep(view, box, borderSize)) {
