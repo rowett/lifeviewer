@@ -563,6 +563,7 @@
 		// HROT min and max range
 		/** @const {number} */ this.minRangeHROT = 1;
 		/** @const {number} */ this.maxRangeHROT = 500;
+		/** @const {number} */ this.maxRangeHROTGaussian = 50;
 
 		// HROT min and max states
 		/** @const {number} */ this.minStatesHROT = 0;
@@ -9723,6 +9724,12 @@
 			} else {
 				newPattern.boundedGridDef = "";
 			}
+		}
+
+		// check if the HROT Gaussian range is too big
+		if (newPattern && newPattern.isHROT && newPattern.neighborhoodHROT === this.gaussianHROT && newPattern.rangeHROT > this.maxRangeHROTGaussian) {
+			this.failureReason = "HROT 'R' > " + this.maxRangeHROTGaussian;
+			this.executable = false;
 		}
 
 		// check if the new pattern was decoded

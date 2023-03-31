@@ -1,3 +1,6 @@
+Build 1006
+- reduce maximum HROT Gaussian range to 50
+
 Build 1005
 - fixed PASTE not pasting multi-state cells in left or right tile of the grid
 - improved Cell Period Table paging
