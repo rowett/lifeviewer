@@ -424,6 +424,7 @@
 		// period table start row and maximum row
 		/** @type {number} */ this.tableStartRow = 0;
 		/** @type {number} */ this.tableMaxRow = 0;
+		/** @type {number} */ this.tablePageSize = 10;
 
 		// last computed strict volatility
 		/** @type {string} */ this.strictVol = "";
@@ -2730,7 +2731,7 @@
 	// page up on the cell period table
 	Life.prototype.cellPeriodTablePageUp = function() {
 		if (this.tableStartRow > 0) {
-			this.tableStartRow -= 11;
+			this.tableStartRow -= this.tablePageSize;
 			if (this.tableStartRow < 0) {
 				this.tableStartRow = 0;
 			}
@@ -2740,7 +2741,7 @@
 	// page up on the cell period table
 	Life.prototype.cellPeriodTablePageDown = function() {
 		if (this.tableStartRow < this.tableMaxRow) {
-			this.tableStartRow += 11;
+			this.tableStartRow += this.tablePageSize;
 			if (this.tableStartRow > this.tableMaxRow) {
 				this.tableStartRow = this.tableMaxRow;
 			}
@@ -2752,6 +2753,7 @@
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ itemNum = 0,
+			/** @type {number} */ maxItem = 0,
 			/** @type {number} */ value = 0,
 			/** @type {number} */ offset = 2,
 			/** @type {number} */ x = 0,
@@ -2802,7 +2804,7 @@
 
 			for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
 				value = this.popSubPeriod[i];
-				if (value > 0) {
+				if (value > 0 && y < this.displayHeight - 80 * displayScale) {
 					if (itemNum >= (this.tableStartRow | 0)) {
 						// draw row data
 						x = leftX;
@@ -2826,11 +2828,12 @@
 		}
 
 		// draw the legend
+		maxItem = itemNum;
 		itemNum = 0;
 		offset = ((28 * displayScale) >> 1);
 		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
 			value = this.popSubPeriod[i];
-			if (value > 0) {
+			if (value > 0 && itemNum < maxItem) {
 				if (itemNum >= (this.tableStartRow | 0)) {
 					x = leftX;
 
@@ -2843,6 +2846,11 @@
 				}
 				itemNum += 1;
 			}
+		}
+
+		// set the page size
+		if (this.tableStartRow === 0) {
+			this.tablePageSize = maxItem - 1;
 		}
 	};
 
@@ -11479,12 +11487,6 @@
 				aboveNextTileRow = nextTileGrid[th + 1];
 			} else {
 				aboveNextTileRow = blankTileRow;
-			}
-
-			// disable the tile at the start and end of each row to prevent overflow
-			if (!this.isHROT) {
-				tileRow[0] &= 0x7fff;
-				tileRow[tileCols16 - 1] &= 0xfffe;
 			}
 
 			// scan each set of tiles

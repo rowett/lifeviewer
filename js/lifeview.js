@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1004,
+		/** @const {number} */ versionBuild : 1005,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5526,9 +5526,11 @@
 		}
 
 		// bounding box
-		this.identifyBoxLabel.setPosition(Menu.north, x, y);
-		this.identifyBoxValueLabel.setPosition(Menu.north, xv, y);
-		y += h;
+		if (!(this.engine.isHex || this.engine.isTriangular)) {
+			this.identifyBoxLabel.setPosition(Menu.north, x, y);
+			this.identifyBoxValueLabel.setPosition(Menu.north, xv, y);
+			y += h;
+		}
 
 		if (this.lastIdentifyType === "Spaceship" && !(this.engine.isHex || this.engine.isTriangular)) {
 			// direction
@@ -5544,7 +5546,6 @@
 			y += h;
 
 			// mod
-			//if (!(this.engine.isHex || this.engine.isTriangular) && !this.engine.isMargolus) {
 			if (!(this.engine.isHex || this.engine.isTriangular)) {
 				this.identifyModLabel.setPosition(Menu.north, x, y);
 				this.identifyModValueLabel.setPosition(Menu.north, xv, y);
@@ -5566,7 +5567,6 @@
 			y += h;
 		}
 
-		//if (this.lastIdentifyType !== "Still Life" && (!(this.engine.isRuleTree && this.engine.multiNumStates > 2) || this.engine.isLifeHistory) && !(this.engine.isMargolus || this.engine.altSpecified) && this.engine.boundedGridType === -1) {
 		if (this.lastIdentifyType !== "Still Life" && (!(this.engine.isRuleTree && this.engine.multiNumStates > 2) || this.engine.isLifeHistory) && !this.engine.altSpecified && this.engine.boundedGridType === -1) {
 			// heat
 			this.identifyHeatLabel.setPosition(Menu.north, x, y);
@@ -6042,10 +6042,6 @@ View.prototype.clearStepSamples = function() {
 			// current and target generations
 			/** @type {number} */ currentGen = me.engine.counter,
 			/** @type {number} */ targetGen = 0,
-
-			// saved bounding box
-			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
-			/** @type {BoundingBox} */ historyBox = me.engine.historyBox,
 
 			// frame target time in ms
 			/** @type {number} */ frameTargetTime = (1000 / me.refreshRate),
@@ -6830,7 +6826,7 @@ View.prototype.clearStepSamples = function() {
 		this.identifyBannerLabel.deleted = shown;
 		shown = shown || this.periodMapDisplayed > 0;
 		this.identifyCellsLabel.deleted = shown;
-		this.identifyBoxLabel.deleted = shown;
+		this.identifyBoxLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyDirectionLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
 		this.identifyModLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular);
@@ -6841,7 +6837,7 @@ View.prototype.clearStepSamples = function() {
 		this.identifyTemperatureLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator") || (this.engine.boundedGridType !== -1) || (this.engine.isRuleTree && this.engine.multiNumStates > 2);
 		this.identifyVolatilityLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 		this.identifyCellsValueLabel.deleted = shown;
-		this.identifyBoxValueLabel.deleted = shown;
+		this.identifyBoxValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyDirectionValueLabel.deleted = shown || (this.lastIdentifyType !== "Spaceship") || (this.engine.isHex || this.engine.isTriangular);
 		this.identifyPeriodValueLabel.deleted = shown || (this.lastIdentifyType === "Still Life");
 		this.identifyModValueLabel.deleted = shown || (this.engine.isHex || this.engine.isTriangular);
@@ -9889,13 +9885,13 @@ View.prototype.clearStepSamples = function() {
 			// check if location within bounded box
 			if (this.engine.boundedGridType !== -1) {
 				if (this.engine.boundedGridWidth === 0) {
-					bLeftX = 0;
-					bRightX = this.engine.width - 1;
+					bLeftX = -this.engine.width / 2;
+					bRightX = this.engine.width / 2 - 1;
 				}
 
 				if (this.engine.boundedGridHeight === 0){ 
-					bBottomY = 0;
-					bTopY = this.engine.height - 1;
+					bBottomY = -this.engine.height / 2;
+					bTopY = this.engine.height / 2 - 1;
 				}
 
 				this.updateCellLocation(toX, toY);

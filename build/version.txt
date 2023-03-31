@@ -1,3 +1,8 @@
+Build 1005
+- fixed PASTE not pasting multi-state cells in left or right tile of the grid
+- improved Cell Period Table paging
+- removed Bounding Box from Identify results for Hexagonal or Triangular grids
+
 Build 1004
 - fixed PASTE not pasting 2-state cells in left or right tile of the grid
 - always include both height and width in Bounded Grid canonical format (excluding Sphere)
