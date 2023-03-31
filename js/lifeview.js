@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1000,
+		/** @const {number} */ versionBuild : 1001,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -18660,8 +18660,13 @@ View.prototype.clearStepSamples = function() {
 		// check pattern size (script command may have increased maximum allowed size)
 		borderSize = me.getSafeBorderSize();
 
-		if (pattern && (pattern.width > me.engine.maxGridSize - borderSize || pattern.height > me.engine.maxGridSize - borderSize)) {
-			me.failureReason = "Pattern too big";
+		if (pattern && ((pattern.width > (me.engine.maxGridSize - borderSize - (Math.abs(me.xOffset + me.posXOffset) * 2)) || (pattern.height > (me.engine.maxGridSize - borderSize - Math.abs(me.xOffset - me.posXOffset) * 2))))) {
+			// check if pattern would fit in the middle
+			if (!((pattern.width > me.engine.maxGridSize - borderSize) || (pattern.height > me.engine.maxGridSize - borderSize))) {
+				me.failureReason = "Pattern too big at specified location";
+			} else {
+				me.failureReason = "Pattern too big";
+			}
 			pattern.tooBig = true;
 			me.executable = false;
 		}
@@ -18724,44 +18729,9 @@ View.prototype.clearStepSamples = function() {
 		borderSize = me.getSafeBorderSize();
 
 		// add CXRLE Pos if defined
-		i = (me.engine.maxGridSize - borderSize) / 2;
-
 		if (me.posDefined) {
-			if (me.posXOffset < -i) {
-				me.posXOffset = -i;
-			} else {
-				if (me.posXOffset >= i) {
-					me.posXOffset = i - 1;
-				}
-			}
-
-			if (me.posYOffset < -i) {
-				me.posYOffset = -i;
-			} else {
-				if (me.posYOffset >= i) {
-					me.posYOffset = i - 1;
-				}
-			}
-
 			me.xOffset += me.posXOffset;
 			me.yOffset += me.posYOffset;
-		}
-
-		// ensure offset in range
-		if (me.xOffset < -i) {
-			me.xOffset = -i;
-		} else {
-			if (me.xOffset >= i) {
-				me.xOffset = i - 1;
-			}
-		}
-
-		if (me.yOffset < -i) {
-			me.yOffset = -i;
-		} else {
-			if (me.yOffset >= i) {
-				me.yOffset = i - 1;
-			}
 		}
 
 		// grow the grid if the pattern is too big to fit

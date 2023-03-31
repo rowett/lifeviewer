@@ -7885,6 +7885,15 @@
 			}
 		}
 
+		// check for minimum bounded grid size for HROT/LtL rules
+		if (pattern.isHROT && pattern.gridType !== -1) {
+			if ((pattern.gridWidth !== 0 && (pattern.gridWidth < pattern.rangeHROT * 2)) || (pattern.gridHeight !== 0 && (pattern.gridHeight < pattern.rangeHROT * 2))) {
+				this.failureReason = "Bounded grid too small (must be at least " + pattern.rangeHROT * 2 + ")";
+				this.executable = false;
+				pattern.gridType = -1;
+			}
+		}
+		
 		// check whether Spherical bounded grid has been specified for a Hexagonal rule
 		if (pattern.isHex && pattern.gridType === 4 && this.failureReason === "") {
 			this.failureReason = "Hexagonal rules do not support Sphere";

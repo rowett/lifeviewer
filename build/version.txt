@@ -1,3 +1,7 @@
+Build 1001
+- fixed allowing too small Bounded Grids for HROT/LtL rules
+- fixed patterns with CXRLE Pos being allowed too close to grid boundary
+
 Build 1000
 - fixed a crash on LifeViewer home page when "View" clicked during pattern identification
 - fixed making a selection with zero population
