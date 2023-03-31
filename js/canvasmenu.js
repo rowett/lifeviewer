@@ -482,7 +482,7 @@
 
 				// change target pixel to greyed out colour
 				for (i = 0; i < data32.length; i += 1) {
-					if (data32[i] === iconFGHex) {
+					if (data32[i] === iconFGHex || data32[i] === 0xff707070) {
 						data32[i] = this.greyedOutCol;
 					}
 				}
@@ -2035,8 +2035,8 @@
 						}
 					}
 					i = ((mY - item.y) / (item.height - 1)) * (item.upper - /** @type {!number} */ (item.lower)) + /** @type {!number} */ (item.lower);
-					if (item.lower < item.upper) {
-						if (i < item.lower) {
+					if (/** @type {!number} */ (item.lower) < item.upper) {
+						if (i < /** @type {!number} */ (item.lower)) {
 							i = /** @type {!number} */ (item.lower);
 						}
 						if (i > item.upper) {
@@ -2046,7 +2046,7 @@
 						if (i < item.upper) {
 							i = item.upper;
 						}
-						if (i > item.lower) {
+						if (i > /** @type {!number} */ (item.lower)) {
 							i = /** @type {!number} */ (item.lower);
 						}
 					}
@@ -2064,8 +2064,8 @@
 						}
 					}
 					i = ((mX - item.x) / (item.width - 1)) * (item.upper - /** @type {!number} */ (item.lower)) + /** @type {!number} */ (item.lower);
-					if (item.lower < item.upper) {
-						if (i < item.lower) {
+					if (/** @type {!number} */ (item.lower) < item.upper) {
+						if (i < /** @type {!number} */ (item.lower)) {
 							i = /** @type {!number} */ (item.lower);
 						}
 						if (i > item.upper) {
@@ -2075,7 +2075,7 @@
 						if (i < item.upper) {
 							i = item.upper;
 						}
-						if (i > item.lower) {
+						if (i > /** @type {!number} */ (item.lower)) {
 							i = /** @type {!number} */ (item.lower);
 						}
 					}

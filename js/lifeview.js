@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1001,
+		/** @const {number} */ versionBuild : 1004,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -453,7 +453,7 @@
 
 		// minimum and maximum bold grid line interval (0 means no bold grid lines)
 		/** @const {number} */ minBoldGridInterval : 0,
-		/** @const {number} */ maxBoldGridInterval : 16,
+		/** @const {number} */ maxBoldGridInterval : 32,
 
 		// help topics
 		/** @const {number} */ welcomeTopic : 0,
@@ -2944,6 +2944,11 @@
 			if (me.engine.isLifeHistory) {
 				me.engine.populateState6MaskFromColGrid();
 			}
+
+			// auto fit if enabled
+			if (this.autoFit) {
+				this.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
+			}
 		}
 	};
 
@@ -3012,6 +3017,11 @@
 			// update state 6 grid
 			if (me.engine.isLifeHistory) {
 				me.engine.populateState6MaskFromColGrid();
+			}
+
+			// auto fit if enabled
+			if (this.autoFit) {
+				this.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 			}
 		}
 	};
@@ -3848,6 +3858,26 @@
 		return result;
 	};
 
+	// get state and check if it is on the grid
+	/** @returns {number} */
+	View.prototype.getStateWithCheck = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ rawRequested) {
+		var	/** @type {number} */ result = 0,
+			/** @type {Array} */ checkGridResult = [];
+
+		// check if the cell is on the grid
+		checkGridResult = this.cellOnGrid(x, y);
+		if (checkGridResult[0]) {
+			// cell is on grid so update x and y in case grid grew
+			x = checkGridResult[1];
+			y = checkGridResult[2];
+
+			// draw the cell
+			result = this.engine.getState(x, y, rawRequested);
+		}
+
+		return result;
+	};
+
 	// paste rle list to grid
 	View.prototype.pasteRLEList = function() {
 		var	/** @type {number} */ j = 0,
@@ -3906,12 +3936,43 @@
 				// paste with the given mode
 				xOff += paste.leftX;
 				yOff += paste.bottomY;
+
 				for (y = 0; y < stateMap.length; y += 1) {
 					stateRow = stateMap[y];
 					if (numStates >= 2 && !(this.engine.isLifeHistory || this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
 						for (x = 0; x < stateRow.length; x += 1) {
+							// get the next cell to paste
 							source = stateRow[x];
-							dest = this.engine.getState(xOff + x, yOff + y, false);
+
+							// get the current cell from the grid
+							dest = this.getStateWithCheck(xOff + x, yOff + y, false);
+
+							// check for grid growth
+							while (width !== this.engine.width || height !== this.engine.height) {
+								if (width !== this.engine.width) {
+									// double width
+									width <<= 1;
+
+									// adjust drawing cell position
+									xOff += width >> 2;
+
+									this.defaultX += width >> 2;
+									this.savedX += width >> 2;
+									this.panX += width >> 2;
+								}
+
+								if (height !== this.engine.height) {
+									// same for height
+									height <<= 1;
+									yOff += height >> 2;
+
+									this.defaultY += height >> 2;
+									this.savedY += height >> 2;
+									this.panY += height >> 2;
+								}
+							}
+
+							// determine paste mode
 							switch (mode) {
 								case ViewConstants.pasteModeZero:
 									result = 0;
@@ -3962,6 +4023,8 @@
 									result = 1;
 									break;
 							}
+
+							// ensure result is in range
 							if (result < 0) {
 								result = 0;
 							} else {
@@ -3974,37 +4037,42 @@
 							if ((source !== dest) || mode === ViewConstants.pasteModeCopy) {
 								this.setStateWithCheck(xOff + x, yOff + y, result, true);
 							}
-
-							// check for grid growth
-							while (width !== this.engine.width || height !== this.engine.height) {
-								if (width !== this.engine.width) {
-									// double width
-									width <<= 1;
-
-									// adjust drawing cell position
-									xOff += width >> 2;
-
-									this.defaultX += width >> 2;
-									this.savedX += width >> 2;
-									this.panX += width >> 2;
-								}
-
-								if (height !== this.engine.height) {
-									// same for height
-									height <<= 1;
-									yOff += height >> 2;
-
-									this.defaultY += height >> 2;
-									this.savedY += height >> 2;
-									this.panY += height >> 2;
-								}
-							}
 						}
 					} else {
 						if (this.engine.isPCA || this.engine.isRuleTree) {
 							for (x = 0; x < stateRow.length; x += 1) {
+								// get the next cell to paste
 								source = stateRow[x];
-								dest = this.engine.getState(xOff + x, yOff + y, false);
+
+								// get the current cell from the grid
+								dest = this.getStateWithCheck(xOff + x, yOff + y, false);
+
+								// check for grid growth
+								while (width !== this.engine.width || height !== this.engine.height) {
+									if (width !== this.engine.width) {
+										// double width
+										width <<= 1;
+
+										// adjust drawing cell position
+										xOff += width >> 2;
+
+										this.defaultX += width >> 2;
+										this.savedX += width >> 2;
+										this.panX += width >> 2;
+									}
+
+									if (height !== this.engine.height) {
+										// same for height
+										height <<= 1;
+										yOff += height >> 2;
+
+										this.defaultY += height >> 2;
+										this.savedY += height >> 2;
+										this.panY += height >> 2;
+									}
+								}
+
+								// determine paste mode
 								switch (mode) {
 									case ViewConstants.pasteModeZero:
 										result = 0;
@@ -4055,6 +4123,8 @@
 										result = 1;
 										break;
 								}
+
+								// ensure result is in range
 								if (result < 0) {
 									result = 0;
 								} else {
@@ -4063,49 +4133,15 @@
 									}
 								}
 								this.setStateWithCheck(xOff + x, yOff + y, result, true);
-
-								// check for grid growth
-								while (width !== this.engine.width || height !== this.engine.height) {
-									if (width !== this.engine.width) {
-										// double width
-										width <<= 1;
-
-										// adjust drawing cell position
-										xOff += width >> 2;
-
-										this.defaultX += width >> 2;
-										this.savedX += width >> 2;
-										this.panX += width >> 2;
-									}
-
-									if (height !== this.engine.height) {
-										// same for height
-										height <<= 1;
-										yOff += height >> 2;
-
-										this.defaultY += height >> 2;
-										this.savedY += height >> 2;
-										this.panY += height >> 2;
-									}
-								}
 							}
 						} else {
 							if (this.engine.isLifeHistory || this.engine.isSuper) {
 								for (x = 0; x < stateRow.length; x += 1) {
+									// get the next cell to paste
 									source = stateRow[x];
-									if (mode === ViewConstants.pasteModeCopy) {
-										result = source;
-										sourceFlag = 1;
-										destFlag = 0;
-									} else {
-										sourceFlag = source & 1;
-										dest = this.engine.getState(xOff + x, yOff + y, false);
-										destFlag = dest & 1;
-										result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
-									}
-									if (sourceFlag !== destFlag) {
-										wasState6 |= this.setStateWithCheck(xOff + x, yOff + y, result, true);
-									}
+
+									// get the current cell from the grid
+									dest = this.getStateWithCheck(xOff + x, yOff + y, false);
 
 									// check for grid growth
 									while (width !== this.engine.width || height !== this.engine.height) {
@@ -4131,41 +4167,60 @@
 											this.panY += height >> 2;
 										}
 									}
+
+									if (mode === ViewConstants.pasteModeCopy) {
+										result = source;
+										sourceFlag = 1;
+										destFlag = 0;
+									} else {
+										sourceFlag = source & 1;
+										destFlag = dest & 1;
+										result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
+									}
+
+									// if the cell changed then update the grid
+									if (sourceFlag !== destFlag) {
+										wasState6 |= this.setStateWithCheck(xOff + x, yOff + y, result, true);
+									}
 								}
 							} else {
 								for (x = 0; x < stateRow.length; x += 1) {
+									// get the next cell to paste
 									source = stateRow[x];
 									sourceFlag = (source === 0 ? 0 : 1);
-									dest = this.engine.getState(xOff + x, yOff + y, false);
+
+									// get the current cell from the grid
+									dest = this.getStateWithCheck(xOff + x, yOff + y, false);
 									destFlag = (dest === 0 ? 0 : 1);
+
+									// check for grid growth
+									while (width !== this.engine.width || height !== this.engine.height) {
+										if (width !== this.engine.width) {
+											// double width
+											width <<= 1;
+
+											// adjust drawing cell position
+											xOff += width >> 2;
+
+											this.defaultX += width >> 2;
+											this.savedX += width >> 2;
+											this.panX += width >> 2;
+										}
+
+										if (height !== this.engine.height) {
+											// same for height
+											height <<= 1;
+											yOff += height >> 2;
+
+											this.defaultY += height >> 2;
+											this.savedY += height >> 2;
+											this.panY += height >> 2;
+										}
+									}
+
 									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 									if ((result !== dest) || mode === ViewConstants.pasteModeCopy) {
 										this.setStateWithCheck(xOff + x, yOff + y, result, true);
-
-										// check for grid growth
-										while (width !== this.engine.width || height !== this.engine.height) {
-											if (width !== this.engine.width) {
-												// double width
-												width <<= 1;
-
-												// adjust drawing cell position
-												xOff += width >> 2;
-
-												this.defaultX += width >> 2;
-												this.savedX += width >> 2;
-												this.panX += width >> 2;
-											}
-
-											if (height !== this.engine.height) {
-												// same for height
-												height <<= 1;
-												yOff += height >> 2;
-
-												this.defaultY += height >> 2;
-												this.savedY += height >> 2;
-												this.panY += height >> 2;
-											}
-										}
 									}
 								}
 							}
@@ -9948,6 +10003,23 @@ View.prototype.clearStepSamples = function() {
 		}
 	};
 
+	// drag period cell table
+	View.prototype.dragTable = function(/** @type {View} */ me, /** @type {number} */ y) {
+		// compute the movement
+		var	/** @type {number} */ dy = ((me.lastDragY - y) / (24 * this.viewMenu.xScale));
+
+		// scroll period map
+		if (me.lastDragY !== -1) {
+			me.engine.tableStartRow += dy;
+			if (me.engine.tableStartRow < 0) {
+				me.engine.tableStartRow = 0;
+			}
+			if (me.engine.tableStartRow > me.engine.tableMaxRow) {
+				me.engine.tableStartRow = me.engine.tableMaxRow;
+			}
+		}
+	};
+
 	// drag grid (pan)
 	View.prototype.dragPan = function(/** @type {View} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// compute the movement
@@ -10413,18 +10485,23 @@ View.prototype.clearStepSamples = function() {
 						if (me.displayErrors) {
 							me.dragErrors(me, y);
 						} else {
-							// check if panning
-							if (!(me.drawing || me.selecting) || fromKey) {
-								me.dragPan(me, x, y);
+							// check if Cell Period Table displayed
+							if (this.resultsDisplayed && this.periodMapDisplayed === 1 && this.engine.tableMaxRow !== 0) {
+								me.dragTable(me, y);
 							} else {
-								// check if drawing
-								if (me.drawing) {
-									// drawing
-									cancelled = me.dragDraw(me, x, y);
+								// check if panning
+								if (!(me.drawing || me.selecting) || fromKey) {
+									me.dragPan(me, x, y);
 								} else {
-									if (me.selecting) {
-										// selecting
-										me.dragSelect(me, x, y);
+									// check if drawing
+									if (me.drawing) {
+										// drawing
+										cancelled = me.dragDraw(me, x, y);
+									} else {
+										if (me.selecting) {
+											// selecting
+											me.dragSelect(me, x, y);
+										}
 									}
 								}
 							}

@@ -2730,14 +2730,20 @@
 	// page up on the cell period table
 	Life.prototype.cellPeriodTablePageUp = function() {
 		if (this.tableStartRow > 0) {
-			this.tableStartRow -= 1;
+			this.tableStartRow -= 11;
+			if (this.tableStartRow < 0) {
+				this.tableStartRow = 0;
+			}
 		}
 	};
 
 	// page up on the cell period table
 	Life.prototype.cellPeriodTablePageDown = function() {
 		if (this.tableStartRow < this.tableMaxRow) {
-			this.tableStartRow += 1;
+			this.tableStartRow += 11;
+			if (this.tableStartRow > this.tableMaxRow) {
+				this.tableStartRow = this.tableMaxRow;
+			}
 		}
 	};
 
@@ -2797,7 +2803,7 @@
 			for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
 				value = this.popSubPeriod[i];
 				if (value > 0) {
-					if (itemNum >= this.tableStartRow) {
+					if (itemNum >= (this.tableStartRow | 0)) {
 						// draw row data
 						x = leftX;
 						x = this.drawRightString(String(i), fieldWidth, x, y, offset);
@@ -2825,7 +2831,7 @@
 		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
 			value = this.popSubPeriod[i];
 			if (value > 0) {
-				if (itemNum >= this.tableStartRow) {
+				if (itemNum >= (this.tableStartRow | 0)) {
 					x = leftX;
 
 					// draw box
@@ -6701,18 +6707,23 @@
 				if ((grid[y][x >> 4] & cellAsBit) === 0) {
 					this.population += 1;
 				}
+
 				// set cell
 				if (this.rainbow) {
 					colourGrid[y][x] = ((x + y) & 127) + 64;
 				} else {
 					colourGrid[y][x] = this.aliveStart;
 				}
+
+				// update tile grids
 				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				grid[y][x >> 4] |= cellAsBit;
 				tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+
 				// mark tile as not static since it has changed
 				staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
+
 				// check left boundary
 				cx = x & 15;
 				if ((x > 0) && (cx <= leftTarget)) {
@@ -6727,6 +6738,7 @@
 						x -= (16 - cx);
 					}
 				}
+
 				// check bottom boundary
 				if ((y > 0) && ((y & 15) === 0)) {
 					y -= 1;
@@ -6767,12 +6779,15 @@
 				if ((grid[y][x >> 4] & cellAsBit) !== 0) {
 					this.population -= 1;
 				}
+
 				// clear cell
 				if (deadZero) {
 					colourGrid[y][x] = this.unoccupied;
 				} else {
 					colourGrid[y][x] = this.deadStart;
 				}
+
+				// update tile grids
 				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				grid[y][x >> 4] &= ~cellAsBit;
@@ -6922,14 +6937,19 @@
 				if ((grid[y][x >> 4] & cellAsBit) === 0) {
 					this.population += 1;
 				}
+
 				// set cell
 				colourGrid[y][x] = this.aliveStart;
+
+				// update tile grids
 				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				grid[y][x >> 4] |= cellAsBit;
 				tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+
 				// mark tile as not static since it has changed
 				staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
+
 				// check left boundary
 				cx = x & 15;
 				if ((x > 0) && (cx <= leftTarget)) {
@@ -6944,6 +6964,7 @@
 						x -= (16 - cx);
 					}
 				}
+
 				// check bottom boundary
 				if ((y > 0) && ((y & 15) === 0)) {
 					y -= 1;
@@ -6984,12 +7005,15 @@
 				if ((grid[y][x >> 4] & cellAsBit) !== 0) {
 					this.population -= 1;
 				}
+
 				// clear cell
 				if (deadZero) {
 					colourGrid[y][x] = this.unoccupied;
 				} else {
 					colourGrid[y][x] = this.deadStart;
 				}
+
+				// update tile grids
 				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				grid[y][x >> 4] &= ~cellAsBit;
@@ -7041,6 +7065,7 @@
 						zoomBox.topY = y;
 					}
 				}
+
 				if (x < historyBox.leftX) {
 					historyBox.leftX = x;
 				}
@@ -7153,11 +7178,13 @@
 					}
 				} else {
 					tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+
 					// mark tile as not static since it has changed
 					staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
 					if (current === 0) {
 						this.population += 1;
 					}
+
 					// check left boundary
 					cx = x & 15;
 					if ((x > 0) && (cx <= leftTarget)) {
@@ -7172,6 +7199,7 @@
 							x -= (16 - cx);
 						}
 					}
+
 					// check bottom boundary
 					if ((y > 0) && ((y & 15) === 0)) {
 						y -= 1;
@@ -7236,18 +7264,23 @@
 					if ((grid[y][x >> 4] & cellAsBit) === 0) {
 						this.population += 1;
 					}
+
 					// set cell
 					if (this.rainbow) {
 						colourGrid[y][x] = ((x + y) & 127) + 64;
 					} else {
 						colourGrid[y][x] = this.aliveStart;
 					}
+
+					// update tile grids
 					colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 					colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 					grid[y][x >> 4] |= cellAsBit;
 					tileGrid[y >> 4][x >> 8] |= cellAsTileBit;
+
 					// mark tile as not static since it has changed
 					staticTileGrid[y >> 4][x >> 8] &= ~cellAsTileBit;
+
 					// check left boundary
 					cx = x & 15;
 					if ((x > 0) && (cx <= leftTarget)) {
@@ -7262,6 +7295,7 @@
 							x -= (16 - cx);
 						}
 					}
+
 					// check bottom boundary
 					if ((y > 0) && ((y & 15) === 0)) {
 						y -= 1;
@@ -7302,12 +7336,15 @@
 					if ((grid[y][x >> 4] & cellAsBit) !== 0) {
 						this.population -= 1;
 					}
+
 					// clear cell
 					if (deadZero) {
 						colourGrid[y][x] = this.unoccupied;
 					} else {
 						colourGrid[y][x] = this.deadStart;
 					}
+
+					// update tile grids
 					colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 					colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 					grid[y][x >> 4] &= ~cellAsBit;
@@ -7344,6 +7381,7 @@
 						state = this.historyStates + state;
 					}
 					colourGrid[y][x] = state;
+
 					// check for [R]Super
 					if (this.isSuper) {
 						// mark tile as not static since it has changed
@@ -7366,8 +7404,11 @@
 					}
 					colourGrid[y][x] = state;
 				}
+
+				// update tile grids
 				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
+
 				if (current !== aliveState && state === aliveState) {
 					this.population += 1;
 				} else {
@@ -7409,6 +7450,7 @@
 			if (y > historyBox.topY) {
 				historyBox.topY = y;
 			}
+
 			// if the state is alive then update HROT alive bounding box
 			if (this.isHROT && state === this.multiNumStates - 1 + this.historyStates) {
 				if (this.population === 1) {
@@ -11127,10 +11169,6 @@
 			} else {
 				aboveNextTileRow = blankTileRow;
 			}
-
-			// disable the tile at the start and end of each row to prevent overflow
-			tileRow[0] &= 0x7fff;
-			tileRow[tileCols16 - 1] &= 0xfffe;
 
 			// scan each set of tiles
 			for (tw = 0; tw < tileCols16; tw += 1) {

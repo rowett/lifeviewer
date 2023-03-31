@@ -3279,8 +3279,8 @@
 				}
 			}
 
-			// add more if the height is not the same or vertical shift or twist are defined or Klein
-			if ((pattern.gridHeight !== pattern.gridWidth) || pattern.gridVerticalShift || pattern.gridVerticalTwist || pattern.gridType === 2) {
+			// add more if the grid type is not Sphere
+			if (pattern.gridType !== 4) {
 				// add the height
 				pattern.ruleName += "," + pattern.gridHeight;
 

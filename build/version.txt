@@ -1,3 +1,16 @@
+Build 1004
+- fixed PASTE not pasting 2-state cells in left or right tile of the grid
+- always include both height and width in Bounded Grid canonical format (excluding Sphere)
+- Page Up and Page Down buttons on the Cell Period Table now scroll multiple lines at a time
+
+Build 1003
+- you can now scroll the Cell Period Table by dragging with the mouse/touch
+- increased maximum major grid line interval to 32
+- Undo/Redo now triggers AutoFit if enabled
+
+Build 1002
+- fixed greyed out colour for Grid button grid lines
+
 Build 1001
 - fixed allowing too small Bounded Grids for HROT/LtL rules
 - fixed patterns with CXRLE Pos being allowed too close to grid boundary
