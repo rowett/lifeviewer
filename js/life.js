@@ -13938,7 +13938,7 @@
 			for (i = 0; i < width; i += 1) {
 				// copy top row to below bottom
 				sourceX = leftX + i;
-				destX = leftX + ((i + horizShift + width) % width);
+				destX = leftX + ((((i + horizShift) % width) + width) % width);
 
 				// check if cell is state 6
 				state = grid[topY][sourceX];
@@ -13958,7 +13958,7 @@
 				}
 
 				// copy bottom row to above top
-				destX = leftX + ((i - horizShift + width) % width);
+				destX = leftX + ((((i - horizShift) % width) + width) % width);
 
 				// check if cell is state 6
 				state = grid[bottomY][sourceX];
@@ -13985,7 +13985,7 @@
 			for (i = 0; i < height; i += 1) {
 				// copy left column to right of right
 				sourceY = bottomY + i;
-				destY = bottomY + ((i - vertShift + height) % height);
+				destY = bottomY + ((((i - vertShift) % height) + height) % height);
 
 				// check if cell is state 6
 				state = grid[sourceY][leftX];
@@ -14005,7 +14005,7 @@
 				}
 
 				// copy right column to left of left
-				destY = bottomY + ((i + vertShift + height) % height);
+				destY = bottomY + ((((i + vertShift) % height) + height) % height);
 
 				// check if cell is state 6
 				state = grid[sourceY][rightX];
@@ -14653,7 +14653,7 @@
 			for (i = 0; i < width; i += 1) {
 				// copy top row to below bottom
 				sourceX = leftX + i;
-				destX = leftX + ((i + horizShift + width) % width);
+				destX = leftX + ((((i + horizShift) % width) + width) % width);
 
 				// check if cell set
 				state = grid[topY][sourceX];
@@ -14673,7 +14673,7 @@
 				}
 
 				// copy bottom row to above top
-				destX = leftX + ((i - horizShift + width) % width);
+				destX = leftX + ((((i - horizShift) % width) + width) % width);
 
 				// check if cell set
 				state = grid[bottomY][sourceX];
@@ -14700,7 +14700,7 @@
 			for (i = 0; i < height; i += 1) {
 				// copy left column to right of right
 				sourceY = bottomY + i;
-				destY = bottomY + ((i - vertShift + height) % height);
+				destY = bottomY + ((((i + vertShift) % height) + height) % height);
 
 				// check if cell set
 				state = grid[sourceY][leftX];
@@ -14720,7 +14720,7 @@
 				}
 
 				// copy right column to left of left
-				destY = bottomY + ((i + vertShift + height) % height);
+				destY = bottomY + ((((i + vertShift) % height) + height) % height);
 
 				// check if cell set
 				state = grid[sourceY][rightX];
@@ -15340,7 +15340,7 @@
 			for (i = 0; i < width; i += 1) {
 				// copy top row to below bottom
 				sourceX = leftX + i;
-				destX = leftX + ((i + horizShift + width) % width);
+				destX = leftX + ((((i + horizShift) % width) + width) % width);
 
 				// check if cell set
 				if ((grid[topY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
@@ -15359,7 +15359,7 @@
 				}
 
 				// copy bottom row to above top
-				destX = leftX + ((i - horizShift + width) % width);
+				destX = leftX + ((((i - horizShift) % width) + width) % width);
 
 				// check if cell set
 				if ((grid[bottomY][sourceX >> 4] & (1 << (~sourceX & 15))) !== 0) {
@@ -15385,7 +15385,7 @@
 			for (i = 0; i < height; i += 1) {
 				// copy left column to right of right
 				sourceY = bottomY + i;
-				destY = bottomY + ((i - vertShift + height) % height);
+				destY = bottomY + ((((i - vertShift) % height) + height) % height);
 
 				// check if cell set
 				if ((grid[sourceY][leftX >> 4] & (1 << (~leftX & 15))) !== 0) {
@@ -15430,7 +15430,7 @@
 				}
 
 				// copy right column to left of left
-				destY = bottomY + ((i + vertShift + height) % height);
+				destY = bottomY + ((((i + vertShift) % height) + height) % height);
 
 				// check if cell set
 				if ((grid[sourceY][rightX >> 4] & (1 << (~rightX & 15))) !== 0) {

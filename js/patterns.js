@@ -378,6 +378,9 @@
 		// valid bounded grid types
 		/** @const {string} */ this.boundedGridTypes = "ptkcs";
 
+		// maximum bounded grid shift
+		/** @const {number} */ this.maximumShift = 1000000;
+
 		// vadlid rule characters (digits must come first)
 		/** @const {string} */ this.validRuleLetters = "012345678ceaiknjqrytwz-";
 
@@ -6927,6 +6930,9 @@
 			/** @type {number} */ shiftWidth = 0,
 			/** @type {number} */ shiftHeight = 0,
 
+			// maxmimum allowed shift (this is the specified value, actual value is % width or height)
+			/** @type {number} */ maxRange = this.maximumShift,
+
 			// next character
 			/** @type {string} */ chr = "";
 
@@ -6987,6 +6993,20 @@
 				// comma missing so make height the same as width
 				height = width;
 			}
+		}
+
+		// check for shift range
+		if (shiftWidth < -maxRange || shiftWidth > maxRange || shiftHeight < -maxRange || shiftHeight > maxRange) {
+			width = -1;
+		}
+
+		// convert shifts to modulo
+		if (shiftWidth !== 0 && width > 0) {
+			shiftWidth %= width;
+		}
+
+		if (shiftHeight !== 0 && height > 0) {
+			shiftHeight %= height;
 		}
 
 		// if both shifts are specified make invalid
@@ -7119,6 +7139,11 @@
 
 		// shift can only be on the twisted edge
 		if ((horizontalTwist && shiftHeight !== 0) || (verticalTwist && shiftWidth !== 0)) {
+			width = -1;
+		}
+
+		// if no twists specified then the default if vertical in which case do not allow horizontal shift
+		if (!horizontalTwist && !verticalTwist && shiftWidth !== 0) {
 			width = -1;
 		}
 

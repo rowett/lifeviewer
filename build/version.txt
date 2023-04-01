@@ -1,3 +1,8 @@
+Build 1007
+- fixed an edge case for Klein Bounded Grid definition
+- make canonical form of Torus Bounded Grid shift modulo width or height
+- limit maximum specified Torus shift to +/- 1000000
+
 Build 1006
 - reduce maximum HROT Gaussian range to 50
 
