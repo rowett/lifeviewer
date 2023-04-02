@@ -8004,6 +8004,13 @@
 			}
 		}
 
+		// check for HROT and Bounded Grid with shift
+		if (pattern.isHROT && pattern.gridType !== -1 && (pattern.gridVerticalShift !== 0 || pattern.gridHorizontalShift !== 0)) {
+			this.failureReason = "HROT does not support Bounded Grid shift";
+			this.executable = false;
+			pattern.gridType = -1;
+		}
+
 		// check for HROT B0 and > 2 states
 		if (hasHROTB0 && pattern.multiNumStates > 2) {
 			this.failureReason = "HROT Generations does not support B0";

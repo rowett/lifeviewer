@@ -1,3 +1,7 @@
+Build 1008
+- fixed HROT rules not rejecting Bounded Grid with shift
+- improved Spaceship detection for single cell ships
+
 Build 1007
 - fixed an edge case for Klein Bounded Grid definition
 - make canonical form of Torus Bounded Grid shift modulo width or height

@@ -4876,10 +4876,10 @@
 										if (verifyingSpaceship) {
 											if (this.spaceshipContinues(period, lastSpaceshipPeriod, deltaX, lastSpaceshipDeltaX, deltaY, lastSpaceshipDeltaY)) {
 												message = this.spaceshipSpeed(period, deltaX, deltaY);
+												verifyingSpaceship = false;
 											} else {
 												saveResults = false;
 											}
-											verifyingSpaceship = false;
 										} else {
 											// remember current spaceship position so it can be verified
 											verifyingSpaceship = true;
