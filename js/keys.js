@@ -349,6 +349,12 @@
 						}
 						break;
 
+					// m for copy as MAP
+					case 77:
+						// copy rule definition as MAP
+						me.copyAsMAPPressed(me);
+						break;
+
 					// n for new pattern
 					case 78:
 						// new pattern

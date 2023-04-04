@@ -1,3 +1,9 @@
+Build 1009
+- added Strict Volatility support for 2-state RuleTable rules
+- fixed incorrect births and deaths count for 2-state VN RuleTree rules
+- added Settings->Clipboard->Copy as MAP (hotkey Ctrl+Shift+J) will copy the current 2-state RuleTable or RuleTree rule as the equivalent MAP rule
+- fixed AutoFit not updating after all edits
+
 Build 1008
 - fixed HROT rules not rejecting Bounded Grid with shift
 - improved Spaceship detection for single cell ships

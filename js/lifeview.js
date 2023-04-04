@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1008,
+		/** @const {number} */ versionBuild : 1009,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1865,6 +1865,9 @@
 		// copy rule button
 		/** @type {MenuItem} */ this.copyRuleButton = null;
 
+		// copy as MAP button
+		/** @type {MenuItem} */ this.copyAsMAPButton = null;
+
 		// copy neighbourhood button
 		/** @type {MenuItem} */ this.copyNeighbourhoodButton = null;
 
@@ -2829,6 +2832,13 @@
 
 			// update tooltips
 			this.updateUndoToolTips();
+
+			// cells changed so AutoFit if enabled
+			if (this.autoFit) {
+				this.engine.shrinkNeeded = true;
+				this.engine.doShrink();
+				this.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
+			}
 		}
 	};
 
@@ -5596,42 +5606,42 @@
 		}
 	};
 
-// update step label
-View.prototype.updateStepLabel = function(/** @type {number} */ stepsTaken) {
-	var	/** @type {number} */ i = 0,
-		/** @type {number} */ total = 0;
-
-	// add the sample to the array
-	this.stepSamples[this.stepIndex] = stepsTaken;
-	this.stepIndex += 1;
-	if (this.stepIndex >= ViewConstants.numStepSamples) {
+	// update step label
+	View.prototype.updateStepLabel = function(/** @type {number} */ stepsTaken) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ total = 0;
+	
+		// add the sample to the array
+		this.stepSamples[this.stepIndex] = stepsTaken;
+		this.stepIndex += 1;
+		if (this.stepIndex >= ViewConstants.numStepSamples) {
+			this.stepIndex = 0;
+		}
+	
+		// compute the average
+		for (i = 0; i < this.stepSamples.length; i += 1) {
+			total += this.stepSamples[i];
+		}
+		total /= this.stepSamples.length;
+	
+		// update the label
+		this.stepLabel.preText = String(Math.round(total));
+		this.stepLabel.deleted = false;
+	};
+	
+	// clear step samples
+	View.prototype.clearStepSamples = function() {
+		var	/** @type {number} */ i = 0;
+	
+		for (i = 0; i < this.stepSamples.length; i += 1) {
+			this.stepSamples[i] = 0;
+		}
 		this.stepIndex = 0;
-	}
-
-	// compute the average
-	for (i = 0; i < this.stepSamples.length; i += 1) {
-		total += this.stepSamples[i];
-	}
-	total /= this.stepSamples.length;
-
-	// update the label
-	this.stepLabel.preText = String(Math.round(total));
-	this.stepLabel.deleted = false;
-};
-
-// clear step samples
-View.prototype.clearStepSamples = function() {
-	var	/** @type {number} */ i = 0;
-
-	for (i = 0; i < this.stepSamples.length; i += 1) {
-		this.stepSamples[i] = 0;
-	}
-	this.stepIndex = 0;
-	this.stepLabel.deleted = true;
-};
-
-// get cell distance from the center of the viewpoint
-/** @returns {number} */
+		this.stepLabel.deleted = true;
+	};
+	
+	// get cell distance from the center of the viewpoint
+	/** @returns {number} */
 	View.prototype.getDistFromCenter = function(/** @type {number} */ x, /** @type {number} */ y) {
 		// position relative to display width and height
 		var	/** @type {number} */ displayX = 0,
@@ -6945,6 +6955,7 @@ View.prototype.clearStepSamples = function() {
 		this.openClipboardButton.deleted = shown;
 		this.copyOriginalButton.deleted = shown;
 		this.copyRuleButton.deleted = shown;
+		this.copyAsMAPButton.deleted = shown;
 		this.copyNeighbourhoodButton.deleted = shown;
 		this.pasteToSelectionButton.deleted = shown;
 		this.copyWithCommentsButton.deleted = shown;
@@ -7013,6 +7024,7 @@ View.prototype.clearStepSamples = function() {
 		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom || (this.engine.boundedGridType !== -1 && (this.engine.boundedGridWidth === 0 || this.engine.boundedGridHeight === 0)) || this.engine.altSpecified;
 		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";
 		this.copyRuleButton.locked = shown;
+		this.copyAsMAPButton.locked = shown || !(this.engine.isRuleTree && this.engine.multiNumStates === 2);
 		this.copyNeighbourhoodButton.locked = shown;
 		this.copyWithCommentsButton.locked = shown;
 		this.pasteToSelectionButton.locked = shown;
@@ -9938,11 +9950,6 @@ View.prototype.clearStepSamples = function() {
 		// if the population is now non-zero then reset died generation
 		if (this.engine.population > 0) {
 			this.diedGeneration = -1;
-		}
-
-		// auto fit if enabled
-		if (this.autoFit) {
-			this.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 		}
 
 		return result;
@@ -14847,6 +14854,16 @@ View.prototype.clearStepSamples = function() {
 	};
 
 	// copy rule button clicked
+	View.prototype.copyAsMAPPressed = function(/** @type {View} */ me) {
+		var	/** @type {string} */ ruleText = "";
+
+		if (me.engine.isRuleTree && me.engine.multiNumStates === 2) {
+			ruleText = me.engine.ruleLoaderToMAP();
+			me.copyToClipboard(me, ruleText, false);
+		}
+	};
+
+	// copy rule button clicked
 	View.prototype.copyRulePressed = function(/** @type {View} */ me) {
 		var	/** @type {string} */ ruleText = me.patternRuleName;
 
@@ -14863,10 +14880,11 @@ View.prototype.clearStepSamples = function() {
 
 	// identify button action
 	View.prototype.identifyAction = function(/** @type {View} */ me) {
-		// close Help if open
-		if (me.displayHelp !== 0) {
+		// close Help or Errors if open
+		if (me.displayHelp !== 0 || me.displayErrors !== 0) {
 			me.displayHelp = 0;
 			me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
+			me.displayErrors = 0;
 		}
 
 		// check if anything is alive
@@ -16544,35 +16562,39 @@ View.prototype.clearStepSamples = function() {
 		this.saveGraphButton.toolTip = "save population graph image [Shift O]";
 
 		// open clipboard button
-		this.openClipboardButton = this.viewMenu.addButtonItem(this.openClipboardPressed, Menu.middle, -100, -75, 180, 40, "Open Clipboard");
+		this.openClipboardButton = this.viewMenu.addButtonItem(this.openClipboardPressed, Menu.middle, -100, -100, 180, 40, "Open Clipboard");
 		this.openClipboardButton.toolTip = "open clipboard as pattern [Ctrl Shift O]";
 
 		// copy original pattern button
-		this.copyOriginalButton = this.viewMenu.addButtonItem(this.copyOriginalPressed, Menu.middle, 100, -75, 180, 40, "Copy Original");
+		this.copyOriginalButton = this.viewMenu.addButtonItem(this.copyOriginalPressed, Menu.middle, 100, -100, 180, 40, "Copy Original");
 		this.copyOriginalButton.toolTip = "copy original pattern [Ctrl Shift C]";
 
 		// copy rule button
-		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, -25, 180, 40, "Copy Rule");
+		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, -50, 180, 40, "Copy Rule");
 		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
 
+		// copy as MAP button
+		this.copyAsMAPButton = this.viewMenu.addButtonItem(this.copyAsMAPPressed, Menu.middle, 100, -50, 180, 40, "Copy as MAP");
+		this.copyAsMAPButton.toolTip = "copy rule definition as MAP [Alt M]";
+
 		// copy neighbourhood button
-		this.copyNeighbourhoodButton = this.viewMenu.addButtonItem(this.copyNeighbourhoodPressed, Menu.middle, 100, -25, 180, 40, "Copy Nhood");
+		this.copyNeighbourhoodButton = this.viewMenu.addButtonItem(this.copyNeighbourhoodPressed, Menu.middle, -100, 0, 180, 40, "Copy Nhood");
 		this.copyNeighbourhoodButton.toolTip = "copy CoordCA neighbourhood definition [Ctrl B]";
 
 		// copy with comments button
-		this.copyWithCommentsButton = this.viewMenu.addButtonItem(this.copyWithCommentsPressed, Menu.middle, -100, 25, 180, 40, "Copy All");
+		this.copyWithCommentsButton = this.viewMenu.addButtonItem(this.copyWithCommentsPressed, Menu.middle, 100, 0, 180, 40, "Copy All");
 		this.copyWithCommentsButton.toolTip = "copy with comments [Ctrl Alt C]";
 
 		// paste to selection button
-		this.pasteToSelectionButton = this.viewMenu.addButtonItem(this.pasteToSelectionPressed, Menu.middle, 100, 25, 180, 40, "Paste To Seln");
+		this.pasteToSelectionButton = this.viewMenu.addButtonItem(this.pasteToSelectionPressed, Menu.middle, -100, 50, 180, 40, "Paste To Seln");
 		this.pasteToSelectionButton.toolTip = "paste to selection [Ctrl Shift V]";
 
 		// copy position button
-		this.copyPositionButton = this.viewMenu.addButtonItem(this.copyPositionPressed, Menu.middle, -100, 75, 180, 40, "Copy Position");
+		this.copyPositionButton = this.viewMenu.addButtonItem(this.copyPositionPressed, Menu.middle, 100, 50, 180, 40, "Copy Position");
 		this.copyPositionButton.toolTip = "copy position [K]";
 
 		// copy view button
-		this.copyViewButton = this.viewMenu.addButtonItem(this.copyViewPressed, Menu.middle, 100, 75, 180, 40, "Copy View");
+		this.copyViewButton = this.viewMenu.addButtonItem(this.copyViewPressed, Menu.middle, -100, 100, 180, 40, "Copy View");
 		this.copyViewButton.toolTip = "copy position and view [Shift K]";
 
 		// previous universe button

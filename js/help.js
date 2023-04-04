@@ -927,6 +927,9 @@
 		y = this.renderHelpLine(view, "Ctrl X", "cut current selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Alt X", "cut current selection with comments", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl J", "copy rule definition", ctx, x, y, height, helpLine);
+		if (view.engine.isRuleTree && view.engine.multiNumStates === 2) {
+			y = this.renderHelpLine(view, "Alt M", "copy rule definition as MAP", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "K", "copy camera position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift K", "copy camera position and view", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);

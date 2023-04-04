@@ -3444,7 +3444,7 @@
 			/** @type {Uint8Array} */ colourRow = null;
 
 		// swap grids every generation
-		if (this.isSuper) {
+		if (this.isSuper || this.isRuleTree) {
 			colourGrid = this.colourGrid;
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -3461,8 +3461,8 @@
 			f = ((cy - extent.bottomY) * bitRowInBytes) + l;
 			bit = bitStart;
 
-			// check for Super rules
-			if (this.isSuper) {
+			// check for Super or RuleTree rules
+			if (this.isSuper || this.isRuleTree) {
 				// process the row
 				cx = extent.leftX;
 				frameBits = 0;
@@ -3845,7 +3845,7 @@
 
 		// determine whether Strict Volatility can be calculated based on amount of RAM needed
 		//if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
-		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree) {
+		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper)) {
 			// compute the maximum box width and height for the oscillator
 			extent = this.getOscillatorBounds(period, i);
 			boxWidth = extent.rightX - extent.leftX + 1;
@@ -25047,13 +25047,13 @@
 		var	/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ nextRow = null,
 			/** @type {Uint32Array} */ gridRow32 = null,
-			/** @type {Array} */ lut = this.ruleTableLUT,
-			lut0 = lut[0],
-			lut1 = lut[1],
-			lut2 = lut[2],
-			lute = null,
-			lutw = null,
-			lutc = null,
+			/** @type {Array<Array<Uint32Array>>} */ lut = this.ruleTableLUT,
+			/** @type {Array<Uint32Array>} */ lut0 = lut[0],
+			/** @type {Array<Uint32Array>} */ lut1 = lut[1],
+			/** @type {Array<Uint32Array>} */ lut2 = lut[2],
+			/** @type {Uint32Array} */ lute = null,
+			/** @type {Uint32Array} */ lutw = null,
+			/** @type {Uint32Array} */ lutc = null,
 			/** @type {Uint8Array} */ output = this.ruleTableOutput,
 			/** @type {number} */ nCompressed = this.ruleTableCompressedRules,
 			/** @type {number} */ isMatch = 0,
@@ -25619,17 +25619,17 @@
 			/** @type {Uint8Array} */ gridRow2 = null,
 			/** @type {Uint8Array} */ nextRow = null,
 			/** @type {Uint32Array} */ gridRow32 = null,
-			/** @type {Array} */ lut = this.ruleTableLUT,
-			lut0 = lut[0],
-			lut1 = lut[1],
-			lut2 = lut[2],
-			lut3 = lut[3],
-			lut4 = lut[4],
-			lutn = null,
-			lute = null,
-			luts = null,
-			lutw = null,
-			lutc = null,
+			/** @type {Array<Array<Uint32Array>>} */ lut = this.ruleTableLUT,
+			/** @type {Array<Uint32Array>} */ lut0 = lut[0],
+			/** @type {Array<Uint32Array>} */ lut1 = lut[1],
+			/** @type {Array<Uint32Array>} */ lut2 = lut[2],
+			/** @type {Array<Uint32Array>} */ lut3 = lut[3],
+			/** @type {Array<Uint32Array>} */ lut4 = lut[4],
+			/** @type {Uint32Array} */ lutn = null,
+			/** @type {Uint32Array} */ lute = null,
+			/** @type {Uint32Array} */ luts = null,
+			/** @type {Uint32Array} */ lutw = null,
+			/** @type {Uint32Array} */ lutc = null,
 			/** @type {Uint8Array} */ output = this.ruleTableOutput,
 			/** @type {number} */ nCompressed = this.ruleTableCompressedRules,
 			/** @type {number} */ isMatch = 0,
@@ -26232,25 +26232,25 @@
 			/** @type {Uint8Array} */ gridRow2 = null,
 			/** @type {Uint8Array} */ nextRow = null,
 			/** @type {Uint32Array} */ gridRow32 = null,
-			/** @type {Array} */ lut = this.ruleTableLUT,
-			lut0 = lut[0],
-			lut1 = lut[1],
-			lut2 = lut[2],
-			lut3 = lut[3],
-			lut4 = lut[4],
-			lut5 = lut[5],
-			lut6 = lut[6],
-			lut7 = lut[7],
-			lut8 = lut[8],
-			lutnw = null,
-			lutn = null,
-			lutne = null,
-			lutw = null,
-			lutc = null,
-			lute = null,
-			lutsw = null,
-			luts = null,
-			lutse = null,
+			/** @type {Array<Array<Uint32Array>>} */ lut = this.ruleTableLUT,
+			/** @type {Array<Uint32Array>} */ lut0 = lut[0],
+			/** @type {Array<Uint32Array>} */ lut1 = lut[1],
+			/** @type {Array<Uint32Array>} */ lut2 = lut[2],
+			/** @type {Array<Uint32Array>} */ lut3 = lut[3],
+			/** @type {Array<Uint32Array>} */ lut4 = lut[4],
+			/** @type {Array<Uint32Array>} */ lut5 = lut[5],
+			/** @type {Array<Uint32Array>} */ lut6 = lut[6],
+			/** @type {Array<Uint32Array>} */ lut7 = lut[7],
+			/** @type {Array<Uint32Array>} */ lut8 = lut[8],
+			/** @type {Uint32Array} */ lutnw = null,
+			/** @type {Uint32Array} */ lutn = null,
+			/** @type {Uint32Array} */ lutne = null,
+			/** @type {Uint32Array} */ lutw = null,
+			/** @type {Uint32Array} */ lutc = null,
+			/** @type {Uint32Array} */ lute = null,
+			/** @type {Uint32Array} */ lutsw = null,
+			/** @type {Uint32Array} */ luts = null,
+			/** @type {Uint32Array} */ lutse = null,
 			/** @type {Uint8Array} */ output = this.ruleTableOutput,
 			/** @type {number} */ nCompressed = this.ruleTableCompressedRules,
 			/** @type {number} */ isMatch = 0,
@@ -26894,21 +26894,21 @@
 			/** @type {Uint8Array} */ gridRow2 = null,
 			/** @type {Uint8Array} */ nextRow = null,
 			/** @type {Uint32Array} */ gridRow32 = null,
-			/** @type {Array} */ lut = this.ruleTableLUT,
-			lut0 = lut[0],
-			lut1 = lut[1],
-			lut2 = lut[2],
-			lut3 = lut[3],
-			lut4 = lut[4],
-			lut5 = lut[5],
-			lut6 = lut[6],
-			lutn = null,
-			lute = null,
-			luts = null,
-			lutw = null,
-			lutc = null,
-			lutnw = null,
-			lutse = null,
+			/** @type {Array<Array<Uint32Array>>} */ lut = this.ruleTableLUT,
+			/** @type {Array<Uint32Array>} */ lut0 = lut[0],
+			/** @type {Array<Uint32Array>} */ lut1 = lut[1],
+			/** @type {Array<Uint32Array>} */ lut2 = lut[2],
+			/** @type {Array<Uint32Array>} */ lut3 = lut[3],
+			/** @type {Array<Uint32Array>} */ lut4 = lut[4],
+			/** @type {Array<Uint32Array>} */ lut5 = lut[5],
+			/** @type {Array<Uint32Array>} */ lut6 = lut[6],
+			/** @type {Uint32Array} */ lutn = null,
+			/** @type {Uint32Array} */ lute = null,
+			/** @type {Uint32Array} */ luts = null,
+			/** @type {Uint32Array} */ lutw = null,
+			/** @type {Uint32Array} */ lutc = null,
+			/** @type {Uint32Array} */ lutnw = null,
+			/** @type {Uint32Array} */ lutse = null,
 			/** @type {Uint8Array} */ output = this.ruleTableOutput,
 			/** @type {number} */ nCompressed = this.ruleTableCompressedRules,
 			/** @type {number} */ isMatch = 0,
@@ -29030,6 +29030,297 @@
 		this.population = population;
 		this.births = births;
 		this.deaths = deaths;
+	};
+
+	// convert 2-state RuleTable to MAP
+	/** @returns {string} */
+	Life.prototype.ruleTableToMAP = function() {
+		var	/** @type {string} */ result = "MAP",
+
+			// cells
+			/** @type {number} */ n = 0,
+			/** @type {number} */ e = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ w = 0,
+			/** @type {number} */ c = 0,
+			/** @type {number} */ ne = 0,
+			/** @type {number} */ nw = 0,
+			/** @type {number} */ se = 0,
+			/** @type {number} */ sw = 0,
+
+			// lookup
+			/** @type {Array<Array<Uint32Array>>} */ lut = this.ruleTableLUT,
+			/** @type {Array<Uint32Array>} */ lut0 = null,
+			/** @type {Array<Uint32Array>} */ lut1 = null,
+			/** @type {Array<Uint32Array>} */ lut2 = null,
+			/** @type {Array<Uint32Array>} */ lut3 = null,
+			/** @type {Array<Uint32Array>} */ lut4 = null,
+			/** @type {Array<Uint32Array>} */ lut5 = null,
+			/** @type {Array<Uint32Array>} */ lut6 = null,
+			/** @type {Array<Uint32Array>} */ lut7 = null,
+			/** @type {Array<Uint32Array>} */ lut8 = null,
+			/** @type {Uint32Array} */ lutnw = null,
+			/** @type {Uint32Array} */ lutn = null,
+			/** @type {Uint32Array} */ lutne = null,
+			/** @type {Uint32Array} */ lutw = null,
+			/** @type {Uint32Array} */ lutc = null,
+			/** @type {Uint32Array} */ lute = null,
+			/** @type {Uint32Array} */ lutsw = null,
+			/** @type {Uint32Array} */ luts = null,
+			/** @type {Uint32Array} */ lutse = null,
+			/** @type {Uint8Array} */ output = this.ruleTableOutput,
+			/** @type {number} */ nCompressed = this.ruleTableCompressedRules,
+			/** @type {number} */ isMatch = 0,
+			/** @type {number} */ iRuleC = 0,
+			/** @type {number} */ iBit = 0,
+			/** @type {number} */ mask = 0,
+
+			// iterator
+			/** @type {number} */ i = 0,
+
+			// calculated state
+			/** @type {number} */ state = 0,
+
+			// base64 characters
+			/** @type {string} */ base64chars = this.manager.base64Characters,
+
+			// character to add
+			/** @type {number} */ character = 0;
+
+		// check neighbourhood
+		switch (this.ruleTableNeighbourhood) {
+
+		// Moore
+		case PatternConstants.ruleTableMoore:
+			// get the lookups
+			lut0 = lut[0];
+			lut1 = lut[1];
+			lut2 = lut[2];
+			lut3 = lut[3];
+			lut4 = lut[4];
+			lut5 = lut[5];
+			lut6 = lut[6];
+			lut7 = lut[7];
+			lut8 = lut[8];
+
+			// iterate over all 512 possible combinations
+			for (i = 0; i < 512; i += 1) {
+				nw = (i & 256) >> 8;
+				n = (i & 128) >> 7;
+				ne = (i & 64) >> 6;
+				w = (i & 32) >> 5;
+				c = (i & 16) >> 4;
+				e = (i & 8) >> 3;
+				sw = (i & 4) >> 2;
+				s = (i & 2) >> 1;
+				se = (i & 1);
+	
+				// lookup the result
+				state = c;
+				lutc = lut0[c];
+				lutn = lut1[n];
+				lutne = lut2[ne];
+				lute = lut3[e];
+				lutse = lut4[se];
+				luts = lut5[s];
+				lutsw = lut6[sw];
+				lutw = lut7[w];
+				lutnw = lut8[nw];
+
+				for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
+					isMatch = lutc[iRuleC] & lutn[iRuleC];
+					if (isMatch) {
+						isMatch &= lutne[iRuleC] & lute[iRuleC];
+						if (isMatch) {
+							isMatch &= lutse[iRuleC] & luts[iRuleC];
+							if (isMatch) {
+								isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+								if (isMatch) {
+									iBit = 0;
+									mask = 1;
+									while (!(isMatch & mask)) {
+										iBit += 1;
+										mask <<= 1;
+									}
+									state = output[(iRuleC << 5) + iBit];
+									break;
+								}
+							}
+						}
+					}
+				}
+	
+				// update the character
+				character = (character << 1) | (state & 1);
+				if ((i % 6) === 5) {
+					result += base64chars[character];
+					character = 0;
+				}
+			}
+	
+			// add final digit
+			result += base64chars[character];
+
+			break;
+
+		// von Neumann
+		case PatternConstants.ruleTableVN:
+			// get the lookups
+			lut0 = lut[0];
+			lut1 = lut[1];
+			lut2 = lut[2];
+			lut3 = lut[3];
+			lut4 = lut[4];
+
+			// iterate over all 32 possible combinations
+			for (i = 0; i < 32; i += 1) {
+				n = (i & 16) >> 4;
+				w = (i & 8) >> 3;
+				c = (i & 4) >> 2;
+				e = (i & 2) >> 1;
+				s = (i & 1);
+	
+				// lookup the result
+				state = c;
+				lutc = lut0[c];
+				lutn = lut1[n];
+				lute = lut2[e];
+				luts = lut3[s];
+				lutw = lut4[w];
+
+				for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
+					isMatch = lutc[iRuleC] & lutn[iRuleC];
+					if (isMatch) {
+						isMatch &= lute[iRuleC] & luts[iRuleC] & lutw[iRuleC];
+						if (isMatch) {
+							iBit = 0;
+							mask = 1;
+							while (!(isMatch & mask)) {
+								iBit += 1;
+								mask <<= 1;
+							}
+							state = output[(iRuleC << 5) + iBit];
+							break;
+						}
+					}
+				}
+	
+				// update the character
+				character = (character << 1) | (state & 1);
+				if ((i % 6) === 5) {
+					result += base64chars[character];
+					character = 0;
+				}
+			}
+	
+			// add final digit
+			result += base64chars[character];
+
+			break;
+		}
+
+		return result;
+	};
+
+	// convert 2-state RuleTree to MAP
+	/** @returns {string} */
+	Life.prototype.ruleTreeToMAP = function() {
+		var	/** @type {string} */ result = "MAP",
+
+			// cells
+			/** @type {number} */ n = 0,
+			/** @type {number} */ e = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ w = 0,
+			/** @type {number} */ c = 0,
+			/** @type {number} */ ne = 0,
+			/** @type {number} */ nw = 0,
+			/** @type {number} */ se = 0,
+			/** @type {number} */ sw = 0,
+
+			// lookup
+			/** @type {Uint32Array} */ a = this.ruleTreeA,
+			/** @type {Uint8Array} */ b = this.ruleTreeB,
+			/** @type {number} */ base = this.ruleTreeBase,
+
+			// iterator
+			/** @type {number} */ i = 0,
+
+			// calculated state
+			/** @type {number} */ state = 0,
+
+			// base64 characters
+			/** @type {string} */ base64chars = this.manager.base64Characters,
+
+			// character to add
+			/** @type {number} */ character = 0;
+
+		// check neighbourhood
+		if (this.ruleTreeNeighbours === 8) {
+			// iterate over all 512 possible combinations
+			for (i = 0; i < 512; i += 1) {
+				nw = (i & 256) >> 8;
+				n = (i & 128) >> 7;
+				ne = (i & 64) >> 6;
+				w = (i & 32) >> 5;
+				c = (i & 16) >> 4;
+				e = (i & 8) >> 3;
+				sw = (i & 4) >> 2;
+				s = (i & 2) >> 1;
+				se = (i & 1);
+	
+				// lookup the result
+				state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
+	
+				// update the character
+				character = (character << 1) | (state & 1);
+				if ((i % 6) === 5) {
+					result += base64chars[character];
+					character = 0;
+				}
+			}
+	
+			// add final digit
+			result += base64chars[character];
+		} else {
+			// iterate over all 32 possible combinations
+			for (i = 0; i < 32; i += 1) {
+				n = (i & 16) >> 4;
+				w = (i & 8) >> 3;
+				c = (i & 4) >> 2;
+				e = (i & 2) >> 1;
+				s = (i & 1);
+	
+				// lookup the result
+				state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+	
+				// update the character
+				character = (character << 1) | (state & 1);
+				if ((i % 6) === 5) {
+					result += base64chars[character];
+					character = 0;
+				}
+			}
+	
+			// add final digit
+			result += base64chars[character];
+		}
+
+		return result;
+	};
+
+	// convert a 2-state RuleLoader rule to MAP
+	/** @returns {string} */
+	Life.prototype.ruleLoaderToMAP = function() {
+		var	/** @type {string} */ result = "";
+
+		if (this.ruleTableOutput === null) {
+			result = this.ruleTreeToMAP();
+		} else {
+			result = this.ruleTableToMAP();
+		}
+
+		return result;
 	};
 
 	// update the life grid region using tiles for Moore RuleTree patterns
@@ -31204,13 +31495,13 @@
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 3584) === 0) {
+									if ((index & 8) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3584) !== 0) {
+									if ((index & 8) !== 0) {
 										deaths += 1;
 									}
 								}
