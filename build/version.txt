@@ -1,7 +1,22 @@
+Build 1012
+- further improvements to COLOR element validation
+
+Build 1011
+- improved COLOR element validation
+
+Build 1010
+- fixed AutoFit for empty Hex patterns
+- fixed Triangular selections being one cell too wide
+- fixed [R]History state colours not being able to be changed with state numbers
+- fixed creating a Custom Theme when an invalid state number specified for a colour
+- fixed COLOR dead and COLOR DEAD sometimes referring to different states
+- fixed not creating a Custom Theme when some [R]History colours changed
+- fixed DEAD vs DEADRAMP order for [R]History
+
 Build 1009
-- added Strict Volatility support for 2-state RuleTable rules
+- added Strict Volatility support for 2-state RuleLoader rules
 - fixed incorrect births and deaths count for 2-state VN RuleTree rules
-- added Settings->Clipboard->Copy as MAP (hotkey Ctrl+Shift+J) will copy the current 2-state RuleTable or RuleTree rule as the equivalent MAP rule
+- added Settings->Clipboard->Copy as MAP (hotkey Alt-M) to copy to the clipboard the MAP equivalent of a 2-state RuleLoader rule
 - fixed AutoFit not updating after all edits
 
 Build 1008

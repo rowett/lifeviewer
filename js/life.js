@@ -5116,7 +5116,7 @@
 			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
 				cy = (y - h2);
 				xOffset = xOff1 - w2;
-				for (x = leftX; x <= rightX + 1; x += 1) {
+				for (x = leftX; x <= rightX; x += 1) {
 					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 					if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
 						// encode coordinate index into the colour state so it can be sorted later
@@ -35208,7 +35208,7 @@
 				// check for empty pattern
 				if (count === 0) {
 					leftX = leftX - bottomY / 2;
-					rightX = leftX;
+					rightX = leftX + 1;
 				} else {
 					leftX = minX;
 					rightX = maxX;

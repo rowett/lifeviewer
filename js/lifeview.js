@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1009,
+		/** @const {number} */ versionBuild : 1012,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2147,6 +2147,16 @@
 		// pen colour for drawing
 		/** @type {number} */ this.penColour = -1;
 	}
+
+	// check if a string is an [R]History state name
+	/** @returns {boolean} */
+	View.prototype.isLifeHistoryStateName = function(/** @type {string} */ name) {
+		var	/** @type {boolean} */ result = false;
+
+		result = ViewConstants.stateNames.includes(name);
+
+		return result;
+	};
 
 	// create clipboard tooltips
 	View.prototype.createClipboardTooltips = function() {
@@ -8981,15 +8991,50 @@
 		}
 	};
 
-	// get state number from name
+	// get PCA state number from name
 	/** @returns {number} */
-	View.prototype.getStateFromName = function(/** @type {string} */ name) {
+	View.prototype.getPCAStateFromName = function(/** @type {string} */ name) {
 		var	/** @type {number} */ number = -1,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ n = 0,
 			/** @type {number} */ s = 0,
 			/** @type {number} */ e = 0,
 			/** @type {number} */ w = 0;
+
+		i = 0;
+		while (i < name.length && number === -1) {
+			switch (name.charAt(i)) {
+				case "N":
+					n += 1;
+					break;
+				case "S":
+					s += 1;
+					break;
+				case "E":
+					e += 1;
+					break;
+				case "W":
+					w += 1;
+					break;
+				default:
+					number = -2;
+			}
+			i += 1;
+		}
+		if (n > 1 || s > 1 || e > 1 || w > 1) {
+			number = -2;
+		}
+		if (number !== -2) {
+			number = n | (e << 1) | (s << 2) | (w << 3);
+		}
+		return number;
+	};
+
+	// get state number from name
+	/** @returns {number} */
+	View.prototype.getStateFromName = function(/** @type {string} */ name) {
+		var	/** @type {number} */ number = -1,
+			/** @type {number} */ i = 0;
 
 		// remove quotes from the name
 		if (name.charAt(0) === "\"") {
@@ -9034,32 +9079,7 @@
 					number = 0;
 				} else {
 					if (this.engine.isPCA) {
-						i = 0;
-						while (i < name.length && number === -1) {
-							switch (name.charAt(i)) {
-								case "N":
-									n += 1;
-									break;
-								case "S":
-									s += 1;
-									break;
-								case "E":
-									e += 1;
-									break;
-								case "W":
-									w += 1;
-									break;
-								default:
-									number = -2;
-							}
-							i += 1;
-						}
-						if (n > 1 || s > 1 || e > 1 || w > 1) {
-							number = -2;
-						}
-						if (number !== -2) {
-							number = n | (e << 1) | (s << 2) | (w << 3);
-						}
+						number = this.getPCAStateFromName(name);
 					} else {
 						if (this.engine.isSuper) {
 							i = 0;
@@ -9123,7 +9143,11 @@
 			} else {
 				// multi-state (Generations, PCA or none)
 				if (state === 0) {
-					name = "dead";
+					if (this.engine.isNone) {
+						name = "state 0";
+					} else {
+						name = "dead";
+					}
 				} else {
 					if (this.engine.isPCA) {
 						if ((state & 1) !== 0) {
