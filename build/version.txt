@@ -1,3 +1,9 @@
+Build 1014
+- improved COLOR validation error messages
+
+Build 1013
+- align Help->Scripts->Colours with current rule
+
 Build 1012
 - further improvements to COLOR element validation
 

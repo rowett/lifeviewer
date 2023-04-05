@@ -3209,57 +3209,51 @@
 									break;
 
 								case Keywords.historyColorWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDead, whichColour);
 									if (!view.engine.isLifeHistory) {
-										scriptReader.getNextToken();
-										scriptReader.getNextToken();
-										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.historyColorWord, "only valid for [R]History"];
+										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.historyColorWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDead, whichColour);
+										view.customTheme = false;
 									}
 									break;
 
 								case Keywords.mark1ColorWord:
 									peekToken = scriptReader.getNextToken();
+									this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.mark1State, nextToken, false, peekToken);
 									if (!view.engine.isLifeHistory) {
-										scriptReader.getNextToken();
-										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.mark1ColorWord, "only valid for [R]History"];
+										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.mark1ColorWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.mark1State, nextToken, false, peekToken);
+										view.customTheme = false;
 									}
 									break;
 
 								case Keywords.markOffColorWord:
 									peekToken = scriptReader.getNextToken();
+									this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.markOffState, nextToken, false, peekToken);
 									if (!view.engine.isLifeHistory) {
-										scriptReader.getNextToken();
-										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.markOffColorWord, "only valid for [R]History"];
+										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.markOffColorWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.markOffState, nextToken, false, peekToken);
+										view.customTheme = false;
 									}
 									break;
 
 								case Keywords.mark2ColorWord:
 									peekToken = scriptReader.getNextToken();
+									this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.mark2State, nextToken, false, peekToken);
 									if (!view.engine.isLifeHistory) {
-										scriptReader.getNextToken();
-										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.mark2ColorWord, "only valid for [R]History"];
+										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.mark2ColorWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.mark2State, nextToken, false, peekToken);
+										view.customTheme = false;
 									}
 									break;
 
 								case Keywords.killColorWord:
 									peekToken = scriptReader.getNextToken();
+									this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.killState, nextToken, false, peekToken);
 									if (!view.engine.isLifeHistory) {
-										scriptReader.getNextToken();
-										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.killColorWord, "only valid for [R]History"];
+										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.killColorWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.decodeRGB(view, scriptReader, scriptErrors, ViewConstants.killState, nextToken, false, peekToken);
+										view.customTheme = false;
 									}
 									break;
 
@@ -3270,67 +3264,61 @@
 
 								// alive
 								case Keywords.themeAliveWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeAlive, whichColour);
 									if (view.engine.isPCA || view.engine.isSuper || view.engine.isRuleTree || view.engine.isNone) {
-										scriptReader.getNextToken();
 										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.themeAliveWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeAlive, whichColour);
+										view.customTheme = false;
 									}
 									break;
 
 								// aliveramp
 								case Keywords.themeAliveRampWord:
-									if (view.engine.multiNumStates > 2) {
-										scriptReader.getNextToken();
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeAliveRamp, whichColour);
+									if (view.engine.multiNumStates > 2 || view.engine.isNone) {
 										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.themeAliveRampWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeAliveRamp, whichColour);
+										view.customTheme = false;
 									}
 									break;
 
 								// dead
 								case Keywords.themeDeadWord:
-									if (view.engine.isNone) {
-										scriptReader.getNextToken();
-										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.themeDeadRampWord, "not valid for this rule"];
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDead, whichColour);
+									if (view.engine.isRuleTree || view.engine.isSuper || view.engine.isNone) {
+										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.themeDeadWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDead, whichColour);
+										view.customTheme = false;
 									}
 									break;
 
 								// deadramp
 								case Keywords.themeDeadRampWord:
-									if (view.engine.isNone) {
-										scriptReader.getNextToken();
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDeadRamp, whichColour);
+									if (view.engine.isRuleTree || view.engine.isSuper || view.engine.isNone) {
 										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.themeDeadRampWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDeadRamp, whichColour);
+										view.customTheme = false;
 									}
 									break;
 
 								// dying
 								case Keywords.themeDyingWord:
-									if (view.engine.multiNumStates <= 2) {
-										scriptReader.getNextToken();
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDying, whichColour);
+									if (view.engine.multiNumStates <= 2 || view.engine.isPCA || view.engine.isRuleTree || view.engine.isMargolus || view.engine.isSuper || view.engine.isLifeHistory || view.engine.isNone) {
 										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.themeDyingWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDying, whichColour);
+										view.customTheme = false;
 									}
 									break;
 
 								// dyingramp
 								case Keywords.themeDyingRampWord:
-									if (view.engine.multiNumStates <= 2) {
-										scriptReader.getNextToken();
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDyingRamp, whichColour);
+									if (view.engine.multiNumStates <= 2 || view.engine.isPCA || view.engine.isRuleTree || view.engine.isMargolus || view.engine.isSuper || view.engine.isLifeHistory || view.engine.isNone) {
 										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.themeDyingRampWord, "not valid for this rule"];
 										badColour = true;
-									} else {
-										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDyingRamp, whichColour);
+										view.customTheme = false;
 									}
 									break;
 
@@ -3386,13 +3374,12 @@
 
 								// bounded
 								case Keywords.boundedWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeBounded, whichColour);
 									if (view.engine.boundedGridType === -1) {
-										scriptReader.getNextToken();
 										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.boundedWord, "Bounded Grid not specified"];
 										badColour = true;
-									} else {
-										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeBounded, whichColour);
 									}
+									view.customTheme = false;
 									break;
 
 								// select
@@ -3500,14 +3487,10 @@
 	
 										// illegal colour element
 										if (colNum < 0) {
-											if (view.getPCAStateFromName(peekToken) >= 0) {
-												scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "only valid for PCA"];
+											if (view.getPCAStateFromName(peekToken) >= 0 || view.isLifeHistoryStateName(peekToken)) {
+												scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "not valid for this rule"];
 											} else {
-												if (view.isLifeHistoryStateName(peekToken)) {
-													scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "only valid for [R]History"];
-												} else {
-													scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "illegal element"];
-												}
+												scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "illegal element"];
 											}
 	
 											// eat the invalid token

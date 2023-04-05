@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1012,
+		/** @const {number} */ versionBuild : 1014,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -7037,7 +7037,7 @@
 		this.copyAsMAPButton.locked = shown || !(this.engine.isRuleTree && this.engine.multiNumStates === 2);
 		this.copyNeighbourhoodButton.locked = shown;
 		this.copyWithCommentsButton.locked = shown;
-		this.pasteToSelectionButton.locked = shown;
+		this.pasteToSelectionButton.locked = shown || (this.pasteBuffers[this.currentPasteBuffer] === null);
 		this.goToGenButton.locked = !this.executable || this.viewOnly;
 		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree);
 		this.saveButton.locked = shown;
@@ -16607,19 +16607,19 @@
 
 		// copy with comments button
 		this.copyWithCommentsButton = this.viewMenu.addButtonItem(this.copyWithCommentsPressed, Menu.middle, 100, 0, 180, 40, "Copy All");
-		this.copyWithCommentsButton.toolTip = "copy with comments [Ctrl Alt C]";
-
-		// paste to selection button
-		this.pasteToSelectionButton = this.viewMenu.addButtonItem(this.pasteToSelectionPressed, Menu.middle, -100, 50, 180, 40, "Paste To Seln");
-		this.pasteToSelectionButton.toolTip = "paste to selection [Ctrl Shift V]";
+		this.copyWithCommentsButton.toolTip = "copy current pattern with comments [Ctrl Alt C]";
 
 		// copy position button
-		this.copyPositionButton = this.viewMenu.addButtonItem(this.copyPositionPressed, Menu.middle, 100, 50, 180, 40, "Copy Position");
-		this.copyPositionButton.toolTip = "copy position [K]";
+		this.copyPositionButton = this.viewMenu.addButtonItem(this.copyPositionPressed, Menu.middle, -100, 50, 180, 40, "Copy Position");
+		this.copyPositionButton.toolTip = "copy camera position [K]";
 
 		// copy view button
-		this.copyViewButton = this.viewMenu.addButtonItem(this.copyViewPressed, Menu.middle, -100, 100, 180, 40, "Copy View");
-		this.copyViewButton.toolTip = "copy position and view [Shift K]";
+		this.copyViewButton = this.viewMenu.addButtonItem(this.copyViewPressed, Menu.middle, 100, 50, 180, 40, "Copy View");
+		this.copyViewButton.toolTip = "copy camera position and view [Shift K]";
+
+		// paste to selection button
+		this.pasteToSelectionButton = this.viewMenu.addButtonItem(this.pasteToSelectionPressed, Menu.middle, -100, 100, 180, 40, "Paste To Seln");
+		this.pasteToSelectionButton.toolTip = "paste to selection [Ctrl Shift V]";
 
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -100, 120, 40, "Prev");
