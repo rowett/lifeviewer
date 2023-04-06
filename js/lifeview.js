@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1015,
+		/** @const {number} */ versionBuild : 1016,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -1810,6 +1810,9 @@
 
 		// infobar button
 		/** @type {MenuItem} */ this.infoBarButton = null;
+
+		// fast lookup button
+		/** @type {MenuItem} */ this.fastLookupButton = null;
 
 		// info button
 		/** @type {MenuItem} */ this.infoButton = null;
@@ -7015,6 +7018,8 @@
 		this.stopOthersButton.deleted = shown;
 		this.resetAllButton.deleted = shown;
 		this.infoBarButton.deleted = shown;
+		this.fastLookupButton.deleted = shown;
+		this.fastLookupButton.locked = !this.engine.isRuleTree || (this.engine.isRuleTree && !this.engine.ruleLoaderLookupAvailable());
 
 		// display categoy
 		shown = hide || !this.showDisplaySettings;
@@ -8088,6 +8093,22 @@
 		}
 
 		return [me.infoBarEnabled];
+	};
+
+	// toggle fast lookup
+	/** @returns {Array<boolean>} */
+	View.prototype.viewFastLookupToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		// check if changing
+		if (change) {
+			me.engine.ruleLoaderLookupEnabled = newValue[0];
+			
+			// check if first time switched on
+			if (me.engine.ruleLoaderLookupEnabled && me.engine.ruleLoaderLookup === null) {
+				me.engine.createRuleLoaderLookup();
+			}
+		}
+
+		return [me.engine.ruleLoaderLookupEnabled];
 	};
 
 	// toggle graph data elements
@@ -16819,6 +16840,10 @@
 		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 75, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
 
+		// fast lookup toggle button
+		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 75, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
+		this.fastLookupButton.toolTip = ["toggle fast lookup [F7]"];
+
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
 		this.backButton.toolTip = "back to previous menu [Backspace]";
@@ -19227,6 +19252,12 @@
 
 		// set the Information Bar UI control
 		me.infoBarButton.current = [me.infoBarEnabled];
+
+		// set the Fast Lookup UI control
+		if (!me.engine.isRuleTree) {
+			me.engine.ruleLoaderLookupEnabled = false;
+		}
+		me.fastLookupButton.current = [me.engine.ruleLoaderLookupEnabled];
 
 		// set the relative generation display UI control
 		me.relativeToggle.current = [me.genRelative];

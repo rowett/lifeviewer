@@ -2533,8 +2533,10 @@
 
 						// enable RuleLoader fast lookup
 						case Keywords.fastLookupWord:
-							view.engine.ruleLoaderLookupEnabled = true;
-							itemValid= true;
+							if (view.engine.ruleLoaderLookupAvailable()) {
+								view.engine.ruleLoaderLookupEnabled = true;
+							}
+							itemValid = true;
 							break;
 
 						// name recipe

@@ -1,3 +1,6 @@
+Build 1016
+- added Settings->Advanced->Fast Lookup (hotkey F7) to toggle Fast Lookup for supported RuleLoader rules
+
 Build 1015
 - added experimental faster algo for RuleLoader @TREE and @TABLE rules
 	- currently enabled with [[ FASTLOOKUP ]] script command

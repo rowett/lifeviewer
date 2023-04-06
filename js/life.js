@@ -10611,7 +10611,7 @@
 		}
 
 		// compute bits needed as cells in neighbourhood * state bits
-		switch(this.ruleTableNeighbourhood) {
+		switch (this.ruleTableNeighbourhood) {
 		case PatternConstants.ruleTableVN:
 			bitsNeeded = 5 * i;
 			break;
@@ -10956,6 +10956,62 @@
 
 			this.ruleLoaderGenerationTime = performance.now() - this.ruleLoaderGenerationTime;
 		}
+	};
+
+	// whether rule loader lookup available
+	/** @returns {boolean} */
+	Life.prototype.ruleLoaderLookupAvailable = function() {
+		var	/** @type {boolean} */ result = false,
+			/** @type {number} */ states = 0,
+			/** @type {number} */ bitsNeeded = 0,
+			/** @type {number} */ i = 0;
+
+		if (this.ruleTableOutput === null) {
+			// check @TREE
+			states = this.ruleTreeStates;
+
+			// compute how many bits needed for states
+			i = 0;
+			while ((1 << i) < states) {
+				i += 1;
+			}
+
+			bitsNeeded = (this.ruleTreeNeighbours + 1) * i;
+
+		} else {
+			// check @TABLE
+			states = this.multiNumStates;
+
+			// compute how many bits needed for states
+			i = 0;
+			while ((1 << i) < states) {
+				i += 1;
+			}
+
+			// check neighbourhood
+			if (this.ruleTableNeighbourhood === PatternConstants.ruleTableVN) {
+				bitsNeeded = 5 * i;
+			} else {
+				bitsNeeded = 9 * i;
+			}
+		}
+
+		// check lookup is small enough for lookup table
+		if (bitsNeeded <= LifeConstants.maxRuleTreeLookupBits) {
+			if (this.ruleTableOutput === null) {
+				// check @TREE
+				if (this.ruleTreeNeighbours === 4 || this.ruleTreeNeighbours === 8) {
+					result = true;
+				}
+			} else {
+				// check @TABLE
+				if (this.ruleTableNeighbourhood === PatternConstants.ruleTableVN || this.ruleTableNeighbourhood == PatternConstants.ruleTableMoore) {
+					result = true;
+				}
+			}
+		}
+
+		return result;
 	};
 
 	// update the Life rule
@@ -25394,26 +25450,26 @@
 		// von Neumann
 		case PatternConstants.ruleTableVN:
 			// check if a fast lookup is availble
-			if (this.ruleLoaderLookup !== null) {
+			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
-					this.nextGenerationRuleTreeTileVNLookup1();
+					this.nextGenerationRuleLoaderTileVNLookup1();
 					break;
 
 				case 2:
-					this.nextGenerationRuleTreeTileVNLookup2();
+					this.nextGenerationRuleLoaderTileVNLookup2();
 					break;
 
 				case 3:
-					this.nextGenerationRuleTreeTileVNLookup3();
+					this.nextGenerationRuleLoaderTileVNLookup3();
 					break;
 
 				case 4:
-					this.nextGenerationRuleTreeTileVNLookup4();
+					this.nextGenerationRuleLoaderTileVNLookup4();
 					break;
 
 				case 5:
-					this.nextGenerationRuleTreeTileVNLookup5();
+					this.nextGenerationRuleLoaderTileVNLookup5();
 					break;
 
 				default:
@@ -25429,7 +25485,7 @@
 		// Moore
 		case PatternConstants.ruleTableMoore:
 			// check if a fast lookup is availble
-			if (this.ruleLoaderLookup !== null) {
+			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
 					this.nextGenerationRuleLoaderTileMooreLookup1();
@@ -27957,27 +28013,27 @@
 		// check neighbourhood
 		if (this.ruleTreeNeighbours === 4) {
 			// von Neumann
-			if (this.ruleLoaderLookup !== null) {
+			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
 				// pick appropriate algo for state bits
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
-					this.nextGenerationRuleTreeTileVNLookup1();
+					this.nextGenerationRuleLoaderTileVNLookup1();
 					break;
 
 				case 2:
-					this.nextGenerationRuleTreeTileVNLookup2();
+					this.nextGenerationRuleLoaderTileVNLookup2();
 					break;
 
 				case 3:
-					this.nextGenerationRuleTreeTileVNLookup3();
+					this.nextGenerationRuleLoaderTileVNLookup3();
 					break;
 
 				case 4:
-					this.nextGenerationRuleTreeTileVNLookup4();
+					this.nextGenerationRuleLoaderTileVNLookup4();
 					break;
 
 				case 5:
-					this.nextGenerationRuleTreeTileVNLookup5();
+					this.nextGenerationRuleLoaderTileVNLookup5();
 					break;
 
 				default:
@@ -27989,7 +28045,7 @@
 			}
 		} else {
 			// Moore
-			if (this.ruleLoaderLookup !== null) {
+			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
 					this.nextGenerationRuleLoaderTileMooreLookup1();
@@ -34246,8 +34302,8 @@
 		this.deaths = deaths;
 	};
 
-	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 1bit states
-	Life.prototype.nextGenerationRuleTreeTileVNLookup1 = function() {
+	// update the life grid region using tiles for von Neumann RuleLoader patterns using array for 1bit states
+	Life.prototype.nextGenerationRuleLoaderTileVNLookup1 = function() {
 		var	/** @type {Uint8Array} */ gridRow0 = null,
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,
@@ -35100,8 +35156,8 @@
 		this.deaths = deaths;
 	};
 
-	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 2bit states
-	Life.prototype.nextGenerationRuleTreeTileVNLookup2 = function() {
+	// update the life grid region using tiles for von Neumann RuleLoader patterns using array for 2bit states
+	Life.prototype.nextGenerationRuleLoaderTileVNLookup2 = function() {
 		var	/** @type {Uint8Array} */ gridRow0 = null,
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,
@@ -35954,8 +36010,8 @@
 		this.deaths = deaths;
 	};
 
-	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 3bit states
-	Life.prototype.nextGenerationRuleTreeTileVNLookup3 = function() {
+	// update the life grid region using tiles for von Neumann RuleLoader patterns using array for 3bit states
+	Life.prototype.nextGenerationRuleLoaderTileVNLookup3 = function() {
 		var	/** @type {Uint8Array} */ gridRow0 = null,
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,
@@ -36808,8 +36864,8 @@
 		this.deaths = deaths;
 	};
 
-	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 4bit states
-	Life.prototype.nextGenerationRuleTreeTileVNLookup4 = function() {
+	// update the life grid region using tiles for von Neumann RuleLoader patterns using array for 4bit states
+	Life.prototype.nextGenerationRuleLoaderTileVNLookup4 = function() {
 		var	/** @type {Uint8Array} */ gridRow0 = null,
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,
@@ -37662,8 +37718,8 @@
 		this.deaths = deaths;
 	};
 
-	// update the life grid region using tiles for von Neumann RuleTree patterns using array for 5bit states
-	Life.prototype.nextGenerationRuleTreeTileVNLookup5 = function() {
+	// update the life grid region using tiles for von Neumann RuleLoader patterns using array for 5bit states
+	Life.prototype.nextGenerationRuleLoaderTileVNLookup5 = function() {
 		var	/** @type {Uint8Array} */ gridRow0 = null,
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,

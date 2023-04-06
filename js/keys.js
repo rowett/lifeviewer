@@ -2093,6 +2093,14 @@
 				}
 				break;
 
+			// f7 to toggle fast lookup for RuleLoader algos
+			case 118:
+				if (!me.fastLookupButton.locked) {
+					me.fastLookupButton.current = me.viewFastLookupToggle([!me.engine.ruleLoaderLookupEnabled], true, me);
+					me.menuManager.notification.notify("Fast Lookup " + (me.engine.ruleLoaderLookupEnabled ? "On" : "Off"), 15, 40, 15, true);
+				}
+				break;
+
 			// Ins to show Help sections
 			case 45:
 				me.showSections = true;
