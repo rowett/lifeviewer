@@ -1,3 +1,10 @@
+Build 1015
+- added experimental faster algo for RuleLoader @TREE and @TABLE rules
+	- currently enabled with [[ FASTLOOKUP ]] script command
+	- supports Moore neighbourhood rules with 2 to 8 states
+	- supports von Neumann neighbourhood rules with 2 to 32 states
+	- note: it can take several seconds to initialize for 5 to 8 state Moore @TABLE rules
+
 Build 1014
 - improved COLOR validation error messages
 

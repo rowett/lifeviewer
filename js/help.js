@@ -607,6 +607,7 @@
 		// annotations 
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
+
 		view.tabs[0] = 128;
 		view.tabs[1] = 208;
 		view.tabs[2] = 288;
@@ -615,6 +616,7 @@
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		view.helpSections[sectionNum] = [view.lineNo, "Labels"];
 		sectionNum += 1;
+
 		y = this.renderHelpLine(view, "", "Labels:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Number", view.waypointManager.numLabels(), ctx, x, y, height, helpLine);
 		for (i = 0; i < view.waypointManager.numLabels(); i += 1) {
@@ -627,6 +629,7 @@
 			y = this.renderHelpLine(view, "Colour", this.rgbString(colour[0], colour[1], colour[2]), ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Arrows"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Arrows:", ctx, x, y, height, helpLine);
@@ -641,6 +644,7 @@
 			y = this.renderHelpLine(view, "Colour", this.rgbString(colour[0], colour[1], colour[2]), ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Polygons"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Polygons:", ctx, x, y, height, helpLine);
@@ -1022,7 +1026,10 @@
 	// render scripts topic
 	Help.renderScriptsTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		// section number
-		var	/** @type {number} */ sectionNum = 0;
+		var	/** @type {number} */ sectionNum = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ value = 0,
+			/** @type {string} */ name = "";
 
 		// set initial line
 		view.lineNo = 1;
@@ -1043,6 +1050,7 @@
 		y = this.renderHelpLine(view, "", "Scripts must be embedded in pattern comments", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "Commands must be surrounded by whitespace", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Params"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Parameter conventions:", ctx, x, y, height, helpLine);
@@ -1078,6 +1086,7 @@
 		y = this.renderHelpLine(view, Keywords.scriptEndWord, "end script section", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.suppressWord, "suppress overwrite warning", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Playback"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Playback:", ctx, x, y, height, helpLine);
@@ -1100,6 +1109,7 @@
 		y = this.renderHelpLine(view, Keywords.ignoreExclusiveWord, "ignore other pause requests", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.playTimeWord, "show playback duration", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Camera"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Camera:", ctx, x, y, height, helpLine);
@@ -1125,6 +1135,7 @@
 		y = this.renderHelpLine(view, " X ", "horizontal speed cells/gen", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " Y ", "vertical speed cells/gen", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Waypoints"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Waypoints:", ctx, x, y, height, helpLine);
@@ -1134,6 +1145,7 @@
 		y = this.renderHelpLine(view, Keywords.bezierWord + " " + Keywords.allWord + "|" + Keywords.xWord + "|" + Keywords.yWord + "|" + Keywords.zoomWord, "bezier motion (default)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.timeIntervalWord, "save timing at waypoint start", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "POIs"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Points of interest:", ctx, x, y, height, helpLine);
@@ -1147,6 +1159,7 @@
 		y = this.renderHelpLine(view, Keywords.stringDelimiter + "<string>" + Keywords.stringDelimiter, "define message", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.poiAddLabelsWord, "add Labels as POIs", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Annotations"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Annotations:", ctx, x, y, height, helpLine);
@@ -1187,6 +1200,7 @@
 		y = this.renderHelpLine(view, Keywords.polyTrackWord + " DX DY|" + Keywords.fixedWord, "polygon move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.polyShadowWord + " (" + Keywords.offWord + ")", "turn polygon shadow on or off", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Display"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Display:", ctx, x, y, height, helpLine);
@@ -1221,6 +1235,7 @@
 		y = this.renderHelpLine(view, Keywords.rainbowWord, "use rainbow colours", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.qualityWord, "use high quality rendering", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Thumb"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Thumbnails:", ctx, x, y, height, helpLine);
@@ -1230,6 +1245,7 @@
 		y = this.renderHelpLine(view, Keywords.thumbZoomWord + " <" + Number(-1 / ViewConstants.minZoom).toFixed(1) + ".." + (ViewConstants.maxZoom).toFixed(1) + ">", "set thumbnail zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.thumbStartWord, "start playback on thumbnail expand", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Graph"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Population Graph:", ctx, x, y, height, helpLine);
@@ -1238,6 +1254,7 @@
 		y = this.renderHelpLine(view, Keywords.graphPointsWord, "population graph use points", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noGraphWord, "disable population graph", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Colours"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Colours:", ctx, x, y, height, helpLine);
@@ -1274,6 +1291,18 @@
 		if (view.engine.isPCA) {
 			y = this.renderHelpLine(view, Keywords.colorWord + " N*E*S*W* R G B", "set PCA state color", ctx, x, y, height, helpLine);
 		}
+		if (view.engine.isRuleTree) {
+			for (i = 0; i < view.stateNames.length; i += 1) {
+				if (view.stateNames[i] !== undefined) {
+					name = view.stateNames[i];
+					value = view.getStateFromName(name);
+					if (view.getPCAStateFromName(name) >= 0 || view.isLifeHistoryStateName(name) || view.isThemeStateName(name)) {
+						name = "\"" + name + "\"";
+					}
+					y = this.renderHelpLine(view, Keywords.colorWord + " " + name + " R G B", "set state " + value + " color ", ctx, x, y, height, helpLine);
+				}
+			}
+		}
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.boundedWord + " R G B", "set bounded color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.selectWord + " R G B", "set select color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.pasteWord + " R G B", "set paste color", ctx, x, y, height, helpLine);
@@ -1301,6 +1330,7 @@
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.uiBorderWord + " R G B", "set UI border color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colourWord, "same as " + Keywords.colorWord, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Pattern"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Pattern:", ctx, x, y, height, helpLine);
@@ -1347,6 +1377,7 @@
 		y = this.renderHelpLine(view, " 15  1111  " + Keywords.pasteModeOneWord, "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.killGlidersWord, "suppress escaping gliders", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
 		view.helpSections[sectionNum] = [view.lineNo, "Randomize"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Randomize:", ctx, x, y, height, helpLine);
@@ -1567,9 +1598,17 @@
 		// display type if RuleTable
 		if (view.engine.isRuleTree) {
 			if (view.engine.ruleTableOutput === null) {
-				y = this.renderHelpLine(view, "Type", "@TREE [" + view.engine.ruleTreeNodes + "]", ctx, x, y, height, helpLine);
+				itemName = "@TREE [" + view.engine.ruleTreeNodes + "]";
 			} else {
-				y = this.renderHelpLine(view, "Type", "@TABLE [" + view.engine.ruleTableCompressedRules + (view.engine.ruleTableDups > 0 ? " / " + view.engine.ruleTableDups : "") + "]", ctx, x, y, height, helpLine);
+				itemName = "@TABLE [" + view.engine.ruleTableCompressedRules + (view.engine.ruleTableDups > 0 ? " / " + view.engine.ruleTableDups : "") + "]";
+			}
+			if (view.engine.ruleLoaderLookup !== null) {
+				itemName += " using " + view.engine.ruleLoaderLookupBits + " bit lookup (" + (view.engine.ruleLoaderLookup.length >> 20) + "Mb)";
+			}
+			y = this.renderHelpLine(view, "Type", itemName, ctx, x, y, height, helpLine);
+
+			if (view.engine.ruleLoaderLookup !== null) {
+				y = this.renderHelpLine(view, "Time", "Lookup created in " + (view.engine.ruleLoaderGenerationTime / 1000).toFixed(1) + " seconds", ctx, x, y, height, helpLine);
 			}
 		}
 

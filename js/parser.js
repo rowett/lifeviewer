@@ -147,6 +147,7 @@
 			case Keywords.popupWidthWord:
 			case Keywords.popupHeightWord:
 			case Keywords.killGlidersWord:
+			case Keywords.fastLookupWord:
 			case Keywords.recipeWord:
 			case Keywords.rleWord:
 			case Keywords.pasteWord:
@@ -2530,6 +2531,12 @@
 							itemValid = true;
 							break;
 
+						// enable RuleLoader fast lookup
+						case Keywords.fastLookupWord:
+							view.engine.ruleLoaderLookupEnabled = true;
+							itemValid= true;
+							break;
+
 						// name recipe
 						case Keywords.recipeWord:
 							// get the name
@@ -3201,10 +3208,20 @@
 								switch(peekToken) {
 								// [R]History color states
 								case Keywords.offColorWord:
+									if (!view.engine.isLifeHistory) {
+										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.offColorWord, "not valid for this rule"];
+										badColour = true;
+										view.customTheme = false;
+									}
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeBackground, whichColour);
 									break;
 
 								case Keywords.onColorWord:
+									if (!view.engine.isLifeHistory) {
+										scriptErrors[scriptErrors.length] = [nextToken + " " + Keywords.onColorWord, "not valid for this rule"];
+										badColour = true;
+										view.customTheme = false;
+									}
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeAlive, whichColour);
 									break;
 
@@ -3473,11 +3490,14 @@
 									}
 
 									// check state names
-									if (peekToken === "dead") {
+									if (peekToken === "dead" && !(view.engine.isNone || view.engine.isRuleTree)) {
 										scriptReader.stepBack();
 										this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeDead, whichColour);
 									} else {
-										colNum = view.getStateFromName(peekToken);
+										colNum = -1;
+										if (!view.engine.isNone) {
+											colNum = view.getStateFromName(peekToken);
+										}
 
 										// decode the rgb value
 										if (colNum >= 0) {

@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1014,
+		/** @const {number} */ versionBuild : 1015,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -2147,6 +2147,26 @@
 		// pen colour for drawing
 		/** @type {number} */ this.penColour = -1;
 	}
+
+	// check if a string is a Theme state name
+	/** @returns {boolean} */
+	View.prototype.isThemeStateName = function(/** @type {string} */ name) {
+		var	/** @type {boolean} */ result = false;
+
+		switch(name) {
+			case Keywords.themeDeadWord:
+			case Keywords.themeDeadRampWord:
+			case Keywords.themeAliveWord:
+			case Keywords.themeAliveRampWord:
+			case Keywords.themeDyingWord:
+			case Keywords.themeDyingRampWord:
+			case Keywords.themeBackgroundWord:
+				result = true;
+				break;
+		}
+
+		return result;
+	};
 
 	// check if a string is an [R]History state name
 	/** @returns {boolean} */
@@ -17979,6 +17999,9 @@
 		if (me.starField) {
 			me.starField.starColour = new Colour(255, 255, 255);
 		}
+
+		// disable RuleLoader fast lookup
+		me.engine.ruleLoaderLookupEnabled = false;
 
 		// disable HROT non-deterministic mode
 		me.engine.HROT.useRandom = false;

@@ -468,6 +468,9 @@
 		// suppress escaping gliders 
 		/** @const {string} */ killGlidersWord : "KILLGLIDERS",
 
+		// enable RuleLoader fast lookup
+		/** @const {string} */ fastLookupWord : "FASTLOOKUP",
+
 		// recipe 
 		/** @const {string} */ recipeWord : "RECIPE",
 
