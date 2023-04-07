@@ -1,3 +1,9 @@
+Build 1018
+- added more info to Help about Fast Lookup
+
+Build 1017
+- fixed issue when switching Fast Lookup off for RuleTree rules
+
 Build 1016
 - added Settings->Advanced->Fast Lookup (hotkey F7) to toggle Fast Lookup for supported RuleLoader rules
 

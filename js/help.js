@@ -717,6 +717,10 @@
 			y = this.renderHelpLine(view, "0", "reset step and speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Ctrl P", "toggle pause playback while drawing", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Alt T", "toggle throttling", ctx, x, y, height, helpLine);
+			if (view.engine.ruleLoaderLookupAvailable()) {
+				y = this.renderHelpLine(view, "F7", "toggle fast lookup", ctx, x, y, height, helpLine);
+			}
+			y = this.renderHelpLine(view, "Alt T", "toggle throttling", ctx, x, y, height, helpLine);
 			if (view.waypointsDefined) {
 				if (view.loopGeneration !== -1) {
 					y = this.renderHelpLine(view, "W", "toggle waypoint playback and loop", ctx, x, y, height, helpLine);
@@ -915,7 +919,7 @@
 		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Alt Z", "randomize pattern and rule", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ctrl+Alt Z", "randomize pattern only", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "F6", "toggle oscillator and spaceship identification", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F6", "toggle pattern identification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift F6", "display last identification result", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
@@ -1602,8 +1606,21 @@
 			} else {
 				itemName = "@TABLE [" + view.engine.ruleTableCompressedRules + (view.engine.ruleTableDups > 0 ? " / " + view.engine.ruleTableDups : "") + "]";
 			}
-			if (view.engine.ruleLoaderLookup !== null) {
-				itemName += " using " + view.engine.ruleLoaderLookupBits + " bit lookup (" + (view.engine.ruleLoaderLookup.length >> 20) + "Mb)";
+			if (view.engine.ruleLoaderLookup !== null && view.engine.ruleLoaderLookupEnabled) {
+				itemName += " using " + view.engine.ruleLoaderLookupBits + " bit lookup (";
+				if (view.engine.ruleLoaderLookup.length >= (1 << 20)) {
+					itemName += (view.engine.ruleLoaderLookup.length >> 20) + "Mb)";
+				} else {
+					if (view.engine.ruleLoaderLookup.length >= (1 << 10)) {
+						itemName += (view.engine.ruleLoaderLookup.length >> 10) + "Kb)";
+					} else {
+						itemName += view.engine.ruleLoaderLookup.length + " bytes)";
+					}
+				}
+			} else {
+				if (view.engine.ruleLoaderLookupAvailable()) {
+					itemName += " (fast lookup available)";
+				}
 			}
 			y = this.renderHelpLine(view, "Type", itemName, ctx, x, y, height, helpLine);
 
@@ -1780,9 +1797,9 @@
 		y = this.renderHelpLine(view, "Maximum", view.engine.maxGridSize + " x " + view.engine.maxGridSize, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Area", this.areaString(view), ctx, x, y, height, helpLine);
 		if ((view.engine.counter & 1) !== 0) {
-			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.nextTileGrid) + " [" + view.engine.tileCount(view.engine.staticTileGrid) + "] / " + view.engine.tileCount(view.engine.colourTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.nextTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
 		} else {
-			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.tileGrid) + " [" + view.engine.tileCount(view.engine.staticTileGrid) + "] / " + view.engine.tileCount(view.engine.colourTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Tiles", (view.engine.tileCount(view.engine.tileGrid) + " / " + view.engine.tileCount(view.engine.colourTileGrid) + " / " + view.engine.tileCount(view.engine.colourTileHistoryGrid)), ctx, x, y, height, helpLine);
 		}
 		if (view.engine.state6TileGrid) {
 			y = this.renderHelpLine(view, "State6", view.engine.tileCount(view.engine.state6TileGrid), ctx, x, y, height, helpLine);
