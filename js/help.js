@@ -1607,16 +1607,7 @@
 				itemName = "@TABLE [" + view.engine.ruleTableCompressedRules + (view.engine.ruleTableDups > 0 ? " / " + view.engine.ruleTableDups : "") + "]";
 			}
 			if (view.engine.ruleLoaderLookup !== null && view.engine.ruleLoaderLookupEnabled) {
-				itemName += " using " + view.engine.ruleLoaderLookupBits + " bit lookup (";
-				if (view.engine.ruleLoaderLookup.length >= (1 << 20)) {
-					itemName += (view.engine.ruleLoaderLookup.length >> 20) + "Mb)";
-				} else {
-					if (view.engine.ruleLoaderLookup.length >= (1 << 10)) {
-						itemName += (view.engine.ruleLoaderLookup.length >> 10) + "Kb)";
-					} else {
-						itemName += view.engine.ruleLoaderLookup.length + " bytes)";
-					}
-				}
+				itemName += " using " + view.engine.ruleLoaderLookupBits + " bit lookup";
 			} else {
 				if (view.engine.ruleLoaderLookupAvailable()) {
 					itemName += " (fast lookup available)";
@@ -1625,7 +1616,18 @@
 			y = this.renderHelpLine(view, "Type", itemName, ctx, x, y, height, helpLine);
 
 			if (view.engine.ruleLoaderLookup !== null) {
-				y = this.renderHelpLine(view, "Time", "Lookup created in " + (view.engine.ruleLoaderGenerationTime / 1000).toFixed(1) + " seconds", ctx, x, y, height, helpLine);
+				itemName = "";
+				if (view.engine.ruleLoaderLookup.length >= (1 << 20)) {
+					itemName += (view.engine.ruleLoaderLookup.length >> 20) + "Mb";
+				} else {
+					if (view.engine.ruleLoaderLookup.length >= (1 << 10)) {
+						itemName += (view.engine.ruleLoaderLookup.length >> 10) + "Kb";
+					} else {
+						itemName += view.engine.ruleLoaderLookup.length + " bytes";
+					}
+				}
+				itemName += " lookup created in " + (view.engine.ruleLoaderGenerationTime / 1000).toFixed(1) + " seconds";
+				y = this.renderHelpLine(view, "Lookup", itemName, ctx, x, y, height, helpLine);
 			}
 		}
 

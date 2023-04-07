@@ -1,5 +1,5 @@
 Build 1018
-- added more info to Help about Fast Lookup
+- added more information to Help->Info->Pattern about Fast Lookup
 
 Build 1017
 - fixed issue when switching Fast Lookup off for RuleTree rules
