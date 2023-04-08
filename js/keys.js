@@ -44,6 +44,45 @@
 		return processed;
 	};
 
+	// process keys in init lookup mode
+	/** @returns {boolean} */
+	KeyProcessor.processKeyInitLookup = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
+		// flag event processed
+		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ ctrlKey = event.ctrlKey,
+			/** @type {boolean} */ altKey = event.altKey,
+			/** @type {boolean} */ metaKey = event.metaKey;
+
+		// check for control, meta or alt
+		if (ctrlKey || metaKey || altKey) {
+			// clear key code so it is not handled here
+			keyCode = -1;
+		}
+
+		// determine if the key can be processed
+		switch (keyCode) {
+		// t for timing display
+		case 84:
+			// toggle fps
+			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			break;
+
+		// Esc to cancel
+		case 27:
+			me.stopInitLookup();
+			break;
+
+		// ignore other keys
+		default:
+			// flag not handled
+			processed = false;
+			break;
+		}
+
+		// return whether key processed
+		return processed;
+	};
+
 	// process keys in go to generation mode
 	/** @returns {boolean} */
 	KeyProcessor.processKeyGoTo = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {

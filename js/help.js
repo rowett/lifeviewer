@@ -1607,7 +1607,11 @@
 				itemName = "@TABLE [" + view.engine.ruleTableCompressedRules + (view.engine.ruleTableDups > 0 ? " / " + view.engine.ruleTableDups : "") + "]";
 			}
 			if (view.engine.ruleLoaderLookup !== null && view.engine.ruleLoaderLookupEnabled) {
-				itemName += " using " + view.engine.ruleLoaderLookupBits + " bit lookup";
+				if (view.engine.ruleLoaderStep === -1) {
+					itemName += " using " + view.engine.ruleLoaderLookupBits + " bit lookup";
+				} else {
+					itemName += " creating " + view.engine.ruleLoaderLookupBits + " bit lookup";
+				}
 			} else {
 				if (view.engine.ruleLoaderLookupAvailable()) {
 					itemName += " (fast lookup available)";
@@ -1615,7 +1619,7 @@
 			}
 			y = this.renderHelpLine(view, "Type", itemName, ctx, x, y, height, helpLine);
 
-			if (view.engine.ruleLoaderLookup !== null) {
+			if (view.engine.ruleLoaderLookup !== null && view.engine.ruleLoaderStep === -1) {
 				itemName = "";
 				if (view.engine.ruleLoaderLookup.length >= (1 << 20)) {
 					itemName += (view.engine.ruleLoaderLookup.length >> 20) + "Mb";
@@ -1713,6 +1717,12 @@
 
 		// output decoder used
 		y = this.renderHelpLine(view, "Decoder", view.patternFormat, ctx, x, y, height, helpLine);
+
+		// output last benchmark
+		if (view.lastBenchmarkTime !== -1) {
+			y = this.renderHelpLine(view, "Last Bench", "gens: " + view.lastBenchmarkGens + "  time: " + view.lastBenchmarkTime.toFixed(1) + "s  gps: " + (view.lastBenchmarkGens / view.lastBenchmarkTime).toFixed(1), ctx, x, y, height, helpLine);
+		}
+
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// output last oscillator search result

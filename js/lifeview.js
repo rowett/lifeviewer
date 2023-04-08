@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1018,
+		/** @const {number} */ versionBuild : 1019,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -686,6 +686,12 @@
 
 		// whether to time going to generation
 		/** @type {number} */ this.startFromTiming = -1;
+
+		// last benchmark time
+		/** @type {number} */ this.lastBenchmarkTime = -1;
+
+		// last benchmark generations
+		/** @type {number} */ this.lastBenchmarkGens = -1;
 
 		// how many generations to move
 		/** @type {number} */ this.startFromGens = -1;
@@ -5147,6 +5153,19 @@
 		me.genToggle.bgAlpha = 0;
 	};
 
+
+	// update progress bar for init RuleLoader Lookup
+	View.prototype.updateProgressBarInitLookup = function(/** @type {View} */ me) {
+		// update the progress bar
+		me.progressBar.current = 100 * (me.engine.ruleLoaderStep / (me.engine.multiNumStates * me.engine.multiNumStates * me.engine.multiNumStates));
+
+		// show the progress bar
+		me.progressBar.deleted = false;
+
+		// clear the bg alpha to show the progress bar
+		me.genToggle.bgAlpha = 0;
+	};
+
 	// update progress bar for copy RLE
 	View.prototype.updateProgressBarCopy = function(/** @type {View} */ me) {
 		// update the progress bar
@@ -6924,7 +6943,7 @@
 		this.graphDataToggle.deleted = shown || (this.engine.boundedGridType !== -1);
 
 		// cancel button
-		this.cancelButton.deleted = !(this.identify || this.startFrom !== -1);
+		this.cancelButton.deleted = !(this.identify || this.startFrom !== -1 || this.engine.ruleLoaderStep !== -1);
 		this.cancelButton.locked = false;
 
 		// generation statistics
@@ -7495,6 +7514,57 @@
 		}
 	};
 
+	// create RuleLoader Lookup
+	View.prototype.createRuleLoaderLookup = function() {
+		// check for Moore with 3 bits since it is slow to generate and needs to be done in steps
+		if (this.engine.ruleTableOutput !== null && this.engine.ruleTableNeighbourhood === PatternConstants.ruleTableMoore) {
+			// reset to first init step
+			this.engine.ruleLoaderStep = 0;
+		} else {
+			// normal case so process now
+			this.engine.createRuleLoaderLookup();
+		}
+	};
+
+	// stop RuleLoader lookup creation
+	View.prototype.stopInitLookup = function() {
+		// cancel lookup
+		this.engine.ruleLoaderStep = -1;
+		this.engine.ruleLoaderLookup = null;
+		this.engine.ruleLoaderLookupEnabled = false;
+		this.viewMenu.locked = false;
+		this.menuManager.notification.clear(false, false);
+	};
+
+	// view update for create RuleLoader Lookup
+	View.prototype.viewAnimateInitLookup = function(/** @type {View} */ me) {
+		// if just started then notify
+		if (me.engine.ruleLoaderStep === 0) {
+			me.menuManager.notification.notify("Initializing...", 15, 216000, 15, false);
+			me.engine.ruleLoaderGenerationTime = performance.now();
+			me.viewMenu.locked = true;
+		}
+
+		// process the next step
+		this.engine.createRuleTableLookupStep();
+
+		// if complete then notify
+		if (me.engine.ruleLoaderStep === -1) {
+			me.menuManager.notification.clear(false, false);
+			me.engine.ruleLoaderGenerationTime = performance.now() - me.engine.ruleLoaderGenerationTime;
+			me.viewMenu.locked = false;
+		}
+
+		// render world
+		me.renderWorld(me, false, 0, false);
+
+		// update progress bar
+		me.updateProgressBarInitLookup(me);
+
+		// set the auto update mode
+		me.menuManager.setAutoUpdate(true);
+	};
+
 	// view update for copy to clipboard
 	View.prototype.viewAnimateClipboard = function(/** @type {View} */ me) {
 		var	/** @type {number} */ amountToAdd = me.tempRLEChunkSize,
@@ -7541,28 +7611,8 @@
 		// update progress bar
 		me.updateProgressBarCopy(me);
 
-		// draw grid (disable Tilt if selection displayed)
-		me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
-
-		// draw any arrows and labels
-		if (me.showLabels) {
-			me.waypointManager.drawAnnotations(me);
-		}
-
-		// draw population graph if required
-		if (me.popGraph) {
-			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail, me);
-		}
-
-		// display help if requested
-		if (me.displayHelp) {
-			Help.drawHelpText(me);
-		} else {
-			// display script errors if present
-			if (me.scriptErrors.length) {
-				Help.drawErrors(me);
-			}
-		}
+		// render world
+		me.renderWorld(me, false, 0, false);
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);
@@ -7583,9 +7633,14 @@
 				if (notify || me.startFromTiming !== -1) {
 					me.menuManager.notification.notify("Arrived at generation " + me.engine.counter, 15, 150, 15, true);
 					if (me.startFromTiming !== -1) {
+						// calculate benchmark results
 						genTime = (performance.now() - me.startFromTiming) / 1000;
 						gps = (me.startFromGens / genTime) | 0;
 						me.menuManager.notification.notify("Calculated " + me.startFromGens + " gens in " + genTime.toFixed(1) + "s = " + gps + "gps", 15, 600, 15, false);
+
+						// save benchmark info
+						me.lastBenchmarkTime = genTime;
+						me.lastBenchmarkGens = me.startFromGens;
 					}
 				}
 			}
@@ -7855,7 +7910,7 @@
 			/** @type {number} */ timeLimit = 13,
 
 			// whether to save snapshots during next generation
-			/** @type {boolean} */ noSnapshots = true,
+			/** @type {boolean} */ saveNoHistory = this.noHistory,
 
 			// compute number of generations in snapshot buffer
 			/** @type {number} */ snapshotBufferGens = me.engine.snapshotManager.maxSnapshots * LifeConstants.snapshotInterval;
@@ -7864,9 +7919,9 @@
 		while (me.engine.counter < targetGen && (performance.now() - startTime < timeLimit)) {
 			// check whether to save snapshots
 			if (targetGen - 1 - me.engine.counter <= snapshotBufferGens) {
-				noSnapshots = false;
+				this.noHistory = false;
 			} else {
-				noSnapshots = true;
+				this.noHistory = saveNoHistory;
 			}
 
 			// compute next generation
@@ -7896,28 +7951,11 @@
 		// update progress bar
 		me.updateProgressBarHistory(me, targetGen);
 
-		// draw grid (disable Tilt if selection displayed)
-		me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
+		// render world
+		me.renderWorld(me, false, 0, false);
 
-		// draw any arrows and labels
-		if (me.showLabels) {
-			me.waypointManager.drawAnnotations(me);
-		}
-
-		// draw population graph if required
-		if (me.popGraph) {
-			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail, me);
-		}
-
-		// display help if requested
-		if (me.displayHelp) {
-			Help.drawHelpText(me);
-		} else {
-			// display script errors if present
-			if (me.scriptErrors.length) {
-				Help.drawErrors(me);
-			}
-		}
+		// restore no history
+		me.noHistory = saveNoHistory;
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);
@@ -8004,19 +8042,23 @@
 		if (me.measureFrameRate > 0) {
 			me.viewAnimateMeasure(timeSinceLastUpdate, me);
 		} else {
-			if (me.computeHistory) {
-				me.viewAnimateHistory(me);
+			if (me.engine.isRuleTree && me.engine.ruleLoaderStep !== -1) {
+				me.viewAnimateInitLookup(me);
 			} else {
-				if (me.identify) {
-					me.viewAnimateIdentify(me);
+				if (me.computeHistory) {
+					me.viewAnimateHistory(me);
 				} else {
-					if (me.clipboardCopy) {
-						me.viewAnimateClipboard(me);
+					if (me.identify) {
+						me.viewAnimateIdentify(me);
 					} else {
-						if (me.startFrom !== -1) {
-							me.viewAnimateStartFrom(me);
+						if (me.clipboardCopy) {
+							me.viewAnimateClipboard(me);
 						} else {
-							me.viewAnimateNormal(timeSinceLastUpdate, me);
+							if (me.startFrom !== -1) {
+								me.viewAnimateStartFrom(me);
+							} else {
+								me.viewAnimateNormal(timeSinceLastUpdate, me);
+							}
 						}
 					}
 				}
@@ -8104,7 +8146,7 @@
 			
 			// check if first time switched on
 			if (me.engine.ruleLoaderLookupEnabled && me.engine.ruleLoaderLookup === null) {
-				me.engine.createRuleLoaderLookup();
+				me.createRuleLoaderLookup();
 			}
 		}
 
@@ -12123,6 +12165,10 @@
 		if (me.startFrom !== -1) {
 			me.stopStartFrom(me, true, true);
 		}
+
+		if (me.engine.ruleLoaderStep !== -1) {
+			me.stopInitLookup();
+		}
 	};
 
 	// back button
@@ -15634,7 +15680,13 @@
 	// copy string to clipboard
 	View.prototype.copyToClipboard = function(/** @type {View} */ me, /** @type {string} */ contents, /** @type {boolean} */ twoPhase) {
 		var	/** @type {string} */ elementType = "textarea",
-			/** @type {number} */ processingTime = 0;
+			/** @type {number} */ processingTime = 0,
+			/** @type {Element} */ copyElement = document.getElementById("ViewerCopy");
+
+		// check if a copy text box exists
+		if (copyElement) {
+			copyElement.innerHTML = contents;
+		}
 
 		// remember current window scroll position since Safari moves it
 		me.scrollPosition = document.documentElement.scrollTop || document.body.scrollTop;
@@ -15995,8 +16047,13 @@
 					if (me.startFrom !== -1) {
 						processed = KeyProcessor.processKeyGoTo(me, keyCode, event);
 					} else {
-						// process the key
-						processed = KeyProcessor.processKey(me, keyCode, event);
+						// check for init lookup
+						if (me.engine.ruleLoaderStep !== -1) {
+							processed = KeyProcessor.processKeyInitLookup(me, keyCode, event);
+						} else {
+							// process the key
+							processed = KeyProcessor.processKey(me, keyCode, event);
+						}
 					}
 				}
 			}
@@ -18852,6 +18909,11 @@
 
 		// update the life rule
 		me.engine.updateLifeRule(me);
+
+		// create RuleLoader lookup if available
+		if (me.engine.ruleLoaderLookupAvailable() && me.engine.ruleLoaderLookupEnabled) {
+			me.createRuleLoaderLookup();
+		}
 
 		// process any rle snippet evolution
 		if (me.isEvolution) {

@@ -1,3 +1,7 @@
+Build 1019
+- display last benchmark time in Help->Pattern
+- display progress bar during Fast Lookup initialization with Cancel button
+
 Build 1018
 - added more information to Help->Info->Pattern about Fast Lookup
 

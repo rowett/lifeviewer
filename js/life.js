@@ -1001,6 +1001,9 @@
 		// ruleLoader lookup generation time
 		/** @type {number} */ this.ruleLoaderGenerationTime = 0;
 
+		// ruleLoader init step for Moore @TABLE max state rules
+		/** @type {number} */ this.ruleLoaderStep = -1;
+
 		// 512 bit density all/odd generations
 		/** @type {number} */ this.density = 0;
 		/** @type {number} */ this.densityOdd = 0;
@@ -10500,6 +10503,197 @@
 		}
 	};
 
+	// create rule table lookup step
+	Life.prototype.createRuleTableLookupStep = function() {
+		// get number of cells in neighbourhood
+		var	/** @type {number} */ bitsNeeded = 0,
+			/** @type {number} */ states = this.multiNumStates,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ state = 0,
+
+			// cells in neighbourhood
+			/** @type {number} */ nw = 0,
+			/** @type {number} */ n = 0,
+			/** @type {number} */ ne = 0,
+			/** @type {number} */ e = 0,
+			/** @type {number} */ c = 0,
+			/** @type {number} */ w = 0,
+			/** @type {number} */ se = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ sw = 0,
+
+			// cell offsets in index in bits
+			/** @type {number} */ nwi = 0,
+			/** @type {number} */ ni = 0,
+			/** @type {number} */ nei = 0,
+			/** @type {number} */ ei = 0,
+			/** @type {number} */ ci = 0,
+			/** @type {number} */ wi = 0,
+			/** @type {number} */ swi = 0,
+			/** @type {number} */ si = 0,
+			/** @type {number} */ sei = 0,
+
+			// cell partial index
+			/** @type {number} */ nwx = 0,
+			/** @type {number} */ nx = 0,
+			/** @type {number} */ nex = 0,
+			/** @type {number} */ wx = 0,
+			/** @type {number} */ ex = 0,
+			/** @type {number} */ swx = 0,
+			/** @type {number} */ sex = 0,
+
+			// cell lookup
+			/** @type {Array<Array<Uint32Array>>} */ lut = this.ruleTableLUT,
+			/** @type {Array<Uint32Array>} */ lut0 = null,
+			/** @type {Array<Uint32Array>} */ lut1 = null,
+			/** @type {Array<Uint32Array>} */ lut2 = null,
+			/** @type {Array<Uint32Array>} */ lut3 = null,
+			/** @type {Array<Uint32Array>} */ lut4 = null,
+			/** @type {Array<Uint32Array>} */ lut5 = null,
+			/** @type {Array<Uint32Array>} */ lut6 = null,
+			/** @type {Array<Uint32Array>} */ lut7 = null,
+			/** @type {Array<Uint32Array>} */ lut8 = null,
+			/** @type {Uint32Array} */ lutnw = null,
+			/** @type {Uint32Array} */ lutn = null,
+			/** @type {Uint32Array} */ lutne = null,
+			/** @type {Uint32Array} */ lutw = null,
+			/** @type {Uint32Array} */ lutc = null,
+			/** @type {Uint32Array} */ lute = null,
+			/** @type {Uint32Array} */ lutsw = null,
+			/** @type {Uint32Array} */ luts = null,
+			/** @type {Uint32Array} */ lutse = null,
+			/** @type {Uint8Array} */ output = this.ruleTableOutput,
+			/** @type {number} */ nCompressed = this.ruleTableCompressedRules,
+			/** @type {number} */ isMatch = 0,
+			/** @type {number} */ iRuleC = 0,
+			/** @type {number} */ iBit = 0,
+			/** @type {number} */ mask = 0,
+
+			/** @type {number} */ index = 0;
+
+		// compute how many bits needed for states
+		i = 0;
+		while ((1 << i) < states) {
+			i += 1;
+		}
+
+		// compute bits needed as cells in neighbourhood * state bits
+		switch (this.ruleTableNeighbourhood) {
+		case PatternConstants.ruleTableMoore:
+			bitsNeeded = 9 * i;
+			break;
+
+		default:
+			bitsNeeded = LifeConstants.maxRuleTreeLookupBits + 1;
+			break;
+		}
+
+		// check lookup is small enough for lookup table
+		if (bitsNeeded <= LifeConstants.maxRuleTreeLookupBits) {
+			// build lookup table
+			if (this.ruleLoaderLookup === null) {
+				this.ruleLoaderLookup = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, (1 << bitsNeeded), "Life.ruleTreeLookup"));
+				this.ruleLoaderLookupBits = i;
+			}
+
+			if (this.ruleTableNeighbourhood === PatternConstants.ruleTableMoore) {
+				// Moore
+				// create the bit shifts
+				ci = 0;
+				si = ci + i;
+				ei = si + i;
+				wi = ei + i;
+				ni = wi + i;
+				sei = ni + i;
+				swi = sei + i;
+				nei = swi + i;
+				nwi = nei + i;
+
+				// get the lookups
+				lut0 = lut[0];
+				lut1 = lut[1];
+				lut2 = lut[2];
+				lut3 = lut[3];
+				lut4 = lut[4];
+				lut5 = lut[5];
+				lut6 = lut[6];
+				lut7 = lut[7];
+				lut8 = lut[8];
+
+				// create the entries
+				nw = (this.ruleLoaderStep / (states * states)) | 0;
+				nwx = (nw << nwi);
+				lutnw = lut8[nw];
+				ne = ((this.ruleLoaderStep % (states * states)) / states) | 0;
+				nex = nwx | (ne << nei);
+				lutne = lut2[ne];
+				sw = this.ruleLoaderStep % states;
+				swx = nex | (sw << swi);
+				lutsw = lut6[sw];
+				for (se = 0; se < states; se += 1) {
+					sex = swx | (se << sei);
+					lutse = lut4[se];
+					for (n = 0; n < states; n += 1) {
+						nx = sex | (n << ni);
+						lutn = lut1[n];
+						for (w = 0; w < states; w += 1) {
+							wx = nx | (w << wi);
+							lutw = lut7[w];
+							for (e = 0; e < states; e += 1) {
+								ex = wx | (e << ei);
+								lute = lut3[e];
+								for (s = 0; s < states; s += 1) {
+									luts = lut5[s];
+									index = ex | (s << si);
+									for (c = 0; c < states; c += 1) {
+										lutc = lut0[c];
+										state = c;
+
+										// search for the match
+										for (iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
+											isMatch = lutc[iRuleC] & lutn[iRuleC];
+											if (isMatch) {
+												isMatch &= lutne[iRuleC] & lute[iRuleC];
+												if (isMatch) {
+													isMatch &= lutse[iRuleC] & luts[iRuleC];
+													if (isMatch) {
+														isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+														if (isMatch) {
+															iBit = 0;
+															mask = 1;
+															while (!(isMatch & mask)) {
+																iBit += 1;
+																mask <<= 1;
+															}
+															state = output[(iRuleC << 5) + iBit];
+															break;
+														}
+													}
+												}
+											}
+										}
+
+										// add to the lookup table
+										this.ruleLoaderLookup[index + (c << ci)] = state;
+									}
+								}
+							}
+						}
+					}
+				}
+
+				// increment step
+				this.ruleLoaderStep += 1;
+				if (this.ruleLoaderStep === states * states * states) {
+					this.ruleLoaderStep = -1;
+				}
+			}
+		} else {
+			// too many bits for lookup table
+			this.ruleLoaderLookup = null;
+		}
+	};
+
 	// create rule table lookup
 	Life.prototype.createRuleTableLookup = function() {
 		// get number of cells in neighbourhood
@@ -10996,9 +11190,9 @@
 
 		// check for RuleLoader rules
 		if (this.isRuleTree) {
-			// attempt to create rule loader lookup
+			// clear lookup table
 			this.ruleLoaderLookup = null;
-			this.createRuleLoaderLookup();
+			this.ruleLoaderStep = -1;
 			return;
 		}
 
