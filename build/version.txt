@@ -1,3 +1,7 @@
+Build 1020
+- disable Copy as MAP for B0 rules
+- improved Fast Lookup initialization performance
+
 Build 1019
 - display last benchmark time in Help->Pattern
 - display progress bar during Fast Lookup initialization with Cancel button

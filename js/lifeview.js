@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1019,
+		/** @const {number} */ versionBuild : 1020,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5156,8 +5156,10 @@
 
 	// update progress bar for init RuleLoader Lookup
 	View.prototype.updateProgressBarInitLookup = function(/** @type {View} */ me) {
+		var	/** @type {number} */ states = me.engine.multiNumStates;
+
 		// update the progress bar
-		me.progressBar.current = 100 * (me.engine.ruleLoaderStep / (me.engine.multiNumStates * me.engine.multiNumStates * me.engine.multiNumStates));
+		me.progressBar.current = 100 * (me.engine.ruleLoaderStep / (states * states * states * states * states));
 
 		// show the progress bar
 		me.progressBar.deleted = false;
@@ -7078,7 +7080,7 @@
 		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom || (this.engine.boundedGridType !== -1 && (this.engine.boundedGridWidth === 0 || this.engine.boundedGridHeight === 0)) || this.engine.altSpecified;
 		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";
 		this.copyRuleButton.locked = shown;
-		this.copyAsMAPButton.locked = shown || !(this.engine.isRuleTree && this.engine.multiNumStates === 2);
+		this.copyAsMAPButton.locked = shown || !(this.engine.isRuleTree && this.engine.multiNumStates === 2 && !this.engine.ruleTableB0 && !(this.engine.ruleTableOutput && this.engine.ruleTableNeighbourhood === PatternConstants.ruleTableOneD));
 		this.copyNeighbourhoodButton.locked = shown;
 		this.copyWithCommentsButton.locked = shown;
 		this.pasteToSelectionButton.locked = shown || (this.pasteBuffers[this.currentPasteBuffer] === null);
@@ -7517,7 +7519,7 @@
 	// create RuleLoader Lookup
 	View.prototype.createRuleLoaderLookup = function() {
 		// check for Moore with 3 bits since it is slow to generate and needs to be done in steps
-		if (this.engine.ruleTableOutput !== null && this.engine.ruleTableNeighbourhood === PatternConstants.ruleTableMoore) {
+		if (this.engine.ruleTableOutput !== null && this.engine.ruleTableNeighbourhood === PatternConstants.ruleTableMoore && this.engine.multiNumStates >= 8) {
 			// reset to first init step
 			this.engine.ruleLoaderStep = 0;
 		} else {
@@ -7538,28 +7540,41 @@
 
 	// view update for create RuleLoader Lookup
 	View.prototype.viewAnimateInitLookup = function(/** @type {View} */ me) {
+		// start time of updates
+		var	/** @type {number} */ startTime = performance.now(),
+
+			// time budget in ms for this frame
+			/** @type {number} */ elapsedTime = 0,
+			/** @type {number} */ timeLimit = 14;
+
+		// update progress bar
+		me.updateProgressBarInitLookup(me);
+
 		// if just started then notify
 		if (me.engine.ruleLoaderStep === 0) {
 			me.menuManager.notification.notify("Initializing...", 15, 216000, 15, false);
 			me.engine.ruleLoaderGenerationTime = performance.now();
 			me.viewMenu.locked = true;
+
+			// render world
+			me.renderWorld(me, false, 0, false);
 		}
 
 		// process the next step
-		this.engine.createRuleTableLookupStep();
+		do {
+			this.engine.createRuleTableLookupStep();
+			elapsedTime = performance.now() - startTime;
+		} while (elapsedTime < timeLimit && me.engine.ruleLoaderStep !== -1);
 
 		// if complete then notify
 		if (me.engine.ruleLoaderStep === -1) {
-			me.menuManager.notification.clear(false, false);
+			me.menuManager.notification.notify("Ready", 15, 80, 15, false);
 			me.engine.ruleLoaderGenerationTime = performance.now() - me.engine.ruleLoaderGenerationTime;
 			me.viewMenu.locked = false;
 		}
-
-		// render world
-		me.renderWorld(me, false, 0, false);
-
-		// update progress bar
-		me.updateProgressBarInitLookup(me);
+		
+		// draw grid (disable tilt if selection displayed)
+		me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);
@@ -14968,6 +14983,7 @@
 	View.prototype.copyAsMAPPressed = function(/** @type {View} */ me) {
 		var	/** @type {string} */ ruleText = "";
 
+		//if (me.engine.isRuleTree && me.engine.multiNumStates === 2 && !(me.engine.ruleTableOutput && me.engine.ruleTableNeighbourhood === PatternConstants.ruleTableOneD)) {
 		if (me.engine.isRuleTree && me.engine.multiNumStates === 2) {
 			ruleText = me.engine.ruleLoaderToMAP();
 			me.copyToClipboard(me, ruleText, false);
@@ -18733,8 +18749,8 @@
 
 		// check for fullscreen not in popup
 		if (!me.isInPopup && DocConfig.fullScreen) {
-			me.displayWidth = document.body.clientWidth & ~7;
-			me.displayHeight = window.innerHeight - 128;
+			me.displayWidth = (document.body.clientWidth & ~7) - 8;
+			me.displayHeight = window.innerHeight - 130;
 			if (me.displayWidth < ViewConstants.minViewerWidth) {
 				me.displayWidth = ViewConstants.minViewerWidth;
 			}
@@ -20296,8 +20312,8 @@
 		if (DocConfig.fullScreen) {
 			// find default viewer
 			view = Controller.viewers[0][1];
-			view.displayWidth = document.body.clientWidth & ~7;
-			view.displayHeight = window.innerHeight - 128;
+			view.displayWidth = (document.body.clientWidth & ~7) - 8;
+			view.displayHeight = window.innerHeight - 130;
 			if (view.displayWidth < ViewConstants.minViewerWidth) {
 				view.displayWidth = ViewConstants.minViewerWidth;
 			}

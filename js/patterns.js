@@ -8981,35 +8981,36 @@
 
 				// read the rest of the line
 				varValues = [];
-				if (reader.getNextToken() === "=") {
-					valid = true;
-					while (valid && !reader.nextIsNewline()) {
-						// if the next token is a number then read it as a state
-						if (reader.nextTokenIsNumeric()) {
-							readState = reader.getNextTokenAsNumber();
-							if (readState >= 0 && readState <= states) {
-								varValues[varValues.length] = readState;
-							} else {
-								valid = false;
-								this.failureReason = "out of range value: " + varName + "=" + readState;
+
+				// allow equals symbol to be omitted
+				if (reader.peekAtNextToken() === "=") {
+					reader.getNextToken();
+				}
+				valid = true;
+				while (valid && !reader.nextIsNewline()) {
+					// if the next token is a number then read it as a state
+					if (reader.nextTokenIsNumeric()) {
+						readState = reader.getNextTokenAsNumber();
+						if (readState >= 0 && readState <= states) {
+							varValues[varValues.length] = readState;
+						} else {
+							valid = false;
+							this.failureReason = "out of range value: " + varName + "=" + readState;
+						}
+					} else {
+						// next token is not numeric so should be a variable
+						readVar = reader.getNextToken();
+
+						// if the variable exists then copy its contents
+						if (variables[readVar] !== undefined) {
+							for (i = 0; i < variables[readVar].length; i += 1) {
+								varValues[varValues.length] = variables[readVar][i];
 							}
 						} else {
-							// next token is not numeric so should be a variable
-							readVar = reader.getNextToken();
-
-							// if the variable exists then copy its contents
-							if (variables[readVar] !== undefined) {
-								for (i = 0; i < variables[readVar].length; i += 1) {
-									varValues[varValues.length] = variables[readVar][i];
-								}
-							} else {
-								valid = false;
-								this.failureReason = "var unknown assignment: " + varName + "=" + readVar;
-							}
+							valid = false;
+							this.failureReason = "var unknown assignment: " + varName + "=" + readVar;
 						}
 					}
-				} else {
-					this.failureReason = "missing =: " + varName;
 				}
 
 				// check if line decoded

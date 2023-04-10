@@ -391,7 +391,9 @@
 					// m for copy as MAP
 					case 77:
 						// copy rule definition as MAP
-						me.copyAsMAPPressed(me);
+						if (!me.copyAsMAPButton.locked) {
+							me.copyAsMAPPressed(me);
+						}
 						break;
 
 					// n for new pattern
