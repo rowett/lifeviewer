@@ -1,3 +1,9 @@
+Build 1022
+- Fast Lookup now supports @TABLE hexagonal neighbourhoods
+
+Build 1021
+- performance improvements for Fast Lookup
+
 Build 1020
 - disable Copy as MAP for B0 rules
 - improved Fast Lookup initialization performance

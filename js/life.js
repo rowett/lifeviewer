@@ -10605,15 +10605,15 @@
 			if (this.ruleTableNeighbourhood === PatternConstants.ruleTableMoore) {
 				// Moore
 				// create the bit shifts
-				ci = 0;
+				nwi = 0;
+				wi = nwi + i;
+				swi = wi + i;
+				ni = swi + i;
+				ci = ni + i;
 				si = ci + i;
-				ei = si + i;
-				wi = ei + i;
-				ni = wi + i;
-				sei = ni + i;
-				swi = sei + i;
-				nei = swi + i;
-				nwi = nei + i;
+				nei = si + i;
+				ei = nei + i;
+				sei = ei + i;
 
 				// get the lookups
 				lut0 = lut[0];
@@ -10863,15 +10863,15 @@
 			case PatternConstants.ruleTableMoore:
 				// Moore
 				// create the bit shifts
-				ci = 0;
+				nwi = 0;
+				wi = nwi + i;
+				swi = wi + i;
+				ni = swi + i;
+				ci = ni + i;
 				si = ci + i;
-				ei = si + i;
-				wi = ei + i;
-				ni = wi + i;
-				sei = ni + i;
-				swi = sei + i;
-				nei = swi + i;
-				nwi = nei + i;
+				nei = si + i;
+				ei = nei + i;
+				sei = ei + i;
 
 				// get the lookups
 				lut0 = lut[0];
@@ -11026,7 +11026,7 @@
 				break;
 
 			case PatternConstants.ruleTableOneD:
-				// One Dimensional
+				// One Dimensional - TBD currently not used
 				// create the bit shifts
 				ei = 0;
 				ci = ei + i;
@@ -11175,15 +11175,15 @@
 				if (this.ruleTreeNeighbours === 8) {
 					// Moore
 					// create the bit shifts
-					ci = 0;
+					nwi = 0;
+					wi = nwi + i;
+					swi = wi + i;
+					ni = swi + i;
+					ci = ni + i;
 					si = ci + i;
-					ei = si + i;
-					wi = ei + i;
-					ni = wi + i;
-					sei = ni + i;
-					swi = sei + i;
-					nei = swi + i;
-					nwi = nei + i;
+					nei = si + i;
+					ei = nei + i;
+					sei = ei + i;
 
 					// create the entries
 					for (nw = 0; nw < states; nw += 1) {
@@ -11211,7 +11211,8 @@
 													part = a[ep + s];
 													index = ex | (s << si);
 													for (c = 0; c < states; c += 1) {
-														this.ruleLoaderLookup[index + (c << ci)] = b[part + c];
+														index = (nw << nwi) | (w << wi) | (sw << swi) | (n << ni) | (c << ci) | (s << si) | (ne << nei) | (e << ei) | (se << sei);
+														this.ruleLoaderLookup[index] = b[part + c];
 													}
 												}
 											}
@@ -11289,11 +11290,11 @@
 				bitsNeeded = 9 * i;
 				break;
 
-				/*
 			case PatternConstants.ruleTableHex:
 				bitsNeeded = 7 * i;
 				break;
 
+				/*
 			case PatternConstants.ruleTableOneD:
 				bitsNeeded = 3 * i;
 				break;
@@ -25758,7 +25759,6 @@
 		// Hex
 		case PatternConstants.ruleTableHex:
 			// check if a fast lookup is available
-			/*
 			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
@@ -25778,10 +25778,9 @@
 					break;
 				}
 			} else {
-				*/
 				// no fast lookup so use standard routine
 				this.nextGenerationRuleTableTileHex();
-			//}
+			}
 			break;
 
 		// 1D
@@ -30864,15 +30863,13 @@
 
 								// unroll 2
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
@@ -30892,15 +30889,13 @@
 
 								// unroll 3
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
@@ -30921,15 +30916,13 @@
 
 								// unroll 4
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
@@ -30948,15 +30941,13 @@
 
 								// unroll 5
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
@@ -30976,15 +30967,13 @@
 
 								// unroll 6
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
@@ -31004,15 +30993,13 @@
 
 								// unroll 7
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
@@ -31033,15 +31020,13 @@
 
 								// unroll 8
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
@@ -31060,15 +31045,13 @@
 
 								// unroll 9
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
@@ -31088,15 +31071,13 @@
 
 								// unroll 10
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
@@ -31116,15 +31097,13 @@
 
 								// unroll 11
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
@@ -31145,15 +31124,13 @@
 
 								// unroll 12
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
@@ -31172,15 +31149,13 @@
 
 								// unroll 13
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
@@ -31200,15 +31175,13 @@
 
 								// unroll 14
 								nw = n;
+								n = gridRow0[x];
 								w = c;
 								c = e;
-								s = se;
-								n = gridRow0[x];
 								e = gridRow1[x + 1];
+								s = se;
 								se = gridRow2[x + 1];
 								index = c | (s << 1) | (e << 2) | (w << 3) | (n << 4) | (se << 5) | (nw << 6);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
@@ -31232,7 +31205,7 @@
 								w = c;
 								c = e;
 								s = se;
-								if (x === width -1) {
+								if (x === width - 1) {
 									e = 0;
 									se = 0;
 								} else {
@@ -31757,7 +31730,7 @@
 									// handle left edge of grid
 									index = c | (s << 2) | (e << 4) | (n << 8) | (se << 10);
 								} else {
-									index = (gridRow0[x - 1] << 12) | (gridRow1[x - 1] << 6) | c | (s << 2) | (e << 4) | (n << 8) | (se << 19);
+									index = (gridRow0[x - 1] << 12) | (gridRow1[x - 1] << 6) | c | (s << 2) | (e << 4) | (n << 8) | (se << 10);
 								}
 								state32 = lookup[index];
 
@@ -31819,8 +31792,6 @@
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
 								state = lookup[index];
-								state32 |= (state << 8);
-								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
@@ -31846,8 +31817,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
@@ -31875,8 +31844,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
@@ -31904,8 +31871,6 @@
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
 								state = lookup[index];
 								state32 |= (state << 8);
-								state = lookup[index];
-								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
 									if ((index & 3) === 0) {
@@ -31930,8 +31895,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
@@ -31959,8 +31922,6 @@
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
 								state = lookup[index];
-								state32 |= (state << 8);
-								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
@@ -31987,8 +31948,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
@@ -32016,8 +31975,6 @@
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
 								state = lookup[index];
 								state32 |= (state << 8);
-								state = lookup[index];
-								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
 									if ((index & 3) === 0) {
@@ -32042,8 +31999,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
@@ -32071,8 +32026,6 @@
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
 								state = lookup[index];
-								state32 |= (state << 8);
-								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
@@ -32099,8 +32052,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
@@ -32128,8 +32079,6 @@
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
 								state = lookup[index];
 								state32 |= (state << 8);
-								state = lookup[index];
-								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
 									if ((index & 3) === 0) {
@@ -32155,8 +32104,6 @@
 								se = gridRow2[x + 1];
 								index = c | (s << 2) | (e << 4) | (w << 6) | (n << 8) | (se << 10) | (nw << 12);
 								state = lookup[index];
-								state32 |= (state << 8);
-								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
@@ -32179,7 +32126,7 @@
 								w = c;
 								c = e;
 								s = se;
-								if (x === width -1) {
+								if (x === width - 1) {
 									e = 0;
 									se = 0;
 								} else {
@@ -32766,8 +32713,6 @@
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
 								state = lookup[index];
-								state32 |= (state << 8);
-								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
@@ -32793,8 +32738,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
@@ -32822,8 +32765,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
@@ -32851,8 +32792,6 @@
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
 								state = lookup[index];
 								state32 |= (state << 8);
-								state = lookup[index];
-								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
 									if ((index & 7) === 0) {
@@ -32877,8 +32816,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
@@ -32906,8 +32843,6 @@
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
 								state = lookup[index];
-								state32 |= (state << 8);
-								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
@@ -32934,8 +32869,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
@@ -32963,8 +32896,6 @@
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
 								state = lookup[index];
 								state32 |= (state << 8);
-								state = lookup[index];
-								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
 									if ((index & 7) === 0) {
@@ -32989,8 +32920,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
@@ -33018,8 +32947,6 @@
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
 								state = lookup[index];
-								state32 |= (state << 8);
-								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
@@ -33046,8 +32973,6 @@
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
-								state = lookup[index];
-								state32 |= (state << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
@@ -33075,8 +33000,6 @@
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
 								state = lookup[index];
 								state32 |= (state << 8);
-								state = lookup[index];
-								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
 									if ((index & 7) === 0) {
@@ -33102,8 +33025,6 @@
 								se = gridRow2[x + 1];
 								index = c | (s << 3) | (e << 6) | (w << 9) | (n << 12) | (se << 15) | (nw << 18);
 								state = lookup[index];
-								state32 |= (state << 8);
-								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
@@ -33126,7 +33047,7 @@
 								w = c;
 								c = e;
 								s = se;
-								if (x === width -1) {
+								if (x === width - 1) {
 									e = 0;
 									se = 0;
 								} else {
@@ -33439,9 +33360,6 @@
 			/** @type {number} */ n = 0,
 			/** @type {number} */ c = 0,
 			/** @type {number} */ s = 0,
-			/** @type {number} */ nw = 0,
-			/** @type {number} */ w = 0,
-			/** @type {number} */ sw = 0,
 
 			// states and counters
 			/** @type {number} */ state = 0,
@@ -33652,9 +33570,9 @@
 								s = gridRow2[x];
 								if (x === 0) {
 									// handle left edge of grid
-									index = (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+									index = (n << 3) | (c << 4) | (s << 5) | (ne << 6) | (e << 7) | (se << 8);
 								} else {
-									index = (gridRow2[x - 1] << 6) | (gridRow1[x - 1] << 3) | (gridRow0[x - 1] << 8) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+									index = gridRow0[x - 1] | (gridRow1[x - 1] << 1) | (gridRow2[x - 1] << 2) | (n << 3) | (c << 4) | (s << 5) | (ne << 6) | (e << 7) | (se << 8);
 								}
 								state32 = lookup[index];
 
@@ -33663,14 +33581,14 @@
 									population += 1;
 
 									// update births
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
 									// check for death
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										// update deaths
 										deaths += 1;
 									}
@@ -33681,27 +33599,21 @@
 								x += 1;
 
 								// unroll 1
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33709,27 +33621,21 @@
 								x += 1;
 
 								// unroll 2
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33737,28 +33643,22 @@
 								x += 1;
 
 								// unroll 3
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33766,26 +33666,20 @@
 								x += 1;
 
 								// unroll 4
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33793,27 +33687,21 @@
 								x += 1;
 
 								// unroll 5
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33821,27 +33709,21 @@
 								x += 1;
 
 								// unroll 6
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33849,28 +33731,22 @@
 								x += 1;
 
 								// unroll 7
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33878,26 +33754,20 @@
 								x += 1;
 
 								// unroll 8
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33905,27 +33775,21 @@
 								x += 1;
 
 								// unroll 9
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33933,27 +33797,21 @@
 								x += 1;
 
 								// unroll 10
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33961,28 +33819,22 @@
 								x += 1;
 
 								// unroll 11
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -33990,26 +33842,20 @@
 								x += 1;
 
 								// unroll 12
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34017,27 +33863,21 @@
 								x += 1;
 
 								// unroll 13
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34045,27 +33885,21 @@
 								x += 1;
 
 								// unroll 14
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34073,13 +33907,7 @@
 								x += 1;
 
 								// unroll 15 (and handle right edge)
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
-								if (x === width -1) {
+								if (x === width - 1) {
 									ne = 0;
 									e = 0;
 									se = 0;
@@ -34088,19 +33916,19 @@
 									e = gridRow1[x + 1];
 									se = gridRow2[x + 1];
 								}
-								index = (nw << 8) | (w << 3) | (sw << 6) | (s << 1) | c | (n << 4) | (se << 5) | (e << 2) | (ne << 7);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 1) === 0) {
+									if ((index & 16) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 1) !== 0) {
+									if ((index & 16) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34394,9 +34222,6 @@
 			/** @type {number} */ n = 0,
 			/** @type {number} */ c = 0,
 			/** @type {number} */ s = 0,
-			/** @type {number} */ nw = 0,
-			/** @type {number} */ w = 0,
-			/** @type {number} */ sw = 0,
 
 			// states and counters
 			/** @type {number} */ state = 0,
@@ -34607,9 +34432,9 @@
 								s = gridRow2[x];
 								if (x === 0) {
 									// handle left edge of grid
-									index = (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+									index = (n << 6) | (c << 8) | (s << 10) | (ne << 12) | (e << 14) | (se << 16);
 								} else {
-									index = (gridRow2[x - 1] << 12) | (gridRow1[x - 1] << 6) | (gridRow0[x - 1] << 16) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+									index = gridRow0[x - 1] | (gridRow1[x - 1] << 2) | (gridRow2[x - 1] << 4) | (n << 6) | (c << 8) | (s << 10) | (ne << 12) | (e << 14) | (se << 16);
 								}
 								state32 = lookup[index];
 
@@ -34618,14 +34443,14 @@
 									population += 1;
 
 									// update births
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
 									// check for death
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										// update deaths
 										deaths += 1;
 									}
@@ -34636,27 +34461,21 @@
 								x += 1;
 
 								// unroll 1
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34664,27 +34483,21 @@
 								x += 1;
 
 								// unroll 2
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34692,28 +34505,22 @@
 								x += 1;
 
 								// unroll 3
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34721,26 +34528,20 @@
 								x += 1;
 
 								// unroll 4
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34748,27 +34549,21 @@
 								x += 1;
 
 								// unroll 5
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34776,27 +34571,21 @@
 								x += 1;
 
 								// unroll 6
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34804,28 +34593,22 @@
 								x += 1;
 
 								// unroll 7
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34833,26 +34616,20 @@
 								x += 1;
 
 								// unroll 8
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34860,27 +34637,21 @@
 								x += 1;
 
 								// unroll 9
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34888,27 +34659,21 @@
 								x += 1;
 
 								// unroll 10
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34916,28 +34681,22 @@
 								x += 1;
 
 								// unroll 11
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34945,26 +34704,20 @@
 								x += 1;
 
 								// unroll 12
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -34972,27 +34725,21 @@
 								x += 1;
 
 								// unroll 13
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35000,27 +34747,21 @@
 								x += 1;
 
 								// unroll 14
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35028,13 +34769,7 @@
 								x += 1;
 
 								// unroll 15 (and handle right edge)
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
-								if (x === width -1) {
+								if (x === width - 1) {
 									ne = 0;
 									e = 0;
 									se = 0;
@@ -35043,19 +34778,19 @@
 									e = gridRow1[x + 1];
 									se = gridRow2[x + 1];
 								}
-								index = (nw << 16) | (w << 6) | (sw << 12) | (s << 2) | c | (n << 8) | (se << 10) | (e << 4) | (ne << 14);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 3) === 0) {
+									if ((index & 768) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 3) !== 0) {
+									if ((index & 768) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35349,9 +35084,6 @@
 			/** @type {number} */ n = 0,
 			/** @type {number} */ c = 0,
 			/** @type {number} */ s = 0,
-			/** @type {number} */ nw = 0,
-			/** @type {number} */ w = 0,
-			/** @type {number} */ sw = 0,
 
 			// states and counters
 			/** @type {number} */ state = 0,
@@ -35562,9 +35294,9 @@
 								s = gridRow2[x];
 								if (x === 0) {
 									// handle left edge of grid
-									index = (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+									index = (n << 9) | (c << 12) | (s << 15) | (ne << 18) | (e << 21) | (se << 24);
 								} else {
-									index = (gridRow2[x - 1] << 18) | (gridRow1[x - 1] << 9) | (gridRow0[x - 1] << 24) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+									index = gridRow0[x - 1] | (gridRow1[x - 1] << 3) | (gridRow2[x - 1] << 6) | (n << 9) | (c << 12) | (s << 15) | (ne << 18) | (e << 21) | (se << 24);
 								}
 								state32 = lookup[index];
 
@@ -35573,14 +35305,14 @@
 									population += 1;
 
 									// update births
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
 									// check for death
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										// update deaths
 										deaths += 1;
 									}
@@ -35591,27 +35323,21 @@
 								x += 1;
 
 								// unroll 1
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35619,27 +35345,21 @@
 								x += 1;
 
 								// unroll 2
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35647,28 +35367,22 @@
 								x += 1;
 
 								// unroll 3
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35676,26 +35390,20 @@
 								x += 1;
 
 								// unroll 4
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35703,27 +35411,21 @@
 								x += 1;
 
 								// unroll 5
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35731,27 +35433,21 @@
 								x += 1;
 
 								// unroll 6
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35759,28 +35455,22 @@
 								x += 1;
 
 								// unroll 7
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35788,26 +35478,20 @@
 								x += 1;
 
 								// unroll 8
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35815,27 +35499,21 @@
 								x += 1;
 
 								// unroll 9
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35843,27 +35521,21 @@
 								x += 1;
 
 								// unroll 10
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35871,28 +35543,22 @@
 								x += 1;
 
 								// unroll 11
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35900,26 +35566,20 @@
 								x += 1;
 
 								// unroll 12
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state32 = lookup[index];
 								if (state32 > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35927,27 +35587,21 @@
 								x += 1;
 
 								// unroll 13
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 8);
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35955,27 +35609,21 @@
 								x += 1;
 
 								// unroll 14
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 16);
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
@@ -35983,13 +35631,7 @@
 								x += 1;
 
 								// unroll 15 (and handle right edge)
-								nw = n;
-								w = c;
-								sw = s;
-								n = ne;
-								c = e;
-								s = se;
-								if (x === width -1) {
+								if (x === width - 1) {
 									ne = 0;
 									e = 0;
 									se = 0;
@@ -35998,19 +35640,19 @@
 									e = gridRow1[x + 1];
 									se = gridRow2[x + 1];
 								}
-								index = (nw << 24) | (w << 9) | (sw << 18) | (s << 3) | c | (n << 12) | (se << 15) | (e << 6) | (ne << 21);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
 								state = lookup[index];
 								state32 |= (state << 24);
 								nextRow[x >> 2] = state32;
 								if (state > 0) {
 									population += 1;
-									if ((index & 7) === 0) {
+									if ((index & 45056) === 0) {
 										births += 1;
 									}
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
 								} else {
-									if ((index & 7) !== 0) {
+									if ((index & 45056) !== 0) {
 										deaths += 1;
 									}
 								}
