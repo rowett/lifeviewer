@@ -18913,7 +18913,7 @@
 
 		// check bounded grid size (script command may have increased maximum allowed size)
 		if (pattern && (pattern.gridType !== -1)) {
-			borderSize = this.getSafeBorderSize();
+			borderSize = me.getSafeBorderSize();
 
 			if (pattern.gridWidth > me.engine.maxGridSize - borderSize || pattern.gridHeight > me.engine.maxGridSize - borderSize) {
 				// make invalid
