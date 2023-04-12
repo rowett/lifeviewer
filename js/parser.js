@@ -2531,7 +2531,7 @@
 							itemValid = true;
 							break;
 
-						// enable RuleLoader fast lookup
+						// enable RuleLoader fast lookup (legacy since Fast Lookup is on by default)
 						case Keywords.fastLookupWord:
 							if (view.engine.ruleLoaderLookupAvailable()) {
 								view.engine.ruleLoaderLookupEnabled = true;

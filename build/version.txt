@@ -1,3 +1,6 @@
+Build 1023
+- Fast Lookup now gets created automatically in the background and will be enabled as soon as ready
+
 Build 1022
 - Fast Lookup now supports @TABLE hexagonal neighbourhoods
 

@@ -11259,56 +11259,58 @@
 			/** @type {number} */ bitsNeeded = 0,
 			/** @type {number} */ i = 0;
 
-		if (this.ruleTableOutput === null) {
-			// check @TREE
-			states = this.ruleTreeStates;
-
-			// compute how many bits needed for states
-			i = 0;
-			while ((1 << i) < states) {
-				i += 1;
+		if (this.isRuleTree) {
+			if (this.ruleTableOutput === null) {
+				// check @TREE
+				states = this.ruleTreeStates;
+	
+				// compute how many bits needed for states
+				i = 0;
+				while ((1 << i) < states) {
+					i += 1;
+				}
+	
+				bitsNeeded = (this.ruleTreeNeighbours + 1) * i;
+			} else {
+				// check @TABLE
+				states = this.multiNumStates;
+	
+				// compute how many bits needed for states
+				i = 0;
+				while ((1 << i) < states) {
+					i += 1;
+				}
+	
+				// check neighbourhood
+				switch (this.ruleTableNeighbourhood) {
+				case PatternConstants.ruleTableVN:
+					bitsNeeded = 5 * i;
+					break;
+	
+				case PatternConstants.ruleTableMoore:
+					bitsNeeded = 9 * i;
+					break;
+	
+				case PatternConstants.ruleTableHex:
+					bitsNeeded = 7 * i;
+					break;
+	
+					/*
+				case PatternConstants.ruleTableOneD:
+					bitsNeeded = 3 * i;
+					break;
+					*/
+	
+				default:
+					bitsNeeded = LifeConstants.maxRuleTreeLookupBits + 1;
+					break;
+				}
 			}
-
-			bitsNeeded = (this.ruleTreeNeighbours + 1) * i;
-		} else {
-			// check @TABLE
-			states = this.multiNumStates;
-
-			// compute how many bits needed for states
-			i = 0;
-			while ((1 << i) < states) {
-				i += 1;
+	
+			// check lookup is small enough for lookup table
+			if (bitsNeeded <= LifeConstants.maxRuleTreeLookupBits) {
+				result = true;
 			}
-
-			// check neighbourhood
-			switch (this.ruleTableNeighbourhood) {
-			case PatternConstants.ruleTableVN:
-				bitsNeeded = 5 * i;
-				break;
-
-			case PatternConstants.ruleTableMoore:
-				bitsNeeded = 9 * i;
-				break;
-
-			case PatternConstants.ruleTableHex:
-				bitsNeeded = 7 * i;
-				break;
-
-				/*
-			case PatternConstants.ruleTableOneD:
-				bitsNeeded = 3 * i;
-				break;
-				*/
-
-			default:
-				bitsNeeded = LifeConstants.maxRuleTreeLookupBits + 1;
-				break;
-			}
-		}
-
-		// check lookup is small enough for lookup table
-		if (bitsNeeded <= LifeConstants.maxRuleTreeLookupBits) {
-			result = true;
 		}
 
 		return result;
@@ -25697,7 +25699,7 @@
 		// von Neumann
 		case PatternConstants.ruleTableVN:
 			// check if a fast lookup is available
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
+			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
 					this.nextGenerationRuleLoaderTileVNLookup1();
@@ -25732,7 +25734,7 @@
 		// Moore
 		case PatternConstants.ruleTableMoore:
 			// check if a fast lookup is available
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
+			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
 					this.nextGenerationRuleLoaderTileMooreLookup1();
@@ -25759,7 +25761,7 @@
 		// Hex
 		case PatternConstants.ruleTableHex:
 			// check if a fast lookup is available
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
+			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
 					this.nextGenerationRuleLoaderTileHexLookup1();
@@ -28280,7 +28282,7 @@
 		// check neighbourhood
 		if (this.ruleTreeNeighbours === 4) {
 			// von Neumann
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
+			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
 				// pick appropriate algo for state bits
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
@@ -28312,7 +28314,7 @@
 			}
 		} else {
 			// Moore
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled) {
+			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
 				switch (this.ruleLoaderLookupBits) {
 				case 1:
 					this.nextGenerationRuleLoaderTileMooreLookup1();

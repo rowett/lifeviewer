@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1022,
+		/** @const {number} */ versionBuild : 1023,
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -5154,20 +5154,6 @@
 	};
 
 
-	// update progress bar for init RuleLoader Lookup
-	View.prototype.updateProgressBarInitLookup = function(/** @type {View} */ me) {
-		var	/** @type {number} */ states = me.engine.multiNumStates;
-
-		// update the progress bar
-		me.progressBar.current = 100 * (me.engine.ruleLoaderStep / (states * states * states * states * states));
-
-		// show the progress bar
-		me.progressBar.deleted = false;
-
-		// clear the bg alpha to show the progress bar
-		me.genToggle.bgAlpha = 0;
-	};
-
 	// update progress bar for copy RLE
 	View.prototype.updateProgressBarCopy = function(/** @type {View} */ me) {
 		// update the progress bar
@@ -6945,7 +6931,7 @@
 		this.graphDataToggle.deleted = shown || (this.engine.boundedGridType !== -1);
 
 		// cancel button
-		this.cancelButton.deleted = !(this.identify || this.startFrom !== -1 || this.engine.ruleLoaderStep !== -1);
+		this.cancelButton.deleted = !(this.identify || this.startFrom !== -1);
 		this.cancelButton.locked = false;
 
 		// generation statistics
@@ -7528,36 +7514,16 @@
 		}
 	};
 
-	// stop RuleLoader lookup creation
-	View.prototype.stopInitLookup = function() {
-		// cancel lookup
-		this.engine.ruleLoaderStep = -1;
-		this.engine.ruleLoaderLookup = null;
-		this.engine.ruleLoaderLookupEnabled = false;
-		this.viewMenu.locked = false;
-		this.menuManager.notification.clear(false, false);
-	};
-
 	// view update for create RuleLoader Lookup
-	View.prototype.viewAnimateInitLookup = function(/** @type {View} */ me) {
+	View.prototype.viewAnimateInitLookup = function(/** @type {View} */ me, /** @type {number} */ startTime) {
 		// start time of updates
-		var	/** @type {number} */ startTime = performance.now(),
-
-			// time budget in ms for this frame
+		var	// time budget in ms for this frame
 			/** @type {number} */ elapsedTime = 0,
 			/** @type {number} */ timeLimit = 14;
 
-		// update progress bar
-		me.updateProgressBarInitLookup(me);
-
 		// if just started then notify
 		if (me.engine.ruleLoaderStep === 0) {
-			me.menuManager.notification.notify("Initializing...", 15, 216000, 15, false);
 			me.engine.ruleLoaderGenerationTime = performance.now();
-			me.viewMenu.locked = true;
-
-			// render world
-			me.renderWorld(me, false, 0, false);
 		}
 
 		// process the next step
@@ -7568,13 +7534,9 @@
 
 		// if complete then notify
 		if (me.engine.ruleLoaderStep === -1) {
-			me.menuManager.notification.notify("Ready", 15, 80, 15, false);
 			me.engine.ruleLoaderGenerationTime = performance.now() - me.engine.ruleLoaderGenerationTime;
-			me.viewMenu.locked = false;
+			me.menuManager.updateCount = 10;
 		}
-		
-		// draw grid (disable tilt if selection displayed)
-		me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 		// set the auto update mode
 		me.menuManager.setAutoUpdate(true);
@@ -8053,26 +8015,29 @@
 
 	// update view mode dispatcher
 	View.prototype.viewAnimate = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
+		var	/** @type {number} */ startTime = performance.now();
+
 		// check view mode
 		if (me.measureFrameRate > 0) {
 			me.viewAnimateMeasure(timeSinceLastUpdate, me);
 		} else {
-			if (me.engine.isRuleTree && me.engine.ruleLoaderStep !== -1) {
-				me.viewAnimateInitLookup(me);
+			if (me.computeHistory) {
+				me.viewAnimateHistory(me);
 			} else {
-				if (me.computeHistory) {
-					me.viewAnimateHistory(me);
+				if (me.identify) {
+					me.viewAnimateIdentify(me);
 				} else {
-					if (me.identify) {
-						me.viewAnimateIdentify(me);
+					if (me.clipboardCopy) {
+						me.viewAnimateClipboard(me);
 					} else {
-						if (me.clipboardCopy) {
-							me.viewAnimateClipboard(me);
+						if (me.startFrom !== -1) {
+							me.viewAnimateStartFrom(me);
 						} else {
-							if (me.startFrom !== -1) {
-								me.viewAnimateStartFrom(me);
-							} else {
-								me.viewAnimateNormal(timeSinceLastUpdate, me);
+							me.viewAnimateNormal(timeSinceLastUpdate, me);
+
+							// check if initializing Fast Lookup
+							if (me.engine.isRuleTree && me.engine.ruleLoaderStep !== -1) {
+								me.viewAnimateInitLookup(me, startTime);
 							}
 						}
 					}
@@ -8158,11 +8123,6 @@
 		// check if changing
 		if (change) {
 			me.engine.ruleLoaderLookupEnabled = newValue[0];
-			
-			// check if first time switched on
-			if (me.engine.ruleLoaderLookupEnabled && me.engine.ruleLoaderLookup === null) {
-				me.createRuleLoaderLookup();
-			}
 		}
 
 		return [me.engine.ruleLoaderLookupEnabled];
@@ -12180,10 +12140,6 @@
 		if (me.startFrom !== -1) {
 			me.stopStartFrom(me, true, true);
 		}
-
-		if (me.engine.ruleLoaderStep !== -1) {
-			me.stopInitLookup();
-		}
 	};
 
 	// back button
@@ -16063,13 +16019,8 @@
 					if (me.startFrom !== -1) {
 						processed = KeyProcessor.processKeyGoTo(me, keyCode, event);
 					} else {
-						// check for init lookup
-						if (me.engine.ruleLoaderStep !== -1) {
-							processed = KeyProcessor.processKeyInitLookup(me, keyCode, event);
-						} else {
-							// process the key
-							processed = KeyProcessor.processKey(me, keyCode, event);
-						}
+						// process the key
+						processed = KeyProcessor.processKey(me, keyCode, event);
 					}
 				}
 			}
@@ -18098,9 +18049,6 @@
 			me.starField.starColour = new Colour(255, 255, 255);
 		}
 
-		// disable RuleLoader fast lookup
-		me.engine.ruleLoaderLookupEnabled = false;
-
 		// disable HROT non-deterministic mode
 		me.engine.HROT.useRandom = false;
 
@@ -18425,6 +18373,13 @@
 			}
 		} else {
 			me.clearPatternData();
+		}
+
+		// enable Fast Lookup if available for the loaded rule
+		if (me.engine.ruleLoaderLookupAvailable()) {
+			me.engine.ruleLoaderLookupEnabled = true;
+		} else {
+			me.engine.ruleLoaderLookupEnabled = false;
 		}
 
 		// setup dynamic calls in the engine for performance
