@@ -6466,7 +6466,7 @@
 					// all ok
 					valid = true;
 				} else {
-					// invalid character found so mark pattern as invalid and stop
+					// invalid character found so mark pattern as invalid
 					this.failureReason = "Illegal character in pattern: " + current;
 					pattern.invalid = true;
 					finished = true;
@@ -6513,6 +6513,7 @@
 			// save width and height
 			pattern.width = width;
 			pattern.height = y;
+
 			// check if small enough to save
 			if (width > this.maxWidth || y > this.maxHeight) {
 				// flag pattern too large
@@ -7700,6 +7701,47 @@
 		}
 	};
 
+	// clear illegal states
+	PatternManager.prototype.clearIllegalStates = function(/** @type {Pattern} */ pattern, /** @type {number} */ maxStates) {
+		var	/** @type {number} */ y = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ state = 0,
+			/** @type {Array<Uint16Array>} */ stateMap = pattern.lifeMap,
+			/** @type {Array<Uint8Array>} */ multiStateMap = pattern.multiStateMap,
+			/** @type {Uint16Array} */ stateMapRow = null,
+			/** @type {Uint8Array} */ multiStateMapRow = null;
+
+		// check if state map exists
+		if (stateMap !== null) {
+			// handle 2-state HROT/LtL
+			if (pattern.isHROT && pattern.multiNumStates === 2) {
+				for (x = 2; x < 256; x += 1) {
+					if (this.stateCount[x]) {
+						this.stateCount[x] = 0;
+						pattern.numUsedStates -= 1;
+					}
+				}
+			} else {
+				// handle everything else
+				for (y = 0; y < multiStateMap.length; y += 1) {
+					stateMapRow = stateMap[y];
+					multiStateMapRow = multiStateMap[y];
+					for (x = 0; x < multiStateMapRow.length; x += 1) {
+						state = multiStateMapRow[x];
+						if (state >= maxStates) {
+							multiStateMapRow[x] = 0;
+							stateMapRow[x >> 2] &= ~(1 << (~x & 15));
+							if (this.stateCount[state] > 0) {
+								this.stateCount[state] = 0;
+								pattern.numUsedStates -= 1;
+							}
+						}
+					}
+				}
+			}
+		}
+	};
+
 	// decode a Life RLE pattern
 	PatternManager.prototype.decodeRLE = function(/** @type {Pattern} */ pattern, /** @type {string} */ source, /** @type {Allocator} */ allocator) {
 		// index in string
@@ -7707,6 +7749,9 @@
 
 			// end of string
 			/** @type {number} */ end = source.length,
+
+			// end of pattern ! index
+			/** @type {number} */ endPatIndex = -1,
 
 			// current character
 			/** @type {string} */ current,
@@ -7728,6 +7773,9 @@
 
 			// whether HROT pattern has B0
 			/** @type {boolean} */ hasHROTB0 = false,
+
+			// maximum state allowed
+			/** @type {number} */ maxStates = 0,
 
 			// counters
 			/** @type {number} */ j = 0;
@@ -7858,6 +7906,17 @@
 					}
 				}
 				break;
+			}
+		}
+
+		// ensure all comments are read after pattern if it is invalid (so script commands can be captured)
+		if (pattern.invalid) {
+			endPatIndex = source.substring(index).indexOf("!");
+			if (endPatIndex !== -1) {
+				index += endPatIndex + 1;
+				while (index < end) {
+					index += this.addToTitle(pattern, "", source.substring(index), true);
+				}
 			}
 		}
 
@@ -8197,7 +8256,8 @@
 		if (this.executable) {
 			// check for [R]History
 			if (pattern.isHistory) {
-				if (pattern.numStates > 7) {
+				maxStates = 7;
+				if (pattern.numStates > maxStates) {
 					this.failureReason = "Illegal state in pattern for [R]History";
 					this.executable = false;
 					this.illegalState = true;
@@ -8205,7 +8265,8 @@
 			} else {
 				// check for [R]Super
 				if (pattern.isSuper) {
-					if (pattern.numStates > 26) {
+					maxStates = 26;
+					if (pattern.numStates > maxStates) {
 						this.failureReason = "Illegal state in pattern for [R]Super";
 						this.executable = false;
 						this.illegalState = true;
@@ -8213,7 +8274,8 @@
 				} else {
 					// check for other rules
 					if (pattern.multiNumStates !== -1) {
-						if (pattern.numStates > pattern.multiNumStates) {
+						maxStates = pattern.multiNumStates;
+						if (pattern.numStates > maxStates) {
 							if (pattern.isLTL) {
 								this.failureReason = "Illegal state in pattern for LtL";
 								this.illegalState = true;
@@ -8235,6 +8297,12 @@
 						}
 					}
 				}
+			}
+
+			// clear illegal states if present
+			if (this.illegalState) {
+				pattern.numStates = maxStates;
+				this.clearIllegalStates(pattern, maxStates);
 			}
 		}
 	};

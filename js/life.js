@@ -13240,7 +13240,7 @@
 		}
 
 		// merge with overlay if required
-		if (overlayGrid && !state1Fit) {
+		if (overlayGrid && !state1Fit && overlayTopY !== -1) {
 			if (overlayTopY < newTopY) {
 				newTopY = overlayTopY;
 			}

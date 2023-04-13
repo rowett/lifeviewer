@@ -559,7 +559,8 @@
 	// render welcome topic
 	Help.renderWelcomeTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		// section number
-		var	/** @type {number} */ sectionNum = 0;
+		var	/** @type {number} */ sectionNum = 0,
+			/** @type {string} */ editionName = ViewConstants.standardEdition;
 
 		// set initial line
 		view.lineNo = 1;
@@ -575,7 +576,11 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 
-		y = this.renderHelpLine(view, "", ViewConstants.externalViewerTitle + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
+		if (view.proEdition) {
+			editionName = ViewConstants.proEdition;
+		}
+
+		y = this.renderHelpLine(view, "", ViewConstants.externalViewerTitle + " " + editionName + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		if (view.chromeBug) {
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "", "If there are no cells displayed please go to chrome://flags", ctx, x, y, height, helpLine);

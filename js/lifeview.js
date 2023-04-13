@@ -294,7 +294,13 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1023,
+		/** @const {number} */ versionBuild : 1027,
+
+		// standard edition name
+		/** @const {string} */ standardEdition : "Standard",
+
+		// pro edition name
+		/** @const {string} */ proEdition : "Pro",
 
 		// author
 		/** @const {string} */ versionAuthor : "Chris Rowett",
@@ -635,6 +641,9 @@
 	 */
 	function View(element) {
 		var	/** @type {number} */ i = 0;
+
+		// whether LifeViewer is standard or pro edition
+		/** @type {boolean} */ this.proEdition = false;
 
 		// whether Chrome bug is in effect
 		/** @type {boolean} */ this.chromeBug = false;
@@ -3920,7 +3929,7 @@
 			x = checkGridResult[1];
 			y = checkGridResult[2];
 
-			// draw the cell
+			// get the cell state
 			result = this.engine.getState(x, y, rawRequested);
 		}
 
@@ -13720,8 +13729,62 @@
 					}
 				}
 
+				// grow grid if needed by checking first bottom left cell with offset
+				if (me.engine.boundedGridType === -1) {
+					me.cellOnGrid(leftX + xOff + dx, bottomY + yOff + dy);
+
+					// update position in case grid grew
+					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
+					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+					selBox = me.selectionBox;
+					leftX = selBox.leftX;
+					bottomY = selBox.bottomY;
+					rightX = selBox.rightX;
+					topY = selBox.topY;
+	
+					// order selection
+					if (leftX > rightX) {
+						swap = rightX;
+						rightX = leftX;
+						leftX = swap;
+					}
+					if (bottomY > topY) {
+						swap = topY;
+						topY = bottomY;
+						bottomY = swap;
+					}
+					width = rightX - leftX + 1;
+					height = topY - bottomY + 1;
+	
+					//and then check top right cell with offset
+					me.cellOnGrid(rightX + xOff + dx, topY + yOff + dy);
+	
+					// update position in case grid grew
+					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
+					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+					selBox = me.selectionBox;
+					leftX = selBox.leftX;
+					bottomY = selBox.bottomY;
+					rightX = selBox.rightX;
+					topY = selBox.topY;
+	
+					// order selection
+					if (leftX > rightX) {
+						swap = rightX;
+						rightX = leftX;
+						leftX = swap;
+					}
+					if (bottomY > topY) {
+						swap = topY;
+						topY = bottomY;
+						bottomY = swap;
+					}
+					width = rightX - leftX + 1;
+					height = topY - bottomY + 1;
+				}
+	
 				// check if the pattern can move
-				if (leftX + xOff + dx > bLeftX && rightX + xOff + dx < bRightX && bottomY + yOff + dy > bBottomY && topY + yOff + dy < bTopY) {
+				if (leftX + xOff + dx >= bLeftX && rightX + xOff + dx <= bRightX && bottomY + yOff + dy >= bBottomY && topY + yOff + dy <= bTopY) {
 					// cut pattern in selection to internal buffer
 					me.pasteBuffers[ViewConstants.numPasteBuffers] = null;
 					me.cutSelection(me, ViewConstants.numPasteBuffers, false, true);
@@ -19218,10 +19281,16 @@
 						if (pattern.tooBig) {
 							me.menuManager.notification.notify("Pattern too big!", 15, ViewConstants.errorDuration, 15, false);
 						} else {
-							me.menuManager.notification.notify("New Pattern", 15, 300, 15, false);
+							if (me.failureReason === "") {
+								me.menuManager.notification.notify("New pattern", 15, 300, 15, false);
+							}
 						}
 					}
 				}
+			}
+
+			if (me.failureReason !== "") {
+				me.menuManager.notification.notify("Invalid pattern!", 15, 300, 15, false);
 			}
 
 			// set the bounded grid tiles if specified

@@ -1,3 +1,16 @@
+Build 1027
+- fixed Nudge Selection boundary for 2-state rules
+
+Build 1026
+- further improvements to illegal state handling
+
+Build 1025
+- fixed overlay Bounding Box calculation when not overlay cells exist
+
+Build 1024
+- improved COLOR validation
+- fixed illegal state error handling
+
 Build 1023
 - Fast Lookup now gets created automatically in the background and will be enabled as soon as ready
 
