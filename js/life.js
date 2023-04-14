@@ -7891,7 +7891,7 @@
 				}
 			}
 
-			this.nextGeneration(true, graphDisabled, view.identify, view);
+			this.nextGeneration(true);
 			view.fixedPointCounter += view.refreshRate;
 			this.convertToPensTile();
 			view.pasteRLEList();
@@ -10159,10 +10159,26 @@
 					colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 				}
 	
-				for (i = 1; i <= this.multiNumStates + this.historyStates; i += 1) {
-					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+				if (this.isSuper || this.isHROT || this.isPCA) {
+					for (i = 1; i <= this.multiNumStates + this.historyStates; i += 1) {
+						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
+					}
+				} else {
+					for (i = 1; i <= this.historyStates; i += 1) {
+						pixelColours[i] = (alpha << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
+					}
+
+					for (i = this.historyStates + 1; i <= this.multiNumStates + this.historyStates; i += 1) {
+						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
 					}
 				}
 			} else {
@@ -10171,10 +10187,26 @@
 					colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 				}
 
-				for (i = 1; i <= this.multiNumStates + this.historyStates; i += 1) {
-					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+				if (this.isSuper || this.isHROT || this.isPCA) {
+					for (i = 1; i <= this.multiNumStates + this.historyStates; i += 1) {
+						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
+					}
+				} else {
+					for (i = 1; i <= this.historyStates; i += 1) {
+						pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | alpha;
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
+	
+						for (i = this.historyStates + 1; i <= this.multiNumStates + this.historyStates; i += 1) {
+							pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+							if (needStrings) {
+								colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+							}
+						}
 					}
 				}
 			}
@@ -17516,23 +17548,24 @@
 	};
 
 	// compute the next generation unless rule is none
-	Life.prototype.nextGeneration = function(/** @type {boolean} */ noHistory, /** @type {boolean} */ graphDisabled, /** @type {boolean} */ identify, /** @type {View} */ view) {
+	Life.prototype.nextGeneration = function(/** @type {boolean} */ noHistory) {
 		// do nothing if rule is none
 		if (!this.isNone) {
-			this.processNextGen(noHistory, graphDisabled, identify, view);
+			this.processNextGen(noHistory);
 		} else {
 			this.counter += 1;
 		}
 	};
 
 	// compute the next generation with or without statistics
-	Life.prototype.processNextGen = function(/** @type {boolean} */ noHistory, /** @type {boolean} */ graphDisabled, /** @type {boolean} */ identify, /** @type {View} */ view) {
+	Life.prototype.processNextGen = function(/** @type {boolean} */ noHistory) {
 		var	/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
-			/** @type {number} */ boundarySize = 16;
+			/** @type {number} */ boundarySize = 16,
+			/** @type {number} */ currentPop = 0;
 
 		// check if snapshot should be saved
-		if (this.counter === this.nextSnapshotTarget - 1) {
+		if (this.counter === this.nextSnapshotTarget - 1 && !noHistory) {
 			// save snapshot required
 			this.snapshotNeeded = true;
 		} else {
@@ -17624,8 +17657,12 @@
 			} else {
 				boundarySize = 16;
 			}
+
 			// check if the pattern is near a boundary
 			if (zoomBox.leftX <= boundarySize || zoomBox.rightX >= (this.maxGridSize - boundarySize) || zoomBox.bottomY <= boundarySize || zoomBox.topY >= (this.maxGridSize - boundarySize)) {
+				// save current population so we can determine if cells were deleted
+				currentPop = this.population;
+
 				// clear grid boundary
 				if (this.isHROT) {
 					this.clearHRBoundary();
@@ -17636,6 +17673,13 @@
 						// clear bit grid boundary (and Generations alive states too)
 						this.clearGridBoundary();
 					}
+				}
+
+				// check if cells were deleted
+				if (currentPop !== this.population) {
+					// update bounding box
+					this.shrinkNeeded = true;
+					this.doShrink();
 				}
 			}
 		}
@@ -17659,7 +17703,6 @@
 	Life.prototype.savePopulationData = function() {
 		var	/** @type {number} */ popChunk = this.counter >> LifeConstants.popChunkPower,
 			/** @type {number} */ popOffset = this.counter & ((1 << LifeConstants.popChunkPower) - 1);
-
 
 		// update population graph
 		if (this.counter < LifeConstants.maxPopSamples) {
@@ -42150,6 +42193,30 @@
 		}
 	};
 
+	// draw grid lines and snow
+	Life.prototype.drawGridLinesAndSnow = function(/** @type {boolean} */ drawingSnow) {
+		// check if snow is required
+		if (drawingSnow) {
+			// if cell borders are being drawn then defer snow until this is done
+			if (!(this.canDisplayGrid() && this.cellBorders && !this.displayGrid)) {
+				this.drawSnow();
+			}
+		}
+
+		// draw grid lines or cell borders if enabled and zoomed in enough
+		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
+			this.drawGridLines();
+		}
+
+		// check if snow was deferred
+		if (drawingSnow) {
+			// if cell borders are being drawn then defer snow until this is done
+			if (this.canDisplayGrid() && this.cellBorders && !this.displayGrid) {
+				this.drawSnow();
+			}
+		}
+	};
+
 	// project the life grid onto the canvas with transformation and clipping
 	Life.prototype.renderGridProjectionClip = function(/** @type {Array<Uint8Array>} */ bottomGrid, /** @type {Array<Uint8Array>} */ layersGrid, /** @type {number} */ mask, /** @type {boolean} */ drawingSnow) {
 		var	/** @type {number} */ w8 = this.displayWidth >> 3,
@@ -42380,13 +42447,8 @@
 			y = sy;
 		}
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
-		}
+		// draw grid lines and snow
+		this.drawGridLinesAndSnow(drawingSnow);
 
 		// delete bounded grid border if enabled
 		if (this.boundedGridType !== -1) {
@@ -42831,13 +42893,8 @@
 			y = sy;
 		}
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
-		}
+		// draw grid lines and snow
+		this.drawGridLinesAndSnow(drawingSnow);
 
 		// delete bounded grid border if enabled
 		if (this.boundedGridType !== -1) {
@@ -43161,13 +43218,8 @@
 			y = sy;
 		}
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
-		}
+		// draw grid lines and snow
+		this.drawGridLinesAndSnow(drawingSnow);
 
 		// delete bounded grid border if enabled
 		if (this.boundedGridType !== -1) {
@@ -43472,13 +43524,8 @@
 			y = sy;
 		}
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
-		}
+		// draw grid lines and snow
+		this.drawGridLinesAndSnow(drawingSnow);
 
 		// delete bounded grid border if enabled
 		if (this.boundedGridType !== -1) {
@@ -44762,13 +44809,8 @@
 			y = sy;
 		}
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
-		}
+		// draw grid lines and snow
+		this.drawGridLinesAndSnow(drawingSnow);
 
 		// switch to layers grid
 		colourGrid = layersGrid;
@@ -45246,13 +45288,8 @@
 			y = sy;
 		}
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
-		}
+		// draw grid lines and snow
+		this.drawGridLinesAndSnow(drawingSnow);
 
 		// switch to layers grid
 		colourGrid = layersGrid;
@@ -45717,13 +45754,8 @@
 			y = sy;
 		}
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
-		}
+		// draw grid lines and snow
+		this.drawGridLinesAndSnow(drawingSnow);
 
 		// switch to layers grid
 		colourGrid = layersGrid;
@@ -46310,13 +46342,8 @@
 			y = sy;
 		}
 
-		// draw grid lines if enabled
-		if (drawingSnow) {
-			this.drawSnow();
-		}
-		if ((this.displayGrid || this.cellBorders) && this.canDisplayGrid()) {
-			this.drawGridLines();
-		}
+		// draw grid lines and snow
+		this.drawGridLinesAndSnow(drawingSnow);
 
 		// switch to layers grid
 		colourGrid = layersGrid;

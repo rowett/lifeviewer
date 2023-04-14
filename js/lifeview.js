@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1027,
+		/** @const {number} */ versionBuild : 1029,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3782,8 +3782,8 @@
 
 				// now run the required number of generations
 				while (gens > 0) {
-					// compute next generation with no stats, history and graph disabled
-					this.engine.nextGeneration(true, true, this.identify, this);
+					// compute next generation with no history
+					this.engine.nextGeneration(true);
 					this.engine.convertToPensTile();
 					this.engine.saveSnapshotIfNeeded(this);
 					gens -= 1;
@@ -7476,7 +7476,7 @@
 		this.engine.saveHistoryBox.set(historyBox);
 
 		// compute next generation
-		this.engine.nextGeneration(this.noHistory, this.graphDisabled, this.identify, this);
+		this.engine.nextGeneration(this.noHistory);
 		this.engine.convertToPensTile();
 
 		// paste any RLE snippets
@@ -10753,11 +10753,12 @@
 		this.iconManager.add("download", w, h);
 	};
 
-	// check if a rule is valid
-	/** @returns {boolean} */
+	// check if a rule is valid and returns the rule string (or "" for invalid)
+	/** @returns {string} */
 	View.prototype.ruleIsValid = function(/** @type {string} */ ruleName) {
-		var	/** @type {boolean} */ result = false,
+		var	/** @type {string} */ result = "",
 			/** @type {string} */ patternText = "x = 1, y = 1, rule = ",
+			/** @type {number} */ textPos = -1,
 			/** @type {Pattern} */ pattern = null;
 
 		// check if the rule name is blank
@@ -10765,6 +10766,35 @@
 			// default to Conway's Life
 			ruleName = "Life";
 		}
+
+		// remove all /r characters
+		ruleName = ruleName.replace(/[\n\r]/g, "\n");
+
+		// ignore lines beginning with # or blank lines
+		textPos = ruleName.indexOf("\n");
+		while (textPos === 0 || (textPos > 0 && ruleName[0] === "#")) {
+			ruleName = ruleName.substring(textPos + 1);
+			textPos = ruleName.indexOf("\n");
+		}
+
+		// only use first line
+		textPos = ruleName.indexOf("\n");
+		if (textPos !== -1) {
+			ruleName = ruleName.substring(0, textPos).trim();
+
+			// check for rule =
+			textPos = ruleName.indexOf("rule=");
+			if (textPos !== -1) {
+				ruleName = ruleName.substring(textPos + 1 + "rule=".length).trim();
+			} else {
+				textPos = ruleName.indexOf("rule =");
+				if (textPos !== -1) {
+					ruleName = ruleName.substring(textPos + 1 + "rule =".length).trim();
+				}
+			}
+		}
+
+		// create an empty pattern
 		patternText += ruleName + "\nb!";
 
 		// attempt to build a pattern from the string
@@ -10778,7 +10808,7 @@
 
 		// check if pattern was valid
 		if (pattern && pattern.lifeMap) {
-			result = true;
+			result = ruleName;
 			pattern = null;
 		}
 
@@ -10793,10 +10823,10 @@
 
 		// check if the prompt was confirmed
 		if (result !== null) {
-			if (me.ruleIsValid(result)) {
-				if (result === "") {
-					result = "Life";
-				}
+			// check if the rule is valid
+			result = me.ruleIsValid(result);
+
+			if (result !== "") {
 				// check for bounded grid
 				index = result.indexOf(":");
 				if (index !== -1) {
@@ -10806,6 +10836,7 @@
 					me.patternRuleName = result;
 					me.patternBoundedGridDef = "";
 				}
+
 				me.patternAliasName = "";
 				patternText = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
 
@@ -11762,10 +11793,10 @@
 
 		// check if the prompt was confirmed
 		if (result !== null) {
-			if (me.ruleIsValid(result)) {
-				if (result === "") {
-					result = "Life";
-				}
+			result = me.ruleIsValid(result);
+
+			if (result !== "") {
+				// add an empty pattern
 				patternText += result + "\nb!";
 
 				// restore previous size
@@ -13294,7 +13325,7 @@
 				me.cutSelection(me, me.currentPasteBuffer, true, false);
 
 				// step
-				me.engine.nextGeneration(me.noHistory, me.graphDisabled, me.identify, me);
+				me.engine.nextGeneration(me.noHistory);
 				me.engine.convertToPensTile();
 				me.engine.saveSnapshotIfNeeded(me);
 				me.afterEdit("");
@@ -13425,7 +13456,7 @@
 		}
 
 		// compute next generation
-		me.engine.nextGeneration(true, true, me.identify, me);
+		me.engine.nextGeneration(true);
 		me.engine.convertToPensTile();
 		me.engine.saveSnapshotIfNeeded(me);
 
@@ -15627,7 +15658,7 @@
 
 		// compute each generation up to the target
 		while (this.engine.counter < targetGen) {
-			this.engine.nextGeneration(false, this.graphDisabled, this.identify, this);
+			this.engine.nextGeneration(false);
 			this.engine.convertToPensTile();
 			this.pasteRLEList();
 

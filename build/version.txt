@@ -1,3 +1,11 @@
+Build 1029
+- fixed Layer colours for dead cells in Generations rule
+- fixed Bounding Box when cells cleared at grid boundary
+
+Build 1028
+- New Pattern and Change Rule will now detect rule name from pasted RLE
+- allow Snow to fall through cell borders
+
 Build 1027
 - fixed Nudge Selection boundary for 2-state rules
 
