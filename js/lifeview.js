@@ -294,7 +294,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1029,
+		/** @const {number} */ versionBuild : 1030,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -5086,6 +5086,12 @@
 		var	/** @type {boolean} */ clipped = false,
 			/** @type {number} */ swap = 0,
 
+			// grid extent
+			/** @type {number} */ gLeftX = 0,
+			/** @type {number} */ gBottomY = 0,
+			/** @type {number} */ gRightX = 0,
+			/** @type {number} */ gTopY = 0,
+
 			// convert selection box to middle coordinates
 			/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {BoundingBox} */ midBox = me.middleBox,
@@ -5110,38 +5116,59 @@
 
 		me.checkGridSize(me, midBox);
 
+		// get grid extent
+		gLeftX = 0;
+		gRightX = me.engine.width - 1;
+		gBottomY = 0;
+		gTopY = me.engine.height - 1;
+
+		// add border for HROT rules
+		if (me.engine.isHROT) {
+			gLeftX += me.engine.HROT.xrange * 2 + 1;
+			gRightX -= me.engine.HROT.xrange * 2 + 1;
+			gBottomY += me.engine.HROT.yrange * 2 + 1;
+			gTopY -= me.engine.HROT.yrange * 2 + 1;
+		}
+
 		// clip the selection to the grid
 		xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
 		yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
-		if (selBox.leftX + xOff < 0) {
+		if (selBox.leftX + xOff < gLeftX) {
 			selBox.leftX = -xOff;
 			clipped = true;
 		}
-		if (selBox.leftX + xOff >= me.engine.width) {
+
+		if (selBox.leftX + xOff > gRightX) {
 			selBox.leftX = me.engine.width - 1 - xOff;
 			clipped = true;
 		}
-		if (selBox.rightX + xOff < 0) {
+
+		if (selBox.rightX + xOff < gLeftX) {
 			selBox.rightX = -xOff;
 			clipped = true;
 		}
-		if (selBox.rightX + xOff >= me.engine.width) {
+
+		if (selBox.rightX + xOff > gRightX) {
 			selBox.rightX = me.engine.width - 1 - xOff;
 			clipped = true;
 		}
-		if (selBox.bottomY + yOff < 0) {
+
+		if (selBox.bottomY + yOff < gBottomY) {
 			selBox.bottomY = -yOff;
 			clipped = true;
 		}
-		if (selBox.bottomY + yOff >= me.engine.height) {
+
+		if (selBox.bottomY + yOff > gTopY) {
 			selBox.bottomY = me.engine.height - 1 - yOff;
 			clipped = true;
 		}
-		if (selBox.topY + yOff < 0) {
+
+		if (selBox.topY + yOff < gBottomY) {
 			selBox.topY = -yOff;
 			clipped = true;
 		}
-		if (selBox.topY + yOff >= me.engine.height) {
+
+		if (selBox.topY + yOff > gTopY) {
 			selBox.topY = me.engine.height - 1 - yOff;
 			clipped = true;
 		}
@@ -13787,7 +13814,7 @@
 					width = rightX - leftX + 1;
 					height = topY - bottomY + 1;
 	
-					//and then check top right cell with offset
+					// and then check top right cell with offset
 					me.cellOnGrid(rightX + xOff + dx, topY + yOff + dy);
 	
 					// update position in case grid grew
@@ -13814,6 +13841,14 @@
 					height = topY - bottomY + 1;
 				}
 	
+				// add border for HROT rules
+				if (me.engine.isHROT) {
+					bLeftX += me.engine.HROT.xrange * 2 + 1;
+					bRightX -= me.engine.HROT.xrange * 2 + 1;
+					bBottomY += me.engine.HROT.yrange * 2 + 1;
+					bTopY -= me.engine.HROT.yrange * 2 + 1;
+				}
+
 				// check if the pattern can move
 				if (leftX + xOff + dx >= bLeftX && rightX + xOff + dx <= bRightX && bottomY + yOff + dy >= bBottomY && topY + yOff + dy <= bTopY) {
 					// cut pattern in selection to internal buffer

@@ -1,3 +1,6 @@
+Build 1030
+- fixed Nudge Selection boundary for HROT/LtL rules
+
 Build 1029
 - fixed Layer colours for dead cells in Generations rule
 - fixed Bounding Box when cells cleared at grid boundary
