@@ -163,6 +163,12 @@
 		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
 
+		// triangular y zoom factor
+		/** @const {number} */ triangularYFactor : Math.sqrt(3),
+
+		// hexagonal y zoom factor
+		/** @const {number} */ hexagonalYFactor : 3 / 2 * (1 / Math.sqrt(3)),
+
 		// copy RLE size threshold (bytes) for single pass
 		/** @const (number) */ copySizeThreshold : 65536,
 
@@ -294,7 +300,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1030,
+		/** @const {number} */ versionBuild : 1031,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",

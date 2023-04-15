@@ -1190,6 +1190,38 @@
 		}
 	};
 
+	// get Y zoom factor based on grid type
+	/** @returns {number} */
+	Life.prototype.getYFactor = function() {
+		var	/** @type {number} */ result = 1;
+
+		if (this.isTriangular) {
+			result = ViewConstants.triangularYFactor;
+		}
+
+		if (this.isHex) {
+			result = ViewConstants.hexagonalYFactor;
+		}
+
+		return result;
+	};
+
+	// adjust Y zoom based on grid type
+	/** @returns {number} */
+	Life.prototype.getYZoom = function(/** @type {number} */ zoom) {
+		var	/** @type {number} */ result = zoom;
+
+		if (this.isTriangular) {
+			result *= ViewConstants.triangularYFactor;
+		}
+
+		if (this.isHex) {
+			result *= ViewConstants.hexagonalYFactor;
+		}
+
+		return result;
+	};
+
 	// update and draw snowflakes
 	Life.prototype.drawSnow = function() {
 		var	/** @type {number} */ i = 0,
@@ -5481,7 +5513,7 @@
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX,
 			/** @type {number} */ yOff = this.height / 2 - this.yOff - this.originY,
 			/** @const {number} */ xzoom = this.zoom * this.originZ,
-			/** @const {number} */ yzoom = this.zoom * this.originZ * ViewConstants.sqrt3,
+			/** @const {number} */ yzoom = this.getYZoom(this.zoom) * this.originZ,
 			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
 			/** @type {number} */ x = 0,
@@ -5599,11 +5631,10 @@
 			/** @type {number} */ m = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
-			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ w2 = this.width / 2 - ViewConstants.sqrt3 / 4,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
-			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16,
-			/** @const {number} */ xEdge = (ViewConstants.sqrt3 / 4) / Math.cos(pi3 / 2) * 1.16,
+			/** @const {number} */ radius = 1 / ViewConstants.sqrt3,
 			/** @const {Array<number>} */ xa = [],
 			/** @const {Array<number>} */ ya = [],
 			/** @type {number} */ state = 0,
@@ -5628,7 +5659,8 @@
 			/** @const {number} */ hexAdjust = -(this.height >> 2),
 			/** @type {number} */ displayX = 0,
 			/** @type {number} */ displayY = 0,
-			/** @type {number} */ zoom = this.camZoom,
+			/** @type {number} */ xzoom = this.zoom * this.originZ,
+			/** @type {number} */ yzoom = this.getYZoom(this.zoom) * this.originZ,
 			/** @type {number} */ swap = 0;
 
 		// adjust for hex
@@ -5663,9 +5695,8 @@
 		// create hexagon coordinates
 		k = pi3 / 2;
 		for (j = 0; j <= 5; j += 1) {
-			xa[j] = Math.cos(k) * xEdge;
-			ya[j] = Math.sin(k) * yEdge;
-			xa[j] += ya[j] / 2;
+			xa[j] = Math.cos(k) * radius;
+			ya[j] = Math.sin(k) * radius * 1.16;
 			k += pi3;
 		}
 		xa0 = xa[0];
@@ -5689,15 +5720,15 @@
 		k = 0;
 		for (y = bottomY; y <= topY; y += 1) {
 			cy = y - h2;
-			displayY = (cy + yOff1) * zoom + halfDisplayHeight;
+			displayY = (cy + yOff1) * yzoom + halfDisplayHeight;
 			// clip to display
-			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+			if (displayY >= -yzoom && displayY < this.displayHeight + yzoom) {
 				for (x = leftX; x <= rightX; x += 1) {
 					if (cells[m] > 0) {
 						cx = x - w2;
-						displayX = (cx + xOff1 - (cy + yOff1) / 2) * zoom + halfDisplayWidth;
+						displayX = (cx + xOff1 - (cy + yOff1) / 2) * xzoom + halfDisplayWidth;
 						// clip to display
-						if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+						if (displayX >= -xzoom && displayX < this.displayWidth + xzoom) {
 							// encode coordinate index into the colour state so it can be sorted later
 							colours[j] = (state << LifeConstants.coordBufferBits) + k;
 							coords[k] = xa0 + cx;
@@ -5756,11 +5787,10 @@
 			/** @type {number} */ k = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
-			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ w2 = this.width / 2 - ViewConstants.sqrt3 / 4,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
-			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16,
-			/** @const {number} */ xEdge = (ViewConstants.sqrt3 / 4) / Math.cos(pi3 / 2) * 1.16,
+			/** @const {number} */ radius = 1 / ViewConstants.sqrt3,
 			/** @const {Array<number>} */ xa = [],
 			/** @const {Array<number>} */ ya = [],
 			/** @type {number} */ state = 0,
@@ -5785,7 +5815,8 @@
 			/** @const {number} */ hexAdjust = -(this.height >> 2),
 			/** @type {number} */ displayX = 0,
 			/** @type {number} */ displayY = 0,
-			/** @type {number} */ zoom = this.camZoom,
+			/** @type {number} */ xzoom = this.zoom * this.originZ,
+			/** @type {number} */ yzoom = this.getYZoom(this.zoom) * this.originZ,
 			/** @type {number} */ swap = 0;
 
 		// adjust for hex
@@ -5820,9 +5851,8 @@
 		// create hexagon coordinates
 		k = pi3 / 2;
 		for (j = 0; j <= 5; j += 1) {
-			xa[j] = Math.cos(k) * xEdge;
-			ya[j] = Math.sin(k) * yEdge;
-			xa[j] += ya[j] / 2;
+			xa[j] = Math.cos(k) * radius;
+			ya[j] = Math.sin(k) * radius * 1.16;
 			k += pi3;
 		}
 		xa0 = xa[0];
@@ -5846,9 +5876,9 @@
 		k = 0;
 		for (y = bottomY; y <= topY; y += 1) {
 			cy = y - h2;
-			displayY = (cy + yOff1) * zoom + halfDisplayHeight;
+			displayY = (cy + yOff1) * yzoom + halfDisplayHeight;
 			// clip to display
-			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+			if (displayY >= -yzoom && displayY < this.displayHeight + yzoom) {
 				/* TBD
 				// adjust to draw hexagonal area
 				var midY = (topY - bottomY) >> 1;
@@ -5868,9 +5898,9 @@
 
 				for (x = leftX; x <= rightX; x += 1) {
 					cx = x - w2;
-					displayX = (cx + xOff1 - (cy + yOff1) / 2) * zoom + halfDisplayWidth;
+					displayX = (cx + xOff1 - (cy + yOff1) / 2) * xzoom + halfDisplayWidth;
 					// clip to display
-					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+					if (displayX >= -xzoom && displayX < this.displayWidth + xzoom) {
 						// encode coordinate index into the colour state so it can be sorted later
 						colours[j] = (state << LifeConstants.coordBufferBits) + k;
 						coords[k] = xa0 + cx;
@@ -5930,11 +5960,10 @@
 			/** @type {number} */ k = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
-			/** @const {number} */ w2 = this.width / 2 - 0.25,
+			/** @const {number} */ w2 = this.width / 2 - ViewConstants.sqrt3 / 4,
 			/** @const {number} */ h2 = this.height / 2,
 			/** @const {number} */ pi3 = Math.PI / 3,
-			/** @const {number} */ yEdge = 0.5 / Math.cos(pi3 / 2) * 1.16,
-			/** @const {number} */ xEdge = (ViewConstants.sqrt3 / 4) / Math.cos(pi3 / 2) * 1.16,
+			/** @const {number} */ radius = 1 / ViewConstants.sqrt3,
 			/** @const {Array<number>} */ xa = [],
 			/** @const {Array<number>} */ ya = [],
 			/** @type {number} */ state = 0,
@@ -5964,7 +5993,8 @@
 			/** @type {number} */ topY = zoomBox.topY,
 			/** @type {number} */ yOff = this.height / 2 - this.yOff - this.originY + 0.5,
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX + 0.5 -(this.height >> 2) + yOff / 2,
-			/** @type {number} */ zoom = this.zoom * this.originZ,
+			/** @type {number} */ xzoom = this.zoom * this.originZ,
+			/** @type {number} */ yzoom = this.getYZoom(this.zoom) * this.originZ,
 			/** @type {number} */ displayY = 0,
 			/** @type {number} */ displayX = 0,
 			/** @type {number} */ xOffset = 0,
@@ -6014,9 +6044,8 @@
 		// create hexagon coordinates
 		k = pi3 / 2;
 		for (j = 0; j <= 5; j += 1) {
-			xa[j] = Math.cos(k) * xEdge;
-			ya[j] = Math.sin(k) * yEdge;
-			xa[j] += ya[j] / 2;
+			xa[j] = Math.cos(k) * radius;
+			ya[j] = Math.sin(k) * radius * 1.16;
 			k += pi3;
 		}
 		xa0 = xa[0];
@@ -6049,8 +6078,8 @@
 
 		for (y = bottomY; y <= topY; y += 1) {
 			// clip y to window
-			displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
-			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+			displayY = ((y + yOff - h2) * yzoom) + halfDisplayHeight;
+			if (displayY >= -yzoom && displayY < this.displayHeight + yzoom) {
 				colourRow = colourGrid[y];
 				if (overlayGrid) {
 					overlayRow = overlayGrid[y];
@@ -6058,8 +6087,8 @@
 				cy = y - h2;
 				xOffset = xOff - w2 - ((cy + yOff) / 2);
 				for (x = leftX; x <= rightX; x += 1) {
-					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
-					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+					displayX = ((x + xOffset) * xzoom) + halfDisplayWidth;
+					if (displayX >= -xzoom && displayX < this.displayWidth + xzoom) {
 						state = colourRow[x];
 						if (overlayRow) {
 							overState = overlayRow[x];
@@ -6151,20 +6180,20 @@
 		}
 
 		// create cell coordinates for window
-		bottomY = (((-halfDisplayHeight / zoom) - yOff + h2) | 0) - 1;
-		topY = (((halfDisplayHeight / zoom) - yOff + h2) | 0) + 1;
+		bottomY = (((-halfDisplayHeight / yzoom) - yOff + h2) | 0) - 1;
+		topY = (((halfDisplayHeight / yzoom) - yOff + h2) | 0) + 1;
 
 		for (y = bottomY; y <= topY; y += 1) {
 			// clip y to window
-			displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
-			if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+			displayY = ((y + yOff - h2) * yzoom) + halfDisplayHeight;
+			if (displayY >= -yzoom && displayY < this.displayHeight + yzoom) {
 				cy = y - h2;
 				xOffset = xOff - w2 - ((cy + yOff) / 2);
-				leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
-				rightX = ((halfDisplayWidth / zoom) - xOffset + zoom) | 0;
+				leftX = ((-halfDisplayWidth / xzoom) - xOffset - xzoom) | 0;
+				rightX = ((halfDisplayWidth / xzoom) - xOffset + xzoom) | 0;
 				for (x = leftX; x <= rightX; x += 1) {
-					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
-					if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+					displayX = ((x + xOffset) * xzoom) + halfDisplayWidth;
+					if (displayX >= -xzoom && displayX < this.displayWidth + xzoom) {
 						// check if the cell is on the grid
 						if (x + xadj < 0 || x + xadj >= maxGridSize || y + yadj < 0 || y + yadj >= maxGridSize) {
 							// encode coordinate index into the colour state so it can be sorted later
@@ -6231,20 +6260,20 @@
 			j = 0;
 
 			// create cell coordinates for window
-			bottomY = ((-halfDisplayHeight / zoom) - yOff + h2) | 0;
-			topY = ((halfDisplayHeight / zoom) - yOff + h2) | 0;
+			bottomY = ((-halfDisplayHeight / yzoom) - yOff + h2) | 0;
+			topY = ((halfDisplayHeight / yzoom) - yOff + h2) | 0;
 
 			for (y = bottomY; y <= topY; y += 1) {
 				// clip y to window
-				displayY = ((y + yOff - h2) * zoom) + halfDisplayHeight;
-				if (displayY >= -zoom && displayY < this.displayHeight + zoom) {
+				displayY = ((y + yOff - h2) * yzoom) + halfDisplayHeight;
+				if (displayY >= -yzoom && displayY < this.displayHeight + yzoom) {
 					cy = y - h2;
 					xOffset = xOff - w2 - ((cy + yOff) / 2);
-					leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
-					rightX = ((halfDisplayWidth / zoom) - xOffset + zoom) | 0;
+					leftX = ((-halfDisplayWidth / xzoom) - xOffset - xzoom) | 0;
+					rightX = ((halfDisplayWidth / xzoom) - xOffset + xzoom) | 0;
 					for (x = leftX; x <= rightX; x += 1) {
-						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
-						if (displayX >= -zoom && displayX < this.displayWidth + zoom) {
+						displayX = ((x + xOffset) * xzoom) + halfDisplayWidth;
+						if (displayX >= -xzoom && displayX < this.displayWidth + xzoom) {
 							cx = x - w2;
 							coords[k] = xa0 + cx;
 							coords[k + 1] = ya0 + cy;
@@ -6283,7 +6312,8 @@
 			/** @type {CanvasRenderingContext2D} */ context = this.context,
 			/** @type {number} */ xOff = this.width / 2 - this.xOff - this.originX,
 			/** @type {number} */ yOff = this.height / 2 - this.yOff - this.originY,
-			/** @const {number} */ zoom = this.zoom * this.originZ,
+			/** @const {number} */ xzoom = this.zoom * this.originZ,
+			/** @const {number} */ yzoom = this.getYZoom(this.zoom) * this.originZ,
 			/** @const {number} */ halfDisplayWidth = this.displayWidth / 2,
 			/** @const {number} */ halfDisplayHeight = this.displayHeight / 2,
 			/** @type {number} */ x = 0,
@@ -6350,10 +6380,11 @@
 			coord += 2;
 
 			// draw the hexagon
-			y = (cy * zoom) + halfDisplayHeight;
-			x = (cx * zoom) + halfDisplayWidth;
-			cy2 = (coords[coord + 1] - cy0) * zoom;
-			cx2 = (coords[coord] - cx0) * zoom - cy2 / 2;
+			y = (cy * yzoom) + halfDisplayHeight;
+			x = (cx * xzoom) + halfDisplayWidth;
+			cy2 = (coords[coord + 1] - cy0) * yzoom;
+			cx2 = (coords[coord] - cx0) * xzoom;
+
 			coord += 2;
 
 			// set line colour
@@ -6388,8 +6419,8 @@
 			context.moveTo(x, y);
 			context.lineTo((cx2 + x), (cy2 + y));
 			while (coord < target) {
-				cy2 = (coords[coord + 1] - cy0) * zoom;
-				cx2 = (coords[coord] - cx0) * zoom - cy2 / 2;
+				cy2 = (coords[coord + 1] - cy0) * yzoom;
+				cx2 = (coords[coord] - cx0) * xzoom;
 				coord += 2;
 				context.lineTo((cx2 + x), (cy2 + y));
 			}
@@ -41141,7 +41172,12 @@
 
 		// adjust for triangular grid if required
 		if (this.isTriangular) {
-			zoomY /= ViewConstants.sqrt3;
+			zoomY /= ViewConstants.triangularYFactor;
+		}
+
+		// adjust for hexagonal grid if required
+		if (this.isHex) {
+			zoomY /= ViewConstants.hexagonalYFactor;
 		}
 
 		// select the zoom from the smallest ratio
@@ -41435,6 +41471,7 @@
 			/** @type {number} */ i = 0,
 			/** @type {number} */ x1 = 0,
 			/** @type {number} */ y1 = 0,
+			/** @type {number} */ xy1 = 0,
 			/** @type {number} */ x1d1 = 0,
 			/** @type {number} */ y1d1 = 0,
 			/** @type {number} */ x1d1d2 = 0,
@@ -41443,10 +41480,11 @@
 			/** @type {number} */ y1d2 = 0,
 			/** @type {number} */ x2 = 0,
 			/** @type {number} */ y2 = 0,
+			/** @type {number} */ xy2 = 0,
 			/** @type {number} */ state = 0,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
 			/** @type {number} */ xZoom = this.zoom,
-			/** @type {number} */ yZoom = this.zoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ yZoom = this.getYZoom(this.zoom),
 			/** @type {number} */ xOff = (this.width >> 1) - (view.patternWidth >> 1),
 			/** @type {number} */ yOff = (this.height >> 1) - (view.patternHeight >> 1),
 			/** @type {number} */ engineY = view.panY - this.yOff,
@@ -41498,10 +41536,12 @@
 		y2 = mouseCellY + height;
 
 		// convert cell coordinates to screen coordinates
+		xy1 = xZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy1) / 2 : 0);
+		xy2 = xZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y2 = yZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
+		x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy2) / 2 : 0);
 
 		// draw a translucent box
 		ctx.fillStyle = colour;
@@ -41531,7 +41571,7 @@
 					ctx.lineTo(x1 + width * xZoom + 1, y1);
 					ctx.lineTo(x1 + width * xZoom + 1, y1 + yZoom + 1);
 					ctx.lineTo(x1, y1 + yZoom + 1);
-					x1 -= yZoom / 2;
+					x1 -= xZoom / 2;
 					y1 += yZoom;
 				}
 				ctx.fill();
@@ -41554,8 +41594,9 @@
 			}
 
 			// compute starting coordinates
+			xy1 = xZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 			y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-			x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+			x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy1) / 2 : 0);
 			if (this.camAngle !== 0) {
 				this.rotateCoords(x1, y1, coords);
 				x1 = coords[0];
@@ -41609,7 +41650,7 @@
 						y2 += dy2;
 						y1 = y2;
 						if (this.isHex) {
-							x2 -= dy2 / 2;
+							x2 -= dx1 / 2;
 						}
 					}
 					ctx.fill();
@@ -41680,11 +41721,13 @@
 	Life.prototype.drawBox = function(/** @type {View} */ view, /** @type {BoundingBox} */ box, /** @type {string} */ colour) {
 		var	/** @type {CanvasRenderingContext2D} */ ctx = this.context,
 			/** @type {number} */ xZoom = this.zoom,
-			/** @type {number} */ yZoom = this.zoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ yZoom = this.getYZoom(this.zoom),
 			/** @type {number} */ x1 = box.leftX,
 			/** @type {number} */ y1 = box.bottomY,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ xy1 = 0,
+			/** @type {number} */ xy2 = 0,
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0,
 			/** @type {number} */ xOff = (this.width >> 1) - (view.patternWidth >> 1),
@@ -41717,10 +41760,12 @@
 		}
 
 		// convert cell coordinates to screen coordinates
+		xy1 = xZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy1) / 2 : 0);
+		xy2 = xZoom * (y2 + 1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y2 = yZoom * (y2 + 1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x2 = xZoom * (x2 + 1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
+		x2 = xZoom * (x2 + 1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy2) / 2 : 0);
 
 		// draw a translucent box
 		ctx.fillStyle = colour;
@@ -41752,7 +41797,7 @@
 					ctx.lineTo(x1 + width + 1, y1);
 					ctx.lineTo(x1 + width + 1, y1 + yZoom + 1);
 					ctx.lineTo(x1, y1 + yZoom + 1);
-					x1 -= yZoom / 2;
+					x1 -= xZoom / 2;
 					y1 += yZoom;
 				}
 				ctx.fill();
@@ -41771,7 +41816,7 @@
 			/** @type {number} */ gridCol = this.gridLineColour,
 			/** @type {number} */ gridBoldCol = this.gridLineBoldColour,
 			/** @type {number} */ xZoomStep = this.camZoom,
-			/** @type {number} */ yZoomStep = this.camZoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ yZoomStep = this.getYZoom(this.camZoom),
 			/** @type {number} */ gridLineNum = 0,
 			/** @type {number} */ vLineNum = 0,
 			/** @type {number} */ drawCol = gridCol,
@@ -42697,8 +42742,13 @@
 
 		// compute deltas in horizontal and vertical direction based on rotation
 		dyy = 1 / this.camZoom;
+
 		if (this.isTriangular) {
-			dyy /= ViewConstants.sqrt3;
+			dyy /= ViewConstants.triangularYFactor;
+		}
+
+		if (this.isHex) {
+			dyy /= ViewConstants.hexagonalYFactor;
 		}
 		dyx = 1 / this.camZoom;
 
@@ -43432,9 +43482,15 @@
 
 		// compute deltas in horizontal and vertical direction
 		dyy = 1 / this.camZoom;
+
 		if (this.isTriangular) {
-			dyy /= ViewConstants.sqrt3;
+			dyy /= ViewConstants.triangularYFactor;
 		}
+
+		if (this.isHex) {
+			dyy /= ViewConstants.hexagonalYFactor;
+		}
+
 		dyx = 1 / this.camZoom;
 
 		// compute starting position
@@ -43692,7 +43748,7 @@
 		// compute deltas in horizontal and vertical direction based on rotation
 		var	/** @type {number} */ dxy = Math.sin(this.camAngle / 180 * Math.PI) / this.camZoom,
 			/** @type {number} */ dyy = Math.cos(this.camAngle / 180 * Math.PI) / this.camZoom,
-			/** @type {number} */ yFactor = this.isTriangular ? ViewConstants.sqrt3 : 1,
+			/** @type {number} */ yFactor = this.getYFactor(),
 
 			// display width and height
 			/** @type {number} */ width = this.displayWidth,
@@ -43814,7 +43870,7 @@
 			/** @type {Uint8Array} */ gridRow = null,
 			/** @type {number} */ width = rightX - leftX,
 			/** @type {number} */ height = topY - bottomY,
-			/** @type {number} */ yZoom = this.camZoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ yZoom = this.getYZoom(this.camZoom),
 			/** @type {number} */ dx = -(leftX - Math.floor(leftX)) * this.camZoom,
 			/** @type {number} */ dy = -(bottomY - Math.floor(bottomY)) * yZoom,
 			/** @type {number} */ x = 0,
@@ -44102,7 +44158,7 @@
 			/** @type {Uint8Array} */ overlayRow = null,
 			/** @type {number} */ width = rightX - leftX,
 			/** @type {number} */ height = topY - bottomY,
-			/** @type {number} */ yZoom = this.camZoom * (this.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ yZoom = this.getYZoom(this.camZoom),
 			/** @type {number} */ dx = -(leftX - Math.floor(leftX)) * this.camZoom,
 			/** @type {number} */ dy = -(bottomY - Math.floor(bottomY)) * yZoom,
 			/** @type {number} */ x = 0,
@@ -45528,9 +45584,15 @@
 
 		// compute deltas in horizontal and vertical direction based on rotation
 		dyy = 1 / this.camZoom;
+
 		if (this.isTriangular) {
-			dyy /= ViewConstants.sqrt3;
+			dyy /= ViewConstants.triangularYFactor;
 		}
+
+		if (this.isHex) {
+			dyy /= ViewConstants.hexagonalYFactor;
+		}
+
 		dyx = 1/ this.camZoom;
 
 		// compute starting position
@@ -46012,9 +46074,15 @@
 
 		// compute deltas in horizontal and vertical direction based on rotation
 		dyy = 1 / this.camZoom;
+
 		if (this.isTriangular) {
-			dyy /= ViewConstants.sqrt3;
+			dyy /= ViewConstants.triangularYFactor;
 		}
+
+		if (this.isHex) {
+			dyy /= ViewConstants.hexagonalYFactor;
+		}
+
 		dyx = 1 / this.camZoom;
 
 		// compute starting position

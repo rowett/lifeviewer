@@ -1,3 +1,6 @@
+Build 1031
+- made hexagons more regular
+
 Build 1030
 - fixed Nudge Selection boundary for HROT/LtL rules
 
