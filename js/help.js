@@ -1735,7 +1735,7 @@
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Identify:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Type", view.lastIdentifyType, ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Cells", view.engine.identifyPopWithTMessage, ctx, x, y, height, helpLine);
 			if (view.lastIdentifyType === "Oscillator") {
 				y = this.renderHelpLine(view, "ActiveCells", view.lastIdentifyActive, ctx, x, y, height, helpLine);
 			}

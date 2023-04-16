@@ -420,6 +420,7 @@
 		/** @type {number} */ this.identifyDeltaY = 0;
 		/** @type {number} */ this.identifyBoxWidth = 0;
 		/** @type {number} */ this.identifyBoxHeight = 0;
+		/** @type {string} */ this.identifyPopWithTMessage = "";
 
 		// period table start row and maximum row
 		/** @type {number} */ this.tableStartRow = 0;
@@ -4204,6 +4205,8 @@
 			/** @type {number} */ max = min,
 			/** @type {number} */ avg = this.population,
 			/** @type {number} */ total = 0,
+			/** @type {number} */ minT = this.counter - period,
+			/** @type {number} */ maxT = this.counter - period,
 			/** @type {string} */ popResult = "",
 
 			// bounding box
@@ -4383,6 +4386,7 @@
 		// compute the min and max population
 		if (type === "Still Life") {
 			popResult = String(this.population);
+			this.identifyPopWithTMessage = popResult;
 		} else {
 			total = 0;
 			for (i = 0; i < last; i += 1) {
@@ -4390,19 +4394,25 @@
 				total += current;
 				if (current < min) {
 					min = current;
+					minT = this.counter - period - period + i - 1;
 				}
 				if (current > max) {
 					max = current;
+					maxT = this.counter - period - period + i - 1;
 				}
 			}
 
 			if (min === max) {
 				// output the latest
 				popResult = String(max);
+				this.identifyPopWithTMessage = popResult;
 			} else {
 				// otherwise output min, max and average
 				avg = total / last;
 				popResult = String(min) + " | " + String(max) + " | " + this.toPlaces(avg, 1);
+
+				// save extended message with generations for Help->Identify
+				this.identifyPopWithTMessage = String(min) + " @ T" + minT + " | " + String(max) + " @ T" + maxT + " | " + this.toPlaces(avg, 1);
 			}
 		}
 

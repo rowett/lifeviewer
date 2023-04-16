@@ -1,3 +1,6 @@
+Build 1032
+- added the generation at which the minimum and maximum Spaceship or Oscillator population was found by Identify to Help->Identify->Cells
+
 Build 1031
 - made hexagons more regular
 
