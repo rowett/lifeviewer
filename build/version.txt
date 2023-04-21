@@ -1,5 +1,11 @@
+Build 1034
+- fixed vertical positioning on Hexagonal grids
+
+Build 1033
+- made T Min/Max mod the period for Help->Info->Identify
+
 Build 1032
-- added the generation at which the minimum and maximum Spaceship or Oscillator population was found by Identify to Help->Identify->Cells
+- added the generation at which Identify finds the minimum and maximum Spaceship or Oscillator population and bounding box to Help->Info->Identify
 
 Build 1031
 - made hexagons more regular

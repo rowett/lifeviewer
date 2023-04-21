@@ -27,7 +27,6 @@
 
 		// zoom box
 		/** @type {BoundingBox} */ this.zoomBox = new BoundingBox(0, 0, 0, 0);
-		/** @type {BoundingBox} */ this.HROTBox = new BoundingBox(0, 0, 0, 0);
 
 		// statistics
 		/** @type {number} */ this.population = 0;
@@ -1394,7 +1393,7 @@
 	};
 
 	// save snapshot
-	SnapshotManager.prototype.saveSnapshot = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tileGrid, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Array<Uint16Array>} */ colourTileGrid, /** @type {Array<Uint8Array>} */ overlayGrid, /** @type {Array<Uint16Array>} */ overlayTileGrid, /** @type {BoundingBox} */ zoomBox, /** @type {BoundingBox} */ HROTBox, /** @type {number} */ population, /** @type {number} */ births, /** @type {number} */ deaths,
+	SnapshotManager.prototype.saveSnapshot = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tileGrid, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Array<Uint16Array>} */ colourTileGrid, /** @type {Array<Uint8Array>} */ overlayGrid, /** @type {Array<Uint16Array>} */ overlayTileGrid, /** @type {BoundingBox} */ zoomBox, /** @type {number} */ population, /** @type {number} */ births, /** @type {number} */ deaths,
 		/** @type {number} */ counter, /** @type {number} */ fixedCounter, /** @type {number} */ counterMargolus, /** @type {number} */ maxMargolusGen, /** @type {number} */ width, /** @type {number} */ height, /** @type {Life} */ life, /** @type {boolean} */ isReset) {
 		var	/** @type {Snapshot} */ snapshot = null,
 			/** @type {number} */ i = 0,
@@ -1452,10 +1451,6 @@
 		snapshot.zoomBox.rightX = zoomBox.rightX;
 		snapshot.zoomBox.bottomY = zoomBox.bottomY;
 		snapshot.zoomBox.topY = zoomBox.topY;
-		snapshot.HROTBox.leftX = HROTBox.leftX;
-		snapshot.HROTBox.rightX = HROTBox.rightX;
-		snapshot.HROTBox.bottomY = HROTBox.bottomY;
-		snapshot.HROTBox.topY = HROTBox.topY;
 
 		// save the population
 		snapshot.population = population;
@@ -1596,10 +1591,6 @@
 		snapshot.zoomBox.rightX += xOffsetPixels;
 		snapshot.zoomBox.bottomY += yOffsetPixels;
 		snapshot.zoomBox.topY += yOffsetPixels;
-		snapshot.HROTBox.leftX += xOffsetPixels;
-		snapshot.HROTBox.rightX += xOffsetPixels;
-		snapshot.HROTBox.bottomY += yOffsetPixels;
-		snapshot.HROTBox.topY += yOffsetPixels;
 	};
 
 	// resize snapshots to fit the new grid

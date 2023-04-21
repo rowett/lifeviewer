@@ -33,6 +33,23 @@
 		return name;
 	};
 
+	// render truncated LifeExtended state name so final character is always included
+	/** @returns {string} */
+	Help.extendedName = function(/** @type {number} */ state) {
+		var	/** @type {string} */ name = LifeConstants.namesExtended[state];
+
+		if (name.length > 10) {
+			// perform substitutions
+			name = name.replace(/killer/, "klr");
+			name = name.replace(/births/, "bth");
+			if (name.length > 10) {
+				name = name.substring(0, 10);
+			}
+		}
+
+		return name;
+	};
+
 	// draw a line of help text with up down greyed based on position
 	/** @returns {number} */
 	Help.renderHelpLineUpDown = function(/** @type {View} */ view, /** @type {string} */ up, /** @type {string} */ separator, /** @type {string} */ down, /** @type {string} */ text, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ startLine) {
@@ -1267,7 +1284,7 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Colours"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Colours:", ctx, x, y, height, helpLine);
-		if (!(view.engine.isSuper || view.engine.isRuleTree || view.engine.isNone)) {
+		if (!(view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree || view.engine.isNone)) {
 			y = this.renderHelpLine(view, Keywords.themeWord + " <0.." + (view.engine.numThemes - 1) + ">|name", "set theme", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, " name = " + Keywords.themeCustomWord, "set custom theme", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.themeBackgroundWord + " R G B", "set theme background", ctx, x, y, height, helpLine);
@@ -1735,11 +1752,17 @@
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Identify:", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Type", view.lastIdentifyType, ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Cells", view.engine.identifyPopWithTMessage, ctx, x, y, height, helpLine);
-			if (view.lastIdentifyType === "Oscillator") {
-				y = this.renderHelpLine(view, "ActiveCells", view.lastIdentifyActive, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Cells", view.lastIdentifyCells, ctx, x, y, height, helpLine);
+			if (view.engine.identifyPopWithTMessage !== "") {
+				y = this.renderHelpLine(view, "  T Min/Max", view.engine.identifyPopWithTMessage, ctx, x, y, height, helpLine);
 			}
-			y = this.renderHelpLine(view, "BoundingBox", view.lastIdentifyBox, ctx, x, y, height, helpLine);
+			if (view.lastIdentifyType === "Oscillator") {
+				y = this.renderHelpLine(view, "Active", view.lastIdentifyActive, ctx, x, y, height, helpLine);
+			}
+			y = this.renderHelpLine(view, "Bounding", view.lastIdentifyBox, ctx, x, y, height, helpLine);
+			if (view.engine.identifyBoxWithTMessage !== "") {
+				y = this.renderHelpLine(view, "  T Min/Max", view.engine.identifyBoxWithTMessage, ctx, x, y, height, helpLine);
+			}
 			if (view.lastIdentifyType === "Oscillator") {
 				y = this.renderHelpLine(view, "Period", view.lastIdentifyPeriod, ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, "Mod", view.lastIdentifyMod, ctx, x, y, height, helpLine);
@@ -1954,7 +1977,8 @@
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA),", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "[R]History, [R]Super and Non-Deterministic", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "[R]History, [R]Super, [R]Extended", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "and Non-Deterministic", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE, @COLORS and", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "@NAMES)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface and Sphere", ctx, x, y, height, helpLine);
@@ -2009,7 +2033,7 @@
 		view.tabs[3] = 330;
 
 		// colour theme information
-		if (!(view.engine.isRuleTree || view.engine.isSuper || view.engine.isNone)) {
+		if (!(view.engine.isRuleTree || view.engine.isExtended || view.engine.isSuper || view.engine.isNone)) {
 			view.helpSections[sectionNum] = [view.lineNo, "Theme"];
 			sectionNum += 1;
 			y = this.renderHelpLine(view, "", "Theme:", ctx, x, y, height, helpLine);
@@ -2069,12 +2093,16 @@
 					}
 				}
 			} else {
-				// check for Generations, HROT or Super rules
+				// check for Generations, HROT, Super or Extended rules
 				if (view.engine.multiNumStates > 2) {
-					if (view.engine.isSuper) {
+					if (view.engine.isSuper || view.engine.isExtended) {
 						for (i = 1; i < view.engine.multiNumStates; i += 1) {
 							this.renderColourBox(view, view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-							y = this.renderHelpLine(view, this.superName(i), this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
+							if (view.engine.isSuper) {
+								y = this.renderHelpLine(view, this.superName(i), this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
+							} else {
+								y = this.renderHelpLine(view, this.extendedName(i), this.rgbString(view.engine.redChannel[i], view.engine.greenChannel[i], view.engine.blueChannel[i]), ctx, x, y, height, helpLine);
+							}
 						}
 					} else {
 						// draw the alive state

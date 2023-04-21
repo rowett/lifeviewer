@@ -502,9 +502,15 @@
 
 		// lower case name of [R]History postfix
 		/** @const {string} */ this.historyPostfix = "history";
+		/** @const {string} */ this.properHistoryPostfix = "History";
 
 		// lower case name of [R]Super postfix
 		/** @const {string} */ this.superPostfix = "super";
+		/** @const {string} */ this.properSuperPostfix = "Super";
+
+		// lower case name of [R]Extended postfix
+		/** @const {string} */ this.extendedPostfix = "extended";
+		/** @const {string} */ this.properExtendedPostfix = "Extended";
 
 		// lower case name of Triangular postfix
 		/** @const {string} */ this.triangularPostfix = "l";
@@ -809,6 +815,9 @@
 
 		// is super rule
 		/** @type {boolean} */ this.isSuper = false;
+
+		// is extended rule
+		/** @type {boolean} */ this.isExtended = false;
 
 		// contains Niemiec extended states
 		/** @type {boolean} */ this.isNiemiec = false;
@@ -1903,6 +1912,7 @@
 					pattern.multiNumStates = -1;
 					pattern.isHistory = false;
 					pattern.isSuper = false;
+					pattern.isExtended = false;
 				}
 			} else {
 				// default to Conway's Life
@@ -3248,12 +3258,17 @@
 
 		// check for History
 		if (pattern.isHistory) {
-			pattern.ruleName += "History";
+			pattern.ruleName += this.properHistoryPostfix;
 		}
 
 		// check for Super
 		if (pattern.isSuper) {
-			pattern.ruleName += "Super";
+			pattern.ruleName += this.properSuperPostfix;
+		}
+		
+		// check for Extended
+		if (pattern.isExtended) {
+			pattern.ruleName += this.properExtendedPostfix;
 		}
 
 		// check for bounded grid
@@ -3314,12 +3329,17 @@
 
 			// check for [R]History
 			if (pattern.isHistory) {
-				aliasName += "History";
+				aliasName += this.properHistoryPostfix;
 			}
 
 			// check for [R]Super
 			if (pattern.isSuper) {
-				aliasName += "Super";
+				aliasName += this.properSuperPostfix;
+			}
+
+			// check for [R]Extended
+			if (pattern.isExtended) {
+				aliasName += this.properExtendedPostfix;
 			}
 
 			// save the alias name
@@ -6443,8 +6463,8 @@
 							}
 						}
 
-						// update 2d map if normal state 1, [R]History or [R]Super odd states, Generations state 1
-						if ((!(pattern.isHistory || pattern.isSuper) && pattern.multiNumStates === -1 && stateNum === 1) || ((pattern.isHistory || pattern.isSuper) && (stateNum & 1)) || (pattern.multiNumStates !== -1 && stateNum === 1)) {
+						// update 2d map if normal state 1, [R]History, [R]Extended or [R]Super odd states, Generations state 1
+						if ((!(pattern.isHistory || pattern.isExtended || pattern.isSuper) && pattern.multiNumStates === -1 && stateNum === 1) || ((pattern.isHistory || pattern.isSuper) && (stateNum & 1)) || (pattern.multiNumStates !== -1 && stateNum === 1)) {
 							pattern.lifeMap[y][x >> 4] |= 1 << (~x & 15);
 						}
 
@@ -7491,6 +7511,12 @@
 			// super postfix length
 			/** @type {number} */ superLength = this.superPostfix.length,
 
+			// extended index
+			/** @type {number} */ extendedIndex = -1,
+
+			// extended postfix length
+			/** @type {number} */ extendedLength = this.extendedPostfix.length,
+
 			// rule string
 			/** @type {string} */ ruleString = "",
 			/** @type {string} */ temp = "";
@@ -7598,6 +7624,32 @@
 					// remove the postfix
 					temp = ruleString.substring(0, superIndex).trim();
 					ruleString = temp.substring(0, temp.length - superLength) + ruleString.substring(superIndex);
+				}
+			}
+		}
+
+		// check for Extended rules
+		if (!pattern.isHistory && !pattern.isExtended) {
+			extendedIndex = ruleString.toLowerCase().lastIndexOf(this.extendedPostfix);
+			if ((extendedIndex !== -1) && (extendedIndex === ruleString.length - extendedLength)) {
+				// rule is an extended type
+				pattern.isExtended = true;
+
+				// remove the postfix
+				ruleString = ruleString.substring(0, ruleString.length - extendedLength).trim();
+			}
+
+			// check for Extended when alternate rules defined
+			extendedIndex = ruleString.indexOf(this.altRuleSeparator);
+			if (extendedIndex !== -1) {
+				// check for History just before separartor
+				if (ruleString.toLowerCase().substring(0, extendedIndex).trim().substring(extendedIndex - extendedLength) === this.extendedPostfix) {
+					// rule is an extended type
+					pattern.isExtended = true;
+
+					// remove the postfix
+					temp = ruleString.substring(0, extendedIndex).trim();
+					ruleString = temp.substring(0, temp.length - extendedLength) + ruleString.substring(extendedIndex);
 				}
 			}
 		}
@@ -7742,6 +7794,74 @@
 		}
 	};
 
+	// validate [R] rule
+	/** @returns {boolean} */
+	PatternManager.prototype.validateRRule = function(/** @type {Pattern} */ pattern) {
+		var	/** @type {string} */ ruleType = "[R]" + this.properHistoryPostfix,
+			result = true;
+
+		// create the rule type name
+		if (pattern.isSuper) {
+			ruleType = "[R]" + this.properSuperPostfix;
+		} else {
+			if (pattern.isExtended) {
+				ruleType = "[R]" + this.properExtendedPostfix;
+			}
+		}
+
+		// check for Niemiec states
+		if (pattern.isNiemiec) {
+			this.failureReason = ruleType + " not valid with Niemiec states";
+		}
+
+		// check for none rule
+		if (pattern.isNone) {
+			this.failureReason = ruleType + " not valid with non rule";
+		}
+
+		// check for triangular neighbourhood
+		if (pattern.isTriangular) {
+			this.failureReason = ruleType + " not valid with triangular rule";
+		}
+
+		// check for Hex Tripod
+		if (pattern.hexNeighbourhood === this.hexTripod) {
+			this.failureReason = ruleType + " not valid with Hex Tripod";
+		}
+
+		// check for generations
+		if (pattern.multiNumStates !== -1) {
+			if (pattern.isPCA) {
+				this.failureReaons = ruleType + " not valid with PCA";
+			} else {
+				if (pattern.isHROT) {
+					this.failureReason = ruleType + " not valid with HROT";
+				} else {
+					this.failureReaons = ruleType + " not valid with Generations";
+				}
+			}
+		}
+
+		// check for LTL
+		if (pattern.isLTL) {
+			this.failureReason = ruleType + " not valid with LtL";
+		}
+
+		// check for Margolus
+		if (pattern.isMargolus) {
+			this.failureReason = ruleType + " not valid with Margolus";
+		}
+
+		// if failure happened mark pattern as not executable and disable rule type
+		if (this.failureReason !== "") {
+			this.exectuable = false;
+			result = false;
+		}
+
+		// return whether validation succeeded
+		return result;
+	};
+
 	// decode a Life RLE pattern
 	PatternManager.prototype.decodeRLE = function(/** @type {Pattern} */ pattern, /** @type {string} */ source, /** @type {Allocator} */ allocator) {
 		// index in string
@@ -7792,6 +7912,7 @@
 		pattern.invalid = false;
 		pattern.isHistory = false;
 		pattern.isSuper = false;
+		pattern.isExtended = false;
 		pattern.isNiemiec = false;
 		pattern.isHex = false;
 		pattern.wolframRule = -1;
@@ -8092,126 +8213,31 @@
 			}
 		}
 
-		// check for Niemiec and [R]History
-		if (pattern.isNiemiec && pattern.isHistory && this.failureReason === "") {
-			this.failureReason = "[R]History not valid with Niemiec states";
-			pattern.isHistory = false;
-			this.executable = false;
+		// validate [R]History
+		if (pattern.isHistory && this.failureReason === "") {
+			pattern.isHistory = this.validateRRule(pattern);
 		}
 
-		// check for "none" and [R]History
-		if (pattern.isNone && pattern.isHistory && this.failureReason === "") {
-			this.failureReason = "[R]History not valid with none rule";
-			pattern.isHistory = false;
-			this.executable = false;
+		// validate [R]Super
+		if (pattern.isSuper && this.failureReason === "") {
+			pattern.isSuper = this.validateRRule(pattern);
 		}
 
-		// check for "none" and [R]Super
-		if (pattern.isNone && pattern.isSuper && this.failureReason === "") {
-			this.failureReason = "[R]Super not valid with none rule";
-			pattern.isSuper = false;
-			this.executable = false;
+		// validate [R]Extended
+		if (pattern.isExtended && this.failureReason === "") {
+			pattern.isExtended = this.validateRRule(pattern);
 		}
 
-		// check for triangular and [R]Super
-		if (pattern.isTriangular && pattern.isSuper && this.failureReason === "") {
-			this.failureReason = "[R]Super not valid with triangular rule";
-			pattern.isSuper = false;
-			this.executable = false;
-		}
-
-		// check for triangular and [R]History
-		if (pattern.isTriangular && pattern.isHistory && this.failureReason === "") {
-			this.failureReason = "[R]History not valid with triangular rule";
-			pattern.isHistory = false;
-			this.executable = false;
-		}
-
-		// check for generations and [R]History
-		if (pattern.multiNumStates !== -1 && pattern.isHistory && !(pattern.isLTL || pattern.isHROT)) {
-			if (pattern.isPCA) {
-				this.failureReason = "[R]History not valid with PCA";
-			} else {
-				this.failureReason = "[R]History not valid with Generations";
-			}
-			pattern.isHistory = false;
-			this.executable = false;
-		}
-
-		// check for generations and [R]Super
-		if (pattern.multiNumStates !== -1 && pattern.isSuper) {
-			if (pattern.isPCA) {
-				this.failureReason = "[R]Super not valid with PCA";
-			} else {
-				if (pattern.isHROT) {
-					this.failureReason = "[R]Super not valid with HROT";
-				} else {
-					this.failureReason = "[R]Super not valid with Generations";
-				}
-			}
-			pattern.isSuper = false;
-			this.executable = false;
-		}
-
-		// check Hex tripod and [R]Super
-		if (pattern.hexNeighbourhood === this.hexTripod && pattern.isSuper) {
-			this.failureReason = "[R]Super not valid with Hex Tripod";
-			pattern.isSuper = false;
-			this.executable = false;
-		}
-
-		// check Hex tripod and [R]History
-		if (pattern.hexNeighbourhood === this.hexTripod && pattern.isHistory) {
-			this.failureReason = "[R]History not valid with Hex Tripod";
-			pattern.isHistory = false;
+		// check for Niemiec and [R]Extended
+		if (pattern.isNiemiec && pattern.isExtended && this.failureReason === "") {
+			this.failureReason = "[R]Extended not valid with Niemiec states";
+			pattern.isExtended = false;
 			this.executable = false;
 		}
 
 		// check for generations and B0
 		if (pattern.multiNumStates !== -1 && this.ruleArray[0] && !(pattern.isLTL || pattern.isHROT)) {
 			this.failureReason = "Generations does not support B0";
-			this.executable = false;
-		}
-
-		// check for LTL and [R]History
-		if (pattern.isLTL && pattern.isHistory) {
-			this.failureReason = "[R]History not valid with LtL";
-			pattern.isHistory = false;
-			this.executable = false;
-		}
-
-		// check for LTL and [R]Super
-		if (pattern.isLTL && pattern.isSuper) {
-			this.failureReason = "[R]Super not valid with LtL";
-			pattern.isSuper = false;
-			this.executable = false;
-		}
-
-		// check for HROT and [R]History
-		if (pattern.isHROT && pattern.isHistory) {
-			this.failureReason = "[R]History not valid with HROT";
-			pattern.isHistory = false;
-			this.executable = false;
-		}
-
-		// check for HROT and [R]Super
-		if (pattern.isHROT && pattern.isSuper) {
-			this.failureReason = "[R]Super not valid with HROT";
-			pattern.isSuper = false;
-			this.executable = false;
-		}
-
-		// check for Margolus and [R]History
-		if (pattern.isMargolus && pattern.isHistory) {
-			this.failureReason = "[R]History not valid with Margolus";
-			pattern.isHistory = false;
-			this.executable = false;
-		}
-
-		// check for Margolus and [R]Super
-		if (pattern.isMargolus && pattern.isSuper) {
-			this.failureReason = "[R]Super not valid with Margolus";
-			pattern.isSuper = false;
 			this.executable = false;
 		}
 
@@ -8252,6 +8278,11 @@
 			pattern.multiNumStates = 26;
 		}
 
+		// setup number of states for [R]Extended patterns
+		if (pattern.isExtended) {
+			pattern.multiNumStates = 21;
+		}
+
 		// check for illegal state numbers
 		if (this.executable) {
 			// check for [R]History
@@ -8272,28 +8303,38 @@
 						this.illegalState = true;
 					}
 				} else {
-					// check for other rules
-					if (pattern.multiNumStates !== -1) {
-						maxStates = pattern.multiNumStates;
+					// check for [R]Extended
+					if (pattern.isExtended) {
+						maxStates = 21;
 						if (pattern.numStates > maxStates) {
-							if (pattern.isLTL) {
-								this.failureReason = "Illegal state in pattern for LtL";
-								this.illegalState = true;
-							} else {
-								if (pattern.isHROT) {
-									this.failureReason = "Illegal state in pattern for HROT";
+							this.failureReason = "Illegal state in pattern for [R]Extended";
+							this.executable = false;
+							this.illegalState = true;
+						}
+					} else {
+						// check for other rules
+						if (pattern.multiNumStates !== -1) {
+							maxStates = pattern.multiNumStates;
+							if (pattern.numStates > maxStates) {
+								if (pattern.isLTL) {
+									this.failureReason = "Illegal state in pattern for LtL";
 									this.illegalState = true;
 								} else {
-									if (pattern.isPCA) {
-										this.failureReason = "Illegal state in pattern for PCA";
+									if (pattern.isHROT) {
+										this.failureReason = "Illegal state in pattern for HROT";
 										this.illegalState = true;
 									} else {
-										this.failureReason = "Illegal state in pattern for Generations";
-										this.illegalState = true;
+										if (pattern.isPCA) {
+											this.failureReason = "Illegal state in pattern for PCA";
+											this.illegalState = true;
+										} else {
+											this.failureReason = "Illegal state in pattern for Generations";
+											this.illegalState = true;
+										}
 									}
 								}
+								this.executable = false;
 							}
-							this.executable = false;
 						}
 					}
 				}
@@ -9794,6 +9835,7 @@
 							newPattern.multiStateMap = null;
 							newPattern.isHistory = false;
 							newPattern.isSuper = false;
+							newPattern.isExtended = false;
 							newPattern.numStates = 2;
 							newPattern.numUsedStates = 0;
 						}

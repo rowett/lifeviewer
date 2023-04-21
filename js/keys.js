@@ -411,7 +411,7 @@
 					// w for toggle rainbow display
 					case 87:
 						// toggle rainbow mode
-						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree)) {
+						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree)) {
 							me.rainbowButton.current = me.viewRainbowToggle([!me.engine.rainbow], true, me);
 						}
 						break;
@@ -856,7 +856,7 @@
 						if (altKey) {
 							me.clearCells(me, false, false);
 							value = me.drawState;
-							if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper) && value > 0) {
+							if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended) && value > 0) {
 								value = me.engine.multiNumStates - value;
 							}
 							if (me.engine.isRuleTree) {
@@ -1504,7 +1504,7 @@
 			// t for timing display
 			case 84:
 				// check for Help
-				if (me.displayHelp !== 0 && (!(me.engine.isNone || me.engine.isSuper || me.engine.isRuleTree))) {
+				if (me.displayHelp !== 0 && (!(me.engine.isNone || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree))) {
 					this.toggleHelpTopic(me, ViewConstants.themesTopic);
 				} else {
 					// check for shift key

@@ -553,7 +553,7 @@
 		}
 
 		// convert state 0, 1 and 2 to Custom Theme elements unless RuleTree or [R]Super rule used
-		if (view.customColours && !(view.engine.isRuleTree || view.engine.isSuper || view.engine.isNone)) {
+		if (view.customColours && !(view.engine.isRuleTree || view.engine.isSuper || view.engine.isExtended || view.engine.isNone)) {
 			if (view.customColours.length > 0) {
 				if (view.customColours[0] !== -1) {
 					themeValue[ViewConstants.customThemeBackground] = view.customColours[0];
@@ -582,7 +582,7 @@
 		colourValue = themeValue[ViewConstants.customThemeBackground];
 		if (colourValue !== -1) {
 			// check for [R]Super
-			if (view.engine.isSuper) {
+			if (view.engine.isSuper || view.engine.isExtended) {
 				// set as custom colour 0
 				if (!view.customColours) {
 					view.customColours = /** @type {!Int32Array} */ (view.engine.allocator.allocate(Type.Int32, 256, "View.customColours"));
@@ -3323,7 +3323,7 @@
 
 								// alive
 								case Keywords.themeAliveWord:
-									if (view.engine.isPCA || view.engine.isSuper || view.engine.isRuleTree || view.engine.isNone) {
+									if (view.engine.isPCA || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree || view.engine.isNone) {
 										this.addColourError(scriptReader, scriptErrors, nextToken + " " + Keywords.themeAliveWord, "not valid for this rule", true);
 										badColour = true;
 										view.customTheme = false;
@@ -3345,7 +3345,7 @@
 
 								// dead
 								case Keywords.themeDeadWord:
-									if (view.engine.isRuleTree || view.engine.isSuper || view.engine.isNone) {
+									if (view.engine.isRuleTree || view.engine.isSuper || view.engine.isExtended || view.engine.isNone) {
 										this.addColourError(scriptReader, scriptErrors, nextToken + " " + Keywords.themeDeadWord, "not valid for this rule", true);
 										badColour = true;
 										view.customTheme = false;
@@ -3356,7 +3356,7 @@
 
 								// deadramp
 								case Keywords.themeDeadRampWord:
-									if (view.engine.isRuleTree || view.engine.isSuper || view.engine.isNone) {
+									if (view.engine.isRuleTree || view.engine.isSuper || view.engine.isExtended || view.engine.isNone) {
 										this.addColourError(scriptReader, scriptErrors, nextToken + " " + Keywords.themeDeadRampWord, "not valid for this rule", true);
 										badColour = true;
 										view.customTheme = false;
@@ -3367,7 +3367,7 @@
 
 								// dying
 								case Keywords.themeDyingWord:
-									if (view.engine.multiNumStates <= 2 || view.engine.isPCA || view.engine.isRuleTree || view.engine.isMargolus || view.engine.isSuper || view.engine.isLifeHistory || view.engine.isNone) {
+									if (view.engine.multiNumStates <= 2 || view.engine.isPCA || view.engine.isRuleTree || view.engine.isMargolus || view.engine.isSuper || view.engine.isExtended || view.engine.isLifeHistory || view.engine.isNone) {
 										this.addColourError(scriptReader, scriptErrors, nextToken + " " + Keywords.themeDyingWord, "not valid for this rule", true);
 										badColour = true;
 										view.customTheme = false;
@@ -3378,7 +3378,7 @@
 
 								// dyingramp
 								case Keywords.themeDyingRampWord:
-									if (view.engine.multiNumStates <= 2 || view.engine.isPCA || view.engine.isRuleTree || view.engine.isMargolus || view.engine.isSuper || view.engine.isLifeHistory || view.engine.isNone) {
+									if (view.engine.multiNumStates <= 2 || view.engine.isPCA || view.engine.isRuleTree || view.engine.isMargolus || view.engine.isSuper || view.engine.isExtended || view.engine.isLifeHistory || view.engine.isNone) {
 										this.addColourError(scriptReader, scriptErrors, nextToken + " " + Keywords.themeDyingRampWord, "not valid for this rule", true);
 										badColour = true;
 										view.customTheme = false;
@@ -4713,7 +4713,7 @@
 
 						// rainbow word
 						case Keywords.rainbowWord:
-							if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isRuleTree)) {
+							if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
 								view.engine.rainbow = true;
 								view.defaultRainbow = true;
 							}
@@ -5459,7 +5459,7 @@
 
 			// disable Theme if specified and not supported by the rule
 			if (currentWaypoint.themeDefined) {
-				if (view.engine.isSuper || view.engine.isRuleTree || view.engine.isNone) {
+				if (view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree || view.engine.isNone) {
 					currentWaypoint.themeDefined = false;
 				}
 			}

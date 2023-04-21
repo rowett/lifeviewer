@@ -300,7 +300,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1032,
+		/** @const {number} */ versionBuild : 1034,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -2359,7 +2359,7 @@
 			/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1),
 			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1),
 			/** @type {number} */ states = this.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
 			/** @type {number} */ newRecord = 0,
 			/** @type {boolean} */ addedToRun = false,
 			/** @type {number} */ runCount = 0,
@@ -2423,7 +2423,7 @@
 		}
 
 		// check for PCA, RuleTree or Super rules
-		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
+		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper|| this.engine.isExtended) {
 			// swap grids every generation
 			if ((this.engine.counter & 1) !== 0) {
 				colourGrid = this.engine.nextColourGrid;
@@ -2581,7 +2581,7 @@
 			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid;
 
 		// check for PCA, RuleTree or Super rules
-		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
+		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper|| this.engine.isExtended) {
 			// swap grids every generation
 			if ((this.engine.counter & 1) !== 0) {
 				colourGrid = this.engine.nextColourGrid;
@@ -3288,7 +3288,7 @@
 			/** @type {number} */ iy = 0,
 			/** @type {number} */ states = this.engine.multiNumStates <= 2 ? 2 : this.engine.multiNumStates,
 			/** @type {number} */ state = 0,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
 			/** @type {number} */ fill = this.randomFillPercentage / 100,
 			/** @type {boolean} */ valid = false;
 
@@ -3591,7 +3591,7 @@
 			/** @type {number} */ iy = 0,
 			/** @type {number} */ states = this.engine.multiNumStates <= 2 ? 2 : this.engine.multiNumStates,
 			/** @type {number} */ state = 0,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
 			/** @type {number} */ fill = this.randomFillPercentage / 100,
 			/** @type {Array<Uint8Array>} */ stateMap = null;
 
@@ -4003,7 +4003,7 @@
 
 				for (y = 0; y < stateMap.length; y += 1) {
 					stateRow = stateMap[y];
-					if (numStates >= 2 && !(this.engine.isLifeHistory || this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
+					if (numStates >= 2 && !(this.engine.isLifeHistory || this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)) {
 						for (x = 0; x < stateRow.length; x += 1) {
 							// get the next cell to paste
 							source = stateRow[x];
@@ -4199,7 +4199,7 @@
 								this.setStateWithCheck(xOff + x, yOff + y, result, true);
 							}
 						} else {
-							if (this.engine.isLifeHistory || this.engine.isSuper) {
+							if (this.engine.isLifeHistory || this.engine.isSuper || this.engine.isExtended) {
 								for (x = 0; x < stateRow.length; x += 1) {
 									// get the next cell to paste
 									source = stateRow[x];
@@ -4511,7 +4511,7 @@
 				gridRow = grid[y + panY];
 
 				// check for multi-state view
-				if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || !this.executable) {
+				if (this.multiStateView || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended || !this.executable) {
 					multiStateRow = pattern.multiStateMap[y];
 					colourGridRow = colourGrid[y + panY];
 
@@ -4585,7 +4585,7 @@
 		}
 
 		// copy colour grid to next colour grid for PCA, RuleTree and Super rules
-		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
+		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended) {
 			nextColourGrid.whole.set(colourGrid.whole);
 		}
 	};
@@ -5325,7 +5325,7 @@
 
 			// x and y zoom
 			/** @type {number} */ xZoom = this.engine.zoom,
-			/** @type {number} */ yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ yZoom = this.engine.getYZoom(this.engine.zoom),
 
 			// cell state
 			/** @type {number} */ state = -1;
@@ -5397,7 +5397,7 @@
 
 			// x and y zoom
 			/** @type {number} */ xZoom = this.engine.zoom,
-			/** @type {number} */ yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ yZoom = this.engine.getYZoom(this.engine.zoom),
 
 			// rotation
 			/** @type {number} */ theta = 0,
@@ -5739,7 +5739,7 @@
 
 			// x and y zoom
 			/** @type {number} */ xZoom = this.engine.zoom,
-			/** @type {number} */ yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ yZoom = this.engine.getYZoom(this.engine.zoom),
 
 			// cell position
 			/** @type {number} */ yPos = 0,
@@ -5836,7 +5836,7 @@
 
 			// x and y zoom
 			/** @type {number} */ xZoom = this.engine.zoom,
-			/** @type {number} */ yZoom = this.engine.zoom * (this.engine.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ yZoom = this.engine.getYZoom(this.engine.zoom),
 
 			// cell position
 			/** @type {number} */ yPos = 0,
@@ -5966,11 +5966,11 @@
 
 				// display the state
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
 				} else {
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
 				}
 			}
 			this.xyLabel.deleted = false;
@@ -7113,7 +7113,7 @@
 		this.copyWithCommentsButton.locked = shown;
 		this.pasteToSelectionButton.locked = shown || (this.pasteBuffers[this.currentPasteBuffer] === null);
 		this.goToGenButton.locked = !this.executable || this.viewOnly;
-		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isRuleTree);
+		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isExtended || this.engine.isRuleTree);
 		this.saveButton.locked = shown;
 		this.fitSelectionButton.locked = shown;
 
@@ -7152,7 +7152,7 @@
 		}
 
 		// lock theme button if mode doesn't support themes
-		this.themeButton.locked = this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper;
+		this.themeButton.locked = this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended;
 
 		// lock major button if hex or triangular grid
 		this.majorButton.locked = (this.engine.isHex && !this.engine.forceRectangles) || (this.engine.isTriangular && !this.engine.forceRectangles) || this.engine.gridLineMajor === 0;
@@ -7197,7 +7197,7 @@
 		this.helpKeysButton.deleted = showTopicButtons;
 		this.helpScriptsButton.deleted = showTopicButtons;
 		this.helpInfoButton.deleted = showTopicButtons;
-		this.helpThemesButton.deleted = showTopicButtons || (this.engine.isNone || this.engine.isSuper || this.engine.isRuleTree);
+		this.helpThemesButton.deleted = showTopicButtons || (this.engine.isNone || this.engine.isSuper || this.engine.isExtended || this.engine.isRuleTree);
 		this.helpColoursButton.deleted = showTopicButtons;
 		this.helpAliasesButton.deleted = showTopicButtons;
 		this.helpMemoryButton.deleted = showTopicButtons;
@@ -7258,7 +7258,7 @@
 		this.invertSelectionButton.deleted = shown;
 		this.clearSelectionButton.deleted = shown;
 		this.clearOutsideButton.deleted = shown;
-		this.clearRHistoryButton.deleted = shown || !(this.engine.isLifeHistory || this.engine.isSuper);
+		this.clearRHistoryButton.deleted = shown || !(this.engine.isLifeHistory || this.engine.isSuper || this.engine.isExtended);
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
 		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates <= 2 || this.engine.isNone;
@@ -7327,7 +7327,7 @@
 				if (i + this.startState === 0) {
 					value = 0;
 				} else {
-					if (this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
+					if (this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended) {
 						value = i + this.startState + this.historyStates;
 					} else {
 						value = this.historyStates + this.engine.multiNumStates - (i + this.startState);
@@ -9190,13 +9190,23 @@
 								i += 1;
 							}
 						} else {
-							if (name === "alive") {
-								number = 1;
+							if (this.engine.isExtended) {
+								i = 0;
+								while (i < LifeConstants.namesExtended.length && number === -1) {
+									if (LifeConstants.namesExtended[i] === name) {
+										number = i;
+									}
+									i += 1;
+								}
 							} else {
-								if (name.substring(0, 6) === "dying ") {
-									number = Number(name.substring(6)) + 1;
-									if (number >= this.engine.multiNumStates) {
-										number = -1;
+								if (name === "alive") {
+									number = 1;
+								} else {
+									if (name.substring(0, 6) === "dying ") {
+										number = Number(name.substring(6)) + 1;
+										if (number >= this.engine.multiNumStates) {
+											number = -1;
+										}
 									}
 								}
 							}
@@ -9266,13 +9276,17 @@
 						if (this.engine.isSuper) {
 							name = LifeConstants.namesSuper[state];
 						} else {
-							if (this.engine.isNone) {
-								name = "state " + String(state);
+							if (this.engine.isExtended) {
+								name = LifeConstants.namesExtended[state];
 							} else {
-								if (state === 1) {
-									name = "alive";
+								if (this.engine.isNone) {
+									name = "state " + String(state);
 								} else {
-									name = "dying " + String(state - 1);
+									if (state === 1) {
+										name = "alive";
+									} else {
+										name = "dying " + String(state - 1);
+									}
 								}
 							}
 						}
@@ -9297,7 +9311,7 @@
 				if (newValue === 0) {
 					me.drawState = 0;
 				} else {
-					if (me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper) {
+					if (me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper|| me.engine.isExtended) {
 						me.drawState = newValue;
 					} else {
 						me.drawState = me.engine.multiNumStates - newValue;
@@ -9389,7 +9403,7 @@
 			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
 
 		// adjust current state if generations style
-		if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
+		if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper|| this.engine.isExtended)) {
 			if (replace > 0) {
 				replace = this.engine.multiNumStates - replace;
 			}
@@ -9419,7 +9433,7 @@
 			for (y = bottomY; y <= topY; y += 1) {
 				for (x = leftX; x <= rightX; x += 1) {
 					state = this.engine.getState(x, y, false);
-					if (this.engine.multiNumStates > 2 && !(this.engine.isSuper || this.engine.isPCA || this.engine.isRuleTree) && state > 0) { // TBD 
+					if (this.engine.multiNumStates > 2 && !(this.engine.isSuper || this.engine.isExtended || this.engine.isPCA || this.engine.isRuleTree) && state > 0) { // TBD 
 						state = this.engine.multiNumStates - state;
 					}
 					if (state === replace) {
@@ -9453,12 +9467,15 @@
 			/** @type {number} */ numCleared = 0,
 			/** @type {number} */ clearValue = 0;
 
+			// tbd isExtended
+
 		// delete any cell of the current pen colour
 		if (current > 0) {
 			// adjust current state if generations style
-			if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper)) {
+			if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)) {
 				current = me.engine.multiNumStates - current;
 			}
+
 			// adjust for LifeHistory
 			if (me.engine.isLifeHistory && current > 1) {
 				clearValue = current & 1;
@@ -10043,7 +10060,7 @@
 			this.penColour = this.readCell();
 
 			// adjust test state if generations style
-			if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
+			if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)) {
 				testState = this.engine.multiNumStates - testState;
 			}
 
@@ -10151,7 +10168,7 @@
 	View.prototype.dragPan = function(/** @type {View} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// compute the movement
 		var	/** @type {number} */ dx = (me.lastDragX - x) / me.engine.camZoom,
-			/** @type {number} */ dy = ((me.lastDragY - y) / me.engine.camZoom) / (me.engine.isTriangular ? ViewConstants.sqrt3 : 1),
+			/** @type {number} */ dy = ((me.lastDragY - y) / me.engine.camZoom) / me.engine.getYFactor(),
 			/** @type {number} */ angle = 0,
 			/** @type {number} */ sinAngle = 0,
 			/** @type {number} */ cosAngle = 0;
@@ -11433,7 +11450,7 @@
 		}
 
 		// if current pattern is multistate then keep the number of states
-		if (this.engine.multiNumStates > 2 && !this.engine.isSuper) {
+		if (this.engine.multiNumStates > 2 && !this.engine.isSuper && !this.engine.isExtended) {
 			result += "/" + this.engine.multiNumStates;
 		}
 
@@ -11774,14 +11791,18 @@
 
 			// check for [R]History
 			if (me.engine.isLifeHistory) {
-				me.patternRuleName += "History";
+				me.patternRuleName += me.manager.properHistoryPostfix;
 			}
 
 			// check for [R]Super
 			if (me.engine.isSuper) {
-				me.patternRuleName += "Super";
+				me.patternRuleName += me.manager.properSuperPostfix;
 			}
 
+			// check for [R]Extended
+			if (me.engine.isExtended) {
+				me.patternRuleName += me.manager.properExtendedPostfix;
+			}
 			// check if there is an alias for the generated pattern name
 			aliasName = AliasManager.getAliasFromRule(me.patternRuleName);
 			if (aliasName !== null) {
@@ -12582,6 +12603,8 @@
 	View.prototype.clearPaste = function(/** @type {View} */ me, /** @type {boolean} */ ctrl) {
 		var	/** @type {number} */ i = 0;
 
+		// TBD isExtended
+
 		if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
 			while (i < me.pasteBuffer.length) {
 				if (me.pasteBuffer[i] > 1) {
@@ -12700,6 +12723,7 @@
 					y1 = swap;
 				}
 
+				// TBD isExtended
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && ctrl) {
 					// clear [R]History or [R]Super states in selection
 					for (y = y1; y <= y2; y += 1) {
@@ -12806,7 +12830,7 @@
 			me.engine.doShrink();
 
 			// for HROT patterns use alive states only
-			if (!me.engine.isSuper && !me.engine.isRuleTree && (me.engine.isPCA || (me.engine.isHROT && me.engine.multiNumStates === 2) || me.engine.multiNumStates > 2)) {
+			if (!me.engine.isSuper && !me.engine.isExtended && !me.engine.isRuleTree && (me.engine.isPCA || (me.engine.isHROT && me.engine.multiNumStates === 2) || me.engine.multiNumStates > 2)) {
 				me.engine.getAliveStatesBox(selBox);
 				selBox.leftX -= xOff;
 				selBox.rightX -= xOff;
@@ -12891,7 +12915,7 @@
 			/** @type {number} */ state = 0,
 			/** @type {number} */ count = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {Uint8Array} */ buffer = null,
@@ -13280,7 +13304,7 @@
 			/** @type {number} */ state = 0,
 			/** @type {number} */ count = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {Uint8Array} */ buffer = null;
@@ -13504,7 +13528,7 @@
 			for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
 				for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
 					state = me.engine.getState(x, y, false);
-					if (state > 0 && me.engine.multiNumStates > 2 && !(me.engine.isSuper || me.engine.isPCA || me.engine.isRuleTree)) {
+					if (state > 0 && me.engine.multiNumStates > 2 && !(me.engine.isSuper || me.engine.isExtended || me.engine.isPCA || me.engine.isRuleTree)) {
 						state = me.engine.multiNumStates - state;
 					}
 					me.pasteBuffer[i] = state;
@@ -14246,7 +14270,7 @@
 			/** @type {Uint8Array} */ row = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {number} */ wasState6 = 0;
@@ -14354,7 +14378,7 @@
 			/** @type {Uint8Array} */ column = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {number} */ wasState6 = 0;
@@ -14496,7 +14520,7 @@
 			///** @type {number} */ saveTopY = 0,
 			///** @type {number} */ states = me.engine.multiNumStates,
 			///** @type {boolean} */ rotateFits = true,
-			///** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			///** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
 			///** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 			///** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
 			///** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
@@ -14691,7 +14715,7 @@
 			/** @type {number} */ saveTopY = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
 			/** @type {boolean} */ rotateFits = true,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
 			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 			/** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
 			/** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
@@ -15003,7 +15027,7 @@
 				for (y = y1; y <= y2; y += 1) {
 					for (x = x1; x <= x2; x += 1) {
 						state = me.engine.getState(x + xOff, y + yOff, false);
-						if (!(me.engine.isSuper || me.engine.isPCA || me.engine.isRuleTree) && numStates > 2 && state > 0) {
+						if (!(me.engine.isSuper || me.engine.isExtended || me.engine.isPCA || me.engine.isRuleTree) && numStates > 2 && state > 0) {
 							state = numStates - state;
 						}
 						wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, numStates - state - 1, true, false);
@@ -16173,6 +16197,7 @@
 
 	// update selection controls position based on window height
 	View.prototype.updateSelectionControlsPosition = function() {
+		// TBD isExtended
 		if (this.engine.isLifeHistory || this.engine.isSuper) {
 			this.invertSelectionButton.setPosition(Menu.southEast, -85, -130);
 			if (this.engine.isLifeHistory) {
@@ -16211,7 +16236,7 @@
 	View.prototype.updateTopicButtonsPosition = function() {
 		var	/** @type {number} */ y = 0,
 			/** @type {number} */ inc = 50,
-			/** @type {boolean} */ showThemes = !(this.engine.isNone || this.engine.isSuper || this.engine.isRuleTree);
+			/** @type {boolean} */ showThemes = !(this.engine.isNone || this.engine.isSuper || this.engine.isExtended|| this.engine.isRuleTree);
 
 		if (this.displayHeight < ViewConstants.minMenuHeight) {
 			y = 50;
@@ -17357,7 +17382,12 @@
 			this.menuManager.activeMenu(this.viewMenu);
 
 			// register keyboard input
-			registerEvent(this.mainCanvas, "keydown", function(/** @type {KeyboardEvent} */ event) {me.keyDown(me, event);}, false);
+			if (this.isInPopup) {
+				registerEvent(Controller.popupWindow.wrappedElement, "keydown", function(/** @type {KeyboardEvent} */ event) {me.keyDown(me, event);}, false);
+				Controller.popupWindow.menuManager = this.menuManager;
+			} else {
+				registerEvent(this.mainCanvas, "keydown", function(/** @type {KeyboardEvent} */ event) {me.keyDown(me, event);}, false);
+			}
 
 			// success
 			result = true;
@@ -17817,7 +17847,7 @@
 		// update the selected state
 		state = this.drawState;
 		if (state > 0) {
-			if (!(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper)) {
+			if (!(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper|| this.engine.isExtended)) {
 				state = this.engine.multiNumStates - state;
 			}
 		}
@@ -17869,7 +17899,7 @@
 				this.stateColsList.bgAlpha = 1;
 				this.stateColsList.current = [false, false];
 			} else {
-				if (this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper) {
+				if (this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper|| this.engine.isExtended) {
 					this.drawState = 1;
 				} else {
 					this.drawState = states - 1;
@@ -17900,7 +17930,7 @@
 					themeRequested = 10;
 				} else {
 					// check for Generations or HROT
-					if (this.engine.multiNumStates > 2 && !(this.engine.isSuper || this.engine.isPCA || this.engine.isRuleTree)) {
+					if (this.engine.multiNumStates > 2 && !(this.engine.isSuper|| this.engine.isExtended || this.engine.isPCA || this.engine.isRuleTree)) {
 						// multi state uses theme 11
 						themeRequested = 11;
 					} else {
@@ -18020,6 +18050,7 @@
 		this.engine.isPCA = false;
 		this.engine.isLifeHistory = false;
 		this.engine.isSuper = false;
+		this.engine.isExtended = false;
 		this.engine.isHex = false;
 		this.engine.hexNeighbourhood = this.manager.hexAll;
 		this.engine.isTriangular = false;
@@ -18379,7 +18410,11 @@
 			// check if the rule is a Super rule
 			me.engine.isSuper = pattern.isSuper;
 
+			// check if the rule is an Extended rule
+			me.engine.isExtended = pattern.isExtended;
+
 			// set toggle button caption
+			// TBD isExtended
 			me.clearRHistoryButton.toolTip = "clear History cells [Ctrl Del]";
 			if (me.engine.isSuper) {
 				me.clearRHistoryButton.toolTip = "clear Super cells [Ctrl Del]";
@@ -18862,15 +18897,23 @@
 			} else {
 				numberValue = args[2];
 			}
+
 			if (me.engine.isLifeHistory) {
 				numberValue = 7;
 			}
+
 			if (me.engine.isPCA) {
 				numberValue = 16;
 			}
+
 			if (me.engine.isSuper) {
 				numberValue = 26;
 			}
+
+			if (me.engine.isExtended) {
+				numberValue = 21;
+			}
+
 			me.readScript(comments, numberValue);
 
 			// set errors to display if any found
@@ -18929,13 +18972,13 @@
 
 		// check rainbow and remove if not supported
 		if (me.engine.rainbow) {
-			if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isRuleTree) {
+			if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree) {
 				me.engine.rainbow = false;
 			}
 		}
 
 		// remove history states if pattern is not executable or rule does not support them
-		if (!me.executable || me.engine.isRuleTree || me.engine.isSuper) {
+		if (!me.executable || me.engine.isRuleTree || me.engine.isSuper|| me.engine.isExtended) {
 			me.historyStates = 0;
 		}
 
@@ -19598,6 +19641,7 @@
 			me.engine.isNone = true;
 			me.engine.isLifeHistory = false;
 			me.engine.isSuper = false;
+			me.engine.isExtended = false;
 			me.updateTopicButtonsPosition();
 		}
 
@@ -19840,13 +19884,13 @@
 			// add a tab index to the canvas
 			canvasItem.tabIndex = Controller.viewers.length + 1;
 
-			// attach it to the canvas
-			newView.attachToCanvas(canvasItem);
-
 			// wrap it in a popup window if hidden
 			if (parentItem.style.display === "none") {
 				Controller.popupWindow = new PopupWindow(parentItem, newView);
 			}
+
+			// attach it to the canvas
+			newView.attachToCanvas(canvasItem);
 
 			// add the view to the list
 			Controller.viewers[Controller.viewers.length] = [canvasItem, newView, Controller.popupWindow];

@@ -484,7 +484,6 @@
 			/** @type {number} */ minY1 = minY,
 			/** @type {number} */ maxY1 = maxY,
 			/** @type {BoundingBox} */ zoomBox = this.engine.zoomBox,
-			/** @type {BoundingBox} */ HROTBox = this.engine.HROTBox,
 			/** @const {number} */ xrange = this.xrange,
 			/** @const {number} */ yrange = this.yrange,
 			/** @type {Uint8Array} */ birthList = useAlternate ? this.altBirths : this.births,
@@ -711,10 +710,6 @@
 			zoomBox.rightX = maxX;
 			zoomBox.bottomY = minY;
 			zoomBox.topY = maxY;
-			HROTBox.leftX = minX1;
-			HROTBox.rightX = maxX1;
-			HROTBox.bottomY = minY1;
-			HROTBox.topY = maxY1;
 		}
 	};
 
@@ -2506,10 +2501,6 @@
 				this.engine.zoomBox.rightX = maxX;
 				this.engine.zoomBox.bottomY = minY;
 				this.engine.zoomBox.topY = maxY;
-				this.engine.HROTBox.leftX = minX1;
-				this.engine.HROTBox.rightX = maxX1;
-				this.engine.HROTBox.bottomY = minY1;
-				this.engine.HROTBox.topY = maxY1;
 			}
 		} else {
 			if (type === this.manager.vonNeumannHROT && xrange > this.rangeVN) {
@@ -2657,10 +2648,6 @@
 					this.engine.zoomBox.rightX = maxX;
 					this.engine.zoomBox.bottomY = minY;
 					this.engine.zoomBox.topY = maxY;
-					this.engine.HROTBox.leftX = minX1;
-					this.engine.HROTBox.rightX = maxX1;
-					this.engine.HROTBox.bottomY = minY1;
-					this.engine.HROTBox.topY = maxY1;
 				}
 			} else {
 				// determine neighbourhood type
@@ -4366,10 +4353,6 @@
 				this.engine.zoomBox.rightX = maxX;
 				this.engine.zoomBox.bottomY = minY;
 				this.engine.zoomBox.topY = maxY;
-				this.engine.HROTBox.leftX = minX1;
-				this.engine.HROTBox.rightX = maxX1;
-				this.engine.HROTBox.bottomY = minY1;
-				this.engine.HROTBox.topY = maxY1;
 			}
 		} else {
 			if (type === this.manager.vonNeumannHROT && xrange > this.rangeVN) {
@@ -4506,10 +4489,6 @@
 					this.engine.zoomBox.rightX = maxX;
 					this.engine.zoomBox.bottomY = minY;
 					this.engine.zoomBox.topY = maxY;
-					this.engine.HROTBox.leftX = minX1;
-					this.engine.HROTBox.rightX = maxX1;
-					this.engine.HROTBox.bottomY = minY1;
-					this.engine.HROTBox.topY = maxY1;
 				}
 			} else {
 				// determine neighbourhood type

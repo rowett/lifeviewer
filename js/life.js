@@ -64,6 +64,19 @@
 		// buffer full
 		/** @const {string} */ bufferFullMessage : "Buffer Full",
 
+		// [R]Extended state colours
+		/** @const {Array<Array<number>>} */ coloursExtended : [[0, 0, 0], [0, 236, 91], [0, 192, 254], [254, 0, 0], [254, 254, 254], [75, 75, 75],
+															 [233, 41, 254], [64, 0, 128], [254, 230, 0], [150, 128, 0], [130, 200, 0],
+															 [0, 120, 40], [254, 140, 0], [140, 70, 0], [0, 0, 254], [192, 192, 192],
+															 [128, 128, 128], [254, 112, 140], [174, 0, 168], [0, 152, 127], [0, 73, 59]],
+
+		// [R]Extended state names
+		/** @const {Array<string>} */ namesExtended : ["off", "on", "killer on", "killer off", "eternal on", "eternal off",
+										"P2 killer on", "P2 killer off", "egg on", "egg off", "P2 on",
+										"P2 off", "P2 egg on", "P2 egg off", "inverter", "catalyst",
+										"catalyst killer", "on births", "off births", "on P2 births", "off P2 births"],
+
+		// [R]Super state colours
 		/** @const {Array<Array<number>>} */ coloursSuper : [[0, 0, 0], [0, 255, 0], [0, 0, 160], [255, 216, 255], [255, 0, 0], [255, 255, 0],
 															 [96, 96, 96], [255, 105, 180], [128, 0, 128], [0, 191, 255], [0, 64, 128],
 															 [64, 224, 208], [0, 128, 64], [255, 255, 255], [255, 99, 71], [250, 128, 114],
@@ -421,6 +434,7 @@
 		/** @type {number} */ this.identifyBoxWidth = 0;
 		/** @type {number} */ this.identifyBoxHeight = 0;
 		/** @type {string} */ this.identifyPopWithTMessage = "";
+		/** @type {string} */ this.identifyBoxWithTMessage = "";
 
 		// period table start row and maximum row
 		/** @type {number} */ this.tableStartRow = 0;
@@ -699,6 +713,9 @@
 		// whether pattern is [R]Super
 		/** @type {boolean} */ this.isSuper = false;
 
+		// whether pattern is [R]Extended
+		/** @type {boolean} */ this.isExtended = false;
+
 		// how many history states to draw
 		/** @type {number} */ this.historyStates = 0;
 
@@ -728,9 +745,6 @@
 
 		// last zoom bounding box
 		/** @type {BoundingBox} */ this.lastZoomBox = null;
-
-		// alive cell bounding box for HROT
-		/** @type {BoundingBox} */ this.HROTBox = null;
 
 		// initial bounding box for LifeHistory
 		/** @type {BoundingBox} */ this.initialBox = null;
@@ -1823,8 +1837,8 @@
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree, Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -1887,7 +1901,7 @@
 						}
 					}
 				} else {
-					if (this.isSuper) {
+					if (this.isSuper || this.isExtended) {
 						if ((colourGrid[cy + bottom][cx + left] & 1) || colourGrid[cy + bottom][cx + left] === 6) {
 							hash = (hash * factor) ^ y;
 							hash = (hash * factor) ^ x;
@@ -2266,8 +2280,8 @@
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree, Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -2301,7 +2315,7 @@
 						}
 					}
 				} else {
-					if (this.isSuper) {
+					if (this.isSuper || this.isExtended) {
 						for (cx = x; cx <= right; cx += 1) {
 							if ((colourRow[cx] & 1) || colourRow[cx] === 6) {
 								hash = (hash * factor) ^ yshift;
@@ -3229,8 +3243,8 @@
 
 		//var msgRow = "";
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree, Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -3386,7 +3400,7 @@
 						//console.log("gen", gen, "y", cy, "data", msgRow);
 					}
 				} else {
-					if (this.isSuper) {
+					if (this.isSuper || this.isExtended) {
 						initRow = initList[cy];
 						for (cx = x; cx <= right; cx += 1) {
 							if (gen === 0) {
@@ -3483,7 +3497,7 @@
 			/** @type {Uint8Array} */ colourRow = null;
 
 		// swap grids every generation
-		if (this.isSuper || this.isRuleTree) {
+		if (this.isSuper || this.isExtended || this.isRuleTree) {
 			colourGrid = this.colourGrid;
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -3500,8 +3514,8 @@
 			f = ((cy - extent.bottomY) * bitRowInBytes) + l;
 			bit = bitStart;
 
-			// check for Super or RuleTree rules
-			if (this.isSuper || this.isRuleTree) {
+			// check for Super, Extended or RuleTree rules
+			if (this.isSuper || this.isExtended || this.isRuleTree) {
 				// process the row
 				cx = extent.leftX;
 				frameBits = 0;
@@ -3847,6 +3861,7 @@
 			/** @type {number} */ popTotal = 0,
 			/** @type {number} */ row = 0,
 			/** @type {BoundingBox} */ extent = null,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {number} */ frameTypeMSB = 0,
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
@@ -3871,8 +3886,8 @@
 
 		//console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree, Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -3883,8 +3898,7 @@
 		extent = this.getOscillatorBounds(period, i);
 
 		// determine whether Strict Volatility can be calculated based on amount of RAM needed
-		//if (isOscillator && (this.multiNumStates <= 2 || this.isSuper) && !this.isRuleTree && !this.isMargolus) {
-		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper)) {
+		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper || this.isExtended)) {
 			// compute the maximum box width and height for the oscillator
 			extent = this.getOscillatorBounds(period, i);
 			boxWidth = extent.rightX - extent.leftX + 1;
@@ -3966,11 +3980,13 @@
 			}
 
 			if (!isOscillator) {
-				extent = (this.isHROT ? this.HROTBox : this.zoomBox);
+				extent = zoomBox;
 				if (this.isSuper) {
 					extent = this.getSuperAliveBox(extent.leftX, extent.bottomY, extent.rightX, extent.topY);
 				}
 			}
+
+			// TBD getExtendedAliveBox
 
 			//console.log(p, "gen", this.counter, extent, "width", (extent.rightX - extent.leftX + 1), "height", (extent.topY - extent.bottomY + 1));
 
@@ -4083,8 +4099,8 @@
 
 				// save statistics for this generation
 				this.popList[p] = this.population;
-				this.boxList[p << 1] = ((extent.rightX - extent.leftX + 1) << 16) | (extent.topY - extent.bottomY + 1);
-				this.boxList[(p << 1) + 1] = (extent.leftX << 16) | extent.bottomY;
+				this.boxList[p << 1] = ((zoomBox.rightX - zoomBox.leftX + 1) << 16) | (zoomBox.topY - zoomBox.bottomY + 1);
+				this.boxList[(p << 1) + 1] = (zoomBox.leftX << 16) | zoomBox.bottomY;
 			}
 		}
 
@@ -4153,6 +4169,8 @@
 				}
 			}
 
+			// TBD addExtendedState6ToCellMap
+
 			// display integer strict volatility without decimal places
 			p = popSubPeriod[period] / popTotal;
 			this.strictVol = this.toPlaces(p, 2);
@@ -4201,12 +4219,12 @@
 			/** @type {number} */ deltaYOrig = 0,
 
 			// max and min population
-			/** @type {number} */ min = this.population,
-			/** @type {number} */ max = min,
-			/** @type {number} */ avg = this.population,
+			/** @type {number} */ min = 16384 * 16384 + 1,
+			/** @type {number} */ max = 0,
+			/** @type {number} */ avg = 0,
 			/** @type {number} */ total = 0,
-			/** @type {number} */ minT = this.counter - period,
-			/** @type {number} */ maxT = this.counter - period,
+			/** @type {number} */ minT = 0,
+			/** @type {number} */ maxT = 0,
 			/** @type {string} */ popResult = "",
 
 			// bounding box
@@ -4220,6 +4238,12 @@
 			/** @type {number} */ minY = 16384,
 			/** @type {number} */ maxY = 0,
 			/** @type {string} */ boxResult = "",
+			/** @type {number} */ minBoxSize = 16384 * 16884,
+			/** @type {number} */ maxBoxSize = 0,
+			/** @type {number} */ minBoxWidth = 0,
+			/** @type {number} */ minBoxHeight = 0,
+			/** @type {number} */ maxBoxWidth = 0,
+			/** @type {number} */ maxBoxHeight = 0,
 
 			// record range
 			/** @type {number} */ last = 0,
@@ -4384,9 +4408,12 @@
 		last = period;
 
 		// compute the min and max population
+		minT = 0;
+		maxT = 0;
+		this.identifyPopWithTMessage = "";
+
 		if (type === "Still Life") {
 			popResult = String(this.population);
-			this.identifyPopWithTMessage = popResult;
 		} else {
 			total = 0;
 			for (i = 0; i < last; i += 1) {
@@ -4394,29 +4421,32 @@
 				total += current;
 				if (current < min) {
 					min = current;
-					minT = this.counter - period - period + i - 1;
+					minT = (i + 1) % period;
 				}
 				if (current > max) {
 					max = current;
-					maxT = this.counter - period - period + i - 1;
+					maxT = (i + 1) % period;
 				}
 			}
 
 			if (min === max) {
 				// output the latest
 				popResult = String(max);
-				this.identifyPopWithTMessage = popResult;
 			} else {
 				// otherwise output min, max and average
 				avg = total / last;
 				popResult = String(min) + " | " + String(max) + " | " + this.toPlaces(avg, 1);
 
 				// save extended message with generations for Help->Identify
-				this.identifyPopWithTMessage = String(min) + " @ T" + minT + " | " + String(max) + " @ T" + maxT + " | " + this.toPlaces(avg, 1);
+				this.identifyPopWithTMessage = String(min) + " @ T" + minT + " | " + String(max) + " @ T" + maxT;
 			}
 		}
 
 		// compute the bounding box
+		minT = 0;
+		maxT = 0;
+		this.identifyBoxWithTMessage = "";
+
 		if (type !== "Still Life") {
 			if (type === "Spaceship") {
 				for (i = 0; i < last; i += 1) {
@@ -4428,6 +4458,21 @@
 					}
 					if (currentHeight > boxHeight) {
 						boxHeight = currentHeight;
+					}
+
+					// update minimum and maximum box
+					if (currentWidth * currentHeight < minBoxSize) {
+						minBoxSize = currentWidth * currentHeight;
+						minBoxWidth = currentWidth;
+						minBoxHeight = currentHeight;
+						minT = (i + 1) % period;
+					}
+
+					if (currentWidth * currentHeight > maxBoxSize) {
+						maxBoxSize = currentWidth * currentHeight;
+						maxBoxWidth = currentWidth;
+						maxBoxHeight = currentHeight;
+						maxT = (i + 1) % period;
 					}
 				}
 			} else {
@@ -4452,12 +4497,31 @@
 					if (currentBottom + currentHeight - 1 > maxY) {
 						maxY = currentBottom + currentHeight - 1;
 					}
+
+					// update minimum and maximum box
+					if (currentWidth * currentHeight < minBoxSize) {
+						minBoxSize = currentWidth * currentHeight;
+						minBoxWidth = currentWidth;
+						minBoxHeight = currentHeight;
+						minT = (i + 1) % period;
+					}
+
+					if (currentWidth * currentHeight > maxBoxSize) {
+						maxBoxSize = currentWidth * currentHeight;
+						maxBoxWidth = currentWidth;
+						maxBoxHeight = currentHeight;
+						maxT = (i + 1) % period;
+					}
 				}
 				boxWidth = maxX - minX + 1;
 				boxHeight = maxY - minY + 1;
 			}
 		}
+
 		boxResult = String(boxWidth + " x " + boxHeight + " = " + (boxWidth * boxHeight));
+		if (!(minBoxWidth === maxBoxWidth && minBoxHeight === maxBoxHeight)) {
+			this.identifyBoxWithTMessage = String(minBoxWidth + " x " + minBoxHeight + " = " + minBoxSize + " @ T" + minT + " | " + maxBoxWidth + " x " + maxBoxHeight + " = " + maxBoxSize + " @ T" + maxT);
+		}
 
 		// compute the heat
 		if (period > 0) {
@@ -4769,7 +4833,7 @@
 	/** @returns {Array} */
 	Life.prototype.oscillating = function(/** @type {View} */ view) {
 		// get bounding box
-		var	/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
+		var	/** @type {BoundingBox} */ box = this.zoomBox,
 			/** @type {number} */ leftX = box.leftX,
 			/** @type {number} */ bottomY = box.bottomY,
 			/** @type {number} */ rightX = box.rightX,
@@ -4846,6 +4910,8 @@
 					boxSize = (boxWidth << 16) | boxHeight;
 					boxLocation = (leftX << 16) | bottomY;
 				} else {
+					// tbd extended rules
+
 					// for super rules create a bounding box of just the alive cells
 					if (this.isSuper) {
 						box = this.getSuperAliveBox(leftX, bottomY, rightX, topY);
@@ -5252,7 +5318,7 @@
 			/** @type {number} */ maxGridSize = this.maxGridSize;
 
 		// switch buffers if required
-		if ((this.isSuper || this.isRuleTree) && ((this.counter & 1) !== 0)) {
+		if ((this.isSuper || this.isExtended || this.isRuleTree) && ((this.counter & 1) !== 0)) {
 			colourGrid = this.nextColourGrid;
 		}
 
@@ -6016,7 +6082,7 @@
 			/** @type {number} */ maxGridSize = this.maxGridSize;
 
 		// switch buffers if required
-		if ((this.isSuper || this.isRuleTree) && ((this.counter & 1) !== 0)) {
+		if ((this.isSuper || this.isExtended || this.isRuleTree) && ((this.counter & 1) !== 0)) {
 			colourGrid = this.nextColourGrid;
 		}
 
@@ -7146,7 +7212,6 @@
 			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
 			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
-			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
 			/** @type {number} */ cellAsBit = 0,
 			/** @type {number} */ cellAsTileBit = 0,
@@ -7172,8 +7237,8 @@
 			// x coordinate for boundary check
 			/** @type {number} */ cx = 0;
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree, Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -7291,7 +7356,7 @@
 
 			// check for multi-state rules
 			if (!this.isHROT) {
-				if (this.multiNumStates <= 2 || this.isSuper) {
+				if (this.multiNumStates <= 2 || this.isSuper || this.isExtended) {
 					// 2-state
 					bitAlive = ((state & 1) === 1);
 				} else {
@@ -7481,29 +7546,6 @@
 			}
 			if (y > historyBox.topY) {
 				historyBox.topY = y;
-			}
-
-			// if the state is alive then update HROT alive bounding box
-			if (this.isHROT && state === this.multiNumStates - 1 + this.historyStates) {
-				if (this.population === 1) {
-					HROTBox.leftX = x;
-					HROTBox.rightX = x;
-					HROTBox.bottomY = y;
-					HROTBox.topY = y;
-				} else {
-					if (x < HROTBox.leftX) {
-						HROTBox.leftX = x;
-					}
-					if (x > HROTBox.rightX) {
-						HROTBox.rightX = x;
-					}
-					if (y < HROTBox.bottomY) {
-						HROTBox.bottomY = y;
-					}
-					if (y > HROTBox.topY) {
-						HROTBox.topY = y;
-					}
-				}
 			}
 		} else {
 			// state cleared only shrink if the cell was on the boundary of the bounding box
@@ -7713,8 +7755,8 @@
 			// colour grid
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid;
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree, Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -7750,7 +7792,7 @@
 						if (this.boundedGridType !== -1 && col === this.boundedBorderColour && (!(x >= leftX && x <= rightX && y >= bottomY && y <= topY))) {
 							result = 0;
 						} else {
-							if (this.isPCA || this.isRuleTree || this.isSuper) {
+							if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 								result = col - this.historyStates;
 							} else {
 								result = this.multiNumStates + this.historyStates - col;
@@ -7974,7 +8016,7 @@
 		grid.whole.fill(0);
 		nextGrid.whole.fill(0);
 		this.colourGrid.whole.fill(0);
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			this.nextColourGrid.whole.fill(0);
 		}
 		this.smallColourGrid.whole.fill(0);
@@ -7984,7 +8026,7 @@
 
 		// restore colour grid from snapshot
 		snapshot.restoreColourGridUsingTile(colourGrid, this.colourTileGrid, this);
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			Array.copy(colourGrid, this.nextColourGrid);
 		}
 
@@ -8008,10 +8050,6 @@
 		this.zoomBox.bottomY = snapshot.zoomBox.bottomY;
 		this.zoomBox.rightX = snapshot.zoomBox.rightX;
 		this.zoomBox.topY = snapshot.zoomBox.topY;
-		this.HROTBox.leftX = snapshot.HROTBox.leftX;
-		this.HROTBox.bottomY = snapshot.HROTBox.bottomY;
-		this.HROTBox.rightX = snapshot.HROTBox.rightX;
-		this.HROTBox.topY = snapshot.HROTBox.topY;
 
 		// restore the population
 		this.population = snapshot.population;
@@ -8056,8 +8094,8 @@
 	Life.prototype.saveToSnapshot = function(/** @type {boolean} */ isReset, /** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tileGrid, /** @type {View} */ view) {
 		var	/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid;
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree, Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -8065,7 +8103,7 @@
 		}
 
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.colourTileHistoryGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, view.fixedPointCounter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.colourTileHistoryGrid, this.zoomBox, this.population, this.births, this.deaths, this.counter, view.fixedPointCounter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset);
 	};
 
 	// save grid
@@ -8148,7 +8186,7 @@
 
 		// colour grid
 		this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			this.nextColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
 			this.nextColourGrid16 = Array.matrixView(Type.Uint16, this.nextColourGrid, "Life.nextColourGrid16");
 			this.nextColourGrid32 = Array.matrixView(Type.Uint32, this.nextColourGrid, "Life.nextColourGrid32");
@@ -8228,7 +8266,7 @@
 		this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 		this.colourGrid16 = Array.matrixView(Type.Uint16, this.colourGrid, "Life.colourGrid16");
 		this.colourGrid32 = Array.matrixView(Type.Uint32, this.colourGrid, "Life.colourGrid32");
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			this.nextColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
 			this.nextColourGrid16 = Array.matrixView(Type.Uint16, this.nextColourGrid, "Life.nextColourGrid16");
 			this.nextColourGrid32 = Array.matrixView(Type.Uint32, this.nextColourGrid, "Life.nextColourGrid32");
@@ -8390,7 +8428,7 @@
 			this.smallColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallColourGrid");
 			this.colourGrid16 = Array.matrixView(Type.Uint16, this.colourGrid, "Life.colourGrid16");
 			this.colourGrid32 = Array.matrixView(Type.Uint32, this.colourGrid, "Life.colourGrid32");
-			if (this.isPCA || this.isRuleTree || this.isSuper) {
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 				this.nextColourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.nextColourGrid");
 				this.nextColourGrid16 = Array.matrixView(Type.Uint16, this.nextColourGrid, "Life.nextColourGrid16");
 				this.nextColourGrid32 = Array.matrixView(Type.Uint32, this.nextColourGrid, "Life.nextColourGrid32");
@@ -8417,7 +8455,7 @@
 			this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.nextGrid, currentNextGrid);
 			this.copyGridToCenter(currentHeight, yOffset, xOffset, this.colourGrid, currentColourGrid);
 			this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallColourGrid, currentSmallColourGrid);
-			if (this.isPCA || this.isRuleTree || this.isSuper) {
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.nextColourGrid, currentNextColourGrid);
 			}
 			if (this.countList) {
@@ -8469,11 +8507,6 @@
 			this.zoomBox.rightX += xOffset;
 			this.zoomBox.topY += yOffset;
 			this.zoomBox.bottomY += yOffset;
-
-			this.HROTBox.leftX += xOffset;
-			this.HROTBox.rightX += xOffset;
-			this.HROTBox.topY += yOffset;
-			this.HROTBox.bottomY += yOffset;
 
 			this.initialBox.leftX += xOffset;
 			this.initialBox.rightX += xOffset;
@@ -9330,9 +9363,6 @@
 		this.zoomBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 		this.lastZoomBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
-		// initial bounding box for HROT alive cells
-		this.HROTBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
-
 		// initial bounding box for LifeHistory
 		this.initialBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
@@ -9792,12 +9822,12 @@
 
 		// do nothing for "none" rule since colours are fixed
 		if (!this.isNone) {
-			// check for [R]Super rules
-			if (this.isSuper) {
-				for (i = 0; i < LifeConstants.coloursSuper.length; i += 1) {
-					this.redChannel[i + this.historyStates] = LifeConstants.coloursSuper[i][0];
-					this.greenChannel[i + this.historyStates] = LifeConstants.coloursSuper[i][1];
-					this.blueChannel[i + this.historyStates] = LifeConstants.coloursSuper[i][2];
+			// check for [R]Extended rules
+			if (this.isExtended) {
+				for (i = 0; i < LifeConstants.coloursExtended.length; i += 1) {
+					this.redChannel[i + this.historyStates] = LifeConstants.coloursExtended[i][0];
+					this.greenChannel[i + this.historyStates] = LifeConstants.coloursExtended[i][1];
+					this.blueChannel[i + this.historyStates] = LifeConstants.coloursExtended[i][2];
 
 					// override with custom colour if specified
 					if (this.customColours && this.customColours.length >= i) {
@@ -9810,30 +9840,92 @@
 					}
 				}
 			} else {
-				// check for Generations, HROT or PCA rules
-				if (this.multiNumStates > 2 || this.isRuleTree) {
-					// set unoccupied colour
-					i = 0;
-					if (this.isRuleTree) {
-						this.redChannel[i] = this.ruleTreeColours[i] >> 16;
-						this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
-						this.blueChannel[i] = this.ruleTreeColours[i] & 255;
-					} else {
-						this.redChannel[i] = Math.round(this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight));
-						this.greenChannel[i] = Math.round(this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight));
-						this.blueChannel[i] = Math.round(this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight));
-					}
+				// check for [R]Super rules
+				if (this.isSuper) {
+					for (i = 0; i < LifeConstants.coloursSuper.length; i += 1) {
+						this.redChannel[i + this.historyStates] = LifeConstants.coloursSuper[i][0];
+						this.greenChannel[i + this.historyStates] = LifeConstants.coloursSuper[i][1];
+						this.blueChannel[i + this.historyStates] = LifeConstants.coloursSuper[i][2];
 
-					// set generations or PCA colours
-					for (i = 1; i < this.multiNumStates - 1; i += 1) {
-						// compute the weighting between the start and end colours in the range
-						if (this.multiNumStates <= 3) {
-							weight = 0;
+						// override with custom colour if specified
+						if (this.customColours && this.customColours.length >= i) {
+							current = this.customColours[i];
+							if (current !== -1) {
+								this.redChannel[i + this.historyStates] = current >> 16;
+								this.greenChannel[i + this.historyStates] = (current >> 8) & 255;
+								this.blueChannel[i + this.historyStates] = (current & 255);
+							}
+						}
+					}
+				} else {
+					// check for Generations, HROT or PCA rules
+					if (this.multiNumStates > 2 || this.isRuleTree) {
+						// set unoccupied colour
+						i = 0;
+						if (this.isRuleTree) {
+							this.redChannel[i] = this.ruleTreeColours[i] >> 16;
+							this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
+							this.blueChannel[i] = this.ruleTreeColours[i] & 255;
 						} else {
-							weight = (i - 1) / (this.multiNumStates - 3);
+							this.redChannel[i] = Math.round(this.unoccupiedGenCurrent.red * mixWeight + this.unoccupiedGenTarget.red * (1 - mixWeight));
+							this.greenChannel[i] = Math.round(this.unoccupiedGenCurrent.green * mixWeight + this.unoccupiedGenTarget.green * (1 - mixWeight));
+							this.blueChannel[i] = Math.round(this.unoccupiedGenCurrent.blue * mixWeight + this.unoccupiedGenTarget.blue * (1 - mixWeight));
 						}
 
-						// check for PCA
+						// set generations or PCA colours
+						for (i = 1; i < this.multiNumStates - 1; i += 1) {
+							// compute the weighting between the start and end colours in the range
+							if (this.multiNumStates <= 3) {
+								weight = 0;
+							} else {
+								weight = (i - 1) / (this.multiNumStates - 3);
+							}
+
+							// check for PCA
+							if (this.isPCA) {
+								this.redChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].red * mixWeight + this.pcaColsTarget[i - 1].red * (1 - mixWeight));
+								this.greenChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].green * mixWeight + this.pcaColsTarget[i - 1].green * (1 - mixWeight));
+								this.blueChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].blue * mixWeight + this.pcaColsTarget[i - 1].blue * (1 - mixWeight));
+							} else {
+								if (this.isRuleTree) {
+									this.redChannel[i] = this.ruleTreeColours[i] >> 16;
+									this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
+									this.blueChannel[i] = this.ruleTreeColours[i] & 255;
+								} else {
+									// compute the red component of the current and target colour
+									currentComponent = Math.round(this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight));
+									targetComponent = Math.round(this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight));
+									this.redChannel[i + this.historyStates] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
+
+									// compute the green component of the current and target colour
+									currentComponent = Math.round(this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight));
+									targetComponent = Math.round(this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight));
+									this.greenChannel[i + this.historyStates] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
+
+									// compute the blue component of the current and target colour
+									currentComponent = Math.round(this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight));
+									targetComponent = Math.round(this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight));
+									this.blueChannel[i + this.historyStates] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
+								}
+							}
+
+							// override with custom colour if specified and the Custom Theme is active
+							if (this.customColours && this.customColours.length > i && this.colourTheme === this.numThemes) {
+								if (!(this.isPCA || this.isRuleTree)) {
+									current = this.customColours[this.multiNumStates - i];
+								} else {
+									current = this.customColours[i];
+								}
+								if (current !== -1) {
+									this.redChannel[i + this.historyStates] = current >> 16;
+									this.greenChannel[i + this.historyStates] = (current >> 8) & 255;
+									this.blueChannel[i + this.historyStates] = (current & 255);
+								}
+							}
+						}
+
+						// set alive colour
+						i = this.multiNumStates - 1;
 						if (this.isPCA) {
 							this.redChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].red * mixWeight + this.pcaColsTarget[i - 1].red * (1 - mixWeight));
 							this.greenChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].green * mixWeight + this.pcaColsTarget[i - 1].green * (1 - mixWeight));
@@ -9844,24 +9936,13 @@
 								this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
 								this.blueChannel[i] = this.ruleTreeColours[i] & 255;
 							} else {
-								// compute the red component of the current and target colour
-								currentComponent = Math.round(this.dyingGenColCurrent.endColour.red * weight + this.dyingGenColCurrent.startColour.red * (1 - weight));
-								targetComponent = Math.round(this.dyingGenColTarget.endColour.red * weight + this.dyingGenColTarget.startColour.red * (1 - weight));
-								this.redChannel[i + this.historyStates] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
-
-								// compute the green component of the current and target colour
-								currentComponent = Math.round(this.dyingGenColCurrent.endColour.green * weight + this.dyingGenColCurrent.startColour.green * (1 - weight));
-								targetComponent = Math.round(this.dyingGenColTarget.endColour.green * weight + this.dyingGenColTarget.startColour.green * (1 - weight));
-								this.greenChannel[i + this.historyStates] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
-
-								// compute the blue component of the current and target colour
-								currentComponent = Math.round(this.dyingGenColCurrent.endColour.blue * weight + this.dyingGenColCurrent.startColour.blue * (1 - weight));
-								targetComponent = Math.round(this.dyingGenColTarget.endColour.blue * weight + this.dyingGenColTarget.startColour.blue * (1 - weight));
-								this.blueChannel[i + this.historyStates] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
+								this.redChannel[i + this.historyStates] = Math.round(this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight));
+								this.greenChannel[i + this.historyStates] = Math.round(this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight));
+								this.blueChannel[i + this.historyStates] = Math.round(this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight));
 							}
 						}
 
-						// override with custom colour if specified and the Custom Theme is active
+						// override with custom colour if specified
 						if (this.customColours && this.customColours.length > i && this.colourTheme === this.numThemes) {
 							if (!(this.isPCA || this.isRuleTree)) {
 								current = this.customColours[this.multiNumStates - i];
@@ -9874,145 +9955,113 @@
 								this.blueChannel[i + this.historyStates] = (current & 255);
 							}
 						}
-					}
 
-					// set alive colour
-					i = this.multiNumStates - 1;
-					if (this.isPCA) {
-						this.redChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].red * mixWeight + this.pcaColsTarget[i - 1].red * (1 - mixWeight));
-						this.greenChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].green * mixWeight + this.pcaColsTarget[i - 1].green * (1 - mixWeight));
-						this.blueChannel[i + this.historyStates] = Math.round(this.pcaColsCurrent[i - 1].blue * mixWeight + this.pcaColsTarget[i - 1].blue * (1 - mixWeight));
-					} else {
-						if (this.isRuleTree) {
-							this.redChannel[i] = this.ruleTreeColours[i] >> 16;
-							this.greenChannel[i] = (this.ruleTreeColours[i] >> 8) & 255;
-							this.blueChannel[i] = this.ruleTreeColours[i] & 255;
-						} else {
-							this.redChannel[i + this.historyStates] = Math.round(this.aliveGenColCurrent.red * mixWeight + this.aliveGenColTarget.red * (1 - mixWeight));
-							this.greenChannel[i + this.historyStates] = Math.round(this.aliveGenColCurrent.green * mixWeight + this.aliveGenColTarget.green * (1 - mixWeight));
-							this.blueChannel[i + this.historyStates] = Math.round(this.aliveGenColCurrent.blue * mixWeight + this.aliveGenColTarget.blue * (1 - mixWeight));
+						// create history colours if specified
+						for (i = 0; i < this.historyStates; i += 1) {
+							if (this.historyStates > 1) {
+								weight = 1 - (i / (this.historyStates - 1));
+							} else {
+								weight = 1;
+							}
+							// compute the red component of the current and target colour
+							currentComponent = Math.round(this.deadGenColCurrent.startColour.red * weight + this.deadGenColCurrent.endColour.red * (1 - weight));
+							targetComponent = Math.round(this.deadGenColTarget.startColour.red * weight + this.deadGenColTarget.endColour.red * (1 - weight));
+							this.redChannel[i + 1] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
+
+							// compute the green component of the current and target colour
+							currentComponent = Math.round(this.deadGenColCurrent.startColour.green * weight + this.deadGenColCurrent.endColour.green * (1 - weight));
+							targetComponent = Math.round(this.deadGenColTarget.startColour.green * weight + this.deadGenColTarget.endColour.green * (1 - weight));
+							this.greenChannel[i + 1] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
+
+							// compute the blue component of the current and target colour
+							currentComponent = Math.round(this.deadGenColCurrent.startColour.blue * weight + this.deadGenColCurrent.endColour.blue * (1 - weight));
+							targetComponent = Math.round(this.deadGenColTarget.startColour.blue * weight + this.deadGenColTarget.endColour.blue * (1 - weight));
+							this.blueChannel[i + 1] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 						}
-					}
 
-					// override with custom colour if specified
-					if (this.customColours && this.customColours.length > i && this.colourTheme === this.numThemes) {
-						if (!(this.isPCA || this.isRuleTree)) {
-							current = this.customColours[this.multiNumStates - i];
-						} else {
-							current = this.customColours[i];
-						}
-						if (current !== -1) {
-							this.redChannel[i + this.historyStates] = current >> 16;
-							this.greenChannel[i + this.historyStates] = (current >> 8) & 255;
-							this.blueChannel[i + this.historyStates] = (current & 255);
-						}
-					}
-
-					// create history colours if specified
-					for (i = 0; i < this.historyStates; i += 1) {
-						if (this.historyStates > 1) {
-							weight = 1 - (i / (this.historyStates - 1));
-						} else {
-							weight = 1;
-						}
-						// compute the red component of the current and target colour
-						currentComponent = Math.round(this.deadGenColCurrent.startColour.red * weight + this.deadGenColCurrent.endColour.red * (1 - weight));
-						targetComponent = Math.round(this.deadGenColTarget.startColour.red * weight + this.deadGenColTarget.endColour.red * (1 - weight));
-						this.redChannel[i + 1] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
-
-						// compute the green component of the current and target colour
-						currentComponent = Math.round(this.deadGenColCurrent.startColour.green * weight + this.deadGenColCurrent.endColour.green * (1 - weight));
-						targetComponent = Math.round(this.deadGenColTarget.startColour.green * weight + this.deadGenColTarget.endColour.green * (1 - weight));
-						this.greenChannel[i + 1] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
-
-						// compute the blue component of the current and target colour
-						currentComponent = Math.round(this.deadGenColCurrent.startColour.blue * weight + this.deadGenColCurrent.endColour.blue * (1 - weight));
-						targetComponent = Math.round(this.deadGenColTarget.startColour.blue * weight + this.deadGenColTarget.endColour.blue * (1 - weight));
-						this.blueChannel[i + 1] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
-					}
-
-					// override colour 0 if specified
-					if (this.customColours && this.customColours.length > 0 && this.colourTheme === this.numThemes) {
-						current = this.customColours[0];
-						if (current !== -1) {
-							this.redChannel[0] = current >> 16;
-							this.greenChannel[0] = (current >> 8) & 255;
-							this.blueChannel[0] = (current & 255);
-						}
-					}
-				} else {
-					// set unoccupied colour
-					i = 0;
-					this.redChannel[i] = Math.round(this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight));
-					this.greenChannel[i] = Math.round(this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight));
-					this.blueChannel[i] = Math.round(this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight));
-
-					// set dead colours and start by clearing unused history colours
-					if (this.historyStates === 0) {
-						for (i = 1; i <= this.deadStart; i += 1) {
-							this.redChannel[i] = Math.round(this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight));
-							this.greenChannel[i] = Math.round(this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight));
-							this.blueChannel[i] = Math.round(this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight));
+						// override colour 0 if specified
+						if (this.customColours && this.customColours.length > 0 && this.colourTheme === this.numThemes) {
+							current = this.customColours[0];
+							if (current !== -1) {
+								this.redChannel[0] = current >> 16;
+								this.greenChannel[0] = (current >> 8) & 255;
+								this.blueChannel[0] = (current & 255);
+							}
 						}
 					} else {
-						deadMin = this.deadStart - this.historyStates + 1;
-						for (i = 1; i < deadMin; i += 1) {
-							this.redChannel[i] = Math.round(this.deadColCurrent.startColour.red * mixWeight + this.deadColTarget.startColour.red * (1 - mixWeight));
-							this.greenChannel[i] = Math.round(this.deadColCurrent.startColour.green * mixWeight + this.deadColTarget.startColour.green * (1 - mixWeight));
-							this.blueChannel[i] = Math.round(this.deadColCurrent.startColour.blue * mixWeight + this.deadColTarget.startColour.blue * (1 - mixWeight));
+						// set unoccupied colour
+						i = 0;
+						this.redChannel[i] = Math.round(this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight));
+						this.greenChannel[i] = Math.round(this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight));
+						this.blueChannel[i] = Math.round(this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight));
+
+						// set dead colours and start by clearing unused history colours
+						if (this.historyStates === 0) {
+							for (i = 1; i <= this.deadStart; i += 1) {
+								this.redChannel[i] = Math.round(this.unoccupiedCurrent.red * mixWeight + this.unoccupiedTarget.red * (1 - mixWeight));
+								this.greenChannel[i] = Math.round(this.unoccupiedCurrent.green * mixWeight + this.unoccupiedTarget.green * (1 - mixWeight));
+								this.blueChannel[i] = Math.round(this.unoccupiedCurrent.blue * mixWeight + this.unoccupiedTarget.blue * (1 - mixWeight));
+							}
+						} else {
+							deadMin = this.deadStart - this.historyStates + 1;
+							for (i = 1; i < deadMin; i += 1) {
+								this.redChannel[i] = Math.round(this.deadColCurrent.startColour.red * mixWeight + this.deadColTarget.startColour.red * (1 - mixWeight));
+								this.greenChannel[i] = Math.round(this.deadColCurrent.startColour.green * mixWeight + this.deadColTarget.startColour.green * (1 - mixWeight));
+								this.blueChannel[i] = Math.round(this.deadColCurrent.startColour.blue * mixWeight + this.deadColTarget.startColour.blue * (1 - mixWeight));
+							}
+							for (i = deadMin; i <= this.deadStart; i += 1) {
+								// compute the weighting between the start and end colours in the range
+								if (this.deadStart === deadMin) {
+									weight = 1;
+								} else {
+									weight = 1 - ((i - deadMin) / (this.deadStart - deadMin));
+								}
+
+								// compute the red component of the current and target colour
+								currentComponent = Math.round(this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight));
+								targetComponent = Math.round(this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight));
+								this.redChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
+
+								// compute the green component of the current and target colour
+								currentComponent = Math.round(this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight));
+								targetComponent = Math.round(this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight));
+								this.greenChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
+
+								// compute the blue component of the current and target colour
+								currentComponent = Math.round(this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight));
+								targetComponent = Math.round(this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight));
+								this.blueChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
+							}
 						}
-						for (i = deadMin; i <= this.deadStart; i += 1) {
+
+						// set alive colours
+						for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
 							// compute the weighting between the start and end colours in the range
-							if (this.deadStart === deadMin) {
+							if (this.aliveStates === 0) {
 								weight = 1;
 							} else {
-								weight = 1 - ((i - deadMin) / (this.deadStart - deadMin));
+								if (i < this.aliveStart + this.aliveStates) {
+									weight = 1 - ((i - this.aliveStart) / this.aliveStates);
+								} else {
+									weight = 0;
+								}
 							}
 
 							// compute the red component of the current and target colour
-							currentComponent = Math.round(this.deadColCurrent.startColour.red * weight + this.deadColCurrent.endColour.red * (1 - weight));
-							targetComponent = Math.round(this.deadColTarget.startColour.red * weight + this.deadColTarget.endColour.red * (1 - weight));
+							currentComponent = Math.round(this.aliveColCurrent.startColour.red * weight + this.aliveColCurrent.endColour.red * (1 - weight));
+							targetComponent = Math.round(this.aliveColTarget.startColour.red * weight + this.aliveColTarget.endColour.red * (1 - weight));
 							this.redChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 							// compute the green component of the current and target colour
-							currentComponent = Math.round(this.deadColCurrent.startColour.green * weight + this.deadColCurrent.endColour.green * (1 - weight));
-							targetComponent = Math.round(this.deadColTarget.startColour.green * weight + this.deadColTarget.endColour.green * (1 - weight));
+							currentComponent = Math.round(this.aliveColCurrent.startColour.green * weight + this.aliveColCurrent.endColour.green * (1 - weight));
+							targetComponent = Math.round(this.aliveColTarget.startColour.green * weight + this.aliveColTarget.endColour.green * (1 - weight));
 							this.greenChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 
 							// compute the blue component of the current and target colour
-							currentComponent = Math.round(this.deadColCurrent.startColour.blue * weight + this.deadColCurrent.endColour.blue * (1 - weight));
-							targetComponent = Math.round(this.deadColTarget.startColour.blue * weight + this.deadColTarget.endColour.blue * (1 - weight));
+							currentComponent = Math.round(this.aliveColCurrent.startColour.blue * weight + this.aliveColCurrent.endColour.blue * (1 - weight));
+							targetComponent = Math.round(this.aliveColTarget.startColour.blue * weight + this.aliveColTarget.endColour.blue * (1 - weight));
 							this.blueChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 						}
-					}
-
-					// set alive colours
-					for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
-						// compute the weighting between the start and end colours in the range
-						if (this.aliveStates === 0) {
-							weight = 1;
-						} else {
-							if (i < this.aliveStart + this.aliveStates) {
-								weight = 1 - ((i - this.aliveStart) / this.aliveStates);
-							} else {
-								weight = 0;
-							}
-						}
-
-						// compute the red component of the current and target colour
-						currentComponent = Math.round(this.aliveColCurrent.startColour.red * weight + this.aliveColCurrent.endColour.red * (1 - weight));
-						targetComponent = Math.round(this.aliveColTarget.startColour.red * weight + this.aliveColTarget.endColour.red * (1 - weight));
-						this.redChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
-
-						// compute the green component of the current and target colour
-						currentComponent = Math.round(this.aliveColCurrent.startColour.green * weight + this.aliveColCurrent.endColour.green * (1 - weight));
-						targetComponent = Math.round(this.aliveColTarget.startColour.green * weight + this.aliveColTarget.endColour.green * (1 - weight));
-						this.greenChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
-
-						// compute the blue component of the current and target colour
-						currentComponent = Math.round(this.aliveColCurrent.startColour.blue * weight + this.aliveColCurrent.endColour.blue * (1 - weight));
-						targetComponent = Math.round(this.aliveColTarget.startColour.blue * weight + this.aliveColTarget.endColour.blue * (1 - weight));
-						this.blueChannel[i] = Math.round(currentComponent * mixWeight + targetComponent * (1 - mixWeight));
 					}
 				}
 			}
@@ -10192,7 +10241,7 @@
 			/** @type {number} */ alpha = 255,
 			/** @type {number} */ i = 0;
 
-		// check for Generations, HROT or [R]Super
+		// check for Generations, HROT, [R]Super or [R]Extended
 		if (this.multiNumStates > 2) {
 			if (this.littleEndian) {
 				pixelColours[0] = (alpha << 24) | (blueChannel[0] << 16) | (greenChannel[0] << 8) | redChannel[0];
@@ -10200,7 +10249,7 @@
 					colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 				}
 	
-				if (this.isSuper || this.isHROT || this.isPCA) {
+				if (this.isSuper || this.isExtended || this.isHROT || this.isPCA) {
 					for (i = 1; i <= this.multiNumStates + this.historyStates; i += 1) {
 						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
 						if (needStrings) {
@@ -10228,7 +10277,7 @@
 					colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 				}
 
-				if (this.isSuper || this.isHROT || this.isPCA) {
+				if (this.isSuper || this.isExtended || this.isHROT || this.isPCA) {
 					for (i = 1; i <= this.multiNumStates + this.historyStates; i += 1) {
 						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 						if (needStrings) {
@@ -10325,8 +10374,8 @@
 				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 			}
 
-			// for [R]Super the bounded colour will become 31 at Zoom < 1 so set this colour to the bounded grid cell colour
-			if (this.isSuper) {
+			// for [R]Super or [R]Extended (TBD cehck [R]Extended) the bounded colour will become 31 at Zoom < 1 so set this colour to the bounded grid cell colour
+			if (this.isSuper || this.isExtended) {
 				pixelColours[31] = pixelColours[i];
 			}
 		}
@@ -12864,7 +12913,6 @@
 
 			// bounding boxes
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
-			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
 			/** @type {BoundingBox} */ initialBox = this.initialBox,
 
 			// new box extent
@@ -12892,8 +12940,8 @@
 		if (this.shrinkNeeded) {
 			this.shrinkNeeded = false;
 
-			// check for PCA, RuleTree or Super rules
-			if (this.isPCA || this.isRuleTree || this.isSuper) {
+			// check for PCA, RuleTree, Super or Extended rules
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 				// swap grids every generation
 				if ((this.counter & 1) !== 0) {
 					colourGrid = this.nextColourGrid;
@@ -13082,12 +13130,6 @@
 			zoomBox.leftX = newLeftX;
 			zoomBox.rightX = newRightX;
 
-			// copy to HROT alive state box
-			HROTBox.topY = newTopY;
-			HROTBox.bottomY = newBottomY;
-			HROTBox.leftX = newLeftX;
-			HROTBox.rightX = newRightX;
-
 			// copy to the original box (for LifeHistory)
 			initialBox.topY = newTopY;
 			initialBox.bottomY = newBottomY;
@@ -13123,7 +13165,6 @@
 
 			// bounding boxes
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
-			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
 			/** @type {BoundingBox} */ initialBox = this.initialBox,
 
 			// new box extent
@@ -13347,12 +13388,6 @@
 		zoomBox.bottomY = newBottomY;
 		zoomBox.leftX = newLeftX;
 		zoomBox.rightX = newRightX;
-
-		// copy to HROT alive state box
-		HROTBox.topY = newTopY;
-		HROTBox.bottomY = newBottomY;
-		HROTBox.leftX = newLeftX;
-		HROTBox.rightX = newRightX;
 
 		// copy to the original box (for LifeHistory)
 		initialBox.topY = newTopY;
@@ -13717,8 +13752,8 @@
 			// clear the colour grid boundary
 			colourGrid = this.colourGrid;
 
-			// check for PCA, RuleTree or Super rules
-			if (this.isPCA || this.isRuleTree || this.isSuper) {
+			// check for PCA, RuleTree, Super or Extended rules
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 				// swap grids every generation
 				if ((this.counter & 1) !== 0) {
 					colourGrid = this.nextColourGrid;
@@ -17500,8 +17535,8 @@
 		var	/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid;
 
-		// alternate colour grids for PCA, RuleTree and Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// alternate colour grids for PCA, RuleTree,  Super and Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
 			}
@@ -17518,9 +17553,9 @@
 			break;
 		case 1:
 			// torus
-			if (this.isPCA || this.isRuleTree || this.isSuper) {
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 				this.processTorusMS(colourGrid);
-				if (this.isSuper) {
+				if (this.isSuper || this.isExtended) {
 					this.processTorus();
 				}
 			} else {
@@ -17532,9 +17567,9 @@
 			break;
 		case 2:
 			// klein bottle
-			if (this.isPCA || this.isRuleTree || this.isSuper) {
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 				this.processKleinMS(colourGrid);
-				if (this.isSuper) {
+				if (this.isSuper || this.isExtended) {
 					this.processKlein();
 				}
 			} else {
@@ -17546,9 +17581,9 @@
 			break;
 		case 3:
 			// cross-surface
-			if (this.isPCA || this.isRuleTree || this.isSuper) {
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 				this.processCrossSurfaceMS(colourGrid);
-				if (this.isSuper) {
+				if (this.isSuper || this.isExtended) {
 					this.processCrossSurface();
 				}
 			} else {
@@ -17560,9 +17595,9 @@
 			break;
 		case 4:
 			// sphere
-			if (this.isPCA || this.isRuleTree || this.isSuper) {
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 				this.processSphereMS(colourGrid);
-				if (this.isSuper) {
+				if (this.isSuper || this.isExtended) {
 					this.processSphere();
 				}
 			} else {
@@ -17646,7 +17681,10 @@
 						if (this.isTriangular) {
 							this.nextGenerationTriTile();
 						} else {
-							this.nextGenerationTile();
+							// process bit grid for [R]Standard, [R]History and [R]Super - but not for [R]Extended
+							if (!this.isExtended) {
+								this.nextGenerationTile();
+							}
 						}
 					}
 				}
@@ -17670,13 +17708,18 @@
 		}
 
 		// check for Generations
-		if (this.multiNumStates !== -1 && !this.isHROT && !this.isPCA && !this.isRuleTree && !this.isSuper) {
+		if (this.multiNumStates !== -1 && !this.isHROT && !this.isPCA && !this.isRuleTree && !this.isSuper && !this.isExtended) {
 			this.nextGenerationGenerations();
 		}
 
 		// perform super processing
 		if (this.isSuper) {
 			this.nextGenerationSuperTile();
+		}
+
+		// perform extended processing
+		if (this.isExtended) {
+			this.nextGenerationExtendedTile();
 		}
 
 		// check if state 6 is on
@@ -18343,6 +18386,9 @@
 		if (grid16[y][x >> 4] & (1 << (~x & 15))) {
 			grid16[y][x >> 4] &= ~(1 << (~x & 15));
 			cleared += 1;
+
+			// TBD isExtended
+
 			if (this.isSuper) {
 				switch (colourGrid[y][x]) {
 					case 3:
@@ -18406,6 +18452,9 @@
 							// remove the cell
 							grid16[ty][tx >> 4] &= ~(1 << (~tx & 15));
 							cleared += 1;
+
+							// TBD isExtended
+
 							if (this.isSuper) {
 								switch (colourGrid[ty][tx]) {
 									case 3:
@@ -18533,8 +18582,8 @@
 			/** @type {number} */ leftMask = 1 << 15,
 			/** @type {number} */ rightMask = 1 << 0;
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree, Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -23604,6 +23653,8 @@
 			// create 2x2 colour grid
 			this.clearSmallGridOnZoom(this.smallColourGrid);
 
+			// TBD isExtended
+
 			if (this.isSuper) {
 				this.create2x2ColourGrid16Super(colourGrid16, this.smallColourGrid);
 			} else {
@@ -23698,6 +23749,347 @@
 		} else {
 			this.lastZoom16 = false;
 		}
+	};
+
+	// compute extended rule next generation
+	Life.prototype.nextGenerationExtendedTile = function() {
+		var	/** @type {number} */ h = 0,
+			/** @type {number} */ cr = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = null,
+			/** @type {Array<Uint8Array>} */ outputGrid = null,
+			/** @type {Uint8Array} */ colourGridRow = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Uint8Array} */ aboveRow = null,
+			/** @type {Uint8Array} */ belowRow = null,
+			/** @type {Uint8Array} */ destRow = null,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Uint8Array} */ blankColourRow = this.blankColourRow,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ th = 0,
+			/** @type {number} */ tw = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ topY = 0,
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ tiles = 0,
+			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ width = this.width,
+			/** @type {number} */ width16 = width >> 4,
+			/** @type {number} */ height = this.height,
+			/** @type {number} */ newLeftX = width,
+			/** @type {number} */ newRightX = -1,
+			/** @type {number} */ newTopY = -1,
+			/** @type {number} */ newBottomY = height,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+
+			// mask of types in the neighbourhood
+			/** @type {number} */ typeMask = 0,
+
+			// cells in the neighbourhood
+			/** @type {number} */ nw = 0,
+			/** @type {number} */ w = 0,
+			/** @type {number} */ sw = 0,
+			/** @type {number} */ n = 0,
+			/** @type {number} */ c = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ ne = 0,
+			/** @type {number} */ e = 0,
+			/** @type {number} */ se = 0,
+
+			// column occupied
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {number} */ colOccupied = 0,
+			/** @type {number} */ colIndex = 0,
+
+			// row occupied
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
+			/** @type {number} */ rowOccupied = 0,
+			/** @type {number} */ rowIndex = 0,
+
+			// whether the tile is alive
+			/** @type {number} */ tileAlive = 0,
+
+			// set tile height
+			/** @type {number} */ ySize = this.tileY,
+
+			// tile width (in 16bit chunks)
+			/** @type {number} */ xSize = this.tileX >> 1,
+
+			// tile rows
+			/** @type {number} */ tileRows = this.tileRows,
+
+			// tile columns in 16 bit values
+			/** @type {number} */ tileCols16 = this.tileCols >> 4,
+
+			// starting and ending tile row
+			/** @type {number} */ tileStartRow = 0,
+			/** @type {number} */ tileEndRow = tileRows,
+
+			// lookup table
+			/** @type {Uint8Array} */ ruleArray = this.manager.ruleArray,
+			/** @type {number} */ treat = 0,
+
+			// constants
+			/** @const {number} */ deathforcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16),
+			/** @const {number} */ birthforcer = (1 << 8) | (1 << 9) | (1 << 12) | (1 << 13) | (1 << 14),
+			/** @const {number} */ requirestate1 = (1 << 15) | (1 << 16),
+			/** @const {number} */ treatifdead = (1 << 1) | (1 << 2) | (1 << 4) | (1 << 6) | (1 << 8) | (1 << 10) | (1 << 12) | (1 << 15) |  (1 << 16) | (1 << 17) | (1 << 19),
+			/** @const {number} */ treatifalive = treatifdead ^ ((1 << 17) | (1 << 18) | (1 << 19) | (1 << 20)),
+			/** @const {Array<number>} */ nextstate = [2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19];
+
+		// select the correct grid
+		if ((this.counter & 1) !== 0) {
+			colourGrid = this.colourGrid;
+			outputGrid = this.nextColourGrid;
+		} else {
+			colourGrid = this.nextColourGrid;
+			outputGrid = this.colourGrid;
+		}
+
+		// check the start and end row are in range
+		if (tileStartRow < 0) {
+			tileStartRow = 0;
+		}
+		if (tileEndRow > tileRows) {
+			tileEndRow = tileRows;
+		}
+
+		// clear column occupied flags
+		columnOccupied16.fill(0);
+
+		// clear row occupied flags
+		rowOccupied16.fill(0);
+
+		// set the initial tile row
+		bottomY = tileStartRow << this.tilePower;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = tileStartRow; th < tileEndRow; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			colourTileRow = colourTileGrid[th];
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = colourTileRow[tw];
+				nextTiles = 0;
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// mark no cells in this column
+							colOccupied = 0;
+
+							// mark no cells in the tile rows
+							rowOccupied = 0;
+							rowIndex = 32768;
+
+							// flag nothing alive in the tile
+							tileAlive = 0;
+
+							// clear type mask
+							typeMask = 0;
+
+							// process each row
+							for (h = bottomY; h < topY; h += 1) {
+								// get the colour grid row
+								colourGridRow = colourGrid[h];
+								if (h === 0) {
+									aboveRow = blankColourRow;
+								} else {
+									aboveRow = colourGrid[h - 1];
+								}
+								if (h === this.height - 1) {
+									belowRow = blankColourRow;
+								} else {
+									belowRow = colourGrid[h + 1];
+								}
+								destRow = outputGrid[h];
+
+								// get correct starting colour index
+								cr = (leftX << 4);
+
+								// get initial neighbours
+								nw = 0;
+								w = 0;
+								sw = 0;
+								if (cr === 0) {
+									n = 0;
+									c = 0;
+									s = 0;
+								} else {
+									n = aboveRow[cr - 1];
+									c = colourGridRow[cr - 1];
+									s = belowRow[cr - 1];
+								}
+
+								ne = aboveRow[cr];
+								e = colourGridRow[cr];
+								se = belowRow[cr];
+
+								// process each cell in the chunk
+								colIndex = 1 << 15;
+								while (colIndex > 0) {
+									// get next column
+									cr += 1;
+
+									// shift neighbourhood left
+									nw = n;
+									w = c;
+									sw = s;
+									n = ne;
+									c = e;
+									s = se;
+									ne = aboveRow[cr];
+									e = colourGridRow[cr];
+									se = belowRow[cr];
+									value = c;
+
+									// check for higher states
+									if (c >= 2) {
+										value = nextstate[c - 2];
+									} else {
+										// typemask has a bit set per state in the neighbouring cells
+										typeMask = (1 << nw) | (1 << n) | (1 << ne) | (1 << w) | (1 << e) | (1 << sw) | (1 << s) | (1 << se);
+
+										if (typeMask & (c ? deathforcer : birthforcer)) {
+											value = 1 - c;
+										} else {
+											if (!c && (typeMask & requirestate1) && !(typeMask & 2)) {
+												value = 0;
+											} else {
+												treat = c ? treatifalive : treatifdead;
+												value = ruleArray[
+														(((treat >> nw) & 1) << 8) |
+														(((treat >> n) & 1) << 7) |
+														(((treat >> ne) & 1) << 6) |
+														(((treat >> w) & 1) << 5) |
+														(c << 4) |
+														(((treat >> e) & 1) << 3) |
+														(((treat >> sw) & 1) << 2) |
+														(((treat >> s) & 1) << 1) |
+														((treat >> se) & 1)];
+											}
+										}
+									}
+
+									// output new cell state
+									destRow[cr - 1] = value;
+									if (value > 0) {
+										colOccupied |= colIndex;
+										rowOccupied |= rowIndex;
+									}
+
+									// next bit cell
+									colIndex >>= 1;
+								}
+
+								// next row
+								rowIndex >>= 1;
+							}
+
+							columnOccupied16[leftX] |= colOccupied;
+							rowOccupied16[th] |= rowOccupied;
+
+							// check if the row was alive
+							if (tileAlive) {
+								// update tile flag
+								nextTiles |= (1 << b);
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+
+				// save the tile group
+				colourTileRow[tw] = tiles | nextTiles;
+				colourTileHistoryRow[tw] |= tiles | nextTiles;
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+
+		// update bounding box
+		for (tw = 0; tw < width16; tw += 1) {
+			if (columnOccupied16[tw]) {
+				if (tw < newLeftX) {
+					newLeftX = tw;
+				}
+				if (tw > newRightX) {
+					newRightX = tw;
+				}
+			}
+		}
+
+		for (th = 0; th < rowOccupied16.length; th += 1) {
+			if (rowOccupied16[th]) {
+				if (th < newBottomY) {
+					newBottomY = th;
+				}
+				if (th > newTopY) {
+					newTopY = th;
+				}
+			}
+		}
+
+		// convert new width to pixels
+		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+
+		// convert new height to pixels
+		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
+		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
+
+		// ensure the box is not blank
+		if (newTopY < 0) {
+			newTopY = height - 1;
+		}
+		if (newBottomY >= height) {
+			newBottomY = 0;
+		}
+		if (newLeftX >= width) {
+			newLeftX = 0;
+		}
+		if (newRightX < 0) {
+			newRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newTopY > height - 1) {
+			newTopY = height - 1;
+		}
+		if (newBottomY < 0) {
+			newBottomY = 0;
+		}
+		if (newLeftX < 0) {
+			newLeftX = 0;
+		}
+		if (newRightX > width - 1) {
+			newRightX = width - 1;
+		}
+
+		// save to zoom box
+		zoomBox.topY = newTopY;
+		zoomBox.bottomY = newBottomY;
+		zoomBox.leftX = newLeftX;
+		zoomBox.rightX = newRightX;
 	};
 
 	// compute super rule next generation (after state 0 and 1)
@@ -25612,8 +26004,8 @@
 
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTile = function() {
-		// ignore if rule is none, PCA, RuleTable or Super
-		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper)) {
+		// ignore if rule is none, PCA, RuleTable, Super or Extended
+		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper || this.isExtended)) {
 			// ignore Generations
 			if (this.multiNumStates === -1) {
 				// check for rainbow
@@ -41022,8 +41414,8 @@
 			/** @type {number} */ count = 0,
 			/** @type {number} */ aliveState = LifeConstants.aliveStart;
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -41041,12 +41433,6 @@
 		if (historyFit) {
 			// use history box
 			zoomBox = historyBox;
-		} else {
-			// check for HROT
-			if (this.isHROT) {
-				// use HROT alive state box
-				zoomBox = this.HROTBox;
-			}
 		}
 
 		// check for fit selection
@@ -42068,7 +42454,7 @@
 		
 		// compute the transparent target
 		if (this.multiNumStates > 2) {
-			if (this.isSuper || this.isRuleTree) {
+			if (this.isSuper || this.isExtended || this.isRuleTree) {
 				result = 1;
 			} else {
 				// use number of generations states as maximum
@@ -42105,8 +42491,8 @@
 		// mark that grid should be drawn
 		this.doDrawGrid = true;
 
-		// check for PCA, RuleTree or Super rules
-		if (this.isPCA || this.isRuleTree || this.isSuper) {
+		// check for PCA, RuleTree, Super or Extended rules
+		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
