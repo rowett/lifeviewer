@@ -7629,7 +7629,12 @@
 		}
 
 		// check for Extended rules
-		if (!pattern.isHistory && !pattern.isExtended) {
+		if (!pattern.isHistory && !pattern.isSuper) {
+			// allow StateInvestigator as an alias
+			if (ruleString.toLowerCase() === "stateinvestigator") {
+				ruleString = "B3/S23Extended";
+			}
+
 			extendedIndex = ruleString.toLowerCase().lastIndexOf(this.extendedPostfix);
 			if ((extendedIndex !== -1) && (extendedIndex === ruleString.length - extendedLength)) {
 				// rule is an extended type
