@@ -4165,7 +4165,7 @@
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= ViewConstants.minTilt && numberValue <= ViewConstants.maxTilt) { 
+								if (numberValue >= ViewConstants.minTilt && numberValue <= ViewConstants.maxTilt) {
 									// check if tilt already defined
 									if (currentWaypoint.tiltDefined && !view.initialTilt && !suppressErrors.tilt) {
 										scriptErrors[scriptErrors.length] = [Keywords.tiltWord + " " + numberValue, "overwrites " + currentWaypoint.tilt];
@@ -4203,7 +4203,7 @@
 								numberValue = scriptReader.getNextTokenAsNumber() | 0;
 
 								// check it is in range
-								if (numberValue >= 0 && numberValue <= 359) { 
+								if (numberValue >= 0 && numberValue <= 359) {
 									// check if angle already defined
 									if (currentWaypoint.angleDefined && !view.initialAngle && !suppressErrors.angle) {
 										scriptErrors[scriptErrors.length] = [Keywords.angleWord + " " + numberValue, "overwrites " + currentWaypoint.angle];

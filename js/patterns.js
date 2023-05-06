@@ -930,6 +930,11 @@
 		// title after RLE
 		/** @type {string} */ this.afterTitle = "";
 
+		// title array concatenators
+		/** @type {Array<string>} */ this.titleConcat = [];
+		/** @type {Array<string>} */ this.beforeTitleConcat = [];
+		/** @type {Array<string>} */ this.afterTitleConcat = [];
+
 		// pattern source format
 		/** @type {string} */ this.patternFormat = "";
 
@@ -6811,21 +6816,24 @@
 	};
 
 	// check for extended RLE command
-	PatternManager.prototype.checkExtendedCommand = function(/** @type {string} */ source) {
+	PatternManager.prototype.checkExtendedCommand = function(/** @type {string} */ source, /** @type {number} */ index) {
 		// check if string starts with extended prefix
-		var	/** @type {number} */ exists = source.indexOf(this.extendedPrefix);
+		var	/** @type {number} */ exists = source.indexOf(this.extendedPrefix, index),
+			/** @type {number} */ eolIndex = source.indexOf("\n", index),
+			origExists = exists;
 
-		if (exists === 0) {
+		if (exists !== -1) {
 			// check if Pos command exists
-			exists = source.indexOf(this.posCommand);
-			if (exists !== -1) {
+			exists = source.indexOf(this.posCommand, exists);
+			if (exists !== -1 && exists < eolIndex) {
 				// attempt to read the Position
 				this.readPosition(source.substring(exists + this.posCommand.length), true);
 			}
 
 			// check if Gen command exists
-			exists = source.indexOf(this.genCommand);
-			if (exists !== -1) {
+			exists = origExists;
+			exists = source.indexOf(this.genCommand, exists);
+			if (exists !== -1 && exists < eolIndex) {
 				this.readGeneration(source.substring(exists + this.genCommand.length));
 			}
 		}
@@ -6847,9 +6855,9 @@
 
 	// add a line from the source to the title
 	/** @returns {number} */
-	PatternManager.prototype.addToTitle = function(/** @type {Pattern} */ pattern, /** @type {string} */ prefix, /** @type {string} */ source, /** @type {boolean} */ afterRLE) {
+	PatternManager.prototype.addToTitle = function(/** @type {Pattern} */ pattern, /** @type {string} */ prefix, /** @type {string} */ source, /** @type {number} */ index, /** @type {boolean} */ afterRLE) {
 		// end of line index
-		var	/** @type {number} */ endIndex = source.indexOf("\n"),
+		var	/** @type {number} */ endIndex = source.indexOf("\n", index),
 			/** @type {string} */ text = "";
 
 		// check if a newline exists
@@ -6858,25 +6866,25 @@
 		}
 
 		// check if first character was space
-		if (source[0] === " ") {
+		if (source[index] === " ") {
 			prefix += " ";
 		}
 
 		// get the line of text
-		text += source.substring(0, endIndex).trim();
+		text = source.substring(index, endIndex).trim();
 
 		// add to title
-		pattern.title += text + " ";
+		pattern.titleConcat.push(text);
 
 		// add to raw titles
 		if (afterRLE) {
-			pattern.afterTitle += prefix + text + "\n";
+			pattern.afterTitleConcat.push(prefix + text);
 		} else {
-			pattern.beforeTitle += prefix + text + "\n";
+			pattern.beforeTitleConcat.push(prefix + text);
 		}
 
 		// return the length added
-		return endIndex + 1;
+		return endIndex + 1 - index;
 	};
 
 	// read value from string
@@ -7973,7 +7981,7 @@
 
 					case "C":
 						// check for eXtended command
-						this.checkExtendedCommand(source.substring(index));
+						this.checkExtendedCommand(source, index);
 						break;
 
 					case "P":
@@ -7990,9 +7998,9 @@
 
 				// add to title
 				if (current === "\n") {
-					index += this.addToTitle(pattern, "#", source.substring(index), decoded);
+					index += this.addToTitle(pattern, "#", source, index, decoded);
 				} else {
-					index += this.addToTitle(pattern, "#" + current, source.substring(index), decoded);
+					index += this.addToTitle(pattern, "#" + current, source, index, decoded);
 				}
 				break;
 
@@ -8012,7 +8020,7 @@
 					// check if already decoded
 					if (decoded) {
 						// add to title
-						index += this.addToTitle(pattern, "", source.substring(index), true);
+						index += this.addToTitle(pattern, "", source, index, true);
 					} else {
 						// mark decoded
 						decoded = true;
@@ -8041,7 +8049,7 @@
 			if (endPatIndex !== -1) {
 				index += endPatIndex + 1;
 				while (index < end) {
-					index += this.addToTitle(pattern, "", source.substring(index), true);
+					index += this.addToTitle(pattern, "", source, index, true);
 				}
 			}
 		}
@@ -9916,6 +9924,19 @@
 					newPattern.isHex = false;
 					newPattern.isTriangular = false;
 				}
+			}
+
+			// unpack title if decoder used array for comments
+			if (newPattern.title === "") {
+				// join the array into a string
+				newPattern.title = newPattern.titleConcat.join(" ");
+				newPattern.afterTitle = newPattern.afterTitleConcat.join("\n") + "\n";
+				newPattern.beforeTitle = newPattern.beforeTitleConcat.join("\n") + "\n";
+
+				// clear the arrays
+				newPattern.titleConcat = [];
+				newPattern.afterTitleConcat = [];
+				newPattern.beforeTitleConcat = [];
 			}
 
 			// check if a pattern was loaded

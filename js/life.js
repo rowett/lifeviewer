@@ -595,10 +595,6 @@
 		/** @type {Uint8Array} */ this.bitCounts16 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 65536, "Life.bitCounts16"));
 		this.initBitCounts16();
 
-		// first bit set for 16bit values
-		/** @type {Uint8Array} */ this.firstBit16 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 65536, "Life.firstBit16"));
-		this.initFirstBit16();
-
 		// population graph array
 		/** @type {Array<Uint32Array>} */ this.popGraphData = null;
 		/** @type {Array<Uint32Array>} */ this.birthGraphData = null;
@@ -937,6 +933,9 @@
 		// 16bit view of grid and double buffer
 		/** @type {Array<Uint16Array>} */ this.grid16 = null;
 		/** @type {Array<Uint16Array>} */ this.nextGrid16 = null;
+
+		// tile grid of tiles that died
+		/** @type {Array<Uint16Array>} */ this.diedGrid = null;
 
 		// blank pixel row for fast clear
 		/** @type {Uint32Array} */ this.blankPixelRow = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, this.displayWidth, "Life.blankPixelRow"));
@@ -1901,10 +1900,14 @@
 						}
 					}
 				} else {
-					if (this.isSuper || this.isExtended) {
-						if ((colourGrid[cy + bottom][cx + left] & 1) || colourGrid[cy + bottom][cx + left] === 6) {
+					if (this.isSuper) {
+						state = colourGrid[cy + bottom][cx + left];
+						if (state & 1 || state === 6) {
 							hash = (hash * factor) ^ y;
 							hash = (hash * factor) ^ x;
+							if (state === 6) {
+								hash = (hash * factor) ^ state;
+							}
 						}
 					} else {
 						state = colourGrid[cy + bottom][cx + left];
@@ -2315,11 +2318,14 @@
 						}
 					}
 				} else {
-					if (this.isSuper || this.isExtended) {
+					if (this.isSuper) {
 						for (cx = x; cx <= right; cx += 1) {
 							if ((colourRow[cx] & 1) || colourRow[cx] === 6) {
 								hash = (hash * factor) ^ yshift;
 								hash = (hash * factor) ^ (cx - hashX);
+								if (colourRow[cx] === 6) {
+									hash = (hash * factor) ^ 6;
+								}
 							}
 						}
 					} else {
@@ -8165,6 +8171,7 @@
 		this.nextTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
 		this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
 		this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
+		this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid");
 
 		// blank row for life grid to prevent wrap
 		this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow"));
@@ -8243,6 +8250,7 @@
 		this.nextTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
 		this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
 		this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
+		this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid");
 
 		// blank row for life grid to prevent wrap
 		this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow"));
@@ -8323,6 +8331,7 @@
 			/** @type {Array<Uint16Array>} */ currentNextTileGrid = this.nextTileGrid,
 			/** @type {Array<Uint16Array>} */ currentColourTileGrid = this.colourTileGrid,
 			/** @type {Array<Uint16Array>} */ currentColourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ currentDiedGrid = this.diedGrid,
 			/** @type {Array<Uint16Array>} */ currentOccTileMap = this.occTileMap,
 			/** @type {Array<Uint16Array>} */ currentOccMergedTileMap = this.occMergedTileMap,
 
@@ -8388,6 +8397,7 @@
 			this.nextTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid");
 			this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid");
 			this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid");
+			this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid");
 			if (currentOccTileMap) {
 				this.occTileMap = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.occTileMap");
 			}
@@ -8489,6 +8499,7 @@
 			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.nextTileGrid, currentNextTileGrid);
 			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.colourTileGrid, currentColourTileGrid);
 			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.colourTileHistoryGrid, currentColourTileHistoryGrid);
+			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.diedGrid, currentDiedGrid);
 
 			// update the snapshots
 			this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, xOffsetTile, yOffsetTile, xOffset, yOffset, this.drawOverlay);
@@ -8611,37 +8622,6 @@
 		// check the next step
 		while (this.checkForGrowthStep(view, box, borderSize)) {
 			// until no more steps required
-		}
-	};
-
-	// initialise 16bit first bit set
-	Life.prototype.initFirstBit16 = function() {
-		var	/** @type {number} */ i,
-			/** @type {number} */ value,
-			/** @type {number} */ calc,
-			/** @type {Uint8Array} */ firstBit = this.firstBit16;
-
-		for (i = 0; i < 65536; i += 1) {
-			calc = i;
-			value = 0;
-			if (calc > 65535) {
-				calc >>= 16;
-				value += 16;
-			}
-			if (calc > 255) {
-				calc >>= 8;
-				value += 8;
-			}
-			if (calc > 15) {
-				calc >>= 4;
-				value += 4;
-			}
-			if (calc > 3) {
-				calc >>= 2;
-				value += 2;
-			}
-			value += (calc >> 1);
-			firstBit[i] = value;
 		}
 	};
 
@@ -8935,19 +8915,32 @@
 		this.state6TileGrid.whole.fill(0);
 
 		// remove bits from the mask that are state 6 in the pattern
-		for (y = 1; y < this.height - 1; y += 1) {
+		for (y = 0; y < this.height; y += 1) {
 			// get the rows
 			overlayRow = grid[y];
-			maskRow0 = this.state6Mask[(y - 1) & hm];
+
+			if (y > 0) {
+				maskRow0 = this.state6Mask[(y - 1) & hm];
+				tileRow0 = tileGrid[((y - 1) & hm) >> tilePower];
+			} else {
+				maskRow0 = null;
+				tileRow0 = null;
+			}
+
 			maskRow1 = this.state6Mask[y & hm];
-			maskRow2 = this.state6Mask[(y + 1) & hm];
-			cellsRow = this.state6Cells[y & hm];
-			tileRow0 = tileGrid[((y - 1) & hm) >> tilePower];
 			tileRow1 = tileGrid[(y & hm) >> tilePower];
-			tileRow2 = tileGrid[((y + 1) & hm) >> tilePower];
+			cellsRow = this.state6Cells[y & hm];
+
+			if (y < this.height - 1) {
+				maskRow2 = this.state6Mask[(y + 1) & hm];
+				tileRow2 = tileGrid[((y + 1) & hm) >> tilePower];
+			} else {
+				maskRow2 = null;
+				tileRow2 = null;
+			}
 
 			// check row
-			for (x = 1; x <= this.width - 1; x += 1) {
+			for (x = 0; x < this.width; x += 1) {
 				// check for state 6
 				if (overlayRow[x] === state6) {
 					// set the cell position itself
@@ -8956,37 +8949,59 @@
 
 					// set the cells around the state 6 cell in the mask
 					// middle column
-					maskRow0[offset >> 4] |= (1 << (~offset & 15));
-					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					maskRow2[offset >> 4] |= (1 << (~offset & 15));
-					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-
-					// left column
-					offset = (x - 1) & wm;
-					if (!this.isVonNeumann) {
+					if (maskRow0) {
 						maskRow0[offset >> 4] |= (1 << (~offset & 15));
 						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
 					}
+
 					maskRow1[offset >> 4] |= (1 << (~offset & 15));
 					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					if (!(this.isHex || this.isVonNeumann)) {
+
+					if (maskRow2) {
 						maskRow2[offset >> 4] |= (1 << (~offset & 15));
 						tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					}
+
+					// left column
+					if (x > 0) {
+						offset = (x - 1) & wm;
+						if (!this.isVonNeumann) {
+							if (maskRow0) {
+								maskRow0[offset >> 4] |= (1 << (~offset & 15));
+								tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+							}
+						}
+
+						maskRow1[offset >> 4] |= (1 << (~offset & 15));
+						tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+
+						if (!(this.isHex || this.isVonNeumann)) {
+							if (maskRow2) {
+								maskRow2[offset >> 4] |= (1 << (~offset & 15));
+								tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+							}
+						}
 					}
 
 					// right column
-					offset = (x + 1) & wm;
-					if (!(this.isHex || this.isVonNeumann)) {
-						maskRow0[offset >> 4] |= (1 << (~offset & 15));
-						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					}
-					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					if (!this.isVonNeumann) {
-						maskRow2[offset >> 4] |= (1 << (~offset & 15));
-						tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+					if (x < this.width - 1) {
+						offset = (x + 1) & wm;
+						if (!(this.isHex || this.isVonNeumann)) {
+							if (maskRow0) {
+								maskRow0[offset >> 4] |= (1 << (~offset & 15));
+								tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+							}
+						}
+
+						maskRow1[offset >> 4] |= (1 << (~offset & 15));
+						tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+
+						if (!this.isVonNeumann) {
+							if (maskRow2) {
+								maskRow2[offset >> 4] |= (1 << (~offset & 15));
+								tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+							}
+						}
 					}
 				}
 			}
@@ -17751,7 +17766,7 @@
 				if (this.isHROT) {
 					this.clearHRBoundary();
 				} else {
-					if (this.isRuleTree) {
+					if (this.isRuleTree || this.isExtended) {
 						this.clearRTBoundary();
 					} else {
 						// clear bit grid boundary (and Generations alive states too)
@@ -23653,8 +23668,6 @@
 			// create 2x2 colour grid
 			this.clearSmallGridOnZoom(this.smallColourGrid);
 
-			// TBD isExtended
-
 			if (this.isSuper) {
 				this.create2x2ColourGrid16Super(colourGrid16, this.smallColourGrid);
 			} else {
@@ -23751,8 +23764,71 @@
 		}
 	};
 
-	// compute extended rule next generation
-	Life.prototype.nextGenerationExtendedTile = function() {
+	// clear tiles that died
+	Life.prototype.clearTilesThatDied = function(/** @type {Array<Uint16Array>} */ tileGrid, /** @type {Array<Uint32Array>} */ grid32) {
+		var	/** @type {number} */ th = 0,
+			/** @type {number} */ tw = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @const {number} */ xSize = this.tileY,  // use height since we need bytes
+			/** @const {number} */ ySize = this.tileY,
+			/** @const {number} */ tileCols16 = this.tileCols >> 4,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ topY = 0,
+			/** @type {number} */ leftX = 0,
+			/** @type {Uint32Array} */ gridRow32 = null,
+			/** @type {Uint16Array} */ tileRow,
+			/** @type {Uint16Array} */ diedRow,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
+			/** @type {number} */ tiles = 0,
+			/** @type {number} */ diedTiles = 0,
+			/** @type {number} */ bit = 0;
+
+		// clear tiles that died in source
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// process each tile row
+		for (th = 0; th < tileGrid.length; th += 1) {
+			leftX = 0;
+			tileRow = tileGrid[th];
+			diedRow = diedGrid[th];
+
+			// process each tile group in the row
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				tiles = tileRow[tw];
+				diedTiles = diedRow[tw];
+
+				// process each tile in the group
+				if (tiles) {
+					for (bit = 15; bit >= 0; bit -= 1) {
+						if ((tiles & (1 << bit)) !== 0 && (diedTiles & (1 << bit)) === 0) {
+							// clear source cells for double buffering
+							for (y = bottomY; y < topY; y += 1) {
+								gridRow32 = grid32[y];
+								x = leftX >> 2;
+	
+								// clear 16 cells
+								gridRow32[x] = 0;
+								gridRow32[x + 1] = 0;
+								gridRow32[x + 2] = 0;
+								gridRow32[x + 3] = 0;
+	
+							}
+						}
+						leftX += xSize;
+					}
+				} else {
+					leftX += xSize << 4;
+				}
+			}
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
+	// compute extended rule next generation for von Neumann neighbourhood
+	Life.prototype.nextGenerationExtendedTileVN = function() {
 		var	/** @type {number} */ y = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ state = 0,
@@ -23760,20 +23836,17 @@
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,
 			/** @type {Uint8Array} */ nextRow = null,
-			/** @type {Uint32Array} */ gridRow32 = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint8Array>} */ nextGrid = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = null,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ bit = 0,
@@ -23783,6 +23856,1197 @@
 			/** @type {number} */ rightX = 0,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
+			/** @type {number} */ width = this.width,
+			/** @type {number} */ width16 = width >> 4,
+			/** @type {number} */ height = this.height,
+			/** @type {number} */ newLeftX = width,
+			/** @type {number} */ newRightX = -1,
+			/** @type {number} */ newTopY = -1,
+			/** @type {number} */ newBottomY = height,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {number} */ births = 0,
+			/** @type {number} */ deaths = 0,
+			/** @type {number} */ population = 0,
+			/** @type {number} */ belowNextTiles = 0,
+			/** @type {number} */ aboveNextTiles = 0,
+
+			// mask of types in the neighbourhood
+			/** @type {number} */ typeMask = 0,
+
+			// cells in the neighbourhood
+			/** @type {number} */ n = 0,
+			/** @type {number} */ w = 0,
+			/** @type {number} */ c = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ e = 0,
+
+			// column occupied
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {number} */ colOccupied = 0,
+			/** @type {number} */ colIndex = 0,
+
+			// row occupied
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
+			/** @type {number} */ rowOccupied = 0,
+			/** @type {number} */ rowIndex = 0,
+
+			// set tile height
+			/** @type {number} */ ySize = this.tileY,
+
+			// tile width (use height since we need bytes)
+			/** @type {number} */ xSize = this.tileY,
+
+			// tile rows
+			/** @type {number} */ tileRows = this.tileRows,
+
+			// tile columns in 16 bit values
+			/** @type {number} */ tileCols16 = this.tileCols >> 4,
+
+			// blank tile row for top and bottom
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
+
+			// lookup table
+			/** @type {Uint8Array} */ ruleArray = this.manager.ruleArray,
+			/** @type {number} */ treat = 0,
+
+			// flags for edges of tile occupied
+			/** @type {number} */ neighbours = 0,
+
+			// constants
+			/** @const {number} */ deathforcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16),
+			/** @const {number} */ birthforcer = (1 << 8) | (1 << 9) | (1 << 12) | (1 << 13) | (1 << 14),
+			/** @const {number} */ requirestate1 = (1 << 15) | (1 << 16),
+			/** @const {number} */ treatifdead = (1 << 1) | (1 << 2) | (1 << 4) | (1 << 6) | (1 << 8) | (1 << 10) | (1 << 12) | (1 << 15) |  (1 << 16) | (1 << 17) | (1 << 19),
+			/** @const {number} */ treatifalive = treatifdead ^ ((1 << 17) | (1 << 18) | (1 << 19) | (1 << 20)),
+			/** @const {Array<number>} */ nextstate = [2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19];
+
+		// select the correct grid
+		if ((this.counter & 1) === 0) {
+			grid = this.nextColourGrid;
+			grid32 = this.nextColourGrid32;
+			nextGrid = this.colourGrid;
+			tileGrid = this.nextTileGrid;
+			nextTileGrid = this.tileGrid;
+		} else {
+			grid = this.colourGrid;
+			grid32 = this.colourGrid32;
+			nextGrid = this.nextColourGrid;
+			tileGrid = this.tileGrid;
+			nextTileGrid = this.nextTileGrid;
+		}
+		diedGrid = this.diedGrid;
+
+		// clear column occupied flags
+		columnOccupied16.fill(0);
+
+		// clear row occupied flags
+		rowOccupied16.fill(0);
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// clear the next tile grid
+		nextTileGrid.whole.fill(0);
+
+		// scan each row of tiles
+		for (th = 0; th < tileGrid.length; th += 1) {
+			// set initial tile column
+			leftX = 0;
+			rightX = leftX + xSize;
+
+			// get the colour tile rows
+			tileRow = tileGrid[th];
+			nextTileRow = nextTileGrid[th];
+
+			// get the tile row below
+			if (th > 0) {
+				belowNextTileRow = nextTileGrid[th - 1];
+			} else {
+				belowNextTileRow = blankTileRow;
+			}
+
+			// get the tile row above
+			if (th < tileRows - 1) {
+				aboveNextTileRow = nextTileGrid[th + 1];
+			} else {
+				aboveNextTileRow = blankTileRow;
+			}
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = tileRow[tw];
+				diedRow = diedGrid[tw];
+				diedTiles = 0;
+
+				// check if any are occupied
+				if (tiles) {
+					// get the destination
+					nextTiles = nextTileRow[tw];
+					belowNextTiles = belowNextTileRow[tw];
+					aboveNextTiles = aboveNextTileRow[tw];
+
+					// compute next colour for each tile in the set
+					for (bit = 15; bit >= 0; bit -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells in this column
+							colOccupied = 0;
+
+							// mark no cells in the tile rows
+							rowOccupied = 0;
+
+							// clear the edge flags
+							neighbours = 0;
+
+							// process the bottom row of the tile
+							y = bottomY;
+							rowIndex = 32768;
+
+							if (y === 0) {
+								gridRow0 = this.blankColourRow;
+							} else {
+								gridRow0 = grid[y - 1];
+							}
+							gridRow1 = grid[y];
+
+							// clear type mask
+							typeMask = 0;
+
+							// process each row of the tile
+							while (y < topY) {
+								// deal with bottom row of the grid
+								if (y === 0) {
+									gridRow0 = this.blankColourRow;
+								} else {
+									gridRow0 = grid[y - 1];
+								}
+
+								// current row
+								gridRow1 = grid[y];
+
+								// deal with top row of the grid
+								if (y === this.height - 1) {
+									gridRow2 = this.blankColourRow;
+								} else {
+									gridRow2 = grid[y + 1];
+								}
+
+								// get output row
+								nextRow = nextGrid[y];
+
+								// column index
+								colIndex = 32768;
+
+								// process each column in the row
+								x = leftX;
+
+								// get initial neighbours
+								if (x === 0) {
+									c = 0;
+								} else {
+									c = gridRow1[x - 1];
+								}
+								e = gridRow1[x];
+
+								// process each cell in the chunk
+								while (x < rightX - 1) {
+									// shift neighbourhood left
+									n = gridRow0[x];
+									w = c;
+									c = e;
+									e = gridRow1[x + 1];
+									s = gridRow2[x];
+									state = c;
+
+									// check for higher states
+									if (c >= 2) {
+										state = nextstate[c - 2];
+									} else {
+										// typemask has a bit set per state in the neighbouring cells
+										typeMask = (1 << n) | (1 << w) | (1 << e) | (1 << s);
+
+										if (typeMask & (c ? deathforcer : birthforcer)) {
+											state = 1 - c;
+										} else {
+											if (!c && (typeMask & requirestate1) && !(typeMask & 2)) {
+												state = 0;
+											} else {
+												treat = c ? treatifalive : treatifdead;
+												state = ruleArray[
+														(((treat >> n) & 1) << 7) |
+														(((treat >> w) & 1) << 5) |
+														(c << 4) |
+														(((treat >> e) & 1) << 3) |
+														(((treat >> s) & 1) << 1)];
+											}
+										}
+									}
+
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+
+										// update births
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
+										}
+									}
+
+									// next column
+									colIndex >>= 1;
+									x += 1;
+								}
+
+								// handle right edge
+								n = gridRow0[x];
+								w = c;
+								c = e;
+								if (x === width - 1) {
+									e = 0;
+								} else {
+									e = gridRow1[x + 1];
+								}
+								s = gridRow2[x];
+								state = c;
+
+								// check for higher states
+								if (c >= 2) {
+									state = nextstate[c - 2];
+								} else {
+									// typemask has a bit set per state in the neighbouring cells
+									typeMask = (1 << n) | (1 << w) | (1 << e) | (1 << s);
+
+									if (typeMask & (c ? deathforcer : birthforcer)) {
+										state = 1 - c;
+									} else {
+										if (!c && (typeMask & requirestate1) && !(typeMask & 2)) {
+											state = 0;
+										} else {
+											treat = c ? treatifalive : treatifdead;
+											state = ruleArray[
+													(((treat >> n) & 1) << 7) |
+													(((treat >> w) & 1) << 5) |
+													(c << 4) |
+													(((treat >> e) & 1) << 3) |
+													(((treat >> s) & 1) << 1)];
+										}
+									}
+								}
+
+								// check if state is alive
+								nextRow[x] = state;
+								if (state > 0) {
+									population += 1;
+
+									// update births
+									if (c === 0) {
+										births += 1;
+									}
+									rowOccupied |= rowIndex;
+									colOccupied |= colIndex;
+								} else {
+									// check for death
+									if (c > 0) {
+										// update deaths
+										deaths += 1;
+									}
+								}
+
+								// next row
+								y += 1;
+								rowIndex >>= 1;
+							}
+
+							// update the column and row occupied cells
+							columnOccupied16[leftX >> 4] |= colOccupied;
+
+							// update tile grid if any cells are set
+							if (colOccupied) {
+								// set this tile
+								nextTiles |= (1 << bit);
+
+								// check for neighbours
+								if (rowOccupied & 1) {
+									neighbours |= LifeConstants.topSet;
+									if (colOccupied & 32768) {
+										neighbours |= LifeConstants.topLeftSet;
+									}
+									if (colOccupied & 1) {
+										neighbours |= LifeConstants.topRightSet;
+									}
+								}
+
+								if (rowOccupied & 32768) {
+									neighbours |= LifeConstants.bottomSet;
+									if (colOccupied & 32768) {
+										neighbours |= LifeConstants.bottomLeftSet;
+									}
+									if (colOccupied & 1) {
+										neighbours |= LifeConstants.bottomRightSet;
+									}
+								}
+
+								if (colOccupied & 32768) {
+									neighbours |= LifeConstants.leftSet;
+								}
+
+								if (colOccupied & 1) {
+									neighbours |= LifeConstants.rightSet;
+								}
+
+								// update any neighbouring tiles
+								if (neighbours) {
+									// check whether left edge occupied
+									if ((neighbours & LifeConstants.leftSet) !== 0) {
+										if (bit < 15) {
+											nextTiles |= (1 << (bit + 1));
+										} else {
+											// set in previous set if not at left edge
+											if ((tw > 0) && (leftX > 0)) {
+												nextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether right edge occupied
+									if ((neighbours & LifeConstants.rightSet) !== 0) {
+										if (bit > 0) {
+											nextTiles |= (1 << (bit - 1));
+										} else {
+											// set carry over to go into next set if not at right edge
+											if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+												nextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether bottom edge occupied
+									if ((neighbours & LifeConstants.bottomSet) !== 0) {
+										// set in lower tile set
+										belowNextTiles |= (1 << bit);
+									}
+
+									// check whether top edge occupied
+									if ((neighbours & LifeConstants.topSet) !== 0) {
+										// set in upper tile set
+										aboveNextTiles |= (1 << bit);
+									}
+
+									// check whether bottom left occupied
+									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
+										if (bit < 15) {
+											belowNextTiles |= (1 << (bit + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												belowNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether bottom right occupied
+									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
+										if (bit > 0) {
+											belowNextTiles |= (1 << (bit - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+												belowNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether top left occupied
+									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
+										if (bit < 15) {
+											aboveNextTiles |= (1 << (bit + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												aboveNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether top right occupied
+									if ((neighbours & LifeConstants.topRightSet) !== 0) {
+										if (bit > 0) {
+											aboveNextTiles |= (1 << (bit - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+												aboveNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+								}
+							} else {
+								// all the cells in the tile died
+								diedTiles |= 1 << bit;
+							}
+
+							// save the row occupied falgs
+							rowOccupied16[th] |= rowOccupied;
+						}
+
+						// next tile columns
+						leftX += xSize;
+						rightX += xSize;
+					}
+
+					// save the tile groups
+					nextTileRow[tw] |= nextTiles;
+					if (th > 0) {
+						belowNextTileRow[tw] |= belowNextTiles;
+					}
+					if (th < tileRows - 1) {
+						aboveNextTileRow[tw] |= aboveNextTiles;
+					}
+
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+					rightX += xSize << 4;
+				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+
+		// update bounding box
+		for (tw = 0; tw < width16; tw += 1) {
+			if (columnOccupied16[tw]) {
+				if (tw < newLeftX) {
+					newLeftX = tw;
+				}
+				if (tw > newRightX) {
+					newRightX = tw;
+				}
+			}
+		}
+
+		for (th = 0; th < rowOccupied16.length; th += 1) {
+			if (rowOccupied16[th]) {
+				if (th < newBottomY) {
+					newBottomY = th;
+				}
+				if (th > newTopY) {
+					newTopY = th;
+				}
+			}
+		}
+
+		// convert new width to pixels
+		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+
+		// convert new height to pixels
+		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
+		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
+
+		// ensure the box is not blank
+		if (newTopY < 0) {
+			newTopY = height - 1;
+		}
+		if (newBottomY >= height) {
+			newBottomY = 0;
+		}
+		if (newLeftX >= width) {
+			newLeftX = 0;
+		}
+		if (newRightX < 0) {
+			newRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newTopY > height - 1) {
+			newTopY = height - 1;
+		}
+		if (newBottomY < 0) {
+			newBottomY = 0;
+		}
+		if (newLeftX < 0) {
+			newLeftX = 0;
+		}
+		if (newRightX > width - 1) {
+			newRightX = width - 1;
+		}
+
+		// save to zoom box
+		zoomBox.topY = newTopY;
+		zoomBox.bottomY = newBottomY;
+		zoomBox.leftX = newLeftX;
+		zoomBox.rightX = newRightX;
+
+		// clear the blank tile row since it may have been written to at top and bottom
+		blankTileRow.fill(0);
+
+		// clear tiles in source that died
+		this.clearTilesThatDied(tileGrid, grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
+		}
+
+		// save statistics
+		this.population = population;
+		this.births = births;
+		this.deaths = deaths;
+	};
+
+	// compute extended rule next generation for Hex neighbourhood
+	Life.prototype.nextGenerationExtendedTileHex = function() {
+		var	/** @type {number} */ y = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ state = 0,
+			/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint8Array} */ nextRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint8Array>} */ nextGrid = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
+			/** @type {number} */ th = 0,
+			/** @type {number} */ tw = 0,
+			/** @type {number} */ bit = 0,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ topY = 0,
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ rightX = 0,
+			/** @type {number} */ tiles = 0,
+			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
+			/** @type {number} */ width = this.width,
+			/** @type {number} */ width16 = width >> 4,
+			/** @type {number} */ height = this.height,
+			/** @type {number} */ newLeftX = width,
+			/** @type {number} */ newRightX = -1,
+			/** @type {number} */ newTopY = -1,
+			/** @type {number} */ newBottomY = height,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {number} */ births = 0,
+			/** @type {number} */ deaths = 0,
+			/** @type {number} */ population = 0,
+			/** @type {number} */ belowNextTiles = 0,
+			/** @type {number} */ aboveNextTiles = 0,
+
+			// mask of types in the neighbourhood
+			/** @type {number} */ typeMask = 0,
+
+			// cells in the neighbourhood
+			/** @type {number} */ nw = 0,
+			/** @type {number} */ ne = 0,
+			/** @type {number} */ w = 0,
+			/** @type {number} */ n = 0,
+			/** @type {number} */ c = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ e = 0,
+			/** @type {number} */ se = 0,
+			/** @type {number} */ sw = 0,
+
+			// column occupied
+			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {number} */ colOccupied = 0,
+			/** @type {number} */ colIndex = 0,
+
+			// row occupied
+			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
+			/** @type {number} */ rowOccupied = 0,
+			/** @type {number} */ rowIndex = 0,
+
+			// set tile height
+			/** @type {number} */ ySize = this.tileY,
+
+			// tile width (use height since we need bytes)
+			/** @type {number} */ xSize = this.tileY,
+
+			// tile rows
+			/** @type {number} */ tileRows = this.tileRows,
+
+			// tile columns in 16 bit values
+			/** @type {number} */ tileCols16 = this.tileCols >> 4,
+
+			// blank tile row for top and bottom
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
+
+			// lookup table
+			/** @type {Uint8Array} */ ruleArray = this.manager.ruleArray,
+			/** @type {number} */ treat = 0,
+
+			// flags for edges of tile occupied
+			/** @type {number} */ neighbours = 0,
+
+			// constants
+			/** @const {number} */ deathforcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16),
+			/** @const {number} */ birthforcer = (1 << 8) | (1 << 9) | (1 << 12) | (1 << 13) | (1 << 14),
+			/** @const {number} */ requirestate1 = (1 << 15) | (1 << 16),
+			/** @const {number} */ treatifdead = (1 << 1) | (1 << 2) | (1 << 4) | (1 << 6) | (1 << 8) | (1 << 10) | (1 << 12) | (1 << 15) |  (1 << 16) | (1 << 17) | (1 << 19),
+			/** @const {number} */ treatifalive = treatifdead ^ ((1 << 17) | (1 << 18) | (1 << 19) | (1 << 20)),
+			/** @const {Array<number>} */ nextstate = [2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19];
+
+		// select the correct grid
+		if ((this.counter & 1) === 0) {
+			grid = this.nextColourGrid;
+			grid32 = this.nextColourGrid32;
+			nextGrid = this.colourGrid;
+			tileGrid = this.nextTileGrid;
+			nextTileGrid = this.tileGrid;
+		} else {
+			grid = this.colourGrid;
+			grid32 = this.colourGrid32;
+			nextGrid = this.nextColourGrid;
+			tileGrid = this.tileGrid;
+			nextTileGrid = this.nextTileGrid;
+		}
+		diedGrid = this.diedGrid;
+
+		// clear column occupied flags
+		columnOccupied16.fill(0);
+
+		// clear row occupied flags
+		rowOccupied16.fill(0);
+
+		// set the initial tile row
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// clear the next tile grid
+		nextTileGrid.whole.fill(0);
+
+		// scan each row of tiles
+		for (th = 0; th < tileGrid.length; th += 1) {
+			// set initial tile column
+			leftX = 0;
+			rightX = leftX + xSize;
+
+			// get the colour tile rows
+			tileRow = tileGrid[th];
+			nextTileRow = nextTileGrid[th];
+
+			// get the tile row below
+			if (th > 0) {
+				belowNextTileRow = nextTileGrid[th - 1];
+			} else {
+				belowNextTileRow = blankTileRow;
+			}
+
+			// get the tile row above
+			if (th < tileRows - 1) {
+				aboveNextTileRow = nextTileGrid[th + 1];
+			} else {
+				aboveNextTileRow = blankTileRow;
+			}
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = tileRow[tw];
+				diedRow = diedGrid[tw];
+				diedTiles = 0;
+
+				// check if any are occupied
+				if (tiles) {
+					// get the destination
+					nextTiles = nextTileRow[tw];
+					belowNextTiles = belowNextTileRow[tw];
+					aboveNextTiles = aboveNextTileRow[tw];
+
+					// compute next colour for each tile in the set
+					for (bit = 15; bit >= 0; bit -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells in this column
+							colOccupied = 0;
+
+							// mark no cells in the tile rows
+							rowOccupied = 0;
+
+							// clear the edge flags
+							neighbours = 0;
+
+							// process the bottom row of the tile
+							y = bottomY;
+							rowIndex = 32768;
+
+							if (y === 0) {
+								gridRow0 = this.blankColourRow;
+							} else {
+								gridRow0 = grid[y - 1];
+							}
+							gridRow1 = grid[y];
+
+							// clear type mask
+							typeMask = 0;
+
+							// process each row of the tile
+							while (y < topY) {
+								// deal with bottom row of the grid
+								if (y === 0) {
+									gridRow0 = this.blankColourRow;
+								} else {
+									gridRow0 = grid[y - 1];
+								}
+
+								// current row
+								gridRow1 = grid[y];
+
+								// deal with top row of the grid
+								if (y === this.height - 1) {
+									gridRow2 = this.blankColourRow;
+								} else {
+									gridRow2 = grid[y + 1];
+								}
+
+								// get output row
+								nextRow = nextGrid[y];
+
+								// column index
+								colIndex = 32768;
+
+								// process each column in the row
+								x = leftX;
+
+								// get initial neighbours
+								if (x === 0) {
+									n = 0;
+									c = 0;
+									s = 0;
+								} else {
+									n = gridRow0[x - 1];
+									c = gridRow1[x - 1];
+									s = gridRow2[x - 1];
+								}
+								ne = gridRow0[x];
+								e = gridRow1[x];
+								se = gridRow2[x];
+
+								// process each cell in the chunk
+								while (x < rightX - 1) {
+									// shift neighbourhood left
+									nw = n;
+									w = c;
+									sw = s;
+									n = ne;
+									c = e;
+									s = se;
+									ne = gridRow0[x + 1];
+									e = gridRow1[x + 1];
+									se = gridRow2[x + 1];
+									state = c;
+
+									// check for higher states
+									if (c >= 2) {
+										state = nextstate[c - 2];
+									} else {
+										// typemask has a bit set per state in the neighbouring cells
+										typeMask = (1 << nw) | (1 << n) | (1 << w) | (1 << e) | (1 << s) | (1 << se);
+
+										if (typeMask & (c ? deathforcer : birthforcer)) {
+											state = 1 - c;
+										} else {
+											if (!c && (typeMask & requirestate1) && !(typeMask & 2)) {
+												state = 0;
+											} else {
+												treat = c ? treatifalive : treatifdead;
+												state = ruleArray[
+														(((treat >> nw) & 1) << 2) |
+														(((treat >> ne) & 1) << 0) |
+														(((treat >> n) & 1) << 1) |
+														(((treat >> w) & 1) << 5) |
+														(c << 4) |
+														(((treat >> e) & 1) << 3) |
+														(((treat >> s) & 1) << 7) |
+														(((treat >> sw) & 1) << 8) |
+														(((treat >> se) & 1) << 6)];
+											}
+										}
+									}
+
+									// check if state is alive
+									nextRow[x] = state;
+									if (state > 0) {
+										population += 1;
+
+										// update births
+										if (c === 0) {
+											births += 1;
+										}
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
+									} else {
+										// check for death
+										if (c > 0) {
+											// update deaths
+											deaths += 1;
+										}
+									}
+
+									// next column
+									colIndex >>= 1;
+									x += 1;
+								}
+
+								// handle right edge
+								nw = n;
+								w = c;
+								sw = s;
+								n = ne;
+								c = e;
+								s = se;
+								if (x === width - 1) {
+									e = 0;
+									se = 0;
+									ne = 0;
+								} else {
+									ne = gridRow0[x + 1];
+									e = gridRow1[x + 1];
+									se = gridRow2[x + 1];
+								}
+								state = c;
+
+								// check for higher states
+								if (c >= 2) {
+									state = nextstate[c - 2];
+								} else {
+									// typemask has a bit set per state in the neighbouring cells
+									typeMask = (1 << nw) | (1 << n) | (1 << w) | (1 << e) | (1 << s) | (1 << se);
+
+									if (typeMask & (c ? deathforcer : birthforcer)) {
+										state = 1 - c;
+									} else {
+										if (!c && (typeMask & requirestate1) && !(typeMask & 2)) {
+											state = 0;
+										} else {
+											treat = c ? treatifalive : treatifdead;
+											state = ruleArray[
+													(((treat >> nw) & 1) << 2) |
+													(((treat >> ne) & 1) << 0) |
+													(((treat >> n) & 1) << 1) |
+													(((treat >> w) & 1) << 5) |
+													(c << 4) |
+													(((treat >> e) & 1) << 3) |
+													(((treat >> s) & 1) << 7) |
+													(((treat >> sw) & 1) << 8) |
+													(((treat >> se) & 1) << 6)];
+										}
+									}
+								}
+
+								// check if state is alive
+								nextRow[x] = state;
+								if (state > 0) {
+									population += 1;
+
+									// update births
+									if (c === 0) {
+										births += 1;
+									}
+									rowOccupied |= rowIndex;
+									colOccupied |= colIndex;
+								} else {
+									// check for death
+									if (c > 0) {
+										// update deaths
+										deaths += 1;
+									}
+								}
+
+								// next row
+								y += 1;
+								rowIndex >>= 1;
+							}
+
+							// update the column and row occupied cells
+							columnOccupied16[leftX >> 4] |= colOccupied;
+
+							// update tile grid if any cells are set
+							if (colOccupied) {
+								// set this tile
+								nextTiles |= (1 << bit);
+
+								// check for neighbours
+								if (rowOccupied & 1) {
+									neighbours |= LifeConstants.topSet;
+									if (colOccupied & 32768) {
+										neighbours |= LifeConstants.topLeftSet;
+									}
+									if (colOccupied & 1) {
+										neighbours |= LifeConstants.topRightSet;
+									}
+								}
+
+								if (rowOccupied & 32768) {
+									neighbours |= LifeConstants.bottomSet;
+									if (colOccupied & 32768) {
+										neighbours |= LifeConstants.bottomLeftSet;
+									}
+									if (colOccupied & 1) {
+										neighbours |= LifeConstants.bottomRightSet;
+									}
+								}
+
+								if (colOccupied & 32768) {
+									neighbours |= LifeConstants.leftSet;
+								}
+
+								if (colOccupied & 1) {
+									neighbours |= LifeConstants.rightSet;
+								}
+
+								// update any neighbouring tiles
+								if (neighbours) {
+									// check whether left edge occupied
+									if ((neighbours & LifeConstants.leftSet) !== 0) {
+										if (bit < 15) {
+											nextTiles |= (1 << (bit + 1));
+										} else {
+											// set in previous set if not at left edge
+											if ((tw > 0) && (leftX > 0)) {
+												nextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether right edge occupied
+									if ((neighbours & LifeConstants.rightSet) !== 0) {
+										if (bit > 0) {
+											nextTiles |= (1 << (bit - 1));
+										} else {
+											// set carry over to go into next set if not at right edge
+											if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+												nextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether bottom edge occupied
+									if ((neighbours & LifeConstants.bottomSet) !== 0) {
+										// set in lower tile set
+										belowNextTiles |= (1 << bit);
+									}
+
+									// check whether top edge occupied
+									if ((neighbours & LifeConstants.topSet) !== 0) {
+										// set in upper tile set
+										aboveNextTiles |= (1 << bit);
+									}
+
+									// check whether bottom left occupied
+									if ((neighbours & LifeConstants.bottomLeftSet) !== 0) {
+										if (bit < 15) {
+											belowNextTiles |= (1 << (bit + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												belowNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether bottom right occupied
+									if ((neighbours & LifeConstants.bottomRightSet) !== 0) {
+										if (bit > 0) {
+											belowNextTiles |= (1 << (bit - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+												belowNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+
+									// check whether top left occupied
+									if ((neighbours & LifeConstants.topLeftSet) !== 0) {
+										if (bit < 15) {
+											aboveNextTiles |= (1 << (bit + 1));
+										} else {
+											if ((tw > 0) && (leftX > 0)) {
+												aboveNextTileRow[tw - 1] |= 1;
+											}
+										}
+									}
+
+									// check whether top right occupied
+									if ((neighbours & LifeConstants.topRightSet) !== 0) {
+										if (bit > 0) {
+											aboveNextTiles |= (1 << (bit - 1));
+										} else {
+											if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+												aboveNextTileRow[tw + 1] |= (1 << 15);
+											}
+										}
+									}
+								}
+							} else {
+								// all the cells in the tile died
+								diedTiles |= 1 << bit;
+							}
+
+							// save the row occupied falgs
+							rowOccupied16[th] |= rowOccupied;
+						}
+
+						// next tile columns
+						leftX += xSize;
+						rightX += xSize;
+					}
+
+					// save the tile groups
+					nextTileRow[tw] |= nextTiles;
+					if (th > 0) {
+						belowNextTileRow[tw] |= belowNextTiles;
+					}
+					if (th < tileRows - 1) {
+						aboveNextTileRow[tw] |= aboveNextTiles;
+					}
+
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+					rightX += xSize << 4;
+				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+
+		// update bounding box
+		for (tw = 0; tw < width16; tw += 1) {
+			if (columnOccupied16[tw]) {
+				if (tw < newLeftX) {
+					newLeftX = tw;
+				}
+				if (tw > newRightX) {
+					newRightX = tw;
+				}
+			}
+		}
+
+		for (th = 0; th < rowOccupied16.length; th += 1) {
+			if (rowOccupied16[th]) {
+				if (th < newBottomY) {
+					newBottomY = th;
+				}
+				if (th > newTopY) {
+					newTopY = th;
+				}
+			}
+		}
+
+		// convert new width to pixels
+		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
+
+		// convert new height to pixels
+		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
+		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
+
+		// ensure the box is not blank
+		if (newTopY < 0) {
+			newTopY = height - 1;
+		}
+		if (newBottomY >= height) {
+			newBottomY = 0;
+		}
+		if (newLeftX >= width) {
+			newLeftX = 0;
+		}
+		if (newRightX < 0) {
+			newRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newTopY > height - 1) {
+			newTopY = height - 1;
+		}
+		if (newBottomY < 0) {
+			newBottomY = 0;
+		}
+		if (newLeftX < 0) {
+			newLeftX = 0;
+		}
+		if (newRightX > width - 1) {
+			newRightX = width - 1;
+		}
+
+		// save to zoom box
+		zoomBox.topY = newTopY;
+		zoomBox.bottomY = newBottomY;
+		zoomBox.leftX = newLeftX;
+		zoomBox.rightX = newRightX;
+
+		// clear the blank tile row since it may have been written to at top and bottom
+		blankTileRow.fill(0);
+
+		// clear tiles in source that died
+		this.clearTilesThatDied(tileGrid, grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
+		}
+
+		// save statistics
+		this.population = population;
+		this.births = births;
+		this.deaths = deaths;
+	};
+
+	// compute extended rule next generation for Moore neighbourhood
+	Life.prototype.nextGenerationExtendedTileMoore = function() {
+		var	/** @type {number} */ y = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ state = 0,
+			/** @type {Uint8Array} */ gridRow0 = null,
+			/** @type {Uint8Array} */ gridRow1 = null,
+			/** @type {Uint8Array} */ gridRow2 = null,
+			/** @type {Uint8Array} */ nextRow = null,
+			/** @type {Array<Uint8Array>} */ grid = null,
+			/** @type {Array<Uint8Array>} */ nextGrid = null,
+			/** @type {Array<Uint32Array>} */ grid32 = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = null,
+			/** @type {Uint16Array} */ tileRow = null,
+			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ belowNextTileRow = null,
+			/** @type {Uint16Array} */ aboveNextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
+			/** @type {number} */ th = 0,
+			/** @type {number} */ tw = 0,
+			/** @type {number} */ bit = 0,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ topY = 0,
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ rightX = 0,
+			/** @type {number} */ tiles = 0,
+			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ width = this.width,
 			/** @type {number} */ width16 = width >> 4,
 			/** @type {number} */ height = this.height,
@@ -23865,6 +25129,7 @@
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
 		}
+		diedGrid = this.diedGrid;
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
@@ -23888,8 +25153,6 @@
 			// get the colour tile rows
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -23909,6 +25172,8 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedRow = diedGrid[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -24122,7 +25387,7 @@
 								rowIndex >>= 1;
 							}
 
-							// update the columnm and row occupied cells
+							// update the column and row occupied cells
 							columnOccupied16[leftX >> 4] |= colOccupied;
 
 							// update tile grid if any cells are set
@@ -24241,6 +25506,9 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died
+								diedTiles |= 1 << bit;
 							}
 
 							// save the row occupied falgs
@@ -24254,19 +25522,21 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
 					if (th < tileRows - 1) {
 						aboveNextTileRow[tw] |= aboveNextTiles;
 					}
+
 				} else {
 					// skip tile set
 					leftX += xSize << 4;
 					rightX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile row
@@ -24342,45 +25612,12 @@
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									gridRow32 = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									gridRow32[x] = 0;
-									gridRow32[x + 1] = 0;
-									gridRow32[x + 2] = 0;
-									gridRow32[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(tileGrid, grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -25503,9 +26740,6 @@
 			/** @type {number} */ tileStartRow = 0,
 			/** @type {number} */ tileEndRow = tileRows,
 
-			// first bit set
-			/** @type {Uint8Array} */ firstBit = this.firstBit16,
-
 			// constants
 			/** @const {number} */ aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25),
 			/** @const {number} */ aliveWith14or18 = aliveWith14 | (1 << 18),
@@ -25715,7 +26949,9 @@
 																calc >>= 16;
 																value += 16;
 															}
-															value += firstBit[calc];
+
+															// calc can't be 0 so 31 - clz32 is safe
+															value += 31 - Math.clz32(calc);
 														} else {
 															calc = typeMask & alive13or15or17or19or21or23or25;
 															if (((typeMask & (1 << 3)) !== 0) && ((typeMask & alive1or5or7or9or11) === 0) && (calc && (calc & (calc - 1)) === 0)) {
@@ -25724,7 +26960,9 @@
 																	calc >>= 16;
 																	value += 16;
 																}
-																value += firstBit[calc];
+
+																// calc can't be 0 so 31 - clz32 is safe
+																value += 31 - Math.clz32(calc);
 															} else {
 																calc = typeMask & alive9or11;
 																if (((typeMask & (1 << 7)) !== 0) && ((typeMask & alive1or3or5or13or15or17or19or21or23or25) === 0) && (calc && (calc & (calc - 1)) === 0)) {
@@ -25733,7 +26971,9 @@
 																		calc >>= 16;
 																		value += 16;
 																	}
-																	value += firstBit[calc];
+
+																	// calc can't be 0 so 31 - clz32 is safe
+																	value += 31 - Math.clz32(calc);
 																} else {
 																	calc = typeMask & alive7or13or15or17or19or21or23or25;
 																	if (calc && ((typeMask & alive1or3or5or9or11) === 0)) {
@@ -26421,6 +27661,51 @@
 		}
 	};
 
+	// update the life grid region using tiles for Extended patterns
+	Life.prototype.nextGenerationExtendedTile = function() {
+		var	/** @type {number} */ width = this.boundedGridWidth,
+			/** @type {number} */ height = this.boundedGridHeight,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {number} */ bLeftX = 0,
+			/** @type {number} */ bBottomY = 0,
+			/** @type {number} */ bRightX = 0,
+			/** @type {number} */ bTopY = 0;
+
+		if (this.isHex) {
+			this.nextGenerationExtendedTileHex();
+		} else {
+			if (this.isVonNeumann) {
+				this.nextGenerationExtendedTileVN();
+			} else {
+				this.nextGenerationExtendedTileMoore();
+			}
+		}
+
+		// clip bounding box to bounded grid
+		if (this.boundedGridType !== -1) {
+			// bottom left
+			bLeftX = Math.round((this.width - width) / 2);
+			bBottomY = Math.round((this.height - height) / 2);
+
+			// top right
+			bRightX = bLeftX + width - 1;
+			bTopY = bBottomY + height - 1;
+
+			if (zoomBox.leftX < bLeftX) {
+				zoomBox.leftX = bLeftX;
+			}
+			if (zoomBox.rightX > bRightX) {
+				zoomBox.rightX = bRightX;
+			}
+			if (zoomBox.bottomY < bBottomY) {
+				zoomBox.bottomY = bBottomY;
+			}
+			if (zoomBox.topY > bTopY) {
+				zoomBox.topY = bTopY;
+			}
+		}
+	};
+
 	// update the life grid region using tiles for Super patterns
 	Life.prototype.nextGenerationSuperTile = function() {
 		var	/** @type {number} */ width = this.boundedGridWidth,
@@ -26443,12 +27728,12 @@
 
 		// clip bounding box to bounded grid
 		if (this.boundedGridType !== -1) {
-		    // bottom left
-		    bLeftX = Math.round((this.width - width) / 2);
-		    bBottomY = Math.round((this.height - height) / 2);
+			// bottom left
+			bLeftX = Math.round((this.width - width) / 2);
+			bBottomY = Math.round((this.height - height) / 2);
 
-		    // top right
-		    bRightX = bLeftX + width - 1;
+			// top right
+			bRightX = bLeftX + width - 1;
 			bTopY = bBottomY + height - 1;
 
 			if (zoomBox.leftX < bLeftX) {

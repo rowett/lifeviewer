@@ -654,6 +654,9 @@
 		// whether Chrome bug is in effect
 		/** @type {boolean} */ this.chromeBug = false;
 
+		// whether rendering just happened
+		/** @type {boolean} */ this.justRendered = false;
+
 		// whether Life just died
 		/** @type {boolean} */ this.justDied = false;
 
@@ -4951,7 +4954,7 @@
 			/** @type {string} */ result = "";
 
 		// get absolute value
-		if (value < 0) { 
+		if (value < 0) {
 			value = -value;
 		}
 
@@ -6759,6 +6762,9 @@
 			me.mainContext.fillRect(0, 0, me.mainCanvas.width, me.mainCanvas.height);
 			me.mainContext.globalAlpha = 1;
 		}
+
+		// mark rendering just happened
+		me.justRendered = true;
 	};
 
 	// update GPS and Step control background based on performance
@@ -7504,6 +7510,14 @@
 			/** @type {BoundingBox} */ historyBox = this.engine.historyBox,
 			/** @type {number} */ initialPopulation = this.engine.population;
 
+		// check if just rendered
+		if (this.justRendered) {
+			this.justRendered = false;
+			if (this.engine.isExtended) {
+				this.engine.colourTileHistoryGrid.whole.fill(0);
+			}
+		}
+
 		// save bounding box in case all cells die
 		this.engine.saveBox.set(zoomBox);
 		this.engine.saveHistoryBox.set(historyBox);
@@ -7655,7 +7669,7 @@
 						// calculate benchmark results
 						genTime = (performance.now() - me.startFromTiming) / 1000;
 						gps = (me.startFromGens / genTime) | 0;
-						me.menuManager.notification.notify("Calculated " + me.startFromGens + " gens in " + genTime.toFixed(1) + "s = " + gps + "gps", 15, 600, 15, false);
+						me.menuManager.notification.notify("Calculated " + me.startFromGens + " gens in " + genTime.toFixed(1) + "s = " + gps + "gps", 15, 1200, 15, false);
 
 						// save benchmark info
 						me.lastBenchmarkTime = genTime;
@@ -8599,6 +8613,9 @@
 
 		// clear just died flag
 		this.justDied = false;
+
+		// clear just rendered flag
+		this.justRendered = false;
 
 		// reset snow if enabled
 		if (this.drawingSnow) {
@@ -10042,7 +10059,7 @@
 					bRightX = this.engine.width / 2 - 1;
 				}
 
-				if (this.engine.boundedGridHeight === 0){ 
+				if (this.engine.boundedGridHeight === 0){
 					bBottomY = -this.engine.height / 2;
 					bTopY = this.engine.height / 2 - 1;
 				}
@@ -20594,6 +20611,28 @@
 			}
 		}
 	}
+
+	/*  TBD WASM
+	// load webassembly from base64 string
+	var wasmBase64 = "AGFzbQEAAAABBgFgAX8BfwMCAQAHDAEIcG9wY291bnQAAAoHAQUAIABpCw==";
+	var wasmString = atob(wasmBase64);
+	var wasmBuffer = new  Uint8Array(wasmString.length);
+	for (var i = 0; i < wasmString.length; i += 1) {
+		wasmBuffer[i] = wasmString.charCodeAt(i);
+	}
+
+	// web assembly interface that functions will be called through
+	var WASM = {};
+
+	// instantiate the WebAssembly functions
+	var importObj = {
+		module: {}
+	};
+
+	WebAssembly.instantiate(wasmBuffer, importObj).then(result => {
+		WASM.popCount = result.instance.exports.popcount;
+	});
+	*/
 
 	// register event to start viewers when document is loaded
 	registerEvent(window, "load", startAllViewers, false);
