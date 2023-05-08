@@ -23884,8 +23884,9 @@
 								gridRow32[x + 1] = 0;
 								gridRow32[x + 2] = 0;
 								gridRow32[x + 3] = 0;
-	
+
 							}
+
 						}
 						leftX += xSize;
 					}
@@ -23912,7 +23913,7 @@
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
-			/** @type {Array<Uint16Array>} */ diedGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
@@ -23940,6 +23941,7 @@
 			/** @type {number} */ population = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 
 			// mask of types in the neighbourhood
 			/** @type {number} */ typeMask = 0,
@@ -24005,7 +24007,6 @@
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
 		}
-		diedGrid = this.diedGrid;
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
@@ -24062,6 +24063,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile is occupied
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -24171,6 +24175,9 @@
 										}
 									}
 
+									// check if any cell was alive in the source
+									anyAlive |= c;
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -24230,6 +24237,9 @@
 										deaths += 1;
 									}
 								}
+
+								// check if any cell was alive in the source
+								anyAlive |= c;
 
 								// next row
 								y += 1;
@@ -24356,8 +24366,10 @@
 									}
 								}
 							} else {
-								// all the cells in the tile died
-								diedTiles |= 1 << bit;
+								// all the cells in the tile died so check if any source cells were alive
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -24426,7 +24438,7 @@
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
-			/** @type {Array<Uint16Array>} */ diedGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
@@ -24454,6 +24466,7 @@
 			/** @type {number} */ population = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 
 			// mask of types in the neighbourhood
 			/** @type {number} */ typeMask = 0,
@@ -24523,7 +24536,6 @@
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
 		}
-		diedGrid = this.diedGrid;
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
@@ -24580,6 +24592,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile is occupied
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -24703,6 +24718,9 @@
 										}
 									}
 
+									// check if any cell was alive in the source
+									anyAlive |= c;
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -24772,6 +24790,9 @@
 										deaths += 1;
 									}
 								}
+
+								// check if any cell was alive in the source
+								anyAlive |= c;
 
 								// next row
 								y += 1;
@@ -24898,8 +24919,10 @@
 									}
 								}
 							} else {
-								// all the cells in the tile died
-								diedTiles |= 1 << bit;
+								// all the cells in the tile died so check if any source cells were alive
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -24969,7 +24992,7 @@
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
-			/** @type {Array<Uint16Array>} */ diedGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
@@ -24997,6 +25020,7 @@
 			/** @type {number} */ population = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 
 			// mask of types in the neighbourhood
 			/** @type {number} */ typeMask = 0,
@@ -25066,7 +25090,6 @@
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
 		}
-		diedGrid = this.diedGrid;
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
@@ -25123,6 +25146,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile is occupied
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -25250,6 +25276,9 @@
 										}
 									}
 
+									// check if any cell was alive in the source
+									anyAlive |= c;
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -25323,6 +25352,9 @@
 										deaths += 1;
 									}
 								}
+
+								// check if any cell was alive in the source
+								anyAlive |= c;
 
 								// next row
 								y += 1;
@@ -25449,8 +25481,10 @@
 									}
 								}
 							} else {
-								// all the cells in the tile died
-								diedTiles |= 1 << bit;
+								// all the cells in the tile died so check if any source cells were alive
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -27762,7 +27796,7 @@
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
-			/** @type {Array<Uint16Array>} */ diedGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
@@ -27773,6 +27807,7 @@
 			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -27840,7 +27875,6 @@
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
 		}
-		diedGrid = this.diedGrid;
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
@@ -27897,6 +27931,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -27974,6 +28011,9 @@
 										}
 									}
 
+									// check if any cells were alive in the source
+									anyAlive |= c;
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -28017,6 +28057,9 @@
 										deaths += 1;
 									}
 								}
+
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -28147,8 +28190,10 @@
 									}
 								}
 							} else {
-								// all the cells in the tile died
-								diedTiles |= 1 << bit;
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -28209,7 +28254,6 @@
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,
 			/** @type {Uint8Array} */ nextRow = null,
-			/** @type {Uint32Array} */ gridRow32 = null,
 			/** @type {Array<Array<Uint32Array>>} */ lut = this.ruleTableLUT,
 			/** @type {Array<Uint32Array>} */ lut0 = lut[0],
 			/** @type {Array<Uint32Array>} */ lut1 = lut[1],
@@ -28246,7 +28290,7 @@
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
-			/** @type {Array<Uint16Array>} */ diedGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ diedRow = null,
@@ -28257,6 +28301,7 @@
 			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -28282,9 +28327,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -28327,7 +28369,6 @@
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
 		}
-		diedGrid = this.diedGrid;
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
@@ -28384,6 +28425,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -28489,6 +28533,9 @@
 										}
 									}
 
+									// check if any cells were alive in the source tile
+									anyAlive |= c;
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -28539,6 +28586,9 @@
 										deaths += 1;
 									}
 								}
+
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -28669,8 +28719,10 @@
 									}
 								}
 							} else {
-								// all the cells in the tile died
-								diedTiles |= 1 << bit;
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -28731,7 +28783,6 @@
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,
 			/** @type {Uint8Array} */ nextRow = null,
-			/** @type {Uint32Array} */ gridRow32 = null,
 			/** @type {Array<Array<Uint32Array>>} */ lut = this.ruleTableLUT,
 			/** @type {Array<Uint32Array>} */ lut0 = lut[0],
 			/** @type {Array<Uint32Array>} */ lut1 = lut[1],
@@ -28776,23 +28827,23 @@
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint8Array>} */ nextGrid = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 			/** @type {number} */ tiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -28818,9 +28869,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -28886,8 +28934,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -28907,6 +28954,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -28919,6 +28967,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -29044,6 +29095,9 @@
 										}
 									}
 
+									// check if any cells were alive in the source tile
+									anyAlive |= c;
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -29110,6 +29164,9 @@
 										deaths += 1;
 									}
 								}
+
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -29239,6 +29296,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied flags
@@ -29252,8 +29314,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -29265,6 +29325,9 @@
 					leftX += xSize << 4;
 					rightX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -29273,112 +29336,18 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									gridRow32 = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									gridRow32[x] = 0;
-									gridRow32[x + 1] = 0;
-									gridRow32[x + 2] = 0;
-									gridRow32[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -29393,7 +29362,6 @@
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,
 			/** @type {Uint8Array} */ nextRow = null,
-			/** @type {Uint32Array} */ gridRow32 = null,
 			/** @type {Array<Array<Uint32Array>>} */ lut = this.ruleTableLUT,
 			/** @type {Array<Uint32Array>} */ lut0 = lut[0],
 			/** @type {Array<Uint32Array>} */ lut1 = lut[1],
@@ -29432,23 +29400,23 @@
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint8Array>} */ nextGrid = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -29474,9 +29442,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -29542,8 +29507,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -29563,6 +29527,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -29575,6 +29540,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -29692,6 +29660,9 @@
 										}
 									}
 
+									// check if any cells were alive in the source tile
+									anyAlive |= c;
+
 									// next column
 									colIndex >>= 1;
 									x += 1;
@@ -29750,6 +29721,9 @@
 										deaths += 1;
 									}
 								}
+
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -29879,6 +29853,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -29892,8 +29871,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -29905,6 +29882,9 @@
 					leftX += xSize << 4;
 					rightX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -29913,112 +29893,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									gridRow32 = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									gridRow32[x] = 0;
-									gridRow32[x + 1] = 0;
-									gridRow32[x + 2] = 0;
-									gridRow32[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -30094,7 +29979,6 @@
 			/** @type {Uint8Array} */ gridRow1 = null,
 			/** @type {Uint8Array} */ gridRow2 = null,
 			/** @type {Uint32Array} */ nextRow = null,
-			/** @type {Uint32Array} */ gridRow32 = null,
 			/** @type {Uint32Array} */ a = this.ruleTreeA,
 			/** @type {Uint8Array} */ b = this.ruleTreeB,
 			/** @type {number} */ base = this.ruleTreeBase,
@@ -30114,23 +29998,23 @@
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -30156,9 +30040,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -30223,8 +30104,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -30244,6 +30124,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -30256,6 +30137,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -30339,6 +30223,9 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -30362,6 +30249,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30384,6 +30272,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30407,6 +30296,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30429,6 +30319,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30451,6 +30342,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30473,6 +30365,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30496,6 +30389,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30518,6 +30412,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30540,6 +30435,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30562,6 +30458,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30585,6 +30482,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30607,6 +30505,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30629,6 +30528,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30651,6 +30551,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -30678,6 +30579,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// if column had cells then update row flag
 								if (localCol) {
@@ -30809,6 +30711,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -30821,8 +30728,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -30833,6 +30738,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -30841,112 +30749,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									gridRow32 = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									gridRow32[x] = 0;
-									gridRow32[x + 1] = 0;
-									gridRow32[x + 2] = 0;
-									gridRow32[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -31393,7 +31206,7 @@
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
-			/** @type {Array<Uint16Array>} */ diedGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
@@ -31404,6 +31217,7 @@
 			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -31471,7 +31285,6 @@
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
 		}
-		diedGrid = this.diedGrid;
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
@@ -31527,6 +31340,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -31620,6 +31436,9 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -31647,6 +31466,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31673,6 +31493,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31699,6 +31520,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31725,6 +31547,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31751,6 +31574,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31777,6 +31601,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31803,6 +31628,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31829,6 +31655,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31855,6 +31682,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31881,6 +31709,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31907,6 +31736,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31933,6 +31763,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31959,6 +31790,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -31985,6 +31817,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32017,6 +31850,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// if column had cells then update row flag
 								if (localCol) {
@@ -32149,8 +31983,10 @@
 									}
 								}
 							} else {
-								// all the cells in the tile died
-								diedTiles |= 1 << bit;
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -32230,24 +32066,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -32272,9 +32108,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -32339,8 +32172,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -32360,6 +32192,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -32372,6 +32205,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -32452,6 +32288,9 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -32479,6 +32318,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32505,6 +32345,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32532,6 +32373,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32557,6 +32399,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32583,6 +32426,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32609,6 +32453,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32636,6 +32481,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32661,6 +32507,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32687,6 +32534,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32713,6 +32561,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32740,6 +32589,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32765,6 +32615,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32791,6 +32642,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32817,6 +32669,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -32849,6 +32702,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -32978,6 +32832,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -32990,8 +32849,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -33002,6 +32859,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -33010,112 +32870,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -33151,24 +32916,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -33193,9 +32958,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -33260,8 +33022,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -33281,6 +33042,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -33293,6 +33055,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -33373,6 +33138,9 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -33400,6 +33168,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33426,6 +33195,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33453,6 +33223,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33478,6 +33249,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33504,6 +33276,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33530,6 +33303,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33557,6 +33331,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33582,6 +33357,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33608,6 +33384,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33634,6 +33411,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33661,6 +33439,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33686,6 +33465,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33712,6 +33492,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33738,6 +33519,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -33770,6 +33552,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -33899,6 +33682,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -33911,8 +33699,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -33923,6 +33709,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -33931,112 +33720,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -34072,24 +33766,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -34114,9 +33808,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -34181,8 +33872,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -34202,6 +33892,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -34214,6 +33905,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -34294,6 +33988,9 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -34321,6 +34018,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34347,6 +34045,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34374,6 +34073,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34399,6 +34099,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34425,6 +34126,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34451,6 +34153,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34478,6 +34181,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34503,6 +34207,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34529,6 +34234,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34555,6 +34261,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34582,6 +34289,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34607,6 +34315,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34633,6 +34342,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34659,6 +34369,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -34691,6 +34402,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -34820,6 +34532,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -34832,8 +34549,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -34844,6 +34559,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -34851,113 +34569,19 @@
 			topY += ySize;
 		}
 
+
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -34992,24 +34616,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -35034,9 +34658,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -35101,8 +34722,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -35122,6 +34742,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -35134,6 +34755,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -35215,6 +34839,9 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -35238,6 +34865,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35260,6 +34888,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35283,6 +34912,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35304,6 +34934,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35326,6 +34957,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35348,6 +34980,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35371,6 +35004,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35392,6 +35026,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35414,6 +35049,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35436,6 +35072,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35459,6 +35096,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35480,6 +35118,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35502,6 +35141,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35524,6 +35164,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -35553,6 +35194,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -35682,6 +35324,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -35694,8 +35341,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -35706,6 +35351,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -35714,112 +35362,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -35854,24 +35407,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -35896,9 +35449,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -35963,8 +35513,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -35984,6 +35533,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -35996,6 +35546,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -36077,6 +35630,9 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -36100,6 +35656,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36122,6 +35679,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36145,6 +35703,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36166,6 +35725,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36188,6 +35748,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36210,6 +35771,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36233,6 +35795,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36254,6 +35817,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36276,6 +35840,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36298,6 +35863,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36321,6 +35887,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36342,6 +35909,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36364,6 +35932,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36386,6 +35955,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36415,6 +35985,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -36544,6 +36115,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -36556,8 +36132,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -36568,6 +36142,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -36576,112 +36153,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -36716,24 +36198,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -36758,9 +36240,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -36825,8 +36304,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -36846,6 +36324,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -36858,6 +36337,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -36939,6 +36421,9 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
@@ -36962,6 +36447,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -36984,6 +36470,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37007,6 +36494,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37028,6 +36516,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37050,6 +36539,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37072,6 +36562,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37095,6 +36586,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37116,6 +36608,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37138,6 +36631,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37160,6 +36654,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37183,6 +36678,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37204,6 +36700,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37226,6 +36723,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37248,6 +36746,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
@@ -37277,6 +36776,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -37406,6 +36906,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -37418,8 +36923,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -37430,6 +36933,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -37438,112 +36944,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -37564,6 +36975,7 @@
 			/** @type {number} */ n = 0,
 			/** @type {number} */ e = 0,
 			/** @type {number} */ s = 0,
+			/** @type {number} */ c = 0,
 
 			// states and counters
 			/** @type {number} */ state = 0,
@@ -37575,24 +36987,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -37617,9 +37029,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -37684,8 +37093,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -37705,6 +37113,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -37717,6 +37126,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -37769,11 +37181,12 @@
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
+								c = gridRow1[x];
 								if (x === 0) {
 									// handle left edge of grid
-									index = (gridRow1[x] << 3) | (e << 2) | (n << 1) | s;
+									index = (c << 3) | (e << 2) | (n << 1) | s;
 								} else {
-									index = (gridRow1[x - 1] << 4) | (gridRow1[x] << 3) | (e << 2) | (n << 1) | s;
+									index = (gridRow1[x - 1] << 4) | (c << 3) | (e << 2) | (n << 1) | s;
 								}
 								state32 = lookup[index];
 
@@ -37795,11 +37208,15 @@
 									}
 								}
 
+								// check if any cells were alive in the source
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 1
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -37818,10 +37235,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 2
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -37840,10 +37259,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 3
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -37863,10 +37284,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 4
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -37884,10 +37307,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 5
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -37906,10 +37331,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 6
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -37928,10 +37355,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 7
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -37951,10 +37380,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 8
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -37972,10 +37403,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 9
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -37994,10 +37427,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 10
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38016,10 +37451,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 11
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38039,10 +37476,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 12
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38060,10 +37499,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 13
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38082,10 +37523,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 14
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38104,10 +37547,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 15 (and handle right edge)
+								c = e;
 								n = gridRow0[x];
 								if (x === width - 1) {
 									e = 0;
@@ -38131,6 +37576,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -38260,6 +37706,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -38272,8 +37723,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -38284,6 +37733,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -38292,112 +37744,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -38418,6 +37775,7 @@
 			/** @type {number} */ n = 0,
 			/** @type {number} */ e = 0,
 			/** @type {number} */ s = 0,
+			/** @type {number} */ c = 0,
 
 			// states and counters
 			/** @type {number} */ state = 0,
@@ -38429,24 +37787,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -38471,9 +37829,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -38538,8 +37893,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -38559,6 +37913,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -38571,6 +37926,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -38623,11 +37981,12 @@
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
+								c = gridRow1[x];
 								if (x === 0) {
 									// handle left edge of grid
-									index = (gridRow1[x] << 6) | (e << 4) | (n << 2) | s;
+									index = (c << 6) | (e << 4) | (n << 2) | s;
 								} else {
-									index = (gridRow1[x - 1] << 8) | (gridRow1[x] << 6) | (e << 4) | (n << 2) | s;
+									index = (gridRow1[x - 1] << 8) | (c << 6) | (e << 4) | (n << 2) | s;
 								}
 								state32 = lookup[index];
 
@@ -38649,11 +38008,15 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 1
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38672,10 +38035,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 2
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38694,10 +38059,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 3
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38717,10 +38084,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 4
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38738,10 +38107,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 5
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38760,10 +38131,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 6
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38782,10 +38155,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 7
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38805,10 +38180,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 8
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38826,10 +38203,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 9
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38848,10 +38227,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 10
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38870,10 +38251,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 11
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38893,10 +38276,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 12
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38914,10 +38299,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 13
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38936,10 +38323,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 14
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -38958,10 +38347,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 15 (and handle right edge)
+								c = e;
 								n = gridRow0[x];
 								if (x === width - 1) {
 									e = 0;
@@ -38985,6 +38376,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -39114,6 +38506,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -39126,8 +38523,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -39138,6 +38533,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -39146,112 +38544,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -39272,6 +38575,7 @@
 			/** @type {number} */ n = 0,
 			/** @type {number} */ e = 0,
 			/** @type {number} */ s = 0,
+			/** @type {number} */ c = 0,
 
 			// states and counters
 			/** @type {number} */ state = 0,
@@ -39283,24 +38587,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -39325,9 +38629,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -39392,8 +38693,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -39413,6 +38713,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -39425,6 +38726,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -39477,11 +38781,12 @@
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
+								c = gridRow1[x];
 								if (x === 0) {
 									// handle left edge of grid
-									index = (gridRow1[x] << 9) | (e << 6) | (n << 3) | s;
+									index = (c << 9) | (e << 6) | (n << 3) | s;
 								} else {
-									index = (gridRow1[x - 1] << 12) | (gridRow1[x] << 9) | (e << 6) | (n << 3) | s;
+									index = (gridRow1[x - 1] << 12) | (c << 9) | (e << 6) | (n << 3) | s;
 								}
 								state32 = lookup[index];
 
@@ -39503,11 +38808,15 @@
 									}
 								}
 
+								// check if any cells are alive in source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 1
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39526,10 +38835,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 2
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39548,10 +38859,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 3
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39571,10 +38884,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 4
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39592,10 +38907,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 5
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39614,10 +38931,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 6
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39636,10 +38955,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 7
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39659,10 +38980,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 8
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39680,10 +39003,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 9
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39702,10 +39027,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 10
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39724,10 +39051,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 11
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39747,10 +39076,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 12
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39768,10 +39099,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 13
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39790,10 +39123,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 14
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -39812,10 +39147,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 15 (and handle right edge)
+								c = e;
 								n = gridRow0[x];
 								if (x === width - 1) {
 									e = 0;
@@ -39839,6 +39176,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -39968,6 +39306,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -39980,8 +39323,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -39992,6 +39333,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -40000,112 +39344,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -40126,6 +39375,7 @@
 			/** @type {number} */ n = 0,
 			/** @type {number} */ e = 0,
 			/** @type {number} */ s = 0,
+			/** @type {number} */ c = 0,
 
 			// states and counters
 			/** @type {number} */ state = 0,
@@ -40137,24 +39387,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -40179,9 +39429,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -40246,8 +39493,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -40267,6 +39513,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -40279,6 +39526,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -40331,11 +39581,12 @@
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
+								c = gridRow1[x];
 								if (x === 0) {
 									// handle left edge of grid
-									index = (gridRow1[x] << 12) | (e << 8) | (n << 4) | s;
+									index = (c << 12) | (e << 8) | (n << 4) | s;
 								} else {
-									index = (gridRow1[x - 1] << 16) | (gridRow1[x] << 12) | (e << 8) | (n << 4) | s;
+									index = (gridRow1[x - 1] << 16) | (c << 12) | (e << 8) | (n << 4) | s;
 								}
 								state32 = lookup[index];
 
@@ -40357,11 +39608,15 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 1
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40380,10 +39635,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 2
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40402,10 +39659,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 3
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40425,10 +39684,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 4
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40446,10 +39707,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 5
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40468,10 +39731,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 6
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40490,10 +39755,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 7
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40513,10 +39780,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 8
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40534,10 +39803,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 9
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40556,10 +39827,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 10
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40578,10 +39851,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 11
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40601,10 +39876,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 12
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40622,10 +39899,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 13
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40644,10 +39923,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 14
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -40666,10 +39947,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 15 (and handle right edge)
+								c = e;
 								n = gridRow0[x];
 								if (x === width - 1) {
 									e = 0;
@@ -40693,6 +39976,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -40822,6 +40106,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -40834,8 +40123,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -40846,6 +40133,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -40854,112 +40144,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
@@ -40980,6 +40175,7 @@
 			/** @type {number} */ n = 0,
 			/** @type {number} */ e = 0,
 			/** @type {number} */ s = 0,
+			/** @type {number} */ c = 0,
 
 			// states and counters
 			/** @type {number} */ state = 0,
@@ -40991,24 +40187,24 @@
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ index = 0,
 
-			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
-			/** @type {Uint16Array} */ colourTileHistoryRow = null,
-			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourTileRow = null,
 			/** @type {Array<Uint8Array>} */ grid = null,
 			/** @type {Array<Uint32Array>} */ nextGrid32 = null,
 			/** @type {Array<Uint32Array>} */ grid32 = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
 
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
+			/** @type {number} */ anyAlive = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
@@ -41033,9 +40229,6 @@
 
 			// width of grid
 			/** @type {number} */ width = this.width,
-
-			// width of grid in 16 bit chunks
-			/** @type {number} */ width16 = width >> 4,
 
 			// get the bounding box
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -41100,8 +40293,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
-			colourTileRow = colourTileGrid[th];
-			colourTileHistoryRow = colourTileHistoryGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -41121,6 +40313,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -41133,6 +40326,9 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << bit)) !== 0) {
+							// mark no cells alive in the source tile
+							anyAlive = 0;
+
 							// mark no cells in this column
 							colOccupied = 0;
 
@@ -41185,11 +40381,12 @@
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
+								c = gridRow1[x];
 								if (x === 0) {
 									// handle left edge of grid
-									index = (gridRow1[x] << 15) | (e << 10) | (n << 5) | s;
+									index = (c << 15) | (e << 10) | (n << 5) | s;
 								} else {
-									index = (gridRow1[x - 1] << 20) | (gridRow1[x] << 15) | (e << 10) | (n << 5) | s;
+									index = (gridRow1[x - 1] << 20) | (c << 15) | (e << 10) | (n << 5) | s;
 								}
 								state32 = lookup[index];
 
@@ -41211,11 +40408,15 @@
 									}
 								}
 
+								// check if any cells were alive in the source tile
+								anyAlive |= c;
+
 								// next column
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 1
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41234,10 +40435,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 2
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41256,10 +40459,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 3
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41279,10 +40484,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 4
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41300,10 +40507,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 5
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41322,10 +40531,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 6
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41344,10 +40555,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 7
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41367,10 +40580,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 8
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41388,10 +40603,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 9
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41410,10 +40627,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 10
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41432,10 +40651,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 11
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41455,10 +40676,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 12
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41476,10 +40699,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 13
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41498,10 +40723,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 14
+								c = e;
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
@@ -41520,10 +40747,12 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 								colIndex >>= 1;
 								x += 1;
 
 								// unroll 15 (and handle right edge)
+								c = e;
 								n = gridRow0[x];
 								if (x === width - 1) {
 									e = 0;
@@ -41547,6 +40776,7 @@
 										deaths += 1;
 									}
 								}
+								anyAlive |= c;
 
 								// no need for next column
 								//colIndex >>= 1;
@@ -41676,6 +40906,11 @@
 										}
 									}
 								}
+							} else {
+								// all the cells in the tile died so check if any cells were alive in the source
+								if (anyAlive) {
+									diedTiles |= 1 << bit;
+								}
 							}
 
 							// save the row occupied falgs
@@ -41688,8 +40923,6 @@
 
 					// save the tile groups
 					nextTileRow[tw] |= nextTiles;
-					colourTileRow[tw] = tiles | nextTiles;
-					colourTileHistoryRow[tw] |= tiles | nextTiles;
 					if (th > 0) {
 						belowNextTileRow[tw] |= belowNextTiles;
 					}
@@ -41700,6 +40933,9 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -41708,112 +40944,17 @@
 		}
 
 		// update bounding box
-		for (tw = 0; tw < width16; tw += 1) {
-			if (columnOccupied16[tw]) {
-				if (tw < newLeftX) {
-					newLeftX = tw;
-				}
-				if (tw > newRightX) {
-					newRightX = tw;
-				}
-			}
-		}
-
-		for (th = 0; th < rowOccupied16.length; th += 1) {
-			if (rowOccupied16[th]) {
-				if (th < newBottomY) {
-					newBottomY = th;
-				}
-				if (th > newTopY) {
-					newTopY = th;
-				}
-			}
-		}
-
-		// convert new width to pixels
-		newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-		newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
-
-		// convert new height to pixels
-		newBottomY = (newBottomY << 4) + this.leftBitOffset16(rowOccupied16[newBottomY]);
-		newTopY = (newTopY << 4) + this.rightBitOffset16(rowOccupied16[newTopY]);
-
-		// ensure the box is not blank
-		if (newTopY < 0) {
-			newTopY = height - 1;
-		}
-		if (newBottomY >= height) {
-			newBottomY = 0;
-		}
-		if (newLeftX >= width) {
-			newLeftX = 0;
-		}
-		if (newRightX < 0) {
-			newRightX = width - 1;
-		}
-
-		// clip to the screen
-		if (newTopY > height - 1) {
-			newTopY = height - 1;
-		}
-		if (newBottomY < 0) {
-			newBottomY = 0;
-		}
-		if (newLeftX < 0) {
-			newLeftX = 0;
-		}
-		if (newRightX > width - 1) {
-			newRightX = width - 1;
-		}
-
-		// save to zoom box
-		zoomBox.topY = newTopY;
-		zoomBox.bottomY = newBottomY;
-		zoomBox.leftX = newLeftX;
-		zoomBox.rightX = newRightX;
+		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
 
-		// clear tiles that died in source
-		bottomY = 0;
-		topY = bottomY + ySize;
-		// process each tile row
-		for (th = 0; th < tileGrid.length; th += 1) {
-			leftX = 0;
-			tileRow = tileGrid[th];
-			nextTileRow = nextTileGrid[th];
-			// process each tile group in the row
-			for (tw = 0; tw < tileCols16; tw += 1) {
-				tiles = tileRow[tw];
-				nextTiles = nextTileRow[tw];
-				// process each tile in the group
-				if (tiles !== nextTiles) {
-					for (bit = 15; bit >= 0; bit -= 1) {
-						// check if tile changed (i.e. was dead and is now alive or vice verse)
-						if ((tiles & (1 << bit)) !== (nextTiles & (1 << bit))) {
-							// check if tile died
-							if ((nextTiles & (1 << bit)) === 0) {
-								// clear source cells for double buffering
-								for (y = bottomY; y < topY; y += 1) {
-									nextRow = grid32[y];
-									x = leftX >> 2;
-									// clear 16 cells
-									nextRow[x] = 0;
-									nextRow[x + 1] = 0;
-									nextRow[x + 2] = 0;
-									nextRow[x + 3] = 0;
-								}
-							}
-						}
-						leftX += xSize;
-					}
-				} else {
-					leftX += xSize << 4;
-				}
-			}
-			bottomY += ySize;
-			topY += ySize;
+		// clear tiles in source that died
+		this.clearTilesThatDied(grid32);
+
+		// set the history tile grid to the colour tile grid
+		for (y = 0; y < this.colourTileHistoryGrid.whole.length; y += 1) {
+			this.colourTileHistoryGrid.whole[y] |= tileGrid.whole[y] | nextTileGrid.whole[y];
 		}
 
 		// save statistics
