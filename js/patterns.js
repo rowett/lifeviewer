@@ -9930,8 +9930,18 @@
 			if (newPattern.title === "") {
 				// join the array into a string
 				newPattern.title = newPattern.titleConcat.join(" ");
-				newPattern.afterTitle = newPattern.afterTitleConcat.join("\n") + "\n";
-				newPattern.beforeTitle = newPattern.beforeTitleConcat.join("\n") + "\n";
+
+				if (newPattern.afterTitleConcat.length > 0) {
+					newPattern.afterTitle = newPattern.afterTitleConcat.join("\n") + "\n";
+				} else {
+					newPattern.afterTitle = "";
+				}
+
+				if (newPattern.beforeTitleConcat.length > 0) {
+					newPattern.beforeTitle = newPattern.beforeTitleConcat.join("\n") + "\n";
+				} else {
+					newPattern.beforeTitle = "";
+				}
 
 				// clear the arrays
 				newPattern.titleConcat = [];

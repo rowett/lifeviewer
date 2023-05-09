@@ -1628,7 +1628,7 @@
 			} else {
 				itemName = "@TABLE [" + view.engine.ruleTableCompressedRules + (view.engine.ruleTableDups > 0 ? " / " + view.engine.ruleTableDups : "") + "]";
 			}
-			if (view.engine.ruleLoaderLookup !== null && view.engine.ruleLoaderLookupEnabled && view.engine.ruleLoaderStep === -1) {
+			if ((view.engine.ruleLoaderLookup !== null || view.engine.ruleTreePartialLookup !== null) && view.engine.ruleLoaderLookupEnabled && view.engine.ruleLoaderStep === -1) {
 				itemName += " using fast lookup";
 			} else {
 				itemName += " using standard lookup";
@@ -1638,13 +1638,18 @@
 			if (view.engine.ruleLoaderLookupAvailable()) {
 				itemName = "";
 				if (view.engine.ruleLoaderStep === -1) {
-					if (view.engine.ruleLoaderLookup.length >= (1 << 20)) {
-						itemName += (view.engine.ruleLoaderLookup.length >> 20) + "Mb";
+					if (view.engine.ruleTreePartialLookup === null) {
+						value = view.engine.ruleLoaderLookup.length;
 					} else {
-						if (view.engine.ruleLoaderLookup.length >= (1 << 10)) {
-							itemName += (view.engine.ruleLoaderLookup.length >> 10) + "Kb";
+						value = view.engine.ruleTreePartialLookup.length * 4;
+					}
+					if (value >= (1 << 20)) {
+						itemName += (value >> 20) + "Mb";
+					} else {
+						if (view.engine.ruleTreePartialLookup.length >= (1 << 10)) {
+							itemName += (value >> 10) + "Kb";
 						} else {
-							itemName += view.engine.ruleLoaderLookup.length + " bytes";
+							itemName += value + " bytes";
 						}
 					}
 					itemName += " fast lookup created in " + (view.engine.ruleLoaderGenerationTime / 1000).toFixed(1) + " seconds";

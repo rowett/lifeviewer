@@ -4,6 +4,7 @@ Build 1034
 - fixed Mod for [R]Super with state 6
 - fixed vertical positioning on Hexagonal grids
 - fixed [R]History state 6 cells at grid edge
+- Fast Lookup now supports RuleTree rules with up to 16 states
 
 Build 1033
 - made T Min/Max mod the period for Help->Info->Identify
