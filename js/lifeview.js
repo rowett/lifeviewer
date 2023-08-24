@@ -11842,6 +11842,7 @@
 		} else {
 			result = window.confirm("Create new random pattern?");
 		}
+
 		if (result) {
 			// restore previous size
 			if (me.isInPopup) {
@@ -15167,9 +15168,6 @@
 
 				// start identification
 				me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
-
-				// set last zoom box to the same as current generation
-				me.engine.lastZoomBox.set(me.engine.zoomBox);
 
 				// create undo point
 				me.afterEdit("");
@@ -18709,8 +18707,17 @@
 
 		// switch off thumbnail mode if on
 		if (me.thumbnail) {
-			me.switchOffThumbnail();
+			if (me.randomizeGuard) {
+				// random pattern being created so restore original size (thumbnail will be created later)
+				me.displayHeight = me.thumbOrigWidth;
+				me.displayWidth = me.thumbOrigWidth;
+				me.engine.zoom = this.thumbOrigZoom;
+				me.displayHelp = this.thumbOrigHelpPosition;
+			} else {
+				me.switchOffThumbnail();
+			}
 		}
+
 		me.thumbnailEverOn = false;
 		me.menuManager.thumbnail = false;
 		me.thumbnailDivisor = ViewConstants.defaultThumbSize;

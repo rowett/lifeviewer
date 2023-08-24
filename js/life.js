@@ -742,17 +742,20 @@
 		// zoom bounding box
 		/** @type {BoundingBox} */ this.zoomBox = null;
 
-		// last zoom bounding box
-		/** @type {BoundingBox} */ this.lastZoomBox = null;
+		// active cell box for HROT
+		/** @type {BoundingBox} */ this.HROTBox = null;
 
-		// initial bounding box for LifeHistory
+		// Identify bounding box
+		/** @type {BoundingBox} */ this.identifyBox = null;
+
+		// initial bounding box for Track speed
 		/** @type {BoundingBox} */ this.initialBox = null;
+
+		// state 6 [R]History box
+		/** @type {BoundingBox} */ this.state6Box = null;
 
 		// history bounding box
 		/** @type {BoundingBox} */ this.historyBox = null;
-
-		// track box bounding box
-		/** @type {BoundingBox} */ this.trackBox = null;
 
 		// saved bounding box
 		/** @type {BoundingBox} */ this.saveBox = new BoundingBox(0, 0, 0, 0);
@@ -3992,7 +3995,7 @@
 			}
 
 			if (!isOscillator) {
-				extent = zoomBox;
+				extent = (this.isHROT ? this.HROTBox : zoomBox);
 				if (this.isSuper) {
 					extent = this.getSuperAliveBox(extent.leftX, extent.bottomY, extent.rightX, extent.topY);
 				}
@@ -4845,7 +4848,7 @@
 	/** @returns {Array} */
 	Life.prototype.oscillating = function(/** @type {View} */ view) {
 		// get bounding box
-		var	/** @type {BoundingBox} */ box = this.zoomBox,
+		var	/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
 			/** @type {number} */ leftX = box.leftX,
 			/** @type {number} */ bottomY = box.bottomY,
 			/** @type {number} */ rightX = box.rightX,
@@ -7224,6 +7227,7 @@
 			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
 			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
 			/** @type {number} */ cellAsBit = 0,
 			/** @type {number} */ cellAsTileBit = 0,
@@ -7558,6 +7562,29 @@
 			}
 			if (y > historyBox.topY) {
 				historyBox.topY = y;
+			}
+
+			// if the state is alive then update HROT alive bounding box
+			if (this.isHROT && state === this.multiNumStates - 1 + this.historyStates) {
+				if (this.population === 1) {
+					HROTBox.leftX = x;
+					HROTBox.rightX = x;
+					HROTBox.bottomY = y;
+					HROTBox.topY = y;
+				} else {
+					if (x < HROTBox.leftX) {
+						HROTBox.leftX = x;
+					}
+					if (x > HROTBox.rightX) {
+						HROTBox.rightX = x;
+					}
+					if (y < HROTBox.bottomY) {
+						HROTBox.bottomY = y;
+					}
+					if (y > HROTBox.topY) {
+						HROTBox.topY = y;
+					}
+				}
 			}
 		} else {
 			// state cleared only shrink if the cell was on the boundary of the bounding box
@@ -8062,6 +8089,10 @@
 		this.zoomBox.bottomY = snapshot.zoomBox.bottomY;
 		this.zoomBox.rightX = snapshot.zoomBox.rightX;
 		this.zoomBox.topY = snapshot.zoomBox.topY;
+		this.HROTBox.leftX = snapshot.HROTBox.leftX;
+		this.HROTBox.bottomY = snapshot.HROTBox.bottomY;
+		this.HROTBox.rightX = snapshot.HROTBox.rightX;
+		this.HROTBox.topY = snapshot.HROTBox.topY;
 
 		// restore the population
 		this.population = snapshot.population;
@@ -8115,7 +8146,7 @@
 		}
 
 		// create the snapshot
-		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.colourTileHistoryGrid, this.zoomBox, this.population, this.births, this.deaths, this.counter, view.fixedPointCounter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset);
+		this.snapshotManager.saveSnapshot(grid, tileGrid, colourGrid, this.colourTileHistoryGrid, this.overlayGrid, this.colourTileHistoryGrid, this.zoomBox, this.HROTBox, this.population, this.births, this.deaths, this.counter, view.fixedPointCounter, this.counterMargolus, this.maxMargolusGen, ((this.tileCols - 1) >> 4) + 1, this.tileRows, this, isReset);
 	};
 
 	// save grid
@@ -8524,6 +8555,11 @@
 			this.zoomBox.rightX += xOffset;
 			this.zoomBox.topY += yOffset;
 			this.zoomBox.bottomY += yOffset;
+
+			this.HROTBox.leftX += xOffset;
+			this.HROTBox.rightX += xOffset;
+			this.HROTBox.topY += yOffset;
+			this.HROTBox.bottomY += yOffset;
 
 			this.initialBox.leftX += xOffset;
 			this.initialBox.rightX += xOffset;
@@ -9382,16 +9418,21 @@
 
 		// initialise the bounding boxes
 		this.zoomBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
-		this.lastZoomBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
-		// initial bounding box for LifeHistory
+		// initial bounding box for Track speed
 		this.initialBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
+
+		// initial bounding box for HROT alive cells
+		this.HROTBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
+
+		// Identify box
+		this.identifyBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
+
+		// state 6 [R]History box
+		this.state6Box = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
 		// bounding box for history autofit
 		this.historyBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
-
-		// bounding box for track box
-		this.trackBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
 		// save drawing context
 		this.context = context;
@@ -12985,6 +13026,7 @@
 
 			// bounding boxes
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
 			/** @type {BoundingBox} */ initialBox = this.initialBox,
 
 			// new box extent
@@ -13202,6 +13244,12 @@
 			zoomBox.leftX = newLeftX;
 			zoomBox.rightX = newRightX;
 
+			// copy to HROT alive state box
+			HROTBox.topY = newTopY;
+			HROTBox.bottomY = newBottomY;
+			HROTBox.leftX = newLeftX;
+			HROTBox.rightX = newRightX;
+
 			// copy to the original box (for LifeHistory)
 			initialBox.topY = newTopY;
 			initialBox.bottomY = newBottomY;
@@ -13237,6 +13285,7 @@
 
 			// bounding boxes
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
 			/** @type {BoundingBox} */ initialBox = this.initialBox,
 
 			// new box extent
@@ -13460,6 +13509,12 @@
 		zoomBox.bottomY = newBottomY;
 		zoomBox.leftX = newLeftX;
 		zoomBox.rightX = newRightX;
+
+		// copy to HROT alive state box
+		HROTBox.topY = newTopY;
+		HROTBox.bottomY = newBottomY;
+		HROTBox.leftX = newLeftX;
+		HROTBox.rightX = newRightX;
 
 		// copy to the original box (for LifeHistory)
 		initialBox.topY = newTopY;
@@ -23932,16 +23987,15 @@
 					for (bit = 15; bit >= 0; bit -= 1) {
 						if (diedTiles & (1 << bit)) {
 							// clear source cells for double buffering
+							x = leftX >> 2;
 							for (y = bottomY; y < topY; y += 1) {
 								gridRow32 = grid32[y];
-								x = leftX >> 2;
 	
 								// clear 16 cells
 								gridRow32[x] = 0;
 								gridRow32[x + 1] = 0;
 								gridRow32[x + 2] = 0;
 								gridRow32[x + 3] = 0;
-
 							}
 
 						}
@@ -42661,6 +42715,12 @@
 		if (historyFit) {
 			// use history box
 			zoomBox = historyBox;
+		} else {
+			// check for HROT
+			if (this.isHROT) {
+				// use HROT alive state box
+				zoomBox = this.HROTBox;
+			}
 		}
 
 		// check for fit selection
