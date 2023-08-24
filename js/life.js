@@ -24258,11 +24258,11 @@
 											} else {
 												treat = c ? treatIfAlive : treatIfDead;
 												state = ruleArray[
-														(((treat >> n) & 1) << 7) |
+														(((treat >> s) & 1) << 7) |
 														(((treat >> w) & 1) << 5) |
 														(c << 4) |
 														(((treat >> e) & 1) << 3) |
-														(((treat >> s) & 1) << 1)];
+														(((treat >> n) & 1) << 1)];
 											}
 										}
 									}
@@ -24321,11 +24321,11 @@
 										} else {
 											treat = c ? treatIfAlive : treatIfDead;
 											state = ruleArray[
-													(((treat >> n) & 1) << 7) |
+													(((treat >> s) & 1) << 7) |
 													(((treat >> w) & 1) << 5) |
 													(c << 4) |
 													(((treat >> e) & 1) << 3) |
-													(((treat >> s) & 1) << 1)];
+													(((treat >> n) & 1) << 1)];
 										}
 									}
 								}
@@ -24797,15 +24797,15 @@
 											} else {
 												treat = c ? treatIfAlive : treatIfDead;
 												state = ruleArray[
-														(((treat >> nw) & 1) << 2) |
-														(((treat >> ne) & 1) << 0) |
-														(((treat >> n) & 1) << 1) |
+														(((treat >> sw) & 1) << 2) |
+														(((treat >> se) & 1) << 0) |
+														(((treat >> s) & 1) << 1) |
 														(((treat >> w) & 1) << 5) |
 														(c << 4) |
 														(((treat >> e) & 1) << 3) |
-														(((treat >> s) & 1) << 7) |
-														(((treat >> sw) & 1) << 8) |
-														(((treat >> se) & 1) << 6)];
+														(((treat >> n) & 1) << 7) |
+														(((treat >> nw) & 1) << 8) |
+														(((treat >> ne) & 1) << 6)];
 											}
 										}
 									}
@@ -24870,15 +24870,15 @@
 										} else {
 											treat = c ? treatIfAlive : treatIfDead;
 											state = ruleArray[
-													(((treat >> nw) & 1) << 2) |
-													(((treat >> ne) & 1) << 0) |
-													(((treat >> n) & 1) << 1) |
+													(((treat >> sw) & 1) << 2) |
+													(((treat >> se) & 1) << 0) |
+													(((treat >> s) & 1) << 1) |
 													(((treat >> w) & 1) << 5) |
 													(c << 4) |
 													(((treat >> e) & 1) << 3) |
-													(((treat >> s) & 1) << 7) |
-													(((treat >> sw) & 1) << 8) |
-													(((treat >> se) & 1) << 6)];
+													(((treat >> n) & 1) << 7) |
+													(((treat >> nw) & 1) << 8) |
+													(((treat >> ne) & 1) << 6)];
 										}
 									}
 								}
@@ -25354,15 +25354,15 @@
 												} else {
 													treat = c ? treatIfAlive : treatIfDead;
 													state = ruleArray[
-															(((treat >> nw) & 1) << 8) |
-															(((treat >> n) & 1) << 7) |
-															(((treat >> ne) & 1) << 6) |
+															(((treat >> sw) & 1) << 8) |
+															(((treat >> s) & 1) << 7) |
+															(((treat >> se) & 1) << 6) |
 															(((treat >> w) & 1) << 5) |
 															(c << 4) |
 															(((treat >> e) & 1) << 3) |
-															(((treat >> sw) & 1) << 2) |
-															(((treat >> s) & 1) << 1) |
-															((treat >> se) & 1)];
+															(((treat >> nw) & 1) << 2) |
+															(((treat >> n) & 1) << 1) |
+															((treat >> ne) & 1)];
 												}
 											}
 										}
@@ -25431,15 +25431,15 @@
 											} else {
 												treat = c ? treatIfAlive : treatIfDead;
 												state = ruleArray[
-														(((treat >> nw) & 1) << 8) |
-														(((treat >> n) & 1) << 7) |
-														(((treat >> ne) & 1) << 6) |
+														(((treat >> sw) & 1) << 8) |
+														(((treat >> s) & 1) << 7) |
+														(((treat >> se) & 1) << 6) |
 														(((treat >> w) & 1) << 5) |
 														(c << 4) |
 														(((treat >> e) & 1) << 3) |
-														(((treat >> sw) & 1) << 2) |
-														(((treat >> s) & 1) << 1) |
-														((treat >> se) & 1)];
+														(((treat >> nw) & 1) << 2) |
+														(((treat >> n) & 1) << 1) |
+														((treat >> ne) & 1)];
 											}
 										}
 									}

@@ -1,3 +1,6 @@
+Build 1035
+- fix [R]Extended Y axis
+
 Build 1034
 - reduce memory usage when reading comments
 - added experimental support for [R]Extended rules
