@@ -1,3 +1,6 @@
+Build 1036
+- added B0 support to [R]Extended rules
+
 Build 1035
 - fix [R]Extended Y axis
 

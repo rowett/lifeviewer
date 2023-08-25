@@ -11798,11 +11798,21 @@
 								this.createLifeIndex63(this.indexLookup632, ruleArray);
 
 								// even rule -> NOT(bits)
-								for (i = 0; i < hashSize / 2; i += 1) {
-									tmp = ruleArray[i];
-									// need to reverse then invert due to even rule above
-									ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
-									ruleArray[hashSize - i - 1] = 1 - tmp;
+								if (this.isExtended) {
+									ruleAltArray.set(ruleArray);
+									for (i = 0; i < hashSize / 2; i += 1) {
+										tmp = ruleAltArray[i];
+										// need to reverse then invert due to even rule above
+										ruleAltArray[i] = 1 - ruleAltArray[hashSize - i - 1];
+										ruleAltArray[hashSize - i - 1] = 1 - tmp;
+									}
+								} else {
+									for (i = 0; i < hashSize / 2; i += 1) {
+										tmp = ruleArray[i];
+										// need to reverse then invert due to even rule above
+										ruleArray[i] = 1 - ruleArray[hashSize - i - 1];
+										ruleArray[hashSize - i - 1] = 1 - tmp;
+									}
 								}
 							}
 						}
@@ -24111,6 +24121,11 @@
 			nextGrid = this.colourGrid;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
+
+			// get alternate lookup buffer if specified
+			if (this.altSpecified) {
+				ruleArray = this.manager.ruleAltArray;
+			}
 		} else {
 			grid = this.colourGrid;
 			grid32 = this.colourGrid32;
@@ -24640,12 +24655,21 @@
 			nextGrid = this.colourGrid;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
+
+			// get alternate lookup buffer if specified
+			if (this.altSpecified) {
+				ruleArray = this.manager.ruleArray;
+			}
 		} else {
 			grid = this.colourGrid;
 			grid32 = this.colourGrid32;
 			nextGrid = this.nextColourGrid;
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
+
+			if (this.altSpecified) {
+				ruleArray = this.manager.ruleAltArray;
+			}
 		}
 
 		// clear column occupied flags
@@ -25194,12 +25218,22 @@
 			nextGrid = this.colourGrid;
 			tileGrid = this.nextTileGrid;
 			nextTileGrid = this.tileGrid;
+
+			// get alternate lookup buffer if specified
+			if (this.altSpecified) {
+				ruleArray = this.manager.ruleArray;
+			}
 		} else {
 			grid = this.colourGrid;
 			grid32 = this.colourGrid32;
 			nextGrid = this.nextColourGrid;
 			tileGrid = this.tileGrid;
 			nextTileGrid = this.nextTileGrid;
+
+			// get alternate lookup buffer if specified
+			if (this.altSpecified) {
+				ruleArray = this.manager.ruleAltArray;
+			}
 		}
 
 		// clear column occupied flags
