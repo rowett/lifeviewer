@@ -24804,7 +24804,6 @@
 									ne = gridRow0[x + 1];
 									e = gridRow1[x + 1];
 									se = gridRow2[x + 1];
-									state = c;
 
 									// check for higher states
 									if (c >= 2) {
@@ -24821,15 +24820,15 @@
 											} else {
 												treat = c ? treatIfAlive : treatIfDead;
 												state = ruleArray[
-														(((treat >> sw) & 1) << 2) |
-														(((treat >> se) & 1) << 0) |
-														(((treat >> s) & 1) << 1) |
+														(((treat >> sw) & 1) << 8) |
+														(((treat >> s) & 1) << 7) |
+														(((treat >> se) & 1) << 6) |
 														(((treat >> w) & 1) << 5) |
 														(c << 4) |
 														(((treat >> e) & 1) << 3) |
-														(((treat >> n) & 1) << 7) |
-														(((treat >> nw) & 1) << 8) |
-														(((treat >> ne) & 1) << 6)];
+														(((treat >> nw) & 1) << 2) |
+														(((treat >> n) & 1) << 1) |
+														((treat >> ne) & 1)];
 											}
 										}
 									}
@@ -24894,15 +24893,24 @@
 										} else {
 											treat = c ? treatIfAlive : treatIfDead;
 											state = ruleArray[
-													(((treat >> sw) & 1) << 2) |
-													(((treat >> se) & 1) << 0) |
-													(((treat >> s) & 1) << 1) |
+													(((treat >> sw) & 1) << 8) |
+													(((treat >> s) & 1) << 7) |
+													(((treat >> se) & 1) << 6) |
 													(((treat >> w) & 1) << 5) |
 													(c << 4) |
 													(((treat >> e) & 1) << 3) |
-													(((treat >> n) & 1) << 7) |
-													(((treat >> nw) & 1) << 8) |
-													(((treat >> ne) & 1) << 6)];
+													(((treat >> nw) & 1) << 2) |
+													(((treat >> n) & 1) << 1) |
+													((treat >> ne) & 1)];
+													//(((treat >> sw) & 1) << 2) |
+													//(((treat >> se) & 1) << 0) |
+													//(((treat >> s) & 1) << 1) |
+													//(((treat >> w) & 1) << 5) |
+													//(c << 4) |
+													//(((treat >> e) & 1) << 3) |
+													//(((treat >> n) & 1) << 7) |
+													//(((treat >> nw) & 1) << 8) |
+													//(((treat >> ne) & 1) << 6)];
 										}
 									}
 								}

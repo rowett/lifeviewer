@@ -1,3 +1,6 @@
+Build 1039
+- fixed [R]Extended for Hex neighbourhoods
+
 Build 1038
 - fixed RuleLoader algo issue
 
