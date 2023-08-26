@@ -35879,6 +35879,7 @@
 								x += 1;
 
 								// unroll 1
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -35902,6 +35903,7 @@
 								x += 1;
 
 								// unroll 2
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -35925,6 +35927,7 @@
 								x += 1;
 
 								// unroll 3
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -35949,6 +35952,7 @@
 								x += 1;
 
 								// unroll 4
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -35971,6 +35975,7 @@
 								x += 1;
 
 								// unroll 5
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -35994,6 +35999,7 @@
 								x += 1;
 
 								// unroll 6
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36017,6 +36023,7 @@
 								x += 1;
 
 								// unroll 7
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36041,6 +36048,7 @@
 								x += 1;
 
 								// unroll 8
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36063,6 +36071,7 @@
 								x += 1;
 
 								// unroll 9
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36086,6 +36095,7 @@
 								x += 1;
 
 								// unroll 10
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36109,6 +36119,7 @@
 								x += 1;
 
 								// unroll 11
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36133,6 +36144,7 @@
 								x += 1;
 
 								// unroll 12
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36155,6 +36167,7 @@
 								x += 1;
 
 								// unroll 13
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36178,6 +36191,7 @@
 								x += 1;
 
 								// unroll 14
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36201,6 +36215,7 @@
 								x += 1;
 
 								// unroll 15 (and handle right edge)
+								c = e;
 								if (x === width - 1) {
 									ne = 0;
 									e = 0;
@@ -36670,6 +36685,7 @@
 								x += 1;
 
 								// unroll 1
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36693,6 +36709,7 @@
 								x += 1;
 
 								// unroll 2
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36716,6 +36733,7 @@
 								x += 1;
 
 								// unroll 3
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36740,6 +36758,7 @@
 								x += 1;
 
 								// unroll 4
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36762,6 +36781,7 @@
 								x += 1;
 
 								// unroll 5
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36785,6 +36805,7 @@
 								x += 1;
 
 								// unroll 6
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36808,6 +36829,7 @@
 								x += 1;
 
 								// unroll 7
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36832,6 +36854,7 @@
 								x += 1;
 
 								// unroll 8
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36854,6 +36877,7 @@
 								x += 1;
 
 								// unroll 9
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36877,6 +36901,7 @@
 								x += 1;
 
 								// unroll 10
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36900,6 +36925,7 @@
 								x += 1;
 
 								// unroll 11
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36924,6 +36950,7 @@
 								x += 1;
 
 								// unroll 12
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36946,6 +36973,7 @@
 								x += 1;
 
 								// unroll 13
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36969,6 +36997,7 @@
 								x += 1;
 
 								// unroll 14
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -36992,6 +37021,7 @@
 								x += 1;
 
 								// unroll 15 (and handle right edge)
+								c = e;
 								if (x === width - 1) {
 									ne = 0;
 									e = 0;
@@ -37461,6 +37491,7 @@
 								x += 1;
 
 								// unroll 1
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37484,6 +37515,7 @@
 								x += 1;
 
 								// unroll 2
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37507,6 +37539,7 @@
 								x += 1;
 
 								// unroll 3
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37531,6 +37564,7 @@
 								x += 1;
 
 								// unroll 4
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37553,6 +37587,7 @@
 								x += 1;
 
 								// unroll 5
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37576,6 +37611,7 @@
 								x += 1;
 
 								// unroll 6
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37599,6 +37635,7 @@
 								x += 1;
 
 								// unroll 7
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37623,6 +37660,7 @@
 								x += 1;
 
 								// unroll 8
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37645,6 +37683,7 @@
 								x += 1;
 
 								// unroll 9
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37668,6 +37707,7 @@
 								x += 1;
 
 								// unroll 10
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37691,6 +37731,7 @@
 								x += 1;
 
 								// unroll 11
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37715,6 +37756,7 @@
 								x += 1;
 
 								// unroll 12
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37737,6 +37779,7 @@
 								x += 1;
 
 								// unroll 13
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37760,6 +37803,7 @@
 								x += 1;
 
 								// unroll 14
+								c = e;
 								ne = gridRow0[x + 1];
 								e = gridRow1[x + 1];
 								se = gridRow2[x + 1];
@@ -37783,6 +37827,7 @@
 								x += 1;
 
 								// unroll 15 (and handle right edge)
+								c = e;
 								if (x === width - 1) {
 									ne = 0;
 									e = 0;

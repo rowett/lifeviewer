@@ -300,7 +300,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1036,
+		/** @const {number} */ versionBuild : 1038,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -8711,8 +8711,8 @@
 		if (!me.multiStateView) {
 			// reset grid and generation counter
 			me.engine.restoreSavedGrid(me, me.noHistory);
-			Array.copy(me.engine.tileGrid, me.engine.colourTileGrid);
-			Array.copy(me.engine.tileGrid, me.engine.colourTileHistoryGrid);
+			//Array.copy(me.engine.tileGrid, me.engine.colourTileGrid);
+			//Array.copy(me.engine.tileGrid, me.engine.colourTileHistoryGrid);
 
 			// re-convert grid to colours so rainbow on/off works
 			if (!me.engine.isLifeHistory) {

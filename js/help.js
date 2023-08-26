@@ -1646,7 +1646,7 @@
 					if (value >= (1 << 20)) {
 						itemName += (value >> 20) + "Mb";
 					} else {
-						if (view.engine.ruleTreePartialLookup.length >= (1 << 10)) {
+						if (value >= (1 << 10)) {
 							itemName += (value >> 10) + "Kb";
 						} else {
 							itemName += value + " bytes";

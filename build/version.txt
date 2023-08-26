@@ -1,3 +1,9 @@
+Build 1038
+- fixed RuleLoader algo issue
+
+Build 1037
+- fixed a crash in Help
+
 Build 1036
 - added B0 support to [R]Extended rules
 
