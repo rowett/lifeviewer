@@ -1,3 +1,6 @@
+Build 1040
+- fixed drawing with [R]Extended
+
 Build 1039
 - fixed [R]Extended for Hex neighbourhoods
 

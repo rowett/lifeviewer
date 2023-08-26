@@ -7372,12 +7372,16 @@
 
 			// check for multi-state rules
 			if (!this.isHROT) {
-				if (this.multiNumStates <= 2 || this.isSuper || this.isExtended) {
-					// 2-state
-					bitAlive = ((state & 1) === 1);
+				if (this.isExtended) {
+					bitAlive = (state > 0);
 				} else {
-					// generations
-					bitAlive = (state === this.multiNumStates - 1);
+					if (this.multiNumStates <= 2 || this.isSuper) {
+						// 2-state
+						bitAlive = ((state & 1) === 1);
+					} else {
+						// generations
+						bitAlive = (state === this.multiNumStates - 1);
+					}
 				}
 
 				// draw alive or dead
