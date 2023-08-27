@@ -1,3 +1,11 @@
+Build 1042
+- added experimental syntax for single-channel salvos
+	- [[ PASTET t PASTE rle x y XT dx1 dt1 dx2 dt2 ... dyn dtn ]]
+	- [[ PASTET t PASTE rle x y YT dy1 dt1 dy2 dt2 ... dyn dtn ]]
+
+Build 1041
+- fixed HROT bounding box calculation
+
 Build 1040
 - fixed drawing with [R]Extended
 

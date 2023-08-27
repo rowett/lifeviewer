@@ -521,6 +521,10 @@
 		/** @const {string} */ transTypeRotateCW : "RCW",
 		/** @const {string} */ transTypeRotateCCW : "RCCW",
 
+		// XT and YT pastes
+		/** @const {string} */ pasteXTWord : "XT",
+		/** @const {string} */ pasteYTWord : "YT",
+
 		// variable prefix
 		/** @const {string} */ variablePrefixSymbol : "#"
 	};

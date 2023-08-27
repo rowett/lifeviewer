@@ -2569,7 +2569,7 @@
 
 		// count the subperiods excluding period 1 and oscillator period
 		numCols = 0;
-		for (x = 2; x < this.popSubPeriod.length - 1; x++) {
+		for (x = 2; x < this.popSubPeriod.length - 1; x += 1) {
 			if (this.popSubPeriod[x] > 0) {
 				numCols += 1;
 			}
@@ -2578,7 +2578,7 @@
 
 		// make colours for the subperiods excluding period 1 and oscillator period
 		y = 0;
-		for (x = 2; x < this.popSubPeriod.length - 1; x++) {
+		for (x = 2; x < this.popSubPeriod.length - 1; x += 1) {
 			if (this.popSubPeriod[x] > 0) {
 				hue = Math.floor(360 * (y / numCols));
 				periodCols[x] = "hsl(" + hue + ",100%," + (70 - (y & 3) * 12) + "%)";
@@ -4848,7 +4848,7 @@
 	/** @returns {Array} */
 	Life.prototype.oscillating = function(/** @type {View} */ view) {
 		// get bounding box
-		var	/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
+		var	/** @type {BoundingBox} */ box = this.zoomBox,
 			/** @type {number} */ leftX = box.leftX,
 			/** @type {number} */ bottomY = box.bottomY,
 			/** @type {number} */ rightX = box.rightX,
@@ -14806,7 +14806,7 @@
 					colourTileRow = this.colourTileGrid[y];
 					colourTileHistoryRow = this.colourTileHistoryGrid[y];
 
-					for (x = leftX; x <= rightX ; x += 1) {
+					for (x = leftX; x <= rightX; x += 1) {
 						value = 1 << (~x & 15);
 						tileRow[x >> 4] |= value;
 						nextTileRow[x >> 4] |= value;

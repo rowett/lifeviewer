@@ -707,14 +707,14 @@
 
 		// don't update bounding box if zero population
 		if (population > 0) {
-			zoomBox.leftX = minX1;
-			zoomBox.rightX = maxX1;
-			zoomBox.bottomY = minY1;
-			zoomBox.topY = maxY1;
-			HROTBox.leftX = minX;
-			HROTBox.rightX = maxX;
-			HROTBox.bottomY = minY;
-			HROTBox.topY = topY;
+			zoomBox.leftX = minX;
+			zoomBox.rightX = maxX;
+			zoomBox.bottomY = minY;
+			zoomBox.topY = maxY;
+			HROTBox.leftX = minX1;
+			HROTBox.rightX = maxX1;
+			HROTBox.bottomY = minY1;
+			HROTBox.topY = maxY1;
 		}
 	};
 
@@ -1958,10 +1958,10 @@
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
-			/** @type {number} */ leftX = this.engine.HROTBox.leftX,
-			/** @type {number} */ rightX = this.engine.HROTBox.rightX,
-			/** @type {number} */ bottomY = this.engine.HROTBox.bottomY,
-			/** @type {number} */ topY = this.engine.HROTBox.topY,
+			/** @type {number} */ leftX = this.engine.zoomBox.leftX,
+			/** @type {number} */ rightX = this.engine.zoomBox.rightX,
+			/** @type {number} */ bottomY = this.engine.zoomBox.bottomY,
+			/** @type {number} */ topY = this.engine.zoomBox.topY,
 			/** @const {number} */ xrange = this.xrange,
 			/** @const {number} */ yrange = this.yrange,
 			/** @const {Uint8Array} */ birthList = useAlternate ? this.altBirths : this.births,
@@ -2502,14 +2502,14 @@
 
 			// don't update bounding box if zero population
 			if (population > 0) {
-				this.engine.zoomBox.leftX = minX1;
-				this.engine.zoomBox.rightX = maxX1;
-				this.engine.zoomBox.bottomY = minY1;
-				this.engine.zoomBox.topY = maxY1;
-				this.engine.HROTBox.leftX = minX;
-				this.engine.HROTBox.rightX = maxX;
-				this.engine.HROTBox.bottomY = minY;
-				this.engine.HROTBox.topY = maxY;
+				this.engine.zoomBox.leftX = minX;
+				this.engine.zoomBox.rightX = maxX;
+				this.engine.zoomBox.bottomY = minY;
+				this.engine.zoomBox.topY = maxY;
+				this.engine.HROTBox.leftX = minX1;
+				this.engine.HROTBox.rightX = maxX1;
+				this.engine.HROTBox.bottomY = minY1;
+				this.engine.HROTBox.topY = maxY1;
 			}
 		} else {
 			if (type === this.manager.vonNeumannHROT && xrange > this.rangeVN) {
@@ -2653,14 +2653,14 @@
 
 				// don't update bounding box if zero population
 				if (population > 0) {
-					this.engine.zoomBox.leftX = minX1;
-					this.engine.zoomBox.rightX = maxX1;
-					this.engine.zoomBox.bottomY = minY1;
-					this.engine.zoomBox.topY = maxY1;
-					this.engine.HROTBox.leftX = minX;
-					this.engine.HROTBox.rightX = maxX;
-					this.engine.HROTBox.bottomY = minY;
-					this.engine.HROTBox.topY = maxY;
+					this.engine.zoomBox.leftX = minX;
+					this.engine.zoomBox.rightX = maxX;
+					this.engine.zoomBox.bottomY = minY;
+					this.engine.zoomBox.topY = maxY;
+					this.engine.HROTBox.leftX = minX1;
+					this.engine.HROTBox.rightX = maxX1;
+					this.engine.HROTBox.bottomY = minY1;
+					this.engine.HROTBox.topY = maxY1;
 				}
 			} else {
 				// determine neighbourhood type
@@ -3825,10 +3825,10 @@
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
-			/** @type {number} */ leftX = this.engine.HROTBox.leftX,
-			/** @type {number} */ rightX = this.engine.HROTBox.rightX,
-			/** @type {number} */ bottomY = this.engine.HROTBox.bottomY,
-			/** @type {number} */ topY = this.engine.HROTBox.topY,
+			/** @type {number} */ leftX = this.engine.zoomBox.leftX,
+			/** @type {number} */ rightX = this.engine.zoomBox.rightX,
+			/** @type {number} */ bottomY = this.engine.zoomBox.bottomY,
+			/** @type {number} */ topY = this.engine.zoomBox.topY,
 			/** @type {number} */ xrange = this.xrange,
 			/** @type {number} */ yrange = this.yrange,
 			// deal with alternate rules
@@ -4362,14 +4362,14 @@
 
 			// don't update bounding box if zero population
 			if (population > 0) {
-				this.engine.zoomBox.leftX = minX1;
-				this.engine.zoomBox.rightX = maxX1;
-				this.engine.zoomBox.bottomY = minY1;
-				this.engine.zoomBox.topY = maxY1;
-				this.engine.HROTBox.leftX = minX;
-				this.engine.HROTBox.rightX = maxX;
-				this.engine.HROTBox.bottomY = minY;
-				this.engine.HROTBox.topY = maxY;
+				this.engine.zoomBox.leftX = minX;
+				this.engine.zoomBox.rightX = maxX;
+				this.engine.zoomBox.bottomY = minY;
+				this.engine.zoomBox.topY = maxY;
+				this.engine.HROTBox.leftX = minX1;
+				this.engine.HROTBox.rightX = maxX1;
+				this.engine.HROTBox.bottomY = minY1;
+				this.engine.HROTBox.topY = maxY1;
 			}
 		} else {
 			if (type === this.manager.vonNeumannHROT && xrange > this.rangeVN) {
@@ -4502,14 +4502,14 @@
 
 				// don't update bounding box if zero population
 				if (population > 0) {
-					this.engine.zoomBox.leftX = minX1;
-					this.engine.zoomBox.rightX = maxX1;
-					this.engine.zoomBox.bottomY = minY1;
-					this.engine.zoomBox.topY = maxY1;
-					this.engine.HROTBox.leftX = minX;
-					this.engine.HROTBox.rightX = maxX;
-					this.engine.HROTBox.bottomY = minY;
-					this.engine.HROTBox.topY = maxY;
+					this.engine.zoomBox.leftX = minX;
+					this.engine.zoomBox.rightX = maxX;
+					this.engine.zoomBox.bottomY = minY;
+					this.engine.zoomBox.topY = maxY;
+					this.engine.HROTBox.leftX = minX1;
+					this.engine.HROTBox.rightX = maxX1;
+					this.engine.HROTBox.bottomY = minY1;
+					this.engine.HROTBox.topY = maxY1;
 				}
 			} else {
 				// determine neighbourhood type

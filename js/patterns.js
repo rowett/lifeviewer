@@ -7731,11 +7731,11 @@
 		// check for Smax
 		if (survivals[maxn + 1]) {
 			// B0 with Smax: rule -> NOT(reverse(bits))
-			for (i = 0; i <= maxn; i++) {
+			for (i = 0; i <= maxn; i += 1) {
 				tempB[i] = 1 - survivals[maxn - i + 1];
 				tempS[i + 1] = 1 - births[maxn - i];
 			}
-			for (i = 0; i <= maxn; i++) {
+			for (i = 0; i <= maxn; i += 1) {
 				births[i] = tempB[i];
 				survivals[i + 1] = tempS[i + 1];
 			}
@@ -7750,13 +7750,13 @@
 			altSurvivals = pattern.altSurvivalHROT;
 
 			// odd rule -> reverse(bits)
-			for (i = 0; i <= maxn; i++) {
+			for (i = 0; i <= maxn; i += 1) {
 				altBirths[i] = survivals[maxn - i + 1];
 				altSurvivals[i + 1] = births[maxn - i];
 			}
 
 			// even rule -> NOT(bits)
-			for (i = 0; i <= maxn; i++) {
+			for (i = 0; i <= maxn; i += 1) {
 				births[i] = 1 - births[i];
 				survivals[i + 1] = 1 - survivals[i + 1];
 			}
@@ -8909,7 +8909,7 @@
 				do {
 					this.packTransition(inputs, output, pattern, outputList, lut, null);
 					// permute from element 1 onwards
-				} while(this.nextPermutation(inputs));
+				} while (this.nextPermutation(inputs));
 			} else {
 				// other symmetry - get the remaps for the given symmetry
 				remap = this.ruleTableSymmetryRemap[pattern.ruleTableNeighbourhood][symmetry - 1];

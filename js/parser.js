@@ -172,6 +172,8 @@
 			case Keywords.pasteModeNAndWord:
 			case Keywords.pasteModeOneWord:
 			case Keywords.pasteModeCopyWord:
+			case Keywords.pasteXTWord:
+			case Keywords.pasteYTWord:
 				result = true;
 				break;
 			default:
@@ -1349,6 +1351,7 @@
 			/** @type {number} */ z = 0,
 			/** @type {number} */ x2 = 0,
 			/** @type {number} */ y2 = 0,
+			/** @type {number} */ z2 = 0,
 			/** @type {Array<number>} */ coords = [],
 
 			// loop counter
@@ -2582,7 +2585,7 @@
 								view.recipeDelta = [];
 
 								// check for delta list
-								while(scriptReader.nextTokenIsNumeric()) {
+								while (scriptReader.nextTokenIsNumeric()) {
 									numberValue = scriptReader.getNextTokenAsNumber();
 									view.recipeDelta[view.recipeDelta.length] = numberValue;
 								}
@@ -2806,6 +2809,59 @@
 
 									if (!view.addRLE(view.pasteGen, view.pasteEnd, view.pasteDelta, view.pasteEvery, view.pasteMode, view.pasteDeltaX, view.pasteDeltaY, stringToken, x, y, z)) {
 										scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + stringToken, "invalid name or rle"];
+									} else {
+										// check for XT or YT keywords
+										peekToken = scriptReader.peekAtNextToken();
+										if (peekToken === Keywords.pasteXTWord || peekToken === Keywords.pasteYTWord) {
+											// consume token
+											scriptReader.getNextToken();
+
+											// remember current position
+											x2 = x;
+											y2 = y;
+											z2 = z;
+
+											// flag when complete
+											z2 = 0;
+
+											// read first number pair
+											if (scriptReader.nextTokenIsNumeric() && scriptReader.forwardTokenIsNumeric(1)) {
+												x2 = scriptReader.getNextTokenAsNumber();
+												y2 = scriptReader.getNextTokenAsNumber();
+												while (z2 === 0) {
+													// validate delta
+													if (y2 <= 0) {
+														z2 = 1;
+														scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + peekToken, "delta must be > 0"];
+													} else {
+														// update the position
+														if (peekToken === Keywords.pasteXTWord) {
+															x += x2;
+														} else {
+															y += x2;
+														}
+	
+														// update the generation
+														view.pasteGen += y2;
+	
+														// add the paste to the list
+														view.addRLE(view.pasteGen, -1, [], 0, view.pasteMode, 0, 0, stringToken, x, y, z);
+	
+														// check for the next number pair
+														if (scriptReader.nextTokenIsNumeric() && scriptReader.forwardTokenIsNumeric(1)) {
+															// read the next number pair
+															x2 = scriptReader.getNextTokenAsNumber();
+															y2 = scriptReader.getNextTokenAsNumber();
+														} else {
+															// mark finished
+															z2 = 1;
+														}
+													}
+												}
+											} else {
+												scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + peekToken, "missing number pair"];
+											}
+										}
 									}
 
 									// errors handled above
