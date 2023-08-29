@@ -3877,6 +3877,7 @@
 			/** @type {number} */ row = 0,
 			/** @type {BoundingBox} */ extent = null,
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ tempBox = null,
 			/** @type {number} */ frameTypeMSB = 0,
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
@@ -4114,8 +4115,14 @@
 
 				// save statistics for this generation
 				this.popList[p] = this.population;
-				this.boxList[p << 1] = ((zoomBox.rightX - zoomBox.leftX + 1) << 16) | (zoomBox.topY - zoomBox.bottomY + 1);
-				this.boxList[(p << 1) + 1] = (zoomBox.leftX << 16) | zoomBox.bottomY;
+				if (this.isLifeHistory) {
+					tempBox = this.getHistoryAliveBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY);
+					this.boxList[p << 1] = ((tempBox.rightX - tempBox.leftX + 1) << 16) | (tempBox.topY - tempBox.bottomY + 1);
+					this.boxList[(p << 1) + 1] = (tempBox.leftX << 16) | tempBox.bottomY;
+				} else {
+					this.boxList[p << 1] = ((zoomBox.rightX - zoomBox.leftX + 1) << 16) | (zoomBox.topY - zoomBox.bottomY + 1);
+					this.boxList[(p << 1) + 1] = (zoomBox.leftX << 16) | zoomBox.bottomY;
+				}
 			}
 		}
 
@@ -4925,7 +4932,7 @@
 					boxSize = (boxWidth << 16) | boxHeight;
 					boxLocation = (leftX << 16) | bottomY;
 				} else {
-					// tbd extended rules
+					// TBD extended rules
 
 					// for super rules create a bounding box of just the alive cells
 					if (this.isSuper) {

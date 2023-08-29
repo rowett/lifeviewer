@@ -1379,6 +1379,7 @@
 		y = this.renderHelpLine(view, " " + Keywords.transTypeRotateCCW, "rotate counter-clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteWord + " name|rle|" + Keywords.randomCellsWord + " W H (X Y)", "paste cells at optional X Y", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (TRANS)", "... optional transformation", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " (XT|YT dp1 dt1 dp2 dt2 ... dpn dtn)", "... optional slow salvo definition", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteTWord + " <0..>", "set paste generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (recipe|<1..>+)*", "... optional delta list", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.pasteTWord + " " + Keywords.everyWord + " <1..>", "set paste interval", ctx, x, y, height, helpLine);

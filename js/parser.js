@@ -2829,33 +2829,27 @@
 												x2 = scriptReader.getNextTokenAsNumber();
 												y2 = scriptReader.getNextTokenAsNumber();
 												while (z2 === 0) {
-													// validate delta
-													if (y2 <= 0) {
-														z2 = 1;
-														scriptErrors[scriptErrors.length] = [Keywords.pasteWord + " " + peekToken, "delta must be > 0"];
+													// update the position
+													if (peekToken === Keywords.pasteXTWord) {
+														x += x2;
 													} else {
-														// update the position
-														if (peekToken === Keywords.pasteXTWord) {
-															x += x2;
-														} else {
-															y += x2;
-														}
-	
-														// update the generation
-														view.pasteGen += y2;
-	
-														// add the paste to the list
-														view.addRLE(view.pasteGen, -1, [], 0, view.pasteMode, 0, 0, stringToken, x, y, z);
-	
-														// check for the next number pair
-														if (scriptReader.nextTokenIsNumeric() && scriptReader.forwardTokenIsNumeric(1)) {
-															// read the next number pair
-															x2 = scriptReader.getNextTokenAsNumber();
-															y2 = scriptReader.getNextTokenAsNumber();
-														} else {
-															// mark finished
-															z2 = 1;
-														}
+														y += x2;
+													}
+
+													// update the generation
+													view.pasteGen += y2;
+
+													// add the paste to the list
+													view.addRLE(view.pasteGen, -1, [], 0, view.pasteMode, 0, 0, stringToken, x, y, z);
+
+													// check for the next number pair
+													if (scriptReader.nextTokenIsNumeric() && scriptReader.forwardTokenIsNumeric(1)) {
+														// read the next number pair
+														x2 = scriptReader.getNextTokenAsNumber();
+														y2 = scriptReader.getNextTokenAsNumber();
+													} else {
+														// mark finished
+														z2 = 1;
 													}
 												}
 											} else {

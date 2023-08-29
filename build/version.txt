@@ -1,6 +1,10 @@
+Build 1043
+- allow negative time delta for slow salvos
+- fixed Bounding Box for Identify [R]History patterns with state 6
+
 Build 1042
-- added experimental syntax for single-channel salvos
-	- [[ PASTET t PASTE rle x y XT dx1 dt1 dx2 dt2 ... dyn dtn ]]
+- added experimental syntax for slow salvos
+	- [[ PASTET t PASTE rle x y XT dx1 dt1 dx2 dt2 ... dxn dtn ]]
 	- [[ PASTET t PASTE rle x y YT dy1 dt1 dy2 dt2 ... dyn dtn ]]
 
 Build 1041
