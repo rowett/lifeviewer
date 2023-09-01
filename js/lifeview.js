@@ -281,7 +281,7 @@
 		/** @const {Array<number>} */ stateMap : [0, 6, 2, 5, 3, 4, 1],
 
 		// state names for [R]History
-		/** @const {Array<string>} */ stateNames : ["dead", "alive", "history", "mark1", "markOff", "mark2", "kill"],
+		/** @const {Array<string>} */ stateNames : ["dead", "alive", "history", "mark1", "markoff", "mark2", "kill"],
 
 		// display names for [R]History states
 		/** @const {Array<string>} */ stateDisplayNames : ["OFF", "ON", "HISTORY", "MARK1", "MARKOFF", "MARK2", "KILL"],
@@ -300,7 +300,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1043,
+		/** @const {number} */ versionBuild : 1044,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -5969,11 +5969,11 @@
 
 				// display the state
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
 				} else {
-					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
+					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
 				}
 			}
 			this.xyLabel.deleted = false;
@@ -6947,7 +6947,7 @@
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
 		// identify page up and down buttons
-		shown = hide || !this.resultsDisplayed || (this.periodMapDisplayed !== 1 || this.engine.tableMaxRow === 0);
+		shown = hide || !this.resultsDisplayed || (this.periodMapDisplayed !== 1 || this.engine.tableMaxRow === 0 || settingsMenuOpen);
 		this.identifyPageUpButton.deleted = shown;
 		this.identifyPageDownButton.deleted = shown;
 
@@ -7561,7 +7561,7 @@
 	// create RuleLoader Lookup
 	View.prototype.createRuleLoaderLookup = function() {
 		// check for Moore with 3 bits since it is slow to generate and needs to be done in steps
-		if (this.engine.ruleTableOutput !== null && this.engine.ruleTableNeighbourhood === PatternConstants.ruleTableMoore && this.engine.multiNumStates >= 8) {
+		if (this.engine.ruleTableOutput !== null && this.engine.ruleTableNeighbourhood === PatternConstants.ruleTableMoore && this.engine.multiNumStates > 4) {
 			// reset to first init step
 			this.engine.ruleLoaderStep = 0;
 		} else {
@@ -7770,8 +7770,8 @@
 				if (me.diedGeneration === -1) {
 					me.diedGeneration = me.engine.counter;
 
-					// notify simulation stopped unless loop defined and enabled
-					if (me.genNotifications && !(me.loopGeneration !== -1 && !me.loopDisabled)) {
+					// notify simulation stopped
+					if (me.genNotifications) {
 						// don't notify if there are pending pastes
 						if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
 							if (me.engine.isPCA || me.engine.isMargolus) {

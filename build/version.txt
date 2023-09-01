@@ -1,3 +1,14 @@
+Build 1044
+- fixed Identify not displaying Life ended message when LOOP defined
+- fixed Fast Lookup not being triggered for RuleTable patterns with 5 to 7 states
+- fixed Identify with multi-state patterns
+- improved Identify performance for [R]History patterns
+- fixed Identify and Bounded Grids
+- fixed COLOR error for [R]History lower case state names
+- fixed state 3 cells for [R]Extended in Identify
+- fixed [R]History no-trail states that get killed at the grid boundary
+- fixed AutoFit on Bounded Grids with an infinite dimension
+
 Build 1043
 - allow negative time delta for slow salvos
 - fixed Bounding Box for Identify [R]History patterns with state 6

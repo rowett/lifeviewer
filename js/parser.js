@@ -3608,12 +3608,23 @@
 										if (colNum < 0) {
 											if (view.getPCAStateFromName(peekToken) >= 0 || view.isLifeHistoryStateName(peekToken)) {
 												scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "not valid for this rule"];
+
+												// discard colour definition
+												if (scriptReader.nextTokenIsNumeric()) {
+													scriptReader.getNextTokenAsNumber();
+													if (scriptReader.nextTokenIsNumeric()) {
+														scriptReader.getNextTokenAsNumber();
+														if (scriptReader.nextTokenIsNumeric()) {
+															scriptReader.getNextTokenAsNumber();
+														}
+													}
+												}
 											} else {
 												scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "illegal element"];
+
+												// eat the invalid token
+												peekToken = scriptReader.getNextToken();
 											}
-	
-											// eat the invalid token
-											peekToken = scriptReader.getNextToken();
 										}
 									}
 									break;

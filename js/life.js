@@ -11,8 +11,11 @@
 		/** @const {number} */ mode2History : 2,
 		/** @const {number} */ modeAny : 3,
 
-		// cell period table State 6 label
+		// cell period table State 6 label for [R]History and [R]Super
 		/** @const {string} */ state6Label : "St.6",
+
+		// cell period table State 3 label for [R]Extended
+		/** @const {string} */ state3Label : "St.3",
 
 		// number of snowflakes
 		/** @const {number} */ flakes : 50000,
@@ -222,6 +225,9 @@
 
 		// cell colour index for cell dead longest (for 2-state Themes)
 		/** @const {number} */ deadMin : 1,
+
+		// alive flags for [R]Extended states
+		/** @const {Array<boolean>} */ extendedAliveStates : [false, true, true, false, true, false, true, false, true, false, true, false, true, false, false, true, true, false, false, false, false],
 
 		// bit masks for surrounding tiles
 		/** @const {number} */ leftSet : 1,
@@ -745,14 +751,14 @@
 		// active cell box for HROT
 		/** @type {BoundingBox} */ this.HROTBox = null;
 
-		// Identify bounding box
-		/** @type {BoundingBox} */ this.identifyBox = null;
-
 		// initial bounding box for Track speed
 		/** @type {BoundingBox} */ this.initialBox = null;
 
 		// state 6 [R]History box
 		/** @type {BoundingBox} */ this.state6Box = null;
+
+		// identify box
+		/** @type {BoundingBox} */ this.identifyBox = new BoundingBox(0, 0, 0, 0);
 
 		// history bounding box
 		/** @type {BoundingBox} */ this.historyBox = null;
@@ -3006,7 +3012,11 @@
 		}
 		x = ctx.measureText(String(y)).width;
 		if (this.cellPeriodState6) {
-			y = ctx.measureText(LifeConstants.state6Label).width;
+			if (this.isExtended) {
+				y = ctx.measureText(LifeConstants.state3Label).width;
+			} else {
+				y = ctx.measureText(LifeConstants.state6Label).width;
+			}
 			if (y > x) {
 				x = y;
 			}
@@ -3031,10 +3041,17 @@
 			ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize, boxSize, boxSize);
 
 			// draw period
-			ctx.fillStyle = bgCol;
-			ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
-			ctx.fillStyle = fgCol;
-			ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+			if (this.isExtended) {
+				ctx.fillStyle = bgCol;
+				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+				ctx.fillStyle = fgCol;
+				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+			} else {
+				ctx.fillStyle = bgCol;
+				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+				ctx.fillStyle = fgCol;
+				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+			}
 
 			y += 1;
 		}
@@ -3254,7 +3271,8 @@
 			/** @type {Array<Uint8Array>} */ initList = this.initList,
 			/** @type {Uint8Array} */ initRow = null,
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
-			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree);
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
+			/** @type {boolean} */ isAlive = false;
 
 		//var msgRow = "";
 
@@ -3415,7 +3433,7 @@
 						//console.log("gen", gen, "y", cy, "data", msgRow);
 					}
 				} else {
-					if (this.isSuper || this.isExtended) {
+					if (this.isSuper) {
 						initRow = initList[cy];
 						for (cx = x; cx <= right; cx += 1) {
 							if (gen === 0) {
@@ -3442,28 +3460,59 @@
 							}
 						}
 					} else {
-						// multi-state
-						initRow = initList[cy];
-						for (cx = x; cx <= right; cx += 1) {
-							if (gen === 0) {
-								initRow[cx] = colourRow[cx];
-								if (colourRow[cx] > this.historyStates) {
-									countRow[cx] = LifeConstants.cellWasAlive;
-								}
-							} else {
-								if (colourRow[cx] > this.historyStates) {
-									// update count
-									if (countRow[cx] === LifeConstants.cellWasDead) {
-										countRow[cx] = LifeConstants.cellHasChanged;
+						if (this.isExtended) {
+							initRow = initList[cy];
+							for (cx = x; cx <= right; cx += 1) {
+								isAlive = LifeConstants.extendedAliveStates[colourRow[x]];
+								if (gen === 0) {
+									if (isAlive) {
+										initRow[cx] = 1;
+										countRow[cx] = LifeConstants.cellWasAlive;
 									} else {
-										if (colourRow[cx] !== initRow[cx]) {
+										initRow[cx] = 0;
+									}
+								} else {
+									if (isAlive) {
+										// update count
+										if (countRow[cx] === LifeConstants.cellWasDead) {
+											countRow[cx] = LifeConstants.cellHasChanged;
+										} else {
+											if (initRow[cx] === 0) {
+												countRow[cx] = LifeConstants.cellHasChanged;
+											}
+										}
+									} else {
+										// update count
+										if (countRow[cx] === LifeConstants.cellWasAlive) {
 											countRow[cx] = LifeConstants.cellHasChanged;
 										}
 									}
+								}
+							}
+						} else {
+							// multi-state
+							initRow = initList[cy];
+							for (cx = x; cx <= right; cx += 1) {
+								if (gen === 0) {
+									initRow[cx] = colourRow[cx];
+									if (colourRow[cx] > this.historyStates) {
+										countRow[cx] = LifeConstants.cellWasAlive;
+									}
 								} else {
-									// update count
-									if (countRow[cx] === LifeConstants.cellWasAlive) {
-										countRow[cx] = LifeConstants.cellHasChanged;
+									if (colourRow[cx] > this.historyStates) {
+										// update count
+										if (countRow[cx] === LifeConstants.cellWasDead) {
+											countRow[cx] = LifeConstants.cellHasChanged;
+										} else {
+											if (colourRow[cx] !== initRow[cx]) {
+												countRow[cx] = LifeConstants.cellHasChanged;
+											}
+										}
+									} else {
+										// update count
+										if (countRow[cx] === LifeConstants.cellWasAlive) {
+											countRow[cx] = LifeConstants.cellHasChanged;
+										}
 									}
 								}
 							}
@@ -3530,7 +3579,7 @@
 			bit = bitStart;
 
 			// check for Super, Extended or RuleTree rules
-			if (this.isSuper || this.isExtended || this.isRuleTree) {
+			if (this.isSuper || this.isRuleTree) {
 				// process the row
 				cx = extent.leftX;
 				frameBits = 0;
@@ -3642,115 +3691,228 @@
 					occupiedFrame[f - l] |= frameBits;
 				}
 			} else {
-				// process the row
-				cx = extent.leftX;
-				frameBits = 0;
-				while (cx <= extent.rightX - 16) {
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					bit >>= 1;
-					cx += 1;
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
-					}
-					// not needed since last bit and reset below
-					//bit >>= 1;
-					cx += 1;
+				if (this.isExtended) {
+					// process the row
+					cx = extent.leftX;
+					frameBits = 0;
+					while (cx <= extent.rightX - 16) {
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						// not needed since last bit and reset below
+						//bit >>= 1;
+						cx += 1;
 
-					// save frame bits
+						// save frame bits
+						if (frameBits !== 0) {
+							frames[f] = frameBits;
+							occupiedFrame[f - l] |= frameBits;
+							frameBits = 0;
+						}
+
+						// reset bit to start of word
+						bit = bitStart;
+						f += 1;
+					}
+
+					// process remaining cells in row
+					while (cx <= extent.rightX) {
+						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+					}
 					if (frameBits !== 0) {
 						frames[f] = frameBits;
 						occupiedFrame[f - l] |= frameBits;
-						frameBits = 0;
+					}
+				} else {
+					// process the row
+					cx = extent.leftX;
+					frameBits = 0;
+					while (cx <= extent.rightX - 16) {
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						// not needed since last bit and reset below
+						//bit >>= 1;
+						cx += 1;
+
+						// save frame bits
+						if (frameBits !== 0) {
+							frames[f] = frameBits;
+							occupiedFrame[f - l] |= frameBits;
+							frameBits = 0;
+						}
+
+						// reset bit to start of word
+						bit = bitStart;
+						f += 1;
 					}
 
-					// reset bit to start of word
-					bit = bitStart;
-					f += 1;
-				}
-
-				// process remaining cells in row
-				while (cx <= extent.rightX) {
-					if (colourRow[cx] >= aliveStart) {
-						frameBits |= bit;
+					// process remaining cells in row
+					while (cx <= extent.rightX) {
+						if (colourRow[cx] >= aliveStart) {
+							frameBits |= bit;
+						}
+						bit >>= 1;
+						cx += 1;
 					}
-					bit >>= 1;
-					cx += 1;
-				}
-				if (frameBits !== 0) {
-					frames[f] = frameBits;
-					occupiedFrame[f - l] |= frameBits;
+					if (frameBits !== 0) {
+						frames[f] = frameBits;
+						occupiedFrame[f - l] |= frameBits;
+					}
 				}
 			}
 		}
@@ -3856,6 +4018,58 @@
 		}
 	};
 
+	// add Extended state 3 cells to cell map
+	Life.prototype.addExtendedState3ToCellMap = function(/** @type {BoundingBox} */ box, /** @type {Int32Array} */ cellPeriod, /** @type {Array<Uint8Array>} */ grid) {
+		var	/** @type {number} */ leftX = box.leftX,
+			/** @type {number} */ bottomY = box.bottomY,
+			/** @type {number} */ rightX = box.rightX,
+			/** @type {number} */ topY = box.topY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ row = 0,
+			/** @type {Uint8Array} */ gridRow = null;
+
+		this.cellPeriodState6 = 0;
+		for (y = bottomY; y <= topY; y += 1) {
+			gridRow = grid[y];
+			row = (y - bottomY) * (rightX - leftX + 1);
+			for (x = leftX; x <= rightX; x += 1) {
+				if (gridRow[x] === 3) {
+					cellPeriod[row + x - leftX] = -1;
+					this.cellPeriodState6 += 1;
+				}
+			}
+		}
+	};
+
+	// compute bounding box for Identify
+	/** @returns {BoundingBox} */
+	Life.prototype.updateIdentifyBox = function() {
+		var	/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
+			/** @type {BoundingBox} */ state6Box = this.state6Box,
+			/** @type {BoundingBox} */ identifyBox = this.identifyBox,
+			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0);
+
+		// found bounded grids use the bounded grid extent
+		if (this.boundedGridType !== -1) {
+			identifyBox.leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset;
+			identifyBox.bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset;
+			identifyBox.rightX = identifyBox.leftX + this.boundedGridWidth - 1;
+			identifyBox.topY = identifyBox.bottomY + this.boundedGridHeight - 1;
+		} else {
+			// copy zoom box into Identify box
+			identifyBox.set(box);
+
+			// merge with state 6 box if required
+			if (this.isSuper || this.isLifeHistory) {
+				identifyBox.merge(state6Box);
+			}
+		}
+
+		// return the bounding box
+		return this.identifyBox;
+	};
+
 	// compute strict volatility and Mod
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {View} */ view, /** @type {boolean} */ isOscillator, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ p = 0,
@@ -3876,8 +4090,6 @@
 			/** @type {number} */ popTotal = 0,
 			/** @type {number} */ row = 0,
 			/** @type {BoundingBox} */ extent = null,
-			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
-			/** @type {BoundingBox} */ tempBox = null,
 			/** @type {number} */ frameTypeMSB = 0,
 			/** @type {number} */ bitStart = 0,
 			/** @type {number} */ v = 0,
@@ -3916,7 +4128,6 @@
 		// determine whether Strict Volatility can be calculated based on amount of RAM needed
 		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper || this.isExtended)) {
 			// compute the maximum box width and height for the oscillator
-			extent = this.getOscillatorBounds(period, i);
 			boxWidth = extent.rightX - extent.leftX + 1;
 			boxHeight = extent.topY - extent.bottomY + 1;
 			bitRowInBytes = ((boxWidth - 1) >> 4) + 1;
@@ -3959,8 +4170,9 @@
 		// save cell map for each generation in the period
 		// include extra generation to check Oscillator Mod period/2
 		for (p = 0; p <= period + 1; p += 1) {
-			// compute next generation
+			// compute next generation and update bounding box
 			view.computeNextGeneration();
+			extent = this.updateIdentifyBox();
 
 			// check if life just stopped
 			if (view.justDied) {
@@ -3980,10 +4192,10 @@
 			// check if grid buffer needs to grow just for spaceships (since oscillators don't move)
 			// (normally this check happens at render time but we may have processed more generations than expected by that function)
 			if (this.counter && this.population > 0 && !isOscillator) {
-				view.middleBox.leftX = this.zoomBox.leftX;
-				view.middleBox.bottomY = this.zoomBox.bottomY;
-				view.middleBox.rightX = this.zoomBox.rightX;
-				view.middleBox.topY = this.zoomBox.topY;
+				view.middleBox.leftX = extent.leftX;
+				view.middleBox.bottomY = extent.bottomY;
+				view.middleBox.rightX = extent.rightX;
+				view.middleBox.topY = extent.topY;
 				view.checkGridSize(view, view.middleBox);
 			}
 
@@ -3993,13 +4205,6 @@
 			} else {
 				// use the original method of computing cell occupancy
 				this.updateOccupancy(extent, p);
-			}
-
-			if (!isOscillator) {
-				extent = (this.isHROT ? this.HROTBox : zoomBox);
-				if (this.isSuper) {
-					extent = this.getSuperAliveBox(extent.leftX, extent.bottomY, extent.rightX, extent.topY);
-				}
 			}
 
 			// TBD getExtendedAliveBox
@@ -4115,14 +4320,8 @@
 
 				// save statistics for this generation
 				this.popList[p] = this.population;
-				if (this.isLifeHistory) {
-					tempBox = this.getHistoryAliveBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY);
-					this.boxList[p << 1] = ((tempBox.rightX - tempBox.leftX + 1) << 16) | (tempBox.topY - tempBox.bottomY + 1);
-					this.boxList[(p << 1) + 1] = (tempBox.leftX << 16) | tempBox.bottomY;
-				} else {
-					this.boxList[p << 1] = ((zoomBox.rightX - zoomBox.leftX + 1) << 16) | (zoomBox.topY - zoomBox.bottomY + 1);
-					this.boxList[(p << 1) + 1] = (zoomBox.leftX << 16) | zoomBox.bottomY;
-				}
+				this.boxList[p << 1] = ((extent.rightX - extent.leftX + 1) << 16) | (extent.topY - extent.bottomY + 1);
+				this.boxList[(p << 1) + 1] = (extent.leftX << 16) | extent.bottomY;
 			}
 		}
 
@@ -4178,7 +4377,7 @@
 				}
 			}
 
-			// for [R]History and [R]Super add state 6 cells to map
+			// for [R]History and [R]Super add state 6 cells to map and for [R]Extended add state 3 cells
 			if (isOscillator) {
 				this.cellPeriodState6 = 0;
 
@@ -4189,9 +4388,11 @@
 				if (this.isSuper) {
 					this.addSuperState6ToCellMap(extent, cellPeriod, colourGrid);
 				}
-			}
 
-			// TBD addExtendedState6ToCellMap
+				if (this.isExtended) {
+					this.addExtendedState3ToCellMap(extent, cellPeriod, colourGrid);
+				}
+			}
 
 			// display integer strict volatility without decimal places
 			p = popSubPeriod[period] / popTotal;
@@ -4692,143 +4893,6 @@
 		return result;
 	};
 
-	// get alive cell and state6 cell bounding box for [R]History patterns
-	/** @returns {BoundingBox} */
-	Life.prototype.getHistoryAliveBox = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY) {
-		var 	/** @type {number} */ minx = 0,
-			/** @type {number} */ miny = 0,
-			/** @type {number} */ maxx = 0,
-			/** @type {number} */ maxy = 0,
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ state = 0,
-			/** @type {number} */ over = 0,
-			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
-
-			// colour grid
-			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @type {Uint8Array} */ colourRow = null,
-
-			// overlay grid
-			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
-			/** @type {Uint8Array} */ overlayRow = null,
-			/** @type {number} */ state6 = ViewConstants.stateMap[6] + 128;
-
-
-		bottomY = 0;
-		topY = this.height - 1;
-		leftX = 0;
-		rightX = this.width - 1;
-
-		// find the first alive cell from the bottom left
-		minx = this.width;
-		maxx = 0;
-		miny = this.height;
-		maxy = 0;
-
-		//var msgRow = "";
-
-		for (y = bottomY; y <= topY; y += 1) {
-			colourRow = colourGrid[y];
-			overlayRow = overlayGrid[y];
-
-			//msgRow = "";
-
-			for (x = leftX; x <= rightX; x += 1) {
-				state = colourRow[x];
-				over = overlayRow[x];
-
-				//msgRow += String(state) + " ";
-
-				if (state >= aliveStart || over === state6) {
-					if (x < minx) {
-						minx = x;
-					}
-					if (x > maxx) {
-						maxx = x;
-					}
-
-					if (y < miny) {
-						miny = y;
-					}
-					if (y > maxy) {
-						maxy = y;
-					}
-				}
-			}
-
-			//console.log(y, msgRow);
-
-		}
-
-		// update the bounding box
-		leftX = minx;
-		bottomY = miny;
-		rightX = maxx;
-		topY = maxy;
-
-		// return the result
-		return new BoundingBox(leftX, bottomY, rightX, topY);
-	};
-
-	// get alive cell bounding box for Super pattern
-	/** @returns {BoundingBox} */
-	Life.prototype.getSuperAliveBox = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY) {
-		var 	/** @type {number} */ minx = 0,
-			/** @type {number} */ miny = 0,
-			/** @type {number} */ maxx = 0,
-			/** @type {number} */ maxy = 0,
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ state = 0,
-
-			// colour grid
-			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @type {Uint8Array} */ colourRow = null;
-
-		// swap grids every generation
-		if ((this.counter & 1) !== 0) {
-			colourGrid = this.nextColourGrid;
-		}
-
-		// find the first alive cell from the bottom left
-		minx = rightX;
-		maxx = leftX;
-		miny = topY;
-		maxy = bottomY;
-
-		for (y = bottomY; y <= topY; y += 1) {
-			colourRow = colourGrid[y];
-			for (x = leftX; x <= rightX; x += 1) {
-				state = colourRow[x];
-				if ((state & 1) || state === 6) {
-					if (x < minx) {
-						minx = x;
-					}
-					if (x > maxx) {
-						maxx = x;
-					}
-
-					if (y < miny) {
-						miny = y;
-					}
-					if (y > maxy) {
-						maxy = y;
-					}
-				}
-			}
-		}
-
-		// update the bounding box
-		leftX = minx;
-		bottomY = miny;
-		rightX = maxx;
-		topY = maxy;
-
-		// return the result
-		return new BoundingBox(leftX, bottomY, rightX, topY);
-	};
-
 	// create new Identify record
 	Life.prototype.addIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ lastI) {
 		// create the new record
@@ -4855,7 +4919,7 @@
 	/** @returns {Array} */
 	Life.prototype.oscillating = function(/** @type {View} */ view) {
 		// get bounding box
-		var	/** @type {BoundingBox} */ box = this.zoomBox,
+		var	/** @type {BoundingBox} */ box = this.updateIdentifyBox(),
 			/** @type {number} */ leftX = box.leftX,
 			/** @type {number} */ bottomY = box.bottomY,
 			/** @type {number} */ rightX = box.rightX,
@@ -4905,9 +4969,6 @@
 			// message
 			/** @type {string} */ message = "",
 
-			// offset for Margolus
-			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0),
-
 			// result
 			/** @type {Array} */ result = [];
 
@@ -4915,54 +4976,11 @@
 		if (this.oscLength < LifeConstants.maxOscillatorGens) {
 			// check population
 			if (this.population === 0) {
-				result = ["Empty Pattern", "Empty"];
+				result = ["Empty pattern", "Empty"];
 				boxWidth = 0;
 				boxHeight = 0;
 				quit = true;
 			} else {
-				// for Bounded Grids use the bounded grid extent
-				if (this.boundedGridType !== -1) {
-					leftX = Math.round((this.width - this.boundedGridWidth) / 2) + boxOffset;
-					bottomY = Math.round((this.height - this.boundedGridHeight) / 2) + boxOffset;
-					rightX = leftX + this.boundedGridWidth - 1;
-					topY = bottomY + this.boundedGridHeight - 1;
-					box = new BoundingBox(leftX, bottomY, rightX, topY);
-					boxWidth = rightX - leftX + 1;
-					boxHeight = topY - bottomY + 1;
-					boxSize = (boxWidth << 16) | boxHeight;
-					boxLocation = (leftX << 16) | bottomY;
-				} else {
-					// TBD extended rules
-
-					// for super rules create a bounding box of just the alive cells
-					if (this.isSuper) {
-						box = this.getSuperAliveBox(leftX, bottomY, rightX, topY);
-	
-						leftX = box.leftX;
-						bottomY = box.bottomY;
-						rightX = box.rightX;
-						topY = box.topY;
-						boxWidth = rightX - leftX + 1;
-						boxHeight = topY - bottomY + 1;
-						boxSize = (boxWidth << 16) | boxHeight;
-						boxLocation = (leftX << 16) | bottomY;
-					}
-	
-					// for [R]History rules with state 6 ensure bounding box is correct
-					if (this.isLifeHistory && this.state6Mask !== null) {
-						box = this.getHistoryAliveBox(leftX, bottomY, rightX, topY);
-	
-						leftX = box.leftX;
-						bottomY = box.bottomY;
-						rightX = box.rightX;
-						topY = box.topY;
-						boxWidth = rightX - leftX + 1;
-						boxHeight = topY - bottomY + 1;
-						boxSize = (boxWidth << 16) | boxHeight;
-						boxLocation = (leftX << 16) | bottomY;
-					}
-				}
-
 				// get the hash of the current pattern
 				hash = this.getHash(box);
 
@@ -7380,7 +7398,7 @@
 			// check for multi-state rules
 			if (!this.isHROT) {
 				if (this.isExtended) {
-					bitAlive = (state > 0);
+					bitAlive = LifeConstants.extendedAliveStates[state];
 				} else {
 					if (this.multiNumStates <= 2 || this.isSuper) {
 						// 2-state
@@ -8923,7 +8941,7 @@
 		this.state6TileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.state6TileGrid");
 	};
 
-	// populate the state6 mask from the colour grid
+	// populate the state6 mask from the colour grid and update the state 6 bounding box
 	Life.prototype.populateState6MaskFromColGrid = function() {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -8957,7 +8975,14 @@
 			/** @type {number} */ state6 = this.isSuper ? 6 : ViewConstants.stateMap[6] + 128,
 
 			// grid
-			/** @type {Array<Uint8Array>} */ grid = this.isSuper ? this.colourGrid : this.overlayGrid;
+			/** @type {Array<Uint8Array>} */ grid = this.isSuper ? this.colourGrid : this.overlayGrid,
+
+			// state 6 bounding box
+			/** @type {BoundingBox} */ state6Box = this.state6Box,
+			/** @type {number} */ minX = this.width,
+			/** @type {number} */ maxX = -1,
+			/** @type {number} */ minY = this.height,
+			/** @type {number} */ maxY = -1;
 
 		// clear current mask and cells
 		this.state6Mask.whole.fill(0);
@@ -8996,6 +9021,20 @@
 			for (x = 0; x < this.width; x += 1) {
 				// check for state 6
 				if (overlayRow[x] === state6) {
+					// update min and max
+					if (x < minX) {
+						minX = x;
+					}
+					if (x > maxX) {
+						maxX = x;
+					}
+					if (y < minY) {
+						minY = y;
+					}
+					if (y > maxY) {
+						maxY = y;
+					}
+
 					// set the cell position itself
 					offset = x & wm;
 					cellsRow[offset >> 4] |= (1 << (~offset & 15));
@@ -9059,6 +9098,12 @@
 				}
 			}
 		}
+
+		// save the state 6 bounding box
+		state6Box.leftX = minX;
+		state6Box.bottomY = minY;
+		state6Box.rightX = maxX;
+		state6Box.topY = maxY;
 	};
 
 	// populate the state6 mask
@@ -9440,7 +9485,7 @@
 		this.identifyBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
 
 		// state 6 [R]History box
-		this.state6Box = new BoundingBox(0, 0, this.width - 1, this.height - 1);
+		this.state6Box = new BoundingBox(this.width, this.height, -1, -1);
 
 		// bounding box for history autofit
 		this.historyBox = new BoundingBox(0, 0, this.width - 1, this.height - 1);
@@ -18558,6 +18603,12 @@
 						break;
 
 					case 13:
+					case 15:
+					case 17:
+					case 19:
+					case 21:
+					case 23:
+					case 25:
 						dyingState = 0;
 						break;
 
@@ -18624,6 +18675,12 @@
 										break;
 
 									case 13:
+									case 15:
+									case 17:
+									case 19:
+									case 21:
+									case 23:
+									case 25:
 										dyingState = 0;
 										break;
 
@@ -42853,13 +42910,13 @@
 			if (this.boundedGridType !== -1) {
 				width = this.boundedGridWidth + 2;
 				height = this.boundedGridHeight + 2;
-				if (width > 0) {
+				if (width > 2) {
 					leftX = this.width / 2 - width / 2 + (width & 1) / 2;
 					rightX = this.width / 2 + width / 2;
 				} else {
 					width = rightX - leftX + 1;
 				}
-				if (height > 0) {
+				if (height > 2) {
 					bottomY = this.height / 2 - height / 2 + (height & 1) / 2;
 					topY = this.height / 2 + height / 2;
 				} else {
