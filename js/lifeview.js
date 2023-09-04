@@ -231,6 +231,8 @@
 		// delete radius range
 		/** @const {number} */ minDeleteRadius : 1,
 		/** @const {number} */ maxDeleteRadius : 16,
+
+		// default is also minimum radius for HROT and Extended algos
 		/** @const {number} */ defaultDeleteRadius : 3,
 
 		// custom theme elements
@@ -300,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1044,
+		/** @const {number} */ versionBuild : 1045,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -647,6 +649,9 @@
 	 */
 	function View(element) {
 		var	/** @type {number} */ i = 0;
+
+		// whether state number is displayed in cell info
+		/** @type {boolean} */ this.stateNumberDisplayed = false;
 
 		// whether LifeViewer is standard or pro edition
 		/** @type {boolean} */ this.proEdition = false;
@@ -3007,11 +3012,6 @@
 			// check if shrink needed
 			me.engine.doShrink();
 
-			// update state 6 grid
-			if (me.engine.isLifeHistory) {
-				me.engine.populateState6MaskFromColGrid();
-			}
-
 			// auto fit if enabled
 			if (this.autoFit) {
 				this.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
@@ -4373,7 +4373,7 @@
 		link.remove();
 
 		// notify that image captured
-		me.menuManager.notification.notify("Image Saved", 15, 300, 15, true);
+		me.menuManager.notification.notify("Image saved", 15, 300, 15, true);
 	};
 
 	// download cell period map
@@ -4395,7 +4395,7 @@
 			link.remove();
 
 			// notify that image captured
-			me.menuManager.notification.notify("Cell Map Saved", 15, 300, 15, true);
+			me.menuManager.notification.notify("Cell Map saved", 15, 300, 15, true);
 		}
 	};
 
@@ -5949,16 +5949,20 @@
 					topY = this.engine.maxGridSize;
 				}
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[bounded] " + String(rawState);
 					if (((xPos === leftX - 1 || xPos === rightX + 1) && (yPos >= bottomY - 1 && yPos <= topY + 1)) ||
 						((yPos === bottomY - 1 || yPos === topY + 1) && (xPos >= leftX -1 && xPos <= rightX + 1))) {
 						this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[bounded]";
+						if (this.stateNumberDisplayed) {
+							this.xyLabel.preText += " " + String(rawState);
+						}
 					} else {
 						this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
 					}
 				} else {
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
 					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+					if (this.stateNumberDisplayed) {
+						this.xyLabel.preText += " " + String(rawState);
+					}
 				}
 			} else {
 				// compute the grid extent
@@ -5969,11 +5973,15 @@
 
 				// display the state
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary] " + String(rawState);
 					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[boundary]";
+					if (this.stateNumberDisplayed) {
+						this.xyLabel.preText += " " + String(rawState);
+					}
 				} else {
-					//this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ") " + String(rawState);
 					this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + stateDisplay + " (" + this.getStateName(stateDisplay) + ")";
+					if (this.stateNumberDisplayed) {
+						this.xyLabel.preText += " " + String(rawState);
+					}
 				}
 			}
 			this.xyLabel.deleted = false;
@@ -7075,6 +7083,7 @@
 		this.infoBarButton.deleted = shown;
 		this.fastLookupButton.deleted = shown;
 		this.fastLookupButton.locked = !this.engine.isRuleTree || (this.engine.isRuleTree && !this.engine.ruleLoaderLookupAvailable());
+		this.stateNumberButton.deleted = shown;
 
 		// display categoy
 		shown = hide || !this.showDisplaySettings;
@@ -8182,6 +8191,17 @@
 		}
 
 		return [me.engine.ruleLoaderLookupEnabled];
+	};
+
+	// toggle stata number display
+	/** @returns {Array<boolean>} */
+	View.prototype.viewStateNumberToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		// check if changing
+		if (change) {
+			me.stateNumberDisplayed = newValue[0];
+		}
+
+		return [me.stateNumberDisplayed];
 	};
 
 	// toggle graph data elements
@@ -12323,9 +12343,9 @@
 	View.prototype.savePressed = function(/** @type {View} */ me) {
 		me.saveCurrentRLE(me);
 		if (me.isSelection) {
-			me.menuManager.notification.notify("Selection Saved", 15, 120, 15, true);
+			me.menuManager.notification.notify("Selection saved", 15, 120, 15, true);
 		} else {
-			me.menuManager.notification.notify("Pattern Saved", 15, 120, 15, true);
+			me.menuManager.notification.notify("Pattern saved", 15, 120, 15, true);
 		}
 	};
 
@@ -15157,7 +15177,7 @@
 		} else {
 			if (me.identify) {
 				me.identify = false;
-				me.menuManager.notification.notify("Identify Cancelled", 15, 120, 15, false);
+				me.menuManager.notification.notify("Identify cancelled", 15, 120, 15, false);
 
 				// create undo point
 				me.afterEdit("");
@@ -17014,36 +17034,40 @@
 		this.infoButton.toolTip = "advanced settings and actions";
 
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display [T]"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -75, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -100, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details [Shift T]"];
 
 		// relative toggle button
-		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -25, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
+		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -50, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
 		this.relativeToggle.toolTip = ["toggle absolute/relative generation display [Shift G]"];
 
 		// reset all viewers button
-		this.resetAllButton = this.viewMenu.addButtonItem(this.resetAllPressed, Menu.middle, 100, -25, 180, 40, "Reset All");
+		this.resetAllButton = this.viewMenu.addButtonItem(this.resetAllPressed, Menu.middle, 100, -50, 180, 40, "Reset All");
 		this.resetAllButton.toolTip = "reset all Viewers [Shift R]";
 
 		// stop all viewers button
-		this.stopAllButton = this.viewMenu.addButtonItem(this.stopAllPressed, Menu.middle, -100, 25, 180, 40, "Stop All");
+		this.stopAllButton = this.viewMenu.addButtonItem(this.stopAllPressed, Menu.middle, -100, 0, 180, 40, "Stop All");
 		this.stopAllButton.toolTip = "stop all Viewers [Shift Z]";
 
 		// stop other viewers button
-		this.stopOthersButton = this.viewMenu.addButtonItem(this.stopOthersPressed, Menu.middle, 100, 25, 180, 40, "Stop Others");
+		this.stopOthersButton = this.viewMenu.addButtonItem(this.stopOthersPressed, Menu.middle, 100, 0, 180, 40, "Stop Others");
 		this.stopOthersButton.toolTip = "stop other Viewers [Z]";
 
 		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 75, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 50, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
 
 		// fast lookup toggle button
-		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 75, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
+		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 50, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
 		this.fastLookupButton.toolTip = ["toggle fast lookup [F7]"];
+
+		// state number toggle button
+		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 100, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
+		this.stateNumberButton.toolTip = ["toggle state number display [F8]"];
 
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
@@ -19185,14 +19209,6 @@
 			me.computePanXY(me.patternWidth, me.patternHeight, me.specifiedWidth, me.specifiedHeight);
 		}
 
-		// populate the state 6 mask
-		if (pattern && me.engine.isLifeHistory) {
-			// check if state 6 is used
-			if (me.manager.stateCount[6]) {
-				me.engine.populateState6Mask(pattern, me.panX, me.panY);
-			}
-		}
-
 		// set custom text colour
 		if (me.customTextColour) {
 			// copy to text colour
@@ -19866,6 +19882,13 @@
 		// set the graph UI control
 		me.graphButton.locked = me.graphDisabled;
 		me.graphButton.current = [me.popGraph];
+
+		// ensure delete range is not below minimum threshold for Extended and HROT algos
+		if (me.engine.isHROT || me.engine.isExtended) {
+			if (me.engine.removePatternRadius < ViewConstants.defaultDeleteRadius) {
+				me.engine.removePatternRadius = ViewConstants.defaultDeleteRadius;
+			}
+		}
 
 		// check for chrome bug
 		me.checkForChromeBug();

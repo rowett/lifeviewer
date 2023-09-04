@@ -445,6 +445,9 @@
 		/** @type {string} */ this.identifyPopWithTMessage = "";
 		/** @type {string} */ this.identifyBoxWithTMessage = "";
 
+		// whether any cells were not in rotor
+		/** @type {boolean} */ this.identifyAllCells = false;
+
 		// period table start row and maximum row
 		/** @type {number} */ this.tableStartRow = 0;
 		/** @type {number} */ this.tableMaxRow = 0;
@@ -4172,7 +4175,11 @@
 		for (p = 0; p <= period + 1; p += 1) {
 			// compute next generation and update bounding box
 			view.computeNextGeneration();
-			extent = this.updateIdentifyBox();
+
+			// update bounding box if not an oscillator (i.e. a moving spaceship)
+			if (!isOscillator) {
+				extent = this.updateIdentifyBox();
+			}
 
 			// check if life just stopped
 			if (view.justDied) {
@@ -4832,6 +4839,13 @@
 			this.popRotor = rotor;
 		}
 
+		// check if all cells were in rotor
+		if (rotor === boxWidth * boxHeight) {
+			this.identifyAllCells = true;
+		} else {
+			this.identifyAllCells = false;
+		}
+
 		// temperature
 		if (type === "Oscillator") {
 			tempResult = this.toPlaces(avgHeat / (rotor + stator), 2) + " | " + this.toPlaces(avgHeat / rotor, 2);
@@ -5400,6 +5414,8 @@
 
 		j = 0;
 		k = 0;
+
+		// draw each row
 		for (y = bottomY; y <= topY; y += 1) {
 			// clip y to window
 			displayY = (((y - h2) + yOff) * zoom) + halfDisplayHeight;
@@ -5410,7 +5426,9 @@
 				}
 				cy = (y - h2);
 				xOffset = xOff - w2;
-				for (x = leftX; x <= rightX; x += 1) {
+
+				// draw each cell in the row
+				for (x = leftX - 1; x <= rightX + 1; x += 1) {
 					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 					if (displayX >= -zoom && displayX <= this.displayWidth + zoom * 2) {
 						state = colourRow[x];
@@ -5504,6 +5522,7 @@
 		bottomY = ((-halfDisplayHeight / zoom) - yOff + h2) | 0;
 		topY = ((halfDisplayHeight / zoom) - yOff + h2) | 0;
 
+		// draw each row
 		for (y = bottomY; y <= topY; y += 1) {
 			// clip y to window
 			displayY = (((y - h2) + yOff) * zoom) + halfDisplayHeight;
@@ -5512,7 +5531,9 @@
 				xOffset = xOff - w2;
 				leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
 				rightX = ((halfDisplayWidth / zoom) - xOffset + zoom) | 0;
-				for (x = leftX; x <= rightX; x += 1) {
+
+				// draw each cell on the row
+				for (x = leftX - 1; x <= rightX + 1; x += 1) {
 					displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 					if (displayX >= -zoom && displayX <= this.displayWidth + zoom * 2) {
 						// check if the cell is on the grid
@@ -5580,6 +5601,8 @@
 			topY = ((halfDisplayHeight / zoom) - yOff + h2) | 0;
 
 			j = 0;
+
+			// draw each row
 			for (y = bottomY; y <= topY; y += 1) {
 				// clip y to window
 				displayY = (((y - h2) + yOff) * zoom) + halfDisplayHeight;
@@ -5588,7 +5611,9 @@
 					xOffset = xOff - w2;
 					leftX = ((-halfDisplayWidth / zoom) - xOffset - zoom) | 0;
 					rightX = ((halfDisplayWidth / zoom) - xOffset + zoom) | 0;
-					for (x = leftX; x <= rightX + 1; x += 1) {
+
+					// draw each cell on the row
+					for (x = leftX - 1; x <= rightX + 1; x += 1) {
 						displayX = ((x + xOffset) * zoom) + halfDisplayWidth;
 						if (displayX >= -zoom && displayX < this.displayWidth + zoom * 2) {
 							cx = x - w2 + 0.5;
@@ -7399,6 +7424,7 @@
 			if (!this.isHROT) {
 				if (this.isExtended) {
 					bitAlive = LifeConstants.extendedAliveStates[state];
+					current = colourGrid[y][x];
 				} else {
 					if (this.multiNumStates <= 2 || this.isSuper) {
 						// 2-state
@@ -7412,8 +7438,14 @@
 				// draw alive or dead
 				if (bitAlive) {
 					// adjust population if cell was dead
-					if ((grid[y][x >> 4] & cellAsBit) === 0) {
-						this.population += 1;
+					if (this.isExtended) {
+						if (!LifeConstants.extendedAliveStates[current]) {
+							this.population += 1;
+						}
+					} else {
+						if ((grid[y][x >> 4] & cellAsBit) === 0) {
+							this.population += 1;
+						}
 					}
 
 					// set cell
@@ -7481,8 +7513,14 @@
 					}
 				} else {
 					// adjust population if cell was alive
-					if ((grid[y][x >> 4] & cellAsBit) !== 0) {
-						this.population -= 1;
+					if (this.isExtended) {
+						if (LifeConstants.extendedAliveStates[current]) {
+							this.population -= 1;
+						}
+					} else {
+						if ((grid[y][x >> 4] & cellAsBit) !== 0) {
+							this.population -= 1;
+						}
 					}
 
 					// clear cell
@@ -8775,7 +8813,14 @@
 									population += 1;
 								}
 							} else {
-								population += 1;
+								// Extended
+								if (this.isExtended) {
+									if (LifeConstants.extendedAliveStates[state]) {
+										population += 1;
+									}
+								} else {
+									population += 1;
+								}
 							}
 						}
 					}
@@ -9104,99 +9149,6 @@
 		state6Box.bottomY = minY;
 		state6Box.rightX = maxX;
 		state6Box.topY = maxY;
-	};
-
-	// populate the state6 mask
-	Life.prototype.populateState6Mask = function(/** @type {Pattern} */ pattern, /** @type {number} */ panX, /** @type {number} */ panY) {
-		var	/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-
-			// mask rows
-			/** @type {Uint16Array} */ maskRow0 = null,
-			/** @type {Uint16Array} */ maskRow1 = null,
-			/** @type {Uint16Array} */ maskRow2 = null,
-			/** @type {Uint16Array} */ cellsRow = null,
-
-			// pattern width and height
-			/** @type {number} */ width = pattern.width,
-			/** @type {number} */ height = pattern.height,
-
-			// width and height masks
-			/** @type {number} */ wm = this.widthMask,
-			/** @type {number} */ hm = this.heightMask,
-
-			// multi-state view
-			/** @type {Uint8Array} */ multiStateRow = null,
-
-			// bit offset
-			/** @type {number} */ offset = 0,
-
-			// tile grid
-			/** @type {Array<Uint16Array>} */ tileGrid = this.state6TileGrid,
-			/** @type {Uint16Array} */ tileRow0 = null,
-			/** @type {Uint16Array} */ tileRow1 = null,
-			/** @type {Uint16Array} */ tileRow2 = null,
-
-			// tile size (2^n)
-			/** @type {number} */ tilePower = this.tilePower;
-
-		// remove bits from the mask that are state 6 in the pattern
-		for (y = 0; y < height; y += 1) {
-			// get the rows
-			multiStateRow = pattern.multiStateMap[y];
-			maskRow0 = this.state6Mask[(y - 1 + panY) & hm];
-			maskRow1 = this.state6Mask[(y + panY) & hm];
-			maskRow2 = this.state6Mask[(y + 1 + panY) & hm];
-			cellsRow = this.state6Cells[(y + panY) & hm];
-			tileRow0 = tileGrid[((y - 1 + panY) & hm) >> tilePower];
-			tileRow1 = tileGrid[((y + panY) & hm) >> tilePower];
-			tileRow2 = tileGrid[((y + 1 + panY) & hm) >> tilePower];
-
-			// check row
-			for (x = 0; x < width; x += 1) {
-				// check for state 6
-				if (multiStateRow[x] === 6) {
-					// set the cell position itself
-					offset = (x + panX) & wm;
-					cellsRow[offset >> 4] |= (1 << (~offset & 15));
-
-					// set the cells around the state 6 cell in the mask
-					// middle column
-					maskRow0[offset >> 4] |= (1 << (~offset & 15));
-					tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					maskRow2[offset >> 4] |= (1 << (~offset & 15));
-					tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-
-					// left column
-					offset = (x - 1 + panX) & wm;
-					if (!this.isVonNeumann) {
-						maskRow0[offset >> 4] |= (1 << (~offset & 15));
-						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					}
-					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					if (!(this.isHex || this.isVonNeumann)) {
-						maskRow2[offset >> 4] |= (1 << (~offset & 15));
-						tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					}
-
-					// right column
-					offset = (x + 1 + panX) & wm;
-					if (!(this.isHex || this.isVonNeumann)) {
-						maskRow0[offset >> 4] |= (1 << (~offset & 15));
-						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					}
-					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					if (!this.isVonNeumann) {
-						maskRow2[offset >> 4] |= (1 << (~offset & 15));
-						tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					}
-				}
-			}
-		}
 	};
 
 	// reset the colour grid from the grid
@@ -17961,18 +17913,20 @@
 			}
 		}
 
-		// update history bounding box
-		if (zoomBox.leftX < historyBox.leftX) {
-			historyBox.leftX = zoomBox.leftX;
-		}
-		if (zoomBox.rightX > historyBox.rightX) {
-			historyBox.rightX = zoomBox.rightX;
-		}
-		if (zoomBox.bottomY < historyBox.bottomY) {
-			historyBox.bottomY = zoomBox.bottomY;
-		}
-		if (zoomBox.topY > historyBox.topY) {
-			historyBox.topY = zoomBox.topY;
+		// update history bounding box if non-zero population
+		if (this.population > 0) {
+			if (zoomBox.leftX < historyBox.leftX) {
+				historyBox.leftX = zoomBox.leftX;
+			}
+			if (zoomBox.rightX > historyBox.rightX) {
+				historyBox.rightX = zoomBox.rightX;
+			}
+			if (zoomBox.bottomY < historyBox.bottomY) {
+				historyBox.bottomY = zoomBox.bottomY;
+			}
+			if (zoomBox.topY > historyBox.topY) {
+				historyBox.topY = zoomBox.topY;
+			}
 		}
 	};
 
@@ -24174,6 +24128,10 @@
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
 
+			// flags if cells are alive
+			/** @type {boolean} */ newCellIsAlive = false,
+			/** @type {boolean} */ oldCellWasAlive = false,
+
 			// constants
 			/** @const {number} */ deadForcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16),
 			/** @const {number} */ birthForcer = (1 << 8) | (1 << 9) | (1 << 12) | (1 << 13) | (1 << 14),
@@ -24352,21 +24310,25 @@
 
 									// check if state is alive
 									nextRow[x] = state;
-									if (state > 0) {
+									newCellIsAlive = LifeConstants.extendedAliveStates[state];
+									oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+									if (newCellIsAlive) {
 										population += 1;
 
 										// update births
-										if (c === 0) {
+										if (!oldCellWasAlive) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
 									} else {
 										// check for death
-										if (c > 0) {
+										if (oldCellWasAlive) {
 											// update deaths
 											deaths += 1;
 										}
+									}
+									if (state > 0) {
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
 									}
 
 									// check if any cell was alive in the source
@@ -24415,21 +24377,25 @@
 
 								// check if state is alive
 								nextRow[x] = state;
-								if (state > 0) {
+								newCellIsAlive = LifeConstants.extendedAliveStates[state];
+								oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+								if (newCellIsAlive) {
 									population += 1;
 
 									// update births
-									if (c === 0) {
+									if (!oldCellWasAlive) {
 										births += 1;
 									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
 								} else {
 									// check for death
-									if (c > 0) {
+									if (oldCellWasAlive) {
 										// update deaths
 										deaths += 1;
 									}
+								}
+								if (state > 0) {
+									rowOccupied |= rowIndex;
+									colOccupied |= colIndex;
 								}
 
 								// check if any cell was alive in the source
@@ -24708,6 +24674,10 @@
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
 
+			// flags if cells are alive
+			/** @type {boolean} */ newCellIsAlive = false,
+			/** @type {boolean} */ oldCellWasAlive = false,
+
 			// constants
 			/** @const {number} */ deadForcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16),
 			/** @const {number} */ birthForcer = (1 << 8) | (1 << 9) | (1 << 12) | (1 << 13) | (1 << 14),
@@ -24903,21 +24873,25 @@
 
 									// check if state is alive
 									nextRow[x] = state;
-									if (state > 0) {
+									newCellIsAlive = LifeConstants.extendedAliveStates[state];
+									oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+									if (newCellIsAlive) {
 										population += 1;
 
 										// update births
-										if (c === 0) {
+										if (!oldCellWasAlive) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
 									} else {
 										// check for death
-										if (c > 0) {
+										if (oldCellWasAlive) {
 											// update deaths
 											deaths += 1;
 										}
+									}
+									if (state > 0) {
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
 									}
 
 									// check if any cell was alive in the source
@@ -24985,21 +24959,25 @@
 
 								// check if state is alive
 								nextRow[x] = state;
-								if (state > 0) {
+								newCellIsAlive = LifeConstants.extendedAliveStates[state];
+								oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+								if (newCellIsAlive) {
 									population += 1;
 
 									// update births
-									if (c === 0) {
+									if (!oldCellWasAlive) {
 										births += 1;
 									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
 								} else {
 									// check for death
-									if (c > 0) {
+									if (oldCellWasAlive) {
 										// update deaths
 										deaths += 1;
 									}
+								}
+								if (state > 0) {
+									rowOccupied |= rowIndex;
+									colOccupied |= colIndex;
 								}
 
 								// check if any cell was alive in the source
@@ -25279,6 +25257,10 @@
 			// flags for edges of tile occupied
 			/** @type {number} */ neighbours = 0,
 
+			// flags if cells are alive
+			/** @type {boolean} */ newCellIsAlive = false,
+			/** @type {boolean} */ oldCellWasAlive = false,
+
 			// constants
 			/** @const {number} */ deadForcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16),
 			/** @const {number} */ birthForcer = (1 << 8) | (1 << 9) | (1 << 12) | (1 << 13) | (1 << 14),
@@ -25480,21 +25462,25 @@
 
 									// check if state is alive
 									nextRow[x] = state;
-									if (state > 0) {
+									newCellIsAlive = LifeConstants.extendedAliveStates[state];
+									oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+									if (newCellIsAlive) {
 										population += 1;
 
 										// update births
-										if (c === 0) {
+										if (!oldCellWasAlive) {
 											births += 1;
 										}
-										rowOccupied |= rowIndex;
-										colOccupied |= colIndex;
 									} else {
 										// check for death
-										if (c > 0) {
+										if (oldCellWasAlive) {
 											// update deaths
 											deaths += 1;
 										}
+									}
+									if (state > 0) {
+										rowOccupied |= rowIndex;
+										colOccupied |= colIndex;
 									}
 
 									// check if any cell was alive in the source
@@ -25557,21 +25543,25 @@
 
 								// check if state is alive
 								nextRow[x] = state;
-								if (state > 0) {
+								newCellIsAlive = LifeConstants.extendedAliveStates[state];
+								oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+								if (newCellIsAlive) {
 									population += 1;
 
 									// update births
-									if (c === 0) {
+									if (!oldCellWasAlive) {
 										births += 1;
 									}
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
 								} else {
 									// check for death
-									if (c > 0) {
+									if (oldCellWasAlive) {
 										// update deaths
 										deaths += 1;
 									}
+								}
+								if (state > 0) {
+									rowOccupied |= rowIndex;
+									colOccupied |= colIndex;
 								}
 
 								// check if any cell was alive in the source

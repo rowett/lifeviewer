@@ -1,3 +1,6 @@
+Build 1045
+- fixed dead cell handling in [R]Extended
+
 Build 1044
 - fixed Identify not displaying Life ended message when LOOP defined
 - fixed Fast Lookup not being triggered for RuleTable patterns with 5 to 7 states
@@ -8,6 +11,10 @@ Build 1044
 - fixed state 3 cells for [R]Extended in Identify
 - fixed [R]History no-trail states that get killed at the grid boundary
 - fixed AutoFit on Bounded Grids with an infinite dimension
+- Settings->Advanced->State Number now toggles displaying raw state number
+- fixed dead Triangular cells not drawing at grid edge
+- fixed HistoryFit for patterns with just pasted cells
+- fixed minimum delete radius for HROT and [R]Extended algos
 
 Build 1043
 - allow negative time delta for slow salvos
