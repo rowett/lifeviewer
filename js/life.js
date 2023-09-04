@@ -4214,8 +4214,6 @@
 				this.updateOccupancy(extent, p);
 			}
 
-			// TBD getExtendedAliveBox
-
 			//console.log(p, "gen", this.counter, extent, "width", (extent.rightX - extent.leftX + 1), "height", (extent.topY - extent.bottomY + 1));
 
 			// save hash for first two generations

@@ -1,3 +1,6 @@
+Build 1046
+- renamed [R]Extended to [R]Investigator
+
 Build 1045
 - fixed dead cell handling in [R]Extended
 - fixed handling of pattern dimension -1

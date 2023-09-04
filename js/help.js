@@ -1995,7 +1995,7 @@
 		y = this.renderHelpLine(view, " ", "Alternating, MAP, Larger than Life (LtL),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Higher-range outer-totalistic (HROT),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA),", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "[R]History, [R]Super, [R]Extended", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "[R]History, [R]Super, [R]Investigator", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "and Non-Deterministic", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE, @COLORS and", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "@NAMES)", ctx, x, y, height, helpLine);

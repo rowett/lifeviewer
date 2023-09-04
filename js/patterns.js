@@ -509,8 +509,8 @@
 		/** @const {string} */ this.properSuperPostfix = "Super";
 
 		// lower case name of [R]Extended postfix
-		/** @const {string} */ this.extendedPostfix = "extended";
-		/** @const {string} */ this.properExtendedPostfix = "Extended";
+		/** @const {string} */ this.extendedPostfix = "investigator";
+		/** @const {string} */ this.properExtendedPostfix = "Investigator";
 
 		// lower case name of Triangular postfix
 		/** @const {string} */ this.triangularPostfix = "l";
@@ -7640,7 +7640,7 @@
 		if (!pattern.isHistory && !pattern.isSuper) {
 			// allow StateInvestigator as an alias
 			if (ruleString.toLowerCase() === "stateinvestigator") {
-				ruleString = "B3/S23Extended";
+				ruleString = "B3/S23Investigator";
 			}
 
 			extendedIndex = ruleString.toLowerCase().lastIndexOf(this.extendedPostfix);
@@ -8243,7 +8243,7 @@
 
 		// check for Niemiec and [R]Extended
 		if (pattern.isNiemiec && pattern.isExtended && this.failureReason === "") {
-			this.failureReason = "[R]Extended not valid with Niemiec states";
+			this.failureReason = "[R]Investigator not valid with Niemiec states";
 			pattern.isExtended = false;
 			this.executable = false;
 		}
@@ -8320,7 +8320,7 @@
 					if (pattern.isExtended) {
 						maxStates = 21;
 						if (pattern.numStates > maxStates) {
-							this.failureReason = "Illegal state in pattern for [R]Extended";
+							this.failureReason = "Illegal state in pattern for [R]Investigator";
 							this.executable = false;
 							this.illegalState = true;
 						}
