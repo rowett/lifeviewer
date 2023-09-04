@@ -1,5 +1,6 @@
 Build 1045
 - fixed dead cell handling in [R]Extended
+- fixed handling of pattern dimension -1
 
 Build 1044
 - fixed Identify not displaying Life ended message when LOOP defined

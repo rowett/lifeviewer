@@ -1566,7 +1566,7 @@
 		}
 
 		y = this.renderHelpLine(view, "Actual Size", view.patternWidth + " x " + view.patternHeight, ctx, x, y, height, helpLine);
-		if (view.specifiedWidth !== -1 && view.specifiedHeight !== -1) {
+		if (view.specifiedWidth !== -999999 && view.specifiedHeight !== -999999) {
 			y = this.renderHelpLine(view, "Specified", view.specifiedWidth + " x " + view.specifiedHeight, ctx, x, y, height, helpLine);
 		}
 		if (view.pasteList.length > 0) {

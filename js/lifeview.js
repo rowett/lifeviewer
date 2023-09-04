@@ -1123,8 +1123,8 @@
 		/** @type {boolean} */ this.wasClipped = false;
 
 		// specified pattern width and height from RLE header
-		/** @type {number} */ this.specifiedWidth = -1;
-		/** @type {number} */ this.specifiedHeight = -1;
+		/** @type {number} */ this.specifiedWidth = -999999;
+		/** @type {number} */ this.specifiedHeight = -999999;
 
 		// default POI
 		/** @type {number} */ this.defaultPOI = -1;
@@ -18411,11 +18411,11 @@
 			me.patternHeight = pattern.height;
 
 			// if the size is not specified then set it to the actual size
-			if (me.specifiedWidth === -1) {
+			if (me.specifiedWidth === -999999) {
 				me.specifiedWidth = me.patternWidth;
 			}
 
-			if (me.specifiedHeight === -1) {
+			if (me.specifiedHeight === -999999) {
 				me.specifiedHeight = me.patternHeight;
 			}
 

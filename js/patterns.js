@@ -603,8 +603,8 @@
 		/** @const {number} */ this.alignedCheckerHROT = 17;
 
 		// specified width and height from RLE pattern
-		/** @type {number} */ this.specifiedWidth = -1;
-		/** @type {number} */ this.specifiedHeight = -1;
+		/** @type {number} */ this.specifiedWidth = -999999;
+		/** @type {number} */ this.specifiedHeight = -999999;
 
 		// triangular neighbourhoods
 		/** @const {number} */ this.triangularAll = 0;
@@ -7459,8 +7459,8 @@
 			/** @type {number} */ index = 0;
 
 		// check for specified width and height
-		this.specifiedWidth = -1;
-		this.specifiedHeight = -1;
+		this.specifiedWidth = -999999;
+		this.specifiedHeight = -999999;
 
 		// check for x
 		result = this.decodeNameValue("x", index, source, length);
@@ -9808,8 +9808,8 @@
 		this.posY = 0;
 
 		// clear specified width and height
-		this.specifiedWidth = -1;
-		this.specifiedHeight = -1;
+		this.specifiedWidth = -999999;
+		this.specifiedHeight = -999999;
 
 		// flag that no alternate rule specified
 		this.altSpecified = false;
