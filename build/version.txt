@@ -1,3 +1,9 @@
+Build 1052
+- fixed deletion when HROT patterns hit the grid boundary
+
+Build 1051
+- minor performance improvement for [R]Investigator
+
 Build 1050
 - fixed Fast Lookup calculation happening if pattern was invalid
 

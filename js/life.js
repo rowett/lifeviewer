@@ -229,6 +229,9 @@
 		// alive flags for [R]Extended states
 		/** @const {Array<boolean>} */ extendedAliveStates : [false, true, true, false, true, false, true, false, true, false, true, false, true, false, false, true, true, false, false, false, false],
 
+		// alive count for [R]Extended states used to compute births and deaths
+		/** @const {Array<number>} */ extendedAliveStatesCount : [0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0],
+
 		// bit masks for surrounding tiles
 		/** @const {number} */ leftSet : 1,
 		/** @const {number} */ rightSet : 2,
@@ -3112,7 +3115,9 @@
 
 			// starting and ending tile row
 			/** @type {number} */ tileStartRow = 0,
-			/** @type {number} */ tileEndRow = tileRows;
+			/** @type {number} */ tileEndRow = tileRows,
+
+			/** @const {number} */ cellWasAlive = LifeConstants.cellWasAlive;
 
 		// check start and end row are in range
 		if (tileStartRow < 0) {
@@ -3161,22 +3166,22 @@
 									cr = leftX;
 									while (cr < leftX + xSize) {
 										if (colourRow[cr] >= aliveStart) {
-											countRow[cr] = LifeConstants.cellWasAlive;
+											countRow[cr] = cellWasAlive;
 										}
 										cr += 1;
 
 										if (colourRow[cr] >= aliveStart) {
-											countRow[cr] = LifeConstants.cellWasAlive;
+											countRow[cr] = cellWasAlive;
 										}
 										cr += 1;
 
 										if (colourRow[cr] >= aliveStart) {
-											countRow[cr] = LifeConstants.cellWasAlive;
+											countRow[cr] = cellWasAlive;
 										}
 										cr += 1;
 
 										if (colourRow[cr] >= aliveStart) {
-											countRow[cr] = LifeConstants.cellWasAlive;
+											countRow[cr] = cellWasAlive;
 										}
 										cr += 1;
 									}
@@ -3275,7 +3280,11 @@
 			/** @type {Uint8Array} */ initRow = null,
 			/** @type {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
-			/** @type {boolean} */ isAlive = false;
+			/** @type {boolean} */ isAlive = false,
+			/** @const {Array<boolean>} */ extendedAliveStates = LifeConstants.extendedAliveStates,
+			/** @const {number} */ cellWasAlive = LifeConstants.cellWasAlive,
+			/** @const {number} */ cellWasDead = LifeConstants.cellWasDead,
+			/** @const {number} */ cellHasChanged = LifeConstants.cellHasChanged;
 
 		//var msgRow = "";
 
@@ -3294,20 +3303,20 @@
 				if (gen === 0) {
 					for (cx = x; cx <= right; cx += 1) {
 						if (colourRow[cx] >= aliveStart) {
-							countRow[cx] = LifeConstants.cellWasAlive;
+							countRow[cx] = cellWasAlive;
 						}
 					}
 				} else {
 					for (cx = x; cx <= right; cx += 1) {
 						if (colourRow[cx] >= aliveStart) {
 							// update count
-							if (countRow[cx] === LifeConstants.cellWasDead) {
-								countRow[cx] = LifeConstants.cellHasChanged;
+							if (countRow[cx] === cellWasDead) {
+								countRow[cx] = cellHasChanged;
 							}
 						} else {
 							// update count
-							if (countRow[cx] === LifeConstants.cellWasAlive) {
-								countRow[cx] = LifeConstants.cellHasChanged;
+							if (countRow[cx] === cellWasAlive) {
+								countRow[cx] = cellHasChanged;
 							}
 						}
 					}
@@ -3330,25 +3339,25 @@
 							// north sub-cell
 							countN = 0;
 							if ((state & 1) !== 0) {
-								countN = LifeConstants.cellWasAlive;
+								countN = cellWasAlive;
 							}
 
 							// east sub-cell
 							countE = 0;
 							if ((state & 2) !== 0) {
-								countE = LifeConstants.cellWasAlive;
+								countE = cellWasAlive;
 							}
 
 							// south sub-cell
 							countS = 0;
 							if ((state & 4) !== 0) {
-								countS = LifeConstants.cellWasAlive;
+								countS = cellWasAlive;
 							}
 
 							// west sub-cell
 							countW = 0;
 							if ((state & 8) !== 0) {
-								countW = LifeConstants.cellWasAlive;
+								countW = cellWasAlive;
 							}
 
 							// combine the counts
@@ -3375,13 +3384,13 @@
 							countN = count & 3;
 							if ((state & 1) !== 0) {
 								// update count
-								if (countN === LifeConstants.cellWasDead) {
-									countN = LifeConstants.cellHasChanged;
+								if (countN === cellWasDead) {
+									countN = cellHasChanged;
 								}
 							} else {
 								// update count
-								if (countN === LifeConstants.cellWasAlive) {
-									countN = LifeConstants.cellHasChanged;
+								if (countN === cellWasAlive) {
+									countN = cellHasChanged;
 								}
 							}
 
@@ -3389,13 +3398,13 @@
 							countE = (count >> 2) & 3;
 							if ((state & 2) !== 0) {
 								// update count
-								if (countE === LifeConstants.cellWasDead) {
-									countE = LifeConstants.cellHasChanged;
+								if (countE === cellWasDead) {
+									countE = cellHasChanged;
 								}
 							} else {
 								// update count
-								if (countE === LifeConstants.cellWasAlive) {
-									countE = LifeConstants.cellHasChanged;
+								if (countE === cellWasAlive) {
+									countE = cellHasChanged;
 								}
 							}
 
@@ -3403,13 +3412,13 @@
 							countS = (count >> 4) & 3;
 							if ((state & 4) !== 0) {
 								// update count
-								if (countS === LifeConstants.cellWasDead) {
-									countS = LifeConstants.cellHasChanged;
+								if (countS === cellWasDead) {
+									countS = cellHasChanged;
 								}
 							} else {
 								// update count
-								if (countS === LifeConstants.cellWasAlive) {
-									countS = LifeConstants.cellHasChanged;
+								if (countS === cellWasAlive) {
+									countS = cellHasChanged;
 								}
 							}
 
@@ -3417,13 +3426,13 @@
 							countW = (count >> 6) & 3;
 							if ((state & 8) !== 0) {
 								// update count
-								if (countW === LifeConstants.cellWasDead) {
-									countW = LifeConstants.cellHasChanged;
+								if (countW === cellWasDead) {
+									countW = cellHasChanged;
 								}
 							} else {
 								// update count
-								if (countW === LifeConstants.cellWasAlive) {
-									countW = LifeConstants.cellHasChanged;
+								if (countW === cellWasAlive) {
+									countW = cellHasChanged;
 								}
 							}
 
@@ -3442,22 +3451,22 @@
 							if (gen === 0) {
 								initRow[cx] = colourRow[cx] & 1;
 								if (colourRow[cx] & 1) {
-									countRow[cx] = LifeConstants.cellWasAlive;
+									countRow[cx] = cellWasAlive;
 								}
 							} else {
 								if (colourRow[cx] & 1) {
 									// update count
-									if (countRow[cx] === LifeConstants.cellWasDead) {
-										countRow[cx] = LifeConstants.cellHasChanged;
+									if (countRow[cx] === cellWasDead) {
+										countRow[cx] = cellHasChanged;
 									} else {
 										if ((colourRow[cx] & 1) !== initRow[cx]) {
-											countRow[cx] = LifeConstants.cellHasChanged;
+											countRow[cx] = cellHasChanged;
 										}
 									}
 								} else {
 									// update count
-									if (countRow[cx] === LifeConstants.cellWasAlive) {
-										countRow[cx] = LifeConstants.cellHasChanged;
+									if (countRow[cx] === cellWasAlive) {
+										countRow[cx] = cellHasChanged;
 									}
 								}
 							}
@@ -3466,28 +3475,28 @@
 						if (this.isExtended) {
 							initRow = initList[cy];
 							for (cx = x; cx <= right; cx += 1) {
-								isAlive = LifeConstants.extendedAliveStates[colourRow[x]];
+								isAlive = extendedAliveStates[colourRow[x]];
 								if (gen === 0) {
 									if (isAlive) {
 										initRow[cx] = 1;
-										countRow[cx] = LifeConstants.cellWasAlive;
+										countRow[cx] = cellWasAlive;
 									} else {
 										initRow[cx] = 0;
 									}
 								} else {
 									if (isAlive) {
 										// update count
-										if (countRow[cx] === LifeConstants.cellWasDead) {
-											countRow[cx] = LifeConstants.cellHasChanged;
+										if (countRow[cx] === cellWasDead) {
+											countRow[cx] = cellHasChanged;
 										} else {
 											if (initRow[cx] === 0) {
-												countRow[cx] = LifeConstants.cellHasChanged;
+												countRow[cx] = cellHasChanged;
 											}
 										}
 									} else {
 										// update count
-										if (countRow[cx] === LifeConstants.cellWasAlive) {
-											countRow[cx] = LifeConstants.cellHasChanged;
+										if (countRow[cx] === cellWasAlive) {
+											countRow[cx] = cellHasChanged;
 										}
 									}
 								}
@@ -3499,22 +3508,22 @@
 								if (gen === 0) {
 									initRow[cx] = colourRow[cx];
 									if (colourRow[cx] > this.historyStates) {
-										countRow[cx] = LifeConstants.cellWasAlive;
+										countRow[cx] = cellWasAlive;
 									}
 								} else {
 									if (colourRow[cx] > this.historyStates) {
 										// update count
-										if (countRow[cx] === LifeConstants.cellWasDead) {
-											countRow[cx] = LifeConstants.cellHasChanged;
+										if (countRow[cx] === cellWasDead) {
+											countRow[cx] = cellHasChanged;
 										} else {
 											if (colourRow[cx] !== initRow[cx]) {
-												countRow[cx] = LifeConstants.cellHasChanged;
+												countRow[cx] = cellHasChanged;
 											}
 										}
 									} else {
 										// update count
-										if (countRow[cx] === LifeConstants.cellWasAlive) {
-											countRow[cx] = LifeConstants.cellHasChanged;
+										if (countRow[cx] === cellWasAlive) {
+											countRow[cx] = cellHasChanged;
 										}
 									}
 								}
@@ -3561,7 +3570,8 @@
 			/** @type {number} */ l = 0,
 			/** @type {number} */ frameBits = 0,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
-			/** @type {Uint8Array} */ colourRow = null;
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @const {Array<boolean>} */ extendedAliveStates = LifeConstants.extendedAliveStates;
 
 		// swap grids every generation
 		if (this.isSuper || this.isExtended || this.isRuleTree) {
@@ -3699,82 +3709,82 @@
 					cx = extent.leftX;
 					frameBits = 0;
 					while (cx <= extent.rightX - 16) {
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
 						cx += 1;
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						// not needed since last bit and reset below
@@ -3795,7 +3805,7 @@
 
 					// process remaining cells in row
 					while (cx <= extent.rightX) {
-						if (LifeConstants.extendedAliveStates[colourRow[cx]]) {
+						if (extendedAliveStates[colourRow[cx]]) {
 							frameBits |= bit;
 						}
 						bit >>= 1;
@@ -17880,7 +17890,7 @@
 		if (this.width === this.maxGridSize || this.height === this.maxGridSize) {
 			// check for LtL or HROT
 			if (this.isHROT) {
-				boundarySize = this.HROT.xrange * 2 + 1;
+				boundarySize = this.HROT.xrange * 2;
 			} else {
 				boundarySize = 16;
 			}
@@ -24127,8 +24137,8 @@
 			/** @type {number} */ neighbours = 0,
 
 			// flags if cells are alive
-			/** @type {boolean} */ newCellIsAlive = false,
-			/** @type {boolean} */ oldCellWasAlive = false,
+			/** @type {number} */ newCellIsAlive = 0,
+			/** @type {number} */ oldCellWasAlive = 0,
 
 			// constants
 			/** @const {number} */ deadForcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16),
@@ -24136,7 +24146,8 @@
 			/** @const {number} */ requireState1 = (1 << 15) | (1 << 16),
 			/** @const {number} */ treatIfDead = (1 << 1) | (1 << 2) | (1 << 4) | (1 << 6) | (1 << 8) | (1 << 10) | (1 << 12) | (1 << 15) |  (1 << 16) | (1 << 17) | (1 << 19),
 			/** @const {number} */ treatIfAlive = treatIfDead ^ ((1 << 17) | (1 << 18) | (1 << 19) | (1 << 20)),
-			/** @const {Array<number>} */ nextState = [0, 1, 2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19];
+			/** @const {Array<number>} */ nextState = [0, 1, 2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19],
+			/** @const {Array<number>} */ extendedAliveStatesCount = LifeConstants.extendedAliveStatesCount;
 
 		// select the correct grid
 		if ((this.counter & 1) === 0) {
@@ -24308,22 +24319,19 @@
 
 									// check if state is alive
 									nextRow[x] = state;
-									newCellIsAlive = LifeConstants.extendedAliveStates[state];
-									oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+									newCellIsAlive = extendedAliveStatesCount[state];
+									oldCellWasAlive = extendedAliveStatesCount[c];
 									if (newCellIsAlive) {
 										population += 1;
 
 										// update births
-										if (!oldCellWasAlive) {
-											births += 1;
-										}
+										births += 1 - oldCellWasAlive;
 									} else {
-										// check for death
-										if (oldCellWasAlive) {
-											// update deaths
-											deaths += 1;
-										}
+										// update deaths
+										deaths += oldCellWasAlive;
 									}
+
+									// upadte tile occupancy
 									if (state > 0) {
 										rowOccupied |= rowIndex;
 										colOccupied |= colIndex;
@@ -24375,22 +24383,19 @@
 
 								// check if state is alive
 								nextRow[x] = state;
-								newCellIsAlive = LifeConstants.extendedAliveStates[state];
-								oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+								newCellIsAlive = extendedAliveStatesCount[state];
+								oldCellWasAlive = extendedAliveStatesCount[c];
 								if (newCellIsAlive) {
 									population += 1;
 
 									// update births
-									if (!oldCellWasAlive) {
-										births += 1;
-									}
+									births += 1 - oldCellWasAlive;
 								} else {
-									// check for death
-									if (oldCellWasAlive) {
-										// update deaths
-										deaths += 1;
-									}
+									// update deaths
+									deaths += oldCellWasAlive;
 								}
+
+								// update tile occupancy
 								if (state > 0) {
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
@@ -24673,8 +24678,8 @@
 			/** @type {number} */ neighbours = 0,
 
 			// flags if cells are alive
-			/** @type {boolean} */ newCellIsAlive = false,
-			/** @type {boolean} */ oldCellWasAlive = false,
+			/** @type {number} */ newCellIsAlive = 0,
+			/** @type {number} */ oldCellWasAlive = 0,
 
 			// constants
 			/** @const {number} */ deadForcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16),
@@ -24682,7 +24687,8 @@
 			/** @const {number} */ requireState1 = (1 << 15) | (1 << 16),
 			/** @const {number} */ treatIfDead = (1 << 1) | (1 << 2) | (1 << 4) | (1 << 6) | (1 << 8) | (1 << 10) | (1 << 12) | (1 << 15) |  (1 << 16) | (1 << 17) | (1 << 19),
 			/** @const {number} */ treatIfAlive = treatIfDead ^ ((1 << 17) | (1 << 18) | (1 << 19) | (1 << 20)),
-			/** @const {Array<number>} */ nextState = [0, 1, 2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19];
+			/** @const {Array<number>} */ nextState = [0, 1, 2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19],
+			/** @const {Array<number>} */ extendedAliveStatesCount = LifeConstants.extendedAliveStatesCount;
 
 		// select the correct grid
 		if ((this.counter & 1) === 0) {
@@ -24871,22 +24877,19 @@
 
 									// check if state is alive
 									nextRow[x] = state;
-									newCellIsAlive = LifeConstants.extendedAliveStates[state];
-									oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+									newCellIsAlive = extendedAliveStatesCount[state];
+									oldCellWasAlive = extendedAliveStatesCount[c];
 									if (newCellIsAlive) {
 										population += 1;
 
 										// update births
-										if (!oldCellWasAlive) {
-											births += 1;
-										}
+										births += 1 - oldCellWasAlive;
 									} else {
-										// check for death
-										if (oldCellWasAlive) {
-											// update deaths
-											deaths += 1;
-										}
+										// update deaths
+										deaths += oldCellWasAlive;
 									}
+
+									// update tile occupancy
 									if (state > 0) {
 										rowOccupied |= rowIndex;
 										colOccupied |= colIndex;
@@ -24942,37 +24945,25 @@
 													(((treat >> nw) & 1) << 2) |
 													(((treat >> n) & 1) << 1) |
 													((treat >> ne) & 1)];
-													//(((treat >> sw) & 1) << 2) |
-													//(((treat >> se) & 1) << 0) |
-													//(((treat >> s) & 1) << 1) |
-													//(((treat >> w) & 1) << 5) |
-													//(c << 4) |
-													//(((treat >> e) & 1) << 3) |
-													//(((treat >> n) & 1) << 7) |
-													//(((treat >> nw) & 1) << 8) |
-													//(((treat >> ne) & 1) << 6)];
 										}
 									}
 								}
 
 								// check if state is alive
 								nextRow[x] = state;
-								newCellIsAlive = LifeConstants.extendedAliveStates[state];
-								oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+								newCellIsAlive = extendedAliveStatesCount[state];
+								oldCellWasAlive = extendedAliveStatesCount[c];
 								if (newCellIsAlive) {
 									population += 1;
 
 									// update births
-									if (!oldCellWasAlive) {
-										births += 1;
-									}
+									births += 1 - oldCellWasAlive;
 								} else {
-									// check for death
-									if (oldCellWasAlive) {
-										// update deaths
-										deaths += 1;
-									}
+									// update deaths
+									deaths += oldCellWasAlive;
 								}
+
+								// update tile occupancy
 								if (state > 0) {
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
@@ -25256,8 +25247,10 @@
 			/** @type {number} */ neighbours = 0,
 
 			// flags if cells are alive
-			/** @type {boolean} */ newCellIsAlive = false,
-			/** @type {boolean} */ oldCellWasAlive = false,
+			///** @type {boolean} */ newCellIsAlive = false,
+			///** @type {boolean} */ oldCellWasAlive = false,
+			/** @type {number} */ newCellIsAlive = 0,
+			/** @type {number} */ oldCellWasAlive = 0,
 
 			// constants
 			/** @const {number} */ deadForcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16),
@@ -25265,7 +25258,8 @@
 			/** @const {number} */ requireState1 = (1 << 15) | (1 << 16),
 			/** @const {number} */ treatIfDead = (1 << 1) | (1 << 2) | (1 << 4) | (1 << 6) | (1 << 8) | (1 << 10) | (1 << 12) | (1 << 15) |  (1 << 16) | (1 << 17) | (1 << 19),
 			/** @const {number} */ treatIfAlive = treatIfDead ^ ((1 << 17) | (1 << 18) | (1 << 19) | (1 << 20)),
-			/** @const {Array<number>} */ nextState = [0, 1, 2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19];
+			/** @const {Array<number>} */ nextState = [0, 1, 2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19],
+			/** @const {Array<number>} */ extendedAliveStatesCount = LifeConstants.extendedAliveStatesCount;
 
 		// select the correct grid
 		if ((this.counter & 1) === 0) {
@@ -25460,22 +25454,19 @@
 
 									// check if state is alive
 									nextRow[x] = state;
-									newCellIsAlive = LifeConstants.extendedAliveStates[state];
-									oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+									newCellIsAlive = extendedAliveStatesCount[state];
+									oldCellWasAlive = extendedAliveStatesCount[c];
 									if (newCellIsAlive) {
 										population += 1;
 
 										// update births
-										if (!oldCellWasAlive) {
-											births += 1;
-										}
+										births += 1 - oldCellWasAlive;
 									} else {
-										// check for death
-										if (oldCellWasAlive) {
-											// update deaths
-											deaths += 1;
-										}
+										// update deaths
+										deaths += oldCellWasAlive;
 									}
+
+									// update tile occupancy
 									if (state > 0) {
 										rowOccupied |= rowIndex;
 										colOccupied |= colIndex;
@@ -25541,22 +25532,19 @@
 
 								// check if state is alive
 								nextRow[x] = state;
-								newCellIsAlive = LifeConstants.extendedAliveStates[state];
-								oldCellWasAlive = LifeConstants.extendedAliveStates[c];
+								newCellIsAlive = extendedAliveStatesCount[state];
+								oldCellWasAlive = extendedAliveStatesCount[c];
 								if (newCellIsAlive) {
 									population += 1;
 
 									// update births
-									if (!oldCellWasAlive) {
-										births += 1;
-									}
+									births += 1 - oldCellWasAlive;
 								} else {
-									// check for death
-									if (oldCellWasAlive) {
-										// update deaths
-										deaths += 1;
-									}
+									// update death
+									deaths += oldCellWasAlive;
 								}
+
+								// update tile occupancy
 								if (state > 0) {
 									rowOccupied |= rowIndex;
 									colOccupied |= colIndex;
