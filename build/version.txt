@@ -1,3 +1,15 @@
+Build 1050
+- fixed Fast Lookup calculation happening if pattern was invalid
+
+Build 1049
+- fixed deletion when patterns hit the grid boundary
+
+Build 1048
+- fixed a sequencing issue with Undo/Step Back and PASTE
+
+Build 1047
+- fixed repository load with Investigator postfix
+
 Build 1046
 - renamed [R]Extended to [R]Investigator
 

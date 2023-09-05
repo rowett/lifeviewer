@@ -1636,7 +1636,7 @@
 			}
 			y = this.renderHelpLine(view, "Type", itemName, ctx, x, y, height, helpLine);
 
-			if (view.engine.ruleLoaderLookupAvailable()) {
+			if (view.engine.ruleLoaderLookupAvailable() && view.executable) {
 				itemName = "";
 				if (view.engine.ruleLoaderStep === -1) {
 					if (view.engine.ruleTreePartialLookup === null) {

@@ -8081,10 +8081,10 @@
 			this.nextGeneration(true);
 			view.fixedPointCounter += view.refreshRate;
 			this.convertToPensTile();
-			view.pasteRLEList();
 			this.savePopulationData();
 
 			this.saveSnapshotIfNeeded(view);
+			view.pasteRLEList();
 		}
 	};
 
@@ -17880,7 +17880,7 @@
 		if (this.width === this.maxGridSize || this.height === this.maxGridSize) {
 			// check for LtL or HROT
 			if (this.isHROT) {
-				boundarySize = this.HROT.xrange * 2;
+				boundarySize = this.HROT.xrange * 2 + 1;
 			} else {
 				boundarySize = 16;
 			}
@@ -19094,8 +19094,8 @@
 		}
 
 		// clear top boundary
-		if ((ht - topY) <= yrange) {
-			for (y = ht - yrange; y <= topY; y += 1) {
+		if ((ht - topY - 1) <= yrange) {
+			for (y = ht - yrange - 1; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
 					if (colourRow[x] > 0) {
@@ -19133,10 +19133,10 @@
 		}
 
 		// clear right boundary
-		if ((wd - rightX) <= xrange) {
+		if ((wd - rightX - 1) <= xrange) {
 			for (y = bottomY; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
-				for (x = wd - xrange; x <= rightX; x += 1) {
+				for (x = wd - xrange - 1; x <= rightX; x += 1) {
 					if (colourRow[x] > 0) {
 						this.removeRTPattern(x, y);
 					}
@@ -19175,8 +19175,8 @@
 			/** @type {number} */ y = 0;
 
 		// clear top boundary
-		if ((ht - topY) <= yrange) {
-			for (y = ht - yrange; y <= topY; y += 1) {
+		if ((ht - topY - 1) <= yrange) {
+			for (y = ht - yrange - 1; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
 					if (colourRow[x] >= alive) {
@@ -19214,10 +19214,10 @@
 		}
 
 		// clear right boundary
-		if ((wd - rightX) <= xrange) {
+		if ((wd - rightX - 1) <= xrange) {
 			for (y = bottomY; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
-				for (x = wd - xrange; x <= rightX; x += 1) {
+				for (x = wd - xrange - 1; x <= rightX; x += 1) {
 					if (colourRow[x] >= alive) {
 						this.removeMSPattern(x, y);
 					}

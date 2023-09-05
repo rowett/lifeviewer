@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1046,
+		/** @const {number} */ versionBuild : 1050,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7535,11 +7535,11 @@
 		this.engine.nextGeneration(this.noHistory);
 		this.engine.convertToPensTile();
 
-		// paste any RLE snippets
-		this.pasteRLEList();
-
 		// save snapshot if needed
 		this.engine.saveSnapshotIfNeeded(this);
+
+		// paste any RLE snippets
+		this.pasteRLEList();
 
 		// save population data
 		this.engine.savePopulationData();
@@ -15762,12 +15762,12 @@
 		while (this.engine.counter < targetGen) {
 			this.engine.nextGeneration(false);
 			this.engine.convertToPensTile();
-			this.pasteRLEList();
 
 			// save population data
 			this.engine.savePopulationData();
 
 			this.engine.saveSnapshotIfNeeded(this);
+			this.pasteRLEList();
 		}
 
 		// restore the elapsed time
@@ -19093,7 +19093,7 @@
 			pattern.tooBig = true;
 			me.executable = false;
 		}
-
+		
 		// check bounded grid size (script command may have increased maximum allowed size)
 		if (pattern && (pattern.gridType !== -1)) {
 			borderSize = me.getSafeBorderSize();
@@ -19106,10 +19106,16 @@
 			}
 		}
 
+		// disable Fast Lookup if pattern invalid
+		if (!me.executable) {
+			me.engine.ruleLoaderLookupEnabled = false;
+			me.engine.ruleLoaderStep = -1;
+		}
+
 		// update the life rule
 		me.engine.updateLifeRule(me);
 
-		// create RuleLoader lookup if available
+		// create RuleLoader lookup if available and pattern is valid
 		if (me.engine.ruleLoaderLookupAvailable() && me.engine.ruleLoaderLookupEnabled) {
 			me.createRuleLoaderLookup();
 		}
@@ -19882,13 +19888,6 @@
 		// set the graph UI control
 		me.graphButton.locked = me.graphDisabled;
 		me.graphButton.current = [me.popGraph];
-
-		// ensure delete range is not below minimum threshold for Extended and HROT algos
-		if (me.engine.isHROT || me.engine.isExtended) {
-			if (me.engine.removePatternRadius < ViewConstants.defaultDeleteRadius) {
-				me.engine.removePatternRadius = ViewConstants.defaultDeleteRadius;
-			}
-		}
 
 		// check for chrome bug
 		me.checkForChromeBug();

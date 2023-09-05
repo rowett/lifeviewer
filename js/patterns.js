@@ -9969,6 +9969,7 @@
 				newPattern.isNone = false;
 				newPattern.isHistory = false;
 				newPattern.isSuper = false;
+				newPattern.isExtended = false;
 				newPattern.isNiemiec = false;
 				newPattern.isHex = false;
 				newPattern.isTriangular = false;
