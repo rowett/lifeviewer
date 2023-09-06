@@ -1,3 +1,12 @@
+Build 1055
+- fixed more drawing with [R]Investigator rules
+
+Build 1054
+- fixed drawing with [R]Investigator rules
+
+Build 1053
+- fixed dead cell state choice during PASTE
+
 Build 1052
 - fixed deletion when HROT patterns hit the grid boundary
 

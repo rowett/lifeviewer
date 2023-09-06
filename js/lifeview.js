@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1052,
+		/** @const {number} */ versionBuild : 1055,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4247,7 +4247,7 @@
 
 									// if the cell changed then update the grid
 									if (sourceFlag !== destFlag) {
-										wasState6 |= this.setStateWithCheck(xOff + x, yOff + y, result, true);
+										wasState6 |= this.setStateWithCheck(xOff + x, yOff + y, result, false);
 									}
 								}
 							} else {
@@ -4287,7 +4287,7 @@
 
 									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 									if ((result !== dest) || mode === ViewConstants.pasteModeCopy) {
-										this.setStateWithCheck(xOff + x, yOff + y, result, true);
+										this.setStateWithCheck(xOff + x, yOff + y, result, false);
 									}
 								}
 							}

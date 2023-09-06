@@ -7460,7 +7460,11 @@
 					if (this.rainbow) {
 						colourGrid[y][x] = ((x + y) & 127) + 64;
 					} else {
-						colourGrid[y][x] = this.aliveStart;
+						if (this.isExtended || this.isSuper) {
+							colourGrid[y][x] = state;
+						} else {
+							colourGrid[y][x] = this.aliveStart;
+						}
 					}
 
 					// update tile grids
@@ -7532,10 +7536,14 @@
 					}
 
 					// clear cell
-					if (deadZero) {
-						colourGrid[y][x] = this.unoccupied;
+					if (this.isExtended || this.isSuper) {
+						colourGrid[y][x] = state;
 					} else {
-						colourGrid[y][x] = this.deadStart;
+						if (deadZero) {
+							colourGrid[y][x] = this.unoccupied;
+						} else {
+							colourGrid[y][x] = this.deadStart;
+						}
 					}
 
 					// update tile grids
@@ -7569,7 +7577,7 @@
 				}
 
 				// check for generations style rule
-				if (this.multiNumStates > 2) {
+				if (this.multiNumStates > 2 && !(this.isSuper || this.isExtended)) {
 					// write the correct state to the colour grid
 					if (state > 0) {
 						state = this.historyStates + state;
