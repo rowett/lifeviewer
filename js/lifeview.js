@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1056,
+		/** @const {number} */ versionBuild : 1058,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4831,8 +4831,8 @@
 		// check for auto fit
 		if (this.autoFit && !immediate) {
 			// reduce the weight at high zooms
-			if (this.engine.zoom > 24) {
-				weight = 3;
+			if (this.engine.zoom >= 16) {
+				weight = 2;
 			}
 
 			// reduce the weight if playback is on at STEP is greater than 1
@@ -6081,28 +6081,26 @@
 			me.genToggle.toolTip = ["toggle generation statistics [G]\ngeneration " + (counter + me.genOffset)];
 		}
 
-		// check for Margolus
-		if (me.engine.isMargolus || me.engine.isPCA) {
-			me.genValueLabel.preText = String(me.engine.counter);
-			me.genValueLabel.toolTip = "absolute generation " + me.engine.counter;
-		} else {
-			if (!me.genRelative) {
-				counter += me.genOffset;
-				if (counter >= 1000000000) {
-					me.genValueLabel.preText = "1B+";
-				} else {
-					me.genValueLabel.preText = String(counter);
-				}
-				me.genValueLabel.toolTip = "absolute generation " + counter;
+		// update generation labels
+		if (!me.genRelative) {
+			counter += me.genOffset;
+			if (counter >= 1000000000) {
+				me.genValueLabel.preText = "1B+";
 			} else {
-				if (counter >= 1000000000) {
-					me.genValueLabel.preText = "1B+";
-				} else {
-					me.genValueLabel.preText = String(counter);
-				}
 				me.genValueLabel.preText = String(counter);
-				me.genValueLabel.toolTip = "generation " + counter;
 			}
+			me.genValueLabel.toolTip = "absolute generation " + counter;
+		} else {
+			if (me.engine.isMargolus || me.engine.isPCA) {
+				counter = me.engine.counter;
+			}
+			if (counter >= 1000000000) {
+				me.genValueLabel.preText = "1B+";
+			} else {
+				me.genValueLabel.preText = String(counter);
+			}
+			me.genValueLabel.preText = String(counter);
+			me.genValueLabel.toolTip = "generation " + counter;
 		}
 		me.genLabel.toolTip = me.genValueLabel.toolTip;
 	};
@@ -9902,6 +9900,10 @@
 								}
 							}
 						}
+					}
+
+					if (me.autoFit) {
+						me.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 					}
 				} else {
 					// pause

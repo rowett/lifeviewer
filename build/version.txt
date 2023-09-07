@@ -1,3 +1,11 @@
+Build 1058
+- fixed invalid Mods for Indentify
+
+Build 1057
+- PCA and Margolus rules now show the engine generation in Generation Statistics when in Relative mode
+- fixed Step Back not triggering AutoFit when enabled
+- improved AutoFit for large Zoom values
+
 Build 1056
 - improved selection box rendering accuracy
 - fixed playback speed slider initial position
