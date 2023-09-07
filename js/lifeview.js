@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1058,
+		/** @const {number} */ versionBuild : 1059,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -8067,7 +8067,7 @@
 				me.genSpeed = me.refreshRate;
 			}
 
-			if (me.gensPerStep === 1) {
+			if (me.gensPerStep === 1 && me.genSpeed === 60) {
 				me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
 			} else {
 				me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
@@ -19626,7 +19626,7 @@
 		// set the generation speed and step
 		me.defaultGPS = me.genSpeed;
 		me.defaultStep = me.gensPerStep;
-		if (me.gensPerStep === 1) {
+		if (me.gensPerStep === 1 && me.genSpeed === 60) {
 			me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
 		} else {
 			me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);

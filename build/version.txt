@@ -1,3 +1,6 @@
+Build 1059
+- fixed playback speed from script commands
+
 Build 1058
 - fixed invalid Mods for Indentify
 
