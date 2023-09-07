@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1055,
+		/** @const {number} */ versionBuild : 1056,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -8068,7 +8068,12 @@
 			if (me.standardGPS) {
 				me.genSpeed = me.refreshRate;
 			}
-			me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+
+			if (me.gensPerStep === 1) {
+				me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
+			} else {
+				me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+			}
 
 			// unlock menu
 			me.viewMenu.locked = false;
@@ -18126,7 +18131,7 @@
 		// reset playback speed
 		this.genSpeed = 60;
 		this.gensPerStep = 1;
-		this.speedRange.current = this.viewSpeedRange([this.speedIndex(), 1], true, this);
+		this.speedRange.current = this.viewSpeedRange([1, 1], true, this);
 
 		// hide labels
 		this.xyLabel.deleted = true;
@@ -19619,7 +19624,11 @@
 		// set the generation speed and step
 		me.defaultGPS = me.genSpeed;
 		me.defaultStep = me.gensPerStep;
-		me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+		if (me.gensPerStep === 1) {
+			me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
+		} else {
+			me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+		}
 
 		// set the layers
 		me.defaultLayers = me.engine.layers;

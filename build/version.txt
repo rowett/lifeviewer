@@ -1,3 +1,7 @@
+Build 1056
+- improved selection box rendering accuracy
+- fixed playback speed slider initial position
+
 Build 1055
 - fixed more drawing with [R]Investigator rules
 

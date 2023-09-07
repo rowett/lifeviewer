@@ -43540,6 +43540,19 @@
 		}
 	};
 
+	// ceiling if number not an integer
+	//* @returns {number} */
+	Life.prototype.ceilAbove = function(/** @type {number} */ v) {
+		var	/** @type {number} */ result = v,
+			/** @type {number} */ intV = v | 0;
+
+		if (v !== intV) {
+			result = intV + 1;
+		}
+
+		return result;
+	};
+
 	// draw box
 	Life.prototype.drawBox = function(/** @type {View} */ view, /** @type {BoundingBox} */ box, /** @type {string} */ colour) {
 		var	/** @type {CanvasRenderingContext2D} */ ctx = this.context,
@@ -43597,16 +43610,25 @@
 			if (this.isTriangular && !this.forceRectangles && this.zoom >= 4) {
 				this.drawTriangleSelection(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY, xOff, yOff);
 			} else {
-				ctx.beginPath();
-				this.rotateCoords(x1, y1, coords);
-				ctx.moveTo(coords[0], coords[1]);
-				this.rotateCoords(x2 + angleOff, y1, coords);
-				ctx.lineTo(coords[0], coords[1]);
-				this.rotateCoords(x2 + angleOff, y2 + angleOff, coords);
-				ctx.lineTo(coords[0], coords[1]);
-				this.rotateCoords(x1, y2 + angleOff, coords);
-				ctx.lineTo(coords[0], coords[1]);
-				ctx.fill();
+				if (this.angle !== 0) {
+					ctx.beginPath();
+					this.rotateCoords(x1, y1, coords);
+					ctx.moveTo(coords[0], coords[1]);
+					this.rotateCoords(x2 + angleOff, y1, coords);
+					ctx.lineTo(coords[0], coords[1]);
+					this.rotateCoords(x2 + angleOff, y2 + angleOff, coords);
+					ctx.lineTo(coords[0], coords[1]);
+					this.rotateCoords(x1, y2 + angleOff, coords);
+					ctx.lineTo(coords[0], coords[1]);
+					ctx.fill();
+				} else {
+					ctx.beginPath();
+					ctx.moveTo(this.ceilAbove(x1), this.ceilAbove(y1));
+					ctx.lineTo(this.ceilAbove(x2), this.ceilAbove(y1));
+					ctx.lineTo(this.ceilAbove(x2), this.ceilAbove(y2));
+					ctx.lineTo(this.ceilAbove(x1), this.ceilAbove(y2));
+					ctx.fill();
+				}
 			}
 		} else {
 			// check for hexagons (rather than offset squares)
