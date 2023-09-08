@@ -751,6 +751,10 @@
 		// whether HROT pattern is probabilistic (non-deterministic)
 		/** @type {boolean} */ this.probabilisticHROT = false;
 
+		// HROT births and survivals changes
+		/** @type {number} */ this.probabilisticBirths = -1;
+		/** @type {number} */ this.probabilisticSurvivals = -1;
+
 		// remove extension from name if present
 		var	/** @type {number} */ i = name.lastIndexOf(".");
 		if (i !== -1) {
@@ -4788,10 +4792,41 @@
 
 			// check for probabilistic
 			pattern.probabilisticHROT = false;
+			pattern.probabilisticBirths = -1;
+			pattern.probabilisticSurvivals = -1;
+
 			if (probIndex !== -1) {
 				if (probIndex === this.index) {
 					pattern.probabilisticHROT = true;
 					this.index += 2;
+
+					// check for optional births and survivals chances
+					if (this.index < rule.length) {
+						this.index -= 1;
+						value = this.decodeHROTNumber(rule, "P");
+						if (value !== -1) {
+							if (value < 0 || value > 100) {
+								this.failureReason = "HROT P values need to be from 0 to 100";
+							} else {
+								pattern.probabilisticBirths = value;
+								pattern.probabilisticSurvivals = value;
+
+								// check for comma
+								if (this.index < rule.length) {
+									if (rule[this.index] === ",") {
+										value = this.decodeHROTNumber(rule, "P");
+										if (value !== -1) {
+											if (value < 0 || value > 100) {
+												this.failureReason = "HROT P values need to be from 0 to 100";
+											} else {
+												pattern.probabilisticBirths = value;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 
@@ -5705,6 +5740,12 @@
 									}
 									if (pattern.probabilisticHROT) {
 										pattern.ruleName += ",P";
+										if (pattern.probabilisticSurvivals !== -1) {
+											pattern.ruleName += pattern.probabilisticSurvivals;
+											if (pattern.probabilisticBirths !== -1) {
+												pattern.ruleName += "," + pattern.probabilisticBirths;
+											}
+										}
 									}
 								} else {
 									// normalize range for edge/corner rules

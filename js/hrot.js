@@ -85,6 +85,12 @@
 
 		// whether to use random chances
 		/** @type {boolean} */ this.useRandom = false;
+
+		// random chance births (or -1 if not used)
+		/** @type {number} */ this.useRandomBirths = -1;
+
+		// random chance survivals (or -1 if not used)
+		/** @type {number} */ this.useRandomSurvivals = -1;
 	}
 
 	// set random seed
@@ -97,13 +103,25 @@
 		// create birth chances
 		this.birthChances = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.births.length, "HROT.birthChances"));
 		for (i = 0; i < this.births.length; i += 1) {
-			this.birthChances[i] = this.myRand.random();
+			if (this.useRandomBirths === -1) {
+				this.birthChances[i] = this.myRand.random();
+			} else {
+				// chance of birth: 0% never, 100% always
+				// must be > than this value to be born
+				this.birthChances[i] = (100 - this.useRandomBirths) / 100;
+			}
 		}
 
 		// create survival chances
 		this.survivalChances = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.survivals.length, "HROT.suvivalChances"));
 		for (i = 0; i < this.survivals.length; i += 1) {
-			this.survivalChances[i] = this.myRand.random();
+			if (this.useRandomSurvivals === -1) {
+				this.survivalChances[i] = this.myRand.random();
+			} else {
+				// chance of survival: 0% never, 100% always
+				// must be > than this value to die
+				this.survivalChances[i] = this.useRandomSurvivals / 100;
+			}
 		}
 
 		// use the same random chance for all births

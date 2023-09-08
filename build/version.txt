@@ -1,3 +1,13 @@
+Build 1061
+- non-deterministic HROT rules now support defining the percentage chance of surviving a death, and chance of being born:
+	- R1,C1,S23,B3,NM,P[survival%[,birth%]]
+	- if the birth chance is not specified then the survival chance is used for both
+	- if neither are specified then birth and survival chances are randomized
+
+Build 1060
+- added Change Cell State button to Selection menu (hotkey Alt-K)
+	- prompts to click on a cell and then replaces all cells of that state with the current drawing state
+
 Build 1059
 - fixed playback speed from script commands
 

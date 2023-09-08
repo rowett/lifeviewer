@@ -331,13 +331,7 @@
 
 					// k for replace selected cell state with drawing state
 					case 75:
-						// switch to draw mode
-						if (me.modeList.current !== ViewConstants.modeDraw) {
-							me.modeList.current = me.viewModeList(ViewConstants.modeDraw, true, me);
-						}
-						// enable pick replace
-						me.pickReplace = true;
-						me.pickToggle.current = me.togglePick([true], true, me);
+						me.changeCellStatePressed(me);
 						break;
 
 					// l for toggle annotations
