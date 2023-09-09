@@ -3116,7 +3116,7 @@
 			y = this.renderErrorLine(view, "Esc", "clear messages", ctx, x, y, height, 0);
 
 			// draw h for help
-			y = this.renderErrorLine(view, "H  ", "help on script commands", ctx, x, y, height, 0);
+			y = this.renderErrorLine(view, "H  ", "help", ctx, x, y, height, 0);
 		}
 	};
 

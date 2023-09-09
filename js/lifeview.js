@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1061,
+		/** @const {number} */ versionBuild : 1062,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -9373,11 +9373,15 @@
 				}
 			}
 
-			// turn off pick mode
-			me.pickToggle.current = me.togglePick([false], true, me);
+			// turn off pick mode unless in change state mode
+			if (!me.pickReplace) {
+				me.pickToggle.current = me.togglePick([false], true, me);
 
-			// notify after switching mode since switching clears notifications
-			me.menuManager.notification.notify("Drawing with state " + newValue + " (" + me.getStateName(newValue) + ")", 15, 120, 15, true);
+				// notify after switching mode since switching clears notifications
+				me.menuManager.notification.notify("Drawing with state " + newValue + " (" + me.getStateName(newValue) + ")", 15, 120, 15, true);
+			} else {
+				me.menuManager.notification.notify("Replace: Now click on a cell", 15, 180, 15, true);
+			}
 		}
 
 		return result;
@@ -10745,7 +10749,11 @@
 					// just got focus
 					if (!(me.displayHelp || me.navToggle.current[0])) {
 						if (me.pickMode) {
-							me.menuManager.notification.notify("Now click on a cell", 15, 180, 15, true);
+							if (me.pickReplace) {
+								me.menuManager.notification.notify("Replace: Now click on a cell", 15, 180, 15, true);
+							} else {
+								me.menuManager.notification.notify("Pick: Now click on a cell", 15, 180, 15, true);
+							}
 						} else {
 							if (me.isPasting) {
 								me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);

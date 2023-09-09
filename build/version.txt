@@ -1,3 +1,7 @@
+Build 1062
+- allow picking a new drawing state during Change Cell State
+- fixed RANDSEED not checking if it has an argument
+
 Build 1061
 - non-deterministic HROT rules now support defining the percentage chance of surviving a death, and chance of being born:
 	- R1,C1,S23,B3,NM,P[survival%[,birth%]]

@@ -5084,10 +5084,13 @@
 						// random seed
 						case Keywords.randomSeedWord:
 							// read the seed
-							view.randomSeed = scriptReader.getNextToken();
-							view.randomSeedCustom = true;
+							peekToken = scriptReader.peekAtNextToken();
+							if (!(peekToken === "" || peekToken === Keywords.scriptEndWord)) {
+								view.randomSeed = scriptReader.getNextToken();
+								view.randomSeedCustom = true;
 
-							itemValid = true;
+								itemValid = true;
+							}
 							break;
 
 						// linear motion
