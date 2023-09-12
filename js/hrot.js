@@ -79,9 +79,13 @@
 		// initialize random generator
 		this.myRand.init(Date.now().toString());
 
-		// random chances of births and survivals based on neighbour count
+		// random chances of births, survivals and immunity based on neighbour count
+		// births: if rule determines birth then what chance this actually happens
+		// survivals: if rule determines survival then what chance this actually happens
+		// immunity: if rule determines cell should not survive then what chance it gets immunity
 		/** @type {Float32Array} */ this.birthChances = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "HROT.birthChances"));
 		/** @type {Float32Array} */ this.survivalChances = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "HROT.suvivalChances"));
+		/** @type {Float32Array} */ this.immunityChances = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "HROT.immunityChances"));
 
 		// whether to use random chances
 		/** @type {boolean} */ this.useRandom = false;
@@ -91,6 +95,9 @@
 
 		// random chance survivals (or -1 if not used)
 		/** @type {number} */ this.useRandomSurvivals = -1;
+
+		// random chance immunity (or -1 if not used)
+		/** @type {number} */ this.useRandomImmunities = -1;
 	}
 
 	// set random seed
@@ -106,7 +113,7 @@
 			if (this.useRandomBirths === -1) {
 				this.birthChances[i] = this.myRand.random();
 			} else {
-				// chance of birth: 0% never, 100% always
+				// chance of birth actually happening: 0% never, 100% always
 				// must be > than this value to be born
 				this.birthChances[i] = (100 - this.useRandomBirths) / 100;
 			}
@@ -118,17 +125,31 @@
 			if (this.useRandomSurvivals === -1) {
 				this.survivalChances[i] = this.myRand.random();
 			} else {
-				// chance of survival: 0% never, 100% always
-				// must be > than this value to die
-				this.survivalChances[i] = this.useRandomSurvivals / 100;
+				// chance of survival actually happening: 0% never, 100% always
+				// must be > than this value to survive
+				this.survivalChances[i] = (100 - this.useRandomSurvivals) / 100;
 			}
 		}
 
+		// create immunity chances
+		this.immunityChances = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.survivals.length, "HROT.immunityChances"));
+		for (i = 0; i < this.survivals.length; i += 1) {
+			if (this.useRandomImmunities === -1) {
+				this.immunityChances[i] = 1;
+			} else {
+				// chance of immunity: 0% never, 100% always
+				// must be > than this value to be immune
+				this.immunityChances[i] = (100 - this.useRandomImmunities) / 100;
+			}
+		}
 		// use the same random chance for all births
 		this.birthChances.fill(this.birthChances[0]);
 
 		// use the same random chance for all survivals
 		this.survivalChances.fill(this.survivalChances[0]);
+
+		// use the same random chance for all immunities
+		this.immunityChances.fill(this.immunityChances[0]);
 	};
 
 	// resize counts array
@@ -475,8 +496,8 @@
 		}
 	};
 
-	// update the life grid region using computed counts
-	HROT.prototype.updateGridFromCountsHROT = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {boolean} */ useAlternate) {
+	// update the life grid region using computed counts (non-deterministic version)
+	HROT.prototype.updateGridFromCountsHROTRandom = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {boolean} */ useAlternate) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ population = 0,
@@ -513,10 +534,10 @@
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
 			/** @type {number} */ aliveIndex = 0,
 			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup,
-			/** @type {boolean} */ useRandom = this.useRandom,
 			/** @type {Random} */ myRand = this.myRand,
 			/** @type {Float32Array} */ birthChances = this.birthChances,
 			/** @type {Float32Array} */ survivalChances = this.survivalChances,
+			/** @type {Float32Array} */ immunityChances = this.immunityChances,
 
 			// maximum generations state
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -546,13 +567,7 @@
 					if (state < aliveStart) {
 						// this cell is dead
 						if (count >= 0 && birthList[count] === 1) {
-							if (useRandom) {
-								if (myRand.random() >= birthChances[count]) {
-									// new cell is born
-									births += 1;
-									aliveIndex = 128;
-								}
-							} else {
+							if (myRand.random() >= birthChances[count]) {
 								// new cell is born
 								births += 1;
 								aliveIndex = 128;
@@ -561,23 +576,28 @@
 					} else {
 						// this cell is alive
 						if (count >= 0 && survivalList[count] === 0) {
-							if (useRandom) {
-								if (myRand.random() >= survivalChances[count]) {
-									// cell dies
-									deaths += 1;
-								} else {
-									// this cell survives
-									aliveIndex = 128;
-								}
+							// check for immunity
+							if (myRand.random() >= immunityChances[count]) {
+								// this cell survives
+								aliveIndex = 128;
 							} else {
 								deaths += 1;
 							}
 						} else {
-							aliveIndex = 128;
+							// cell survives
+							if (myRand.random() >= survivalChances[count]) {
+								// this cell survives
+								aliveIndex = 128;
+							} else {
+								// cell dies
+								deaths += 1; 
+							}
 						}
 					}
+
 					state = colourLookup[state + aliveIndex];
 					colourRow[x] = state;
+
 					// update bounding box columns
 					if (state > deadMin) {
 						rowAlive = true;
@@ -633,20 +653,14 @@
 					if (state <= deadState) {
 						// this cell is dead
 						if (count >= 0 && birthList[count] === 1) {
-							if (useRandom) {
-								if (myRand.random() >= birthChances[count]) {
-									// new cell is born
-									state = maxGenState;
-									births += 1;
-								} else {
-									if (state > minDeadState) {
-										state -= 1;
-									}
-								}
-							} else {
+							if (myRand.random() >= birthChances[count]) {
 								// new cell is born
 								state = maxGenState;
 								births += 1;
+							} else {
+								if (state > minDeadState) {
+									state -= 1;
+								}
 							}
 						} else {
 							if (state > minDeadState) {
@@ -656,12 +670,18 @@
 					} else if (state === maxGenState) {
 						// this cell is alive
 						if (count < 0 || survivalList[count] === 0) {
-							if (useRandom) {
-								if (myRand.random() >= survivalChances[(count < 0 ? 0 : count)]) {
-									// cell decays by one state
-									state -= 1;
-									deaths += 1;
-								}
+							// check for immunity
+							if (myRand.random() >= this.immunityChances[(count < 0 ? 0 : count)]) {
+								// cell is immune
+							} else {
+								// cell decays by one state
+								state -= 1;
+								deaths += 1;
+							}
+						} else {
+							// cell survives
+							if (myRand.random() >= this.survivalChances[count < 0 ? 0 : count]) {
+								// cell survives
 							} else {
 								// cell decays by one state
 								state -= 1;
@@ -674,7 +694,9 @@
 							state -= 1;
 						}
 					}
+
 					colourRow[x] = state;
+
 					// update bounding box columns
 					if (state > 0) {
 						rowAlive = true;
@@ -733,6 +755,240 @@
 			HROTBox.rightX = maxX1;
 			HROTBox.bottomY = minY1;
 			HROTBox.topY = maxY1;
+		}
+	};
+
+	// update the life grid region using computed counts (deterministic version)
+	HROT.prototype.updateGridFromCountsHROTNormal = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {boolean} */ useAlternate) {
+		var	/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ population = 0,
+			/** @type {number} */ births = 0,
+			/** @type {number} */ deaths = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ count = 0,
+			/** @type {boolean} */ rowAlive = false,
+			/** @type {boolean} */ liveRowAlive = false,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.engine.colourTileHistoryGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Int32Array} */ countRow = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			// bounding box for any cell
+			/** @type {number} */ minX = this.engine.width,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ minY = this.engine.height,
+			/** @type {number} */ maxY = 0,
+			// bounding box for alive cells (used for fit zoom)
+			/** @type {number} */ minX1 = minX,
+			/** @type {number} */ maxX1 = maxX,
+			/** @type {number} */ minY1 = minY,
+			/** @type {number} */ maxY1 = maxY,
+			/** @type {BoundingBox} */ zoomBox = this.engine.zoomBox,
+			/** @type {BoundingBox} */ HROTBox = this.engine.HROTBox,
+			/** @const {number} */ xrange = this.xrange,
+			/** @const {number} */ yrange = this.yrange,
+			/** @type {Uint8Array} */ birthList = useAlternate ? this.altBirths : this.births,
+			/** @type {Uint8Array} */ survivalList = useAlternate ? this.altSurvivals : this.survivals,
+			/** @type {Array<Int32Array>} */ counts = this.counts,
+			/** @const {number} */ maxGeneration = this.scount - 1,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @const {number} */ deadMin = LifeConstants.deadMin,
+			/** @type {number} */ aliveIndex = 0,
+			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup,
+
+			// maximum generations state
+			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
+
+			// maximum dead state number
+			/** @const {number} */ deadState = this.engine.historyStates,
+
+			// minimum dead state number
+			/** @const {number} */ minDeadState = (this.engine.historyStates > 0 ? 1 : 0);
+
+		// compute next generation
+		population = 0;
+		births = 0;
+		deaths = 0;
+		if (maxGeneration === 1) {
+			// 2 state version
+			for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+				colourRow = colourGrid[y];
+				countRow = counts[y];
+				colourTileRow = colourTileHistoryGrid[y >> 4];
+				rowAlive = false;
+				liveRowAlive = false;
+				for (x = leftX - xrange; x <= rightX + xrange; x += 1) {
+					state = colourRow[x];
+					count = countRow[x];
+					aliveIndex = 0;
+					if (state < aliveStart) {
+						// this cell is dead
+						if (count >= 0 && birthList[count] === 1) {
+							// new cell is born
+							births += 1;
+							aliveIndex = 128;
+						}
+					} else {
+						// this cell is alive
+						if (count >= 0 && survivalList[count] === 0) {
+							// cell does not survive
+							deaths += 1;
+						} else {
+							// cell survives
+							aliveIndex = 128;
+						}
+					}
+
+					state = colourLookup[state + aliveIndex];
+					colourRow[x] = state;
+
+					// update bounding box columns
+					if (state > deadMin) {
+						rowAlive = true;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+						if (x < minX) {
+							minX = x;
+						}
+						if (x > maxX) {
+							maxX = x;
+						}
+						if (state >= aliveStart) {
+							population += 1;
+							if (x < minX1) {
+								minX1 = x;
+							}
+							if (x > maxX1) {
+								maxX1 = x;
+							}
+							liveRowAlive = true;
+						}
+					}
+				}
+				if (rowAlive) {
+					// if there was an alive or history cell in the row then update bounding box rows
+					if (y < minY) {
+						minY = y;
+					}
+					if (y > maxY) {
+						maxY = y;
+					}
+				}
+				if (liveRowAlive) {
+					// if something was alive in the row then update bounding box rows
+					if (y < minY1) {
+						minY1 = y;
+					}
+					if (y > maxY1) {
+						maxY1 = y;
+					}
+				}
+			}
+		} else {
+			// >2 state version
+			for (y = bottomY - yrange; y <= topY + yrange; y += 1) {
+				colourRow = colourGrid[y];
+				countRow = counts[y];
+				colourTileRow = colourTileHistoryGrid[y >> 4];
+				rowAlive = false;
+				liveRowAlive = false;
+				for (x = leftX - xrange; x <= rightX + xrange; x += 1) {
+					state = colourRow[x];
+					count = countRow[x];
+					if (state <= deadState) {
+						// this cell is dead
+						if (count >= 0 && birthList[count] === 1) {
+							// new cell is born
+							state = maxGenState;
+							births += 1;
+						} else {
+							if (state > minDeadState) {
+								state -= 1;
+							}
+						}
+					} else if (state === maxGenState) {
+						// this cell is alive
+						if (count < 0 || survivalList[count] === 0) {
+							// cell decays by one state
+							state -= 1;
+							deaths += 1;
+						}
+					} else {
+						// this cell will eventually die
+						if (state > minDeadState) {
+							state -= 1;
+						}
+					}
+
+					colourRow[x] = state;
+
+					// update bounding box columns
+					if (state > 0) {
+						rowAlive = true;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+						if (x < minX) {
+							minX = x;
+						}
+						if (x > maxX) {
+							maxX = x;
+						}
+						if (state === maxGenState) {
+							population += 1;
+							if (x < minX1) {
+								minX1 = x;
+							}
+							if (x > maxX1) {
+								maxX1 = x;
+							}
+							liveRowAlive = true;
+						}
+					}
+				}
+				if (rowAlive) {
+					// if there was an alive or history cell in the row then update bounding box rows
+					if (y < minY) {
+						minY = y;
+					}
+					if (y > maxY) {
+						maxY = y;
+					}
+				}
+				// if something was alive in the row then update bounding box rows
+				if (liveRowAlive) {
+					if (y < minY1) {
+						minY1 = y;
+					}
+					if (y > maxY1) {
+						maxY1 = y;
+					}
+				}
+			}
+		}
+
+		// save population and bounding box
+		this.engine.population = population;
+		this.engine.births = births;
+		this.engine.deaths = deaths;
+
+		// don't update bounding box if zero population
+		if (population > 0) {
+			zoomBox.leftX = minX;
+			zoomBox.rightX = maxX;
+			zoomBox.bottomY = minY;
+			zoomBox.topY = maxY;
+			HROTBox.leftX = minX1;
+			HROTBox.rightX = maxX1;
+			HROTBox.bottomY = minY1;
+			HROTBox.topY = maxY1;
+		}
+	};
+
+	// update the life grid region using computed counts
+	HROT.prototype.updateGridFromCountsHROT = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {boolean} */ useAlternate) {
+		if (this.useRandom) {
+			this.updateGridFromCountsHROTRandom(leftX, bottomY, rightX, topY, useAlternate);
+		} else {
+			this.updateGridFromCountsHROTNormal(leftX, bottomY, rightX, topY, useAlternate);
 		}
 	};
 
@@ -2045,6 +2301,7 @@
 			/** @type {Random} */ myRand = this.myRand,
 			/** @type {Float32Array} */ birthChances = this.birthChances,
 			/** @type {Float32Array} */ survivalChances = this.survivalChances,
+			/** @type {Float32Array} */ immunityChances = this.immunityChances,
 			/** @type {Int32Array} */ countRowIm1 = null,
 			/** @type {Int32Array} */ countRowIm2 = null,
 			/** @type {Int32Array} */ countRowIpr = null,
@@ -2238,18 +2495,30 @@
 				// this cell is alive
 				if (survivalList[count] === 0) {
 					if (useRandom) {
-						if (myRand.random() >= survivalChances[count]) {
-							// cell dies
-							deaths += 1;
-						} else {
+						// check for immunity
+						if (myRand.random() >= immunityChances[count]) {
+							// this cell survives
 							aliveIndex = 128;
+						} else {
+							deaths += 1;
 						}
 					} else {
 						// cell dies
 						deaths += 1;
 					}
 				} else {
-					aliveIndex = 128;
+					// cell survives
+					if (useRandom) {
+						if (myRand.random() >= survivalChances[count]) {
+							// this cell survives
+							aliveIndex = 128;
+						} else {
+							// cell dies
+							deaths += 1;
+						}
+					} else {
+						aliveIndex = 128;
+					}
 				}
 			}
 
@@ -2276,57 +2545,99 @@
 			prevCountRow = counts[bottomY + yrange];
 			colourRow = colourGrid[bottomY];
 			colourTileRow = colourTileHistoryGrid[bottomY >> 4];
-			for (x = leftX + 1; x <= rightX; x += 1) {
-				state = colourRow[x];
-				count = countRow[x + xrange] - prevCountRow[x - rxp1];
-				aliveIndex = 0;
-				if (state < aliveStart) {
-					// this cell is dead
-					if (birthList[count] === 1) {
-						if (useRandom) {
+
+			// check for non-deterministic algo
+			if (useRandom) {
+				// non-deterministic version
+				for (x = leftX + 1; x <= rightX; x += 1) {
+					state = colourRow[x];
+					count = countRow[x + xrange] - prevCountRow[x - rxp1];
+					aliveIndex = 0;
+					if (state < aliveStart) {
+						// this cell is dead
+						if (birthList[count] === 1) {
 							if (myRand.random() >= birthChances[count]) {
 								// new cell is born
 								births += 1;
 								aliveIndex = 128;
 							}
+						}
+					} else {
+						// this cell is alive
+						if (survivalList[count] === 0) {
+							// check for immunity
+							if (myRand.random() >= immunityChances[count]) {
+								// this cell survives
+								aliveIndex = 128;
+							} else {
+								// cell dies
+								deaths += 1;
+							}
 						} else {
+							// cell survives
+							if (myRand.random() >= survivalChances[count]) {
+								// this cell survives
+								aliveIndex = 128;
+							} else {
+								// cell dies
+								deaths += 1;
+							}
+						}
+					}
+
+					// update the cell
+					state = colourLookup[state + aliveIndex];
+					colourRow[x] = state;
+					if (state > deadMin) {
+						colUsed[x] |= 1;
+						rowAlive = true;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+						if (state >= aliveStart) {
+							population += 1;
+							colUsed[x] |= 2;
+							liveRowAlive = true;
+						}
+					}
+				}
+			} else {
+				// deterministic version
+				for (x = leftX + 1; x <= rightX; x += 1) {
+					state = colourRow[x];
+					count = countRow[x + xrange] - prevCountRow[x - rxp1];
+					aliveIndex = 0;
+					if (state < aliveStart) {
+						// this cell is dead
+						if (birthList[count] === 1) {
 							// new cell is born
 							births += 1;
 							aliveIndex = 128;
 						}
-					}
-				} else {
-					// this cell is alive
-					if (survivalList[count] === 0) {
-						if (useRandom) {
-							if (myRand.random() >= survivalChances[count]) {
-								// cell dies
-								deaths += 1;
-							} else {
-								aliveIndex = 128;
-							}
-						} else {
+					} else {
+						// this cell is alive
+						if (survivalList[count] === 0) {
 							// cell dies
 							deaths += 1;
+						} else {
+							aliveIndex = 128;
 						}
-					} else {
-						aliveIndex = 128;
 					}
-				}
-				// update the cell
-				state = colourLookup[state + aliveIndex];
-				colourRow[x] = state;
-				if (state > deadMin) {
-					colUsed[x] |= 1;
-					rowAlive = true;
-					colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-					if (state >= aliveStart) {
-						population += 1;
-						colUsed[x] |= 2;
-						liveRowAlive = true;
+
+					// update the cell
+					state = colourLookup[state + aliveIndex];
+					colourRow[x] = state;
+					if (state > deadMin) {
+						colUsed[x] |= 1;
+						rowAlive = true;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+						if (state >= aliveStart) {
+							population += 1;
+							colUsed[x] |= 2;
+							liveRowAlive = true;
+						}
 					}
 				}
 			}
+
 			if (rowAlive) {
 				minY = bottomY;
 				maxY = bottomY;
@@ -2363,20 +2674,32 @@
 					// this cell is alive
 					if (survivalList[count] === 0) {
 						if (useRandom) {
-							if (myRand.random() >= survivalChances[count]) {
-								// cell dies
-								deaths += 1;
-							} else {
+							if (myRand.random() >= immunityChances[count]) {
+								// this cell survives
 								aliveIndex = 128;
+							} else {
+								deaths += 1;
 							}
 						} else {
 							// cell dies
 							deaths += 1;
 						}
 					} else {
-						aliveIndex = 128;
+						// cell survives
+						if (useRandom) {
+							if (myRand.random() >= survivalChances[count]) {
+								// this cell survives
+								aliveIndex = 128;
+							} else {
+								// cell dies
+								deaths += 1;
+							}
+						} else {
+							aliveIndex = 128;
+						}
 					}
 				}
+
 				// update the cell
 				state = colourLookup[state + aliveIndex];
 				colourGrid[y][leftX] = state;
@@ -2418,62 +2741,109 @@
 				xmrp1 = leftX + 1 - rxp1;
 				rowAlive = false;
 				liveRowAlive = false;
-				for (x = leftX + 1; x <= rightX; x += 1) {
-					state = colourRow[x];
-					count = countRowYpr[xpr] + 
-						countRowYmrp1[xmrp1] -
-						countRowYpr[xmrp1] -
-						countRowYmrp1[xpr];
-					aliveIndex = 0;
-					if (state < aliveStart) {
-						// this cell is dead
-						if (birthList[count] === 1) {
-							if (useRandom) {
+
+				// check for non-deterministic algo
+				if (useRandom) {
+					// non-deterministic version
+					for (x = leftX + 1; x <= rightX; x += 1) {
+						state = colourRow[x];
+						count = countRowYpr[xpr] + 
+							countRowYmrp1[xmrp1] -
+							countRowYpr[xmrp1] -
+							countRowYmrp1[xpr];
+						aliveIndex = 0;
+						if (state < aliveStart) {
+							// this cell is dead
+							if (birthList[count] === 1) {
 								if (myRand.random() >= birthChances[count]) {
 									// new cell is born
 									aliveIndex = 128;
 									births += 1;
 								}
+							}
+						} else {
+							// this cell is alive
+							if (survivalList[count] === 0) {
+								// check for immunity
+								if (myRand.random() >= immunityChances[count]) {
+									// this cell survives
+									aliveIndex = 128;
+								} else {
+									// cell dies
+									deaths += 1;
+								}
 							} else {
+								// cell survives
+								if (myRand.random() >= survivalChances[count]) {
+									// this cell survives
+									aliveIndex = 128;
+								} else {
+									// cell dies
+									deaths += 1;
+								}
+							}
+						}
+
+						// update the cell
+						state = colourLookup[state + aliveIndex];
+						colourRow[x] = state;
+						if (state > deadMin) {
+							rowAlive = true;
+							colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+							colUsed[x] |= 1;
+							if (state >= aliveStart) {
+								population += 1;
+								liveRowAlive = true;
+								colUsed[x] |= 2;
+							}
+						}
+						xpr += 1;
+						xmrp1 += 1;
+					}
+				} else {
+					// deterministic version
+					for (x = leftX + 1; x <= rightX; x += 1) {
+						state = colourRow[x];
+						count = countRowYpr[xpr] + 
+							countRowYmrp1[xmrp1] -
+							countRowYpr[xmrp1] -
+							countRowYmrp1[xpr];
+						aliveIndex = 0;
+						if (state < aliveStart) {
+							// this cell is dead
+							if (birthList[count] === 1) {
 								// new cell is born
 								aliveIndex = 128;
 								births += 1;
 							}
-						}
-					} else {
-						// this cell is alive
-						if (survivalList[count] === 0) {
-							if (useRandom) {
-								if (myRand.random() >= survivalChances[count]) {
-									// cell dies
-									deaths += 1;
-								} else {
-									aliveIndex = 128;
-								}
-							} else {
+						} else {
+							// this cell is alive
+							if (survivalList[count] === 0) {
 								// cell dies
 								deaths += 1;
+							} else {
+								aliveIndex = 128;
 							}
-						} else {
-							aliveIndex = 128;
 						}
-					}
-					// update the cell
-					state = colourLookup[state + aliveIndex];
-					colourRow[x] = state;
-					if (state > deadMin) {
-						rowAlive = true;
-						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-						colUsed[x] |= 1;
-						if (state >= aliveStart) {
-							population += 1;
-							liveRowAlive = true;
-							colUsed[x] |= 2;
+
+						// update the cell
+						state = colourLookup[state + aliveIndex];
+						colourRow[x] = state;
+						if (state > deadMin) {
+							rowAlive = true;
+							colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+							colUsed[x] |= 1;
+							if (state >= aliveStart) {
+								population += 1;
+								liveRowAlive = true;
+								colUsed[x] |= 2;
+							}
 						}
+						xpr += 1;
+						xmrp1 += 1;
 					}
-					xpr += 1;
-					xmrp1 += 1;
 				}
+
 				if (rowAlive) {
 					if (y < minY) {
 						minY = y;
@@ -2582,70 +2952,125 @@
 					colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
 					rowAlive = false;
 					liveRowAlive = false;
-					for (j = xrange; j <= this.ncols - xrange; j += 1) {
-						jpr = j + xrange;
-						jmr = j - xrange;
-						count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
-								this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
-						jpmincol = j + leftX;
-						state = colourRow[jpmincol];
-						aliveIndex = 0;
-						if (state < aliveStart) {
-							if (birthList[count] === 1) {
-								if (useRandom) {
+
+					// check for non-deterministic algo
+					if (useRandom) {
+						// non-deterministic version
+						for (j = xrange; j <= this.ncols - xrange; j += 1) {
+							jpr = j + xrange;
+							jmr = j - xrange;
+							count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+									this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
+							jpmincol = j + leftX;
+							state = colourRow[jpmincol];
+							aliveIndex = 0;
+							if (state < aliveStart) {
+								if (birthList[count] === 1) {
 									if (myRand.random() >= birthChances[count]) {
 										// new cell is born
 										aliveIndex = 128;
 										births += 1;
 									}
+								}
+							} else {
+								// this cell is alive
+								if (survivalList[count] === 0) {
+									// check for immunity
+									if (myRand.random() >= immunityChances[count]) {
+										// this cell survives
+										aliveIndex = 128;
+									} else {
+										// cell dies
+										deaths += 1;
+									}
 								} else {
+									// cell survivces
+									if (myRand.random() >= survivalChances[count]) {
+										// this cell survives
+										aliveIndex = 128;
+									} else {
+										// cell dies
+										deaths += 1;
+									}
+								}
+							}
+
+							// update the cell
+							state = colourLookup[state + aliveIndex];
+							colourRow[jpmincol] = state;
+							if (state > deadMin) {
+								if (jpmincol < minX) {
+									minX = jpmincol;
+								}
+								if (jpmincol > maxX) {
+									maxX = jpmincol;
+								}
+								rowAlive = true;
+								colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
+								if (state >= aliveStart) {
+									population += 1;
+									liveRowAlive = true;
+									if (jpmincol < minX1) {
+										minX1 = jpmincol;
+									}
+									if (jpmincol > maxX1) {
+										maxX1 = jpmincol;
+									}
+								}
+							}
+						}
+					} else {
+						// deterministic version
+						for (j = xrange; j <= this.ncols - xrange; j += 1) {
+							jpr = j + xrange;
+							jmr = j - xrange;
+							count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+									this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
+							jpmincol = j + leftX;
+							state = colourRow[jpmincol];
+							aliveIndex = 0;
+							if (state < aliveStart) {
+								if (birthList[count] === 1) {
 									// new cell is born
 									aliveIndex = 128;
 									births += 1;
 								}
-							}
-						} else {
-							// this cell is alive
-							if (survivalList[count] === 0) {
-								if (useRandom) {
-									if (myRand.random() >= survivalChances[count]) {
-										// cell dies
-										deaths += 1;
-									} else {
-										aliveIndex = 128;
-									}
-								} else {
+							} else {
+								// this cell is alive
+								if (survivalList[count] === 0) {
 									// cell dies
 									deaths += 1;
+								} else {
+									aliveIndex = 128;
 								}
-							} else {
-								aliveIndex = 128;
 							}
-						}
-						// update the cell
-						state = colourLookup[state + aliveIndex];
-						colourRow[jpmincol] = state;
-						if (state > deadMin) {
-							if (jpmincol < minX) {
-								minX = jpmincol;
-							}
-							if (jpmincol > maxX) {
-								maxX = jpmincol;
-							}
-							rowAlive = true;
-							colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
-							if (state >= aliveStart) {
-								population += 1;
-								liveRowAlive = true;
-								if (jpmincol < minX1) {
-									minX1 = jpmincol;
+
+							// update the cell
+							state = colourLookup[state + aliveIndex];
+							colourRow[jpmincol] = state;
+							if (state > deadMin) {
+								if (jpmincol < minX) {
+									minX = jpmincol;
 								}
-								if (jpmincol > maxX1) {
-									maxX1 = jpmincol;
+								if (jpmincol > maxX) {
+									maxX = jpmincol;
+								}
+								rowAlive = true;
+								colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
+								if (state >= aliveStart) {
+									population += 1;
+									liveRowAlive = true;
+									if (jpmincol < minX1) {
+										minX1 = jpmincol;
+									}
+									if (jpmincol > maxX1) {
+										maxX1 = jpmincol;
+									}
 								}
 							}
 						}
 					}
+
 					if (rowAlive) {
 						if (ipminrow < minY) {
 							minY = ipminrow;
@@ -3905,6 +4330,7 @@
 			/** @type {Random} */ myRand = this.myRand,
 			/** @type {Float32Array} */ birthChances = this.birthChances,
 			/** @type {Float32Array} */ survivalChances = this.survivalChances,
+			/** @type {Float32Array} */ immunityChances = this.immunityChances,
 
 			// maximum generations state
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -4061,7 +4487,10 @@
 				// this cell is alive
 				if (survivalList[count] === 0) {
 					if (useRandom) {
-						if (myRand.random() >= survivalChances[count]) {
+						// check for immunity
+						if (myRand.random() >= immunityChances[count]) {
+							// this cell survives
+						} else {
 							// cell decays by one state
 							state -= 1;
 							deaths += 1;
@@ -4071,6 +4500,16 @@
 						state -= 1;
 						deaths += 1;
 					}
+				} else {
+					if (useRandom) {
+						if (myRand.random() >= survivalChances[count]) {
+							// this cell survives
+						} else {
+							// cell decays by one state
+							state -= 1;
+							deaths += 1;
+						}
+					}
 				}
 			} else {
 				// this cell will eventually die
@@ -4078,6 +4517,7 @@
 					state -= 1;
 				}
 			}
+
 			// update the cell
 			colourGrid[bottomY][leftX] = state;
 			if (state > 0) {
@@ -4102,13 +4542,16 @@
 			prevCountRow = counts[bottomY + yrange];
 			colourRow = colourGrid[bottomY];
 			colourTileRow = colourTileHistoryGrid[bottomY >> 4];
-			for (x = leftX + 1; x <= rightX; x += 1) {
-				state = colourRow[x];
-				count = countRow[x + xrange] - prevCountRow[x - rxp1];
-				if (state <= deadState) {
-					// this cell is dead
-					if (birthList[count] === 1) {
-						if (useRandom) {
+
+			// check for non-deterministic algo
+			if (useRandom) {
+				// non-deterministic version
+				for (x = leftX + 1; x <= rightX; x += 1) {
+					state = colourRow[x];
+					count = countRow[x + xrange] - prevCountRow[x - rxp1];
+					if (state <= deadState) {
+						// this cell is dead
+						if (birthList[count] === 1) {
 							if (myRand.random() >= birthChances[count]) {
 								// new cell is born
 								state = maxGenState;
@@ -4119,59 +4562,114 @@
 								}
 							}
 						} else {
-							// new cell is born
-							state = maxGenState;
-							births += 1;
+							if (state > minDeadState) {
+								state -= 1;
+							}
 						}
-					} else {
-						if (state > minDeadState) {
-							state -= 1;
-						}
-					}
-				} else if (state === maxGenState) {
-					// this cell is alive
-					if (survivalList[count] === 0) {
-						if (useRandom) {
-							if (myRand.random() >= survivalChances[count]) {
+					} else if (state === maxGenState) {
+						// this cell is alive
+						if (survivalList[count] === 0) {
+							if (myRand.random() >= immunityChances[count]) {
+								// cell survivces
+							} else {
 								// cell decays by one state
 								state -= 1;
 								deaths += 1;
 							}
 						} else {
+							if (myRand.random() >= survivalChances[count]) {
+								// cell survives
+							} else {
+								// cell decays by one state
+								state -= 1;
+								deaths += 1;
+							}
+						}
+					} else {
+						// this cell will eventually die
+						if (state > minDeadState) {
+							state -= 1;
+						}
+					}
+
+					// update the cell
+					colourRow[x] = state;
+					if (state > 0) {
+						if (x < minX) {
+							minX = x;
+						}
+						if (x > maxX) {
+							maxX = x;
+						}
+						rowAlive = true;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+						if (state === maxGenState) {
+							population += 1;
+							if (x < minX1) {
+								minX1 = x;
+							}
+							if (x > maxX1) {
+								maxX1 = x;
+							}
+							liveRowAlive = true;
+						}
+					}
+				}
+			} else {
+				// deterministic version
+				for (x = leftX + 1; x <= rightX; x += 1) {
+					state = colourRow[x];
+					count = countRow[x + xrange] - prevCountRow[x - rxp1];
+					if (state <= deadState) {
+						// this cell is dead
+						if (birthList[count] === 1) {
+							// new cell is born
+							state = maxGenState;
+							births += 1;
+						} else {
+							if (state > minDeadState) {
+								state -= 1;
+							}
+						}
+					} else if (state === maxGenState) {
+						// this cell is alive
+						if (survivalList[count] === 0) {
 							// cell decays by one state
 							state -= 1;
 							deaths += 1;
 						}
-					}
-				} else {
-					// this cell will eventually die
-					if (state > minDeadState) {
-						state -= 1;
-					}
-				}
-				// update the cell
-				colourRow[x] = state;
-				if (state > 0) {
-					if (x < minX) {
-						minX = x;
-					}
-					if (x > maxX) {
-						maxX = x;
-					}
-					rowAlive = true;
-					colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-					if (state === maxGenState) {
-						population += 1;
-						if (x < minX1) {
-							minX1 = x;
+					} else {
+						// this cell will eventually die
+						if (state > minDeadState) {
+							state -= 1;
 						}
-						if (x > maxX1) {
-							maxX1 = x;
+					}
+
+					// update the cell
+					colourRow[x] = state;
+					if (state > 0) {
+						if (x < minX) {
+							minX = x;
 						}
-						liveRowAlive = true;
+						if (x > maxX) {
+							maxX = x;
+						}
+						rowAlive = true;
+						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+						if (state === maxGenState) {
+							population += 1;
+							if (x < minX1) {
+								minX1 = x;
+							}
+							if (x > maxX1) {
+								maxX1 = x;
+							}
+							liveRowAlive = true;
+						}
 					}
 				}
 			}
+
 			if (rowAlive) {
 				minY = bottomY;
 				maxY = bottomY;
@@ -4185,13 +4683,16 @@
 			colAlive = false;
 			liveColAlive = false;
 			xpr = leftX + xrange;
-			for (y = bottomY + 1; y <= topY; y += 1) {
-				state = colourGrid[y][leftX];
-				count = counts[y + yrange][xpr] - counts[y - ryp1][xpr];
-				if (state <= deadState) {
-					// this cell is dead
-					if (birthList[count] === 1) {
-						if (useRandom) {
+
+			// check for non-deterministic algo
+			if (useRandom) {
+				// non-determinsitic version
+				for (y = bottomY + 1; y <= topY; y += 1) {
+					state = colourGrid[y][leftX];
+					count = counts[y + yrange][xpr] - counts[y - ryp1][xpr];
+					if (state <= deadState) {
+						// this cell is dead
+						if (birthList[count] === 1) {
 							if (myRand.random() >= birthChances[count]) {
 								// new cell is born
 								state = maxGenState;
@@ -4202,59 +4703,114 @@
 								}
 							}
 						} else {
-							// new cell is born
-							state = maxGenState;
-							births += 1;
+							if (state > minDeadState) {
+								state -= 1;
+							}
 						}
-					} else {
-						if (state > minDeadState) {
-							state -= 1;
-						}
-					}
-				} else if (state === maxGenState) {
-					// this cell is alive
-					if (survivalList[count] === 0) {
-						if (useRandom) {
-							if (myRand.random() >= survivalChances[count]) {
+					} else if (state === maxGenState) {
+						// this cell is alive
+						if (survivalList[count] === 0) {
+							if (myRand.random() >= immunityChances[count]) {
+								// cell survives
+							} else {
 								// cell decays by one state
 								state -= 1;
 								deaths += 1;
 							}
 						} else {
+							if (myRand.random() >= survivalChances[count]) {
+								// cell survives
+							} else {
+								// cell decays by one state
+								state -= 1;
+								deaths += 1;
+							}
+						}
+					} else {
+						// this cell will eventually die
+						if (state > minDeadState) {
+							state -= 1;
+						}
+					}
+
+					// update the cell
+					colourGrid[y][leftX] = state;
+					if (state > 0) {
+						if (y < minY) {
+							minY = y;
+						}
+						if (y > maxY) {
+							maxY = y;
+						}
+						colAlive = true;
+						colourTileHistoryGrid[y >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
+						if (state === maxGenState) {
+							population += 1;
+							if (y < minY1) {
+								minY1 = y;
+							}
+							if (y > maxY1) {
+								maxY1 = y;
+							}
+							liveColAlive = true;
+						}
+					}
+				}
+			} else {
+				// deterministic version
+				for (y = bottomY + 1; y <= topY; y += 1) {
+					state = colourGrid[y][leftX];
+					count = counts[y + yrange][xpr] - counts[y - ryp1][xpr];
+					if (state <= deadState) {
+						// this cell is dead
+						if (birthList[count] === 1) {
+							// new cell is born
+							state = maxGenState;
+							births += 1;
+						} else {
+							if (state > minDeadState) {
+								state -= 1;
+							}
+						}
+					} else if (state === maxGenState) {
+						// this cell is alive
+						if (survivalList[count] === 0) {
 							// cell decays by one state
 							state -= 1;
 							deaths += 1;
 						}
-					}
-				} else {
-					// this cell will eventually die
-					if (state > minDeadState) {
-						state -= 1;
-					}
-				}
-				// update the cell
-				colourGrid[y][leftX] = state;
-				if (state > 0) {
-					if (y < minY) {
-						minY = y;
-					}
-					if (y > maxY) {
-						maxY = y;
-					}
-					colAlive = true;
-					colourTileHistoryGrid[y >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
-					if (state === maxGenState) {
-						population += 1;
-						if (y < minY1) {
-							minY1 = y;
+					} else {
+						// this cell will eventually die
+						if (state > minDeadState) {
+							state -= 1;
 						}
-						if (y > maxY1) {
-							maxY1 = y;
+					}
+
+					// update the cell
+					colourGrid[y][leftX] = state;
+					if (state > 0) {
+						if (y < minY) {
+							minY = y;
 						}
-						liveColAlive = true;
+						if (y > maxY) {
+							maxY = y;
+						}
+						colAlive = true;
+						colourTileHistoryGrid[y >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
+						if (state === maxGenState) {
+							population += 1;
+							if (y < minY1) {
+								minY1 = y;
+							}
+							if (y > maxY1) {
+								maxY1 = y;
+							}
+							liveColAlive = true;
+						}
 					}
 				}
 			}
+
 			if (colAlive) {
 				if (leftX < minX) {
 					minX = leftX;
@@ -4282,16 +4838,19 @@
 				liveRowAlive = false;
 				xpr = leftX + 1 + xrange;
 				xmrp1 = leftX + 1 - rxp1;
-				for (x = leftX + 1; x <= rightX; x += 1) {
-					state = colourRow[x];
-					count = countRowYpr[xpr] +
-						countRowYmrp1[xmrp1] -
-						countRowYpr[xmrp1] -
-						countRowYmrp1[xpr];
-					if (state <= deadState) {
-						// this cell is dead
-						if (birthList[count] === 1) {
-							if (useRandom) {
+
+				// check for non-deterministic algo
+				if (useRandom) {
+					// non-deterministic version
+					for (x = leftX + 1; x <= rightX; x += 1) {
+						state = colourRow[x];
+						count = countRowYpr[xpr] +
+							countRowYmrp1[xmrp1] -
+							countRowYpr[xmrp1] -
+							countRowYmrp1[xpr];
+						if (state <= deadState) {
+							// this cell is dead
+							if (birthList[count] === 1) {
 								if (myRand.random() >= birthChances[count]) {
 									// new cell is born
 									state = maxGenState;
@@ -4302,60 +4861,121 @@
 									}
 								}
 							} else {
-								// new cell is born
-								state = maxGenState;
-								births += 1;
+								if (state > minDeadState) {
+									state -= 1;
+								}
 							}
-						} else {
-							if (state > minDeadState) {
-								state -= 1;
-							}
-						}
-					} else if (state === maxGenState) {
-						// this cell is alive
-						if (survivalList[count] === 0) {
-							if (useRandom) {
+						} else if (state === maxGenState) {
+							// this cell is alive
+							if (survivalList[count] === 0) {
+								if (myRand.random() >= immunityChances[count]) {
+									// cell survives
+								} else {
+									// cell decays by one state
+									state -= 1;
+									deaths += 1;
+								}
+							} else {
 								if (myRand.random() >= survivalChances[count]) {
+									// cell survives
+								} else {
 									// cell decays by one state
 									state -= 1;
 									deaths += 1;
 								}
 							}
-							// cell decays by one state
-							state -= 1;
-							deaths += 1;
-						}
-					} else {
-						// this cell will eventually die
-						if (state > minDeadState) {
-							state -= 1;
-						}
-					}
-					// update the cell
-					colourRow[x] = state;
-					if (state > 0) {
-						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-						if (x < minX) {
-							minX = x;
-						}
-						if (x > maxX) {
-							maxX = x;
-						}
-						rowAlive = true;
-						if (state === maxGenState) {
-							population += 1;
-							liveRowAlive = true;
-							if (x < minX1) {
-								minX1 = x;
-							}
-							if (x > maxX1) {
-								maxX1 = x;
+						} else {
+							// this cell will eventually die
+							if (state > minDeadState) {
+								state -= 1;
 							}
 						}
+
+						// update the cell
+						colourRow[x] = state;
+						if (state > 0) {
+							colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+							if (x < minX) {
+								minX = x;
+							}
+							if (x > maxX) {
+								maxX = x;
+							}
+							rowAlive = true;
+							if (state === maxGenState) {
+								population += 1;
+								liveRowAlive = true;
+								if (x < minX1) {
+									minX1 = x;
+								}
+								if (x > maxX1) {
+									maxX1 = x;
+								}
+							}
+						}
+						xpr += 1;
+						xmrp1 += 1;
 					}
-					xpr += 1;
-					xmrp1 += 1;
+				} else {
+					// deterministic version
+					for (x = leftX + 1; x <= rightX; x += 1) {
+						state = colourRow[x];
+						count = countRowYpr[xpr] +
+							countRowYmrp1[xmrp1] -
+							countRowYpr[xmrp1] -
+							countRowYmrp1[xpr];
+						if (state <= deadState) {
+							// this cell is dead
+							if (birthList[count] === 1) {
+								// new cell is born
+								state = maxGenState;
+								births += 1;
+							} else {
+								if (state > minDeadState) {
+									state -= 1;
+								}
+							}
+						} else if (state === maxGenState) {
+							// this cell is alive
+							if (survivalList[count] === 0) {
+								// cell decays by one state
+								state -= 1;
+								deaths += 1;
+							}
+						} else {
+							// this cell will eventually die
+							if (state > minDeadState) {
+								state -= 1;
+							}
+						}
+
+						// update the cell
+						colourRow[x] = state;
+						if (state > 0) {
+							colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+							if (x < minX) {
+								minX = x;
+							}
+							if (x > maxX) {
+								maxX = x;
+							}
+							rowAlive = true;
+							if (state === maxGenState) {
+								population += 1;
+								liveRowAlive = true;
+								if (x < minX1) {
+									minX1 = x;
+								}
+								if (x > maxX1) {
+									maxX1 = x;
+								}
+							}
+						}
+						xpr += 1;
+						xmrp1 += 1;
+					}
 				}
+
 				if (rowAlive) {
 					if (y < minY) {
 						minY = y;
@@ -4443,59 +5063,140 @@
 					colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
 					rowAlive = false;
 					liveRowAlive = false;
-					for (j = xrange; j <= this.ncols - xrange; j += 1) {
-						jpr = j + xrange;
-						jmr = j - xrange;
-						count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
-								this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
-						jpmincol = j + leftX;
-						state = colourRow[jpmincol];
-						if (state <= deadState) {
-							if (birthList[count] === 1) {
-								// new cell is born
-								state = maxGenState;
-								births += 1;
+
+					// check for non-deterministic algo
+					if (useRandom) {
+						// non-deterministic version
+						for (j = xrange; j <= this.ncols - xrange; j += 1) {
+							jpr = j + xrange;
+							jmr = j - xrange;
+							count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+									this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
+							jpmincol = j + leftX;
+							state = colourRow[jpmincol];
+							if (state <= deadState) {
+								if (birthList[count] === 1) {
+									if (myRand.random() >= birthChances[count]) {
+										// new cell is born
+										state = maxGenState;
+										births += 1;
+									} else {
+										if (state > minDeadState) {
+											state -= 1;
+										}
+									}
+								} else {
+									if (state > minDeadState) {
+										state -= 1;
+									}
+								}
+							} else if (state === maxGenState) {
+								// this cell is alive
+								if (survivalList[count] === 0) {
+									if (myRand.random() >= immunityChances[count]) {
+										// cell survives
+									} else {
+										// cell decays by one state
+										state -= 1;
+										deaths += 1;
+									}
+								} else {
+									if (myRand.random() >= survivalChances[count]) {
+										// cell survives
+									} else {
+										// cell decays by one state
+										state -= 1;
+										deaths += 1;
+									}
+								}
 							} else {
+								// this cell will eventually die
 								if (state > minDeadState) {
 									state -= 1;
 								}
 							}
-						} else if (state === maxGenState) {
-							// this cell is alive
-							if (survivalList[count] === 0) {
-								// cell decays by one state
-								state -= 1;
-								deaths += 1;
-							}
-						} else {
-							// this cell will eventually die
-							if (state > minDeadState) {
-								state -= 1;
+
+							// update the cell
+							colourRow[jpmincol] = state;
+							if (state > 0) {
+								colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
+								if (jpmincol < minX) {
+									minX = jpmincol;
+								}
+								if (jpmincol > maxX) {
+									maxX = jpmincol;
+								}
+								rowAlive = true;
+								if (state === maxGenState) {
+									population += 1;
+									liveRowAlive = true;
+									if (jpmincol < minX1) {
+										minX1 = jpmincol;
+									}
+									if (jpmincol > maxX1) {
+										maxX1 = jpmincol;
+									}
+								}
 							}
 						}
-						// update the cell
-						colourRow[jpmincol] = state;
-						if (state > 0) {
-							colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
-							if (jpmincol < minX) {
-								minX = jpmincol;
-							}
-							if (jpmincol > maxX) {
-								maxX = jpmincol;
-							}
-							rowAlive = true;
-							if (state === maxGenState) {
-								population += 1;
-								liveRowAlive = true;
-								if (jpmincol < minX1) {
-									minX1 = jpmincol;
+					} else {
+						// deterministic version
+						for (j = xrange; j <= this.ncols - xrange; j += 1) {
+							jpr = j + xrange;
+							jmr = j - xrange;
+							count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+									this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
+							jpmincol = j + leftX;
+							state = colourRow[jpmincol];
+							if (state <= deadState) {
+								if (birthList[count] === 1) {
+									// new cell is born
+									state = maxGenState;
+									births += 1;
+								} else {
+									if (state > minDeadState) {
+										state -= 1;
+									}
 								}
-								if (jpmincol > maxX1) {
-									maxX1 = jpmincol;
+							} else if (state === maxGenState) {
+								// this cell is alive
+								if (survivalList[count] === 0) {
+									// cell decays by one state
+									state -= 1;
+									deaths += 1;
+								}
+							} else {
+								// this cell will eventually die
+								if (state > minDeadState) {
+									state -= 1;
+								}
+							}
+
+							// update the cell
+							colourRow[jpmincol] = state;
+							if (state > 0) {
+								colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
+								if (jpmincol < minX) {
+									minX = jpmincol;
+								}
+								if (jpmincol > maxX) {
+									maxX = jpmincol;
+								}
+								rowAlive = true;
+								if (state === maxGenState) {
+									population += 1;
+									liveRowAlive = true;
+									if (jpmincol < minX1) {
+										minX1 = jpmincol;
+									}
+									if (jpmincol > maxX1) {
+										maxX1 = jpmincol;
+									}
 								}
 							}
 						}
 					}
+
 					if (rowAlive) {
 						if (ipminrow < minY) {
 							minY = ipminrow;

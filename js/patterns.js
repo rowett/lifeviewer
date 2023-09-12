@@ -751,9 +751,10 @@
 		// whether HROT pattern is probabilistic (non-deterministic)
 		/** @type {boolean} */ this.probabilisticHROT = false;
 
-		// HROT births and survivals changes
+		// HROT births, survivals and immunities changes
 		/** @type {number} */ this.probabilisticBirths = -1;
 		/** @type {number} */ this.probabilisticSurvivals = -1;
+		/** @type {number} */ this.probabilisticImmunities = -1;
 
 		// remove extension from name if present
 		var	/** @type {number} */ i = name.lastIndexOf(".");
@@ -4794,6 +4795,7 @@
 			pattern.probabilisticHROT = false;
 			pattern.probabilisticBirths = -1;
 			pattern.probabilisticSurvivals = -1;
+			pattern.probabilisticImmunities = -1;
 
 			if (probIndex !== -1) {
 				if (probIndex === this.index) {
@@ -4820,6 +4822,20 @@
 												this.failureReason = "HROT P values need to be from 0 to 100";
 											} else {
 												pattern.probabilisticBirths = value;
+												
+												// check for comma
+												if (this.index < rule.length) {
+													if (rule[this.index] === ",") {
+														value = this.decodeHROTNumber(rule, "P");
+														if (value !== -1) {
+															if (value < 0 || value > 100) {
+																this.failureReason = "HROT P values need to be from 0 to 100";
+															} else {
+																pattern.probabilisticImmunities = value;
+															}
+														}
+													}
+												}
 											}
 										}
 									}
@@ -5744,6 +5760,9 @@
 											pattern.ruleName += pattern.probabilisticSurvivals;
 											if (pattern.probabilisticBirths !== -1) {
 												pattern.ruleName += "," + pattern.probabilisticBirths;
+												if (pattern.probabilisticImmunities !== -1) {
+													pattern.ruleName += "," + pattern.probabilisticImmunities;
+												}
 											}
 										}
 									}

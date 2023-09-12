@@ -24580,7 +24580,7 @@
 				diedRow[tw] = diedTiles;
 			}
 
-			// next tile row
+			// next tile rows
 			bottomY += ySize;
 			topY += ySize;
 		}
@@ -25138,7 +25138,6 @@
 					if (th < tileRows - 1) {
 						aboveNextTileRow[tw] |= aboveNextTiles;
 					}
-
 				} else {
 					// skip tile set
 					leftX += xSize << 4;
@@ -25149,7 +25148,7 @@
 				diedRow[tw] = diedTiles;
 			}
 
-			// next tile row
+			// next tile rows
 			bottomY += ySize;
 			topY += ySize;
 		}
@@ -25729,7 +25728,7 @@
 				diedRow[tw] = diedTiles;
 			}
 
-			// next tile row
+			// next tile rows
 			bottomY += ySize;
 			topY += ySize;
 		}
@@ -28433,10 +28432,10 @@
 					leftX += xSize << 4;
 					rightX += xSize << 4;
 				}
-			}
 
-			// update tiles where all cells died
-			diedRow[tw] = diedTiles;
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
+			}
 
 			// next tile rows
 			bottomY += ySize;
@@ -28962,10 +28961,10 @@
 					leftX += xSize << 4;
 					rightX += xSize << 4;
 				}
-			}
 
-			// update tiles where all cells died
-			diedRow[tw] = diedTiles;
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
+			}
 
 			// next tile rows
 			bottomY += ySize;
@@ -29555,7 +29554,6 @@
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
-
 
 		// clear tiles in source that died
 		this.clearTilesThatDied(grid32);
@@ -35670,7 +35668,6 @@
 			bottomY += ySize;
 			topY += ySize;
 		}
-
 
 		// update bounding box
 		this.updateBoundingBox(columnOccupied16, rowOccupied16, newLeftX, newBottomY, newRightX, newTopY, zoomBox);

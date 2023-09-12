@@ -1,5 +1,15 @@
+Build 1063
+- non-deterministic HROT rules now support an additional parameter
+	- R1,C1,S23,B3,NM,P[survival%[,birth%,[immunity%]]]
+	- survival% is the chance that a cell actually survives when the rule specifies it should
+	- birth% is the chance that a cell is actually born when the rule specifies it should
+	- immunity% is the chance that a cell survives when the rule specifies it should die
+	- if only survival% is specified then that value is also used for birth%, and immunity% is set to 0%
+	- if none are specified then a random value is used for survival% and birth%, and immunity% is set to 0%
+- fixed a tiling issue with 1D RuleTable rules
+
 Build 1062
-- allow picking a new drawing state during Change Cell State
+- allow choosing a new drawing state during Change Cell State
 - fixed RANDSEED not checking if it has an argument
 
 Build 1061

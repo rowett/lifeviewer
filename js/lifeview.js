@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1062,
+		/** @const {number} */ versionBuild : 1063,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -11243,6 +11243,9 @@
 				result += this.engine.HROT.useRandomSurvivals;
 				if (this.engine.HROT.useRandomBirths !== -1) {
 					result += "," + this.engine.HROT.useRandomBirths;
+					if (this.engine.HROT.useRandomImmunities !== -1) {
+						result += "," + this.engine.HROT.useRandomImmunities;
+					}
 				}
 			}
 		}
@@ -18574,6 +18577,7 @@
 				me.engine.HROT.useRandom = pattern.probabilisticHROT;
 				me.engine.HROT.useRandomBirths = pattern.probabilisticBirths;
 				me.engine.HROT.useRandomSurvivals = pattern.probabilisticSurvivals;
+				me.engine.HROT.useRandomImmunities = pattern.probabilisticImmunities;
 				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular, pattern.weightedNeighbourhood, pattern.weightedStates, pattern.cornerRange, pattern.edgeRange);
 				if (me.manager.altSpecified) {
 					me.engine.HROT.altBirths = pattern.altBirthHROT;
