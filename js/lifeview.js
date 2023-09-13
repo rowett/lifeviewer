@@ -13357,6 +13357,12 @@
 			width = (x2 - x1 + 1);
 			height = (y2 - y1 + 1);
 
+			// adjust if CXRLE Pos defined
+			if (me.engine.boundedGridType !== -1 && me.posDefined) {
+				xOff -= Math.floor(me.patternWidth / 2) - me.posXOffset * 2;
+				yOff -= Math.floor(me.patternHeight / 2) - me.posYOffset * 2;
+			}
+
 			// allocate the buffer
 			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number));
 

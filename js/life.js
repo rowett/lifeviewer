@@ -6623,8 +6623,8 @@
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @type {number} */ col = 0,
-			/** @type {number} */ xOff = (me.width >> 1) - (view.patternWidth >> 1),
-			/** @type {number} */ yOff = (me.height >> 1) - (view.patternHeight >> 1),
+			/** @type {number} */ xOff = view.panX - view.xOffset,
+			/** @type {number} */ yOff = view.panY - view.yOffset,
 			/** @type {string} */ ruleName = "",
 			/** @type {BoundingBox} */ selBox = view.selectionBox;
 
@@ -6664,6 +6664,14 @@
 			// compute selection size
 			width = rightX - leftX + 1;
 			height = topY - bottomY + 1;
+
+			// adjust if CXRLE Pos defined
+			if (me.boundedGridType !== -1 && view.posDefined) {
+				leftX -= Math.floor(view.patternWidth / 2) - view.posXOffset * 2;
+				rightX -= Math.floor(view.patternWidth / 2) - view.posXOffset * 2;
+				bottomY -= Math.floor(view.patternHeight / 2) - view.posYOffset * 2;
+				topY -= Math.floor(view.patternHeight / 2) - view.posYOffset * 2;
+			}
 		}
 
 		// check for triangular rules
@@ -43365,6 +43373,12 @@
 		x2 = mouseCellX + width;
 		y2 = mouseCellY + height;
 
+		// adjust if CXRLE Pos defined
+		if (view.engine.boundedGridType !== -1 && view.posDefined) {
+			xOff += view.posXOffset * 2;
+			yOff += view.posYOffset * 2;
+		}
+
 		// convert cell coordinates to screen coordinates
 		xy1 = xZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
@@ -43538,10 +43552,6 @@
 			mouseY = view.menuManager.mouseLastY;
 			if (mouseX !== -1) {
 				view.updateCellLocation(mouseX, mouseY);
-				if (this.boundedGridType !== -1 && view.posDefined) {
-					xOff += view.patternWidth - 1;
-					yOff += view.patternHeight - 1;
-				}
 				this.drawPasteWithCells(view, view.cellX - xOff, view.cellY - yOff, position, this.pasteColour);
 			}
 		}
@@ -43597,7 +43607,11 @@
 		width = x2 - x1 + 1;
 		height = y2 - y1 + 1;
 
-		//console.debug("draw", xOff, yOff);
+		// adjust if CXRLE Pos defined
+		if (view.engine.boundedGridType !== -1  && view.posDefined) {
+			xOff += Math.floor(view.patternWidth / 2);
+			yOff += Math.floor(view.patternHeight / 2);
+		}
 
 		// convert cell coordinates to screen coordinates
 		xy1 = xZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
