@@ -5836,26 +5836,8 @@
 	// set the x/y position on the UI
 	View.prototype.setXYPosition = function() {
 		// position relative to display width and height
-		var	/** @type {number} */ displayX = this.viewMenu.mouseX - this.displayWidth / 2,
-			/** @type {number} */ displayY = this.viewMenu.mouseY - this.displayHeight / 2,
-
-			// engine camera x and y
-			/** @type {number} */ engineY = this.panY - this.engine.yOff,
-			/** @type {number} */ engineX = this.panX - this.engine.xOff - (this.engine.isHex ? this.engine.yOff / 2 : 0),
-
-			// engine origin x and y
-			/** @type {number} */ originX = this.engine.originX,
-			/** @type {number} */ originY = this.engine.originY,
-
-			// x and y zoom
-			/** @type {number} */ xZoom = this.engine.zoom,
-			/** @type {number} */ yZoom = this.engine.getYZoom(this.engine.zoom),
-
-			// cell position
-			/** @type {number} */ yPos = 0,
+		var	/** @type {number} */ yPos = 0,
 			/** @type {number} */ xPos = 0,
-			/** @type {number} */ yFrac = 0,
-			/** @type {number} */ xFrac = 0,
 
 			// display strings
 			/** @type {string} */ xDisplay = "",
@@ -5865,10 +5847,6 @@
 
 			// display limit
 			/** @type {number} */ displayLimit = this.engine.maxGridSize > 9999 ? 99999 : 9999,
-
-			// rotation
-			/** @type {number} */ theta = 0,
-			/** @type {number} */ radius = 0,
 
 			// bounded grid top left
 			/** @type {number} */ boxOffset = (this.engine.isMargolus ? -1 : 0),
@@ -5887,54 +5865,22 @@
 			// delete label if generation statistics are hidden
 			this.xyLabel.deleted = !this.statsOn;
 		} else {
-			// apply rotation to the display position
-			if (this.engine.camAngle !== 0) {
-				radius = Math.sqrt((displayX * displayX) + (displayY * displayY));
-				theta = Math.atan2(displayY, displayX) * (180 / Math.PI);
-				theta -= this.engine.camAngle;
-				displayX = radius * Math.cos(theta * (Math.PI / 180));
-				displayY = radius * Math.sin(theta * (Math.PI / 180));
-			}
-
-			// compute the y cell coordinate as an integer
-			yPos = displayY / yZoom - engineY + originY;
-			yFrac = yPos - Math.floor(yPos);
-			yPos -= yFrac;
-
-			// compute the x cell coordinate as an integer
-			xPos = (displayX / xZoom) + (this.engine.isHex ? (engineY / 2) + (yPos / 2) : 0) - engineX + originX;
-			if (this.engine.isTriangular) {
-				xPos -= 0.5;
-			}
-			xFrac = xPos - Math.floor(xPos);
-			xPos -= xFrac;
-
-			// adjust for triangular grid
-			if (this.engine.isTriangular) {
-				if (((xPos + this.panX + yPos + this.panY) & 1) === 0) {
-					// triangle pointing down
-					if (xFrac + yFrac > 1) {
-						xPos += 1;
-					}
-				} else {
-					// triangle pointing up
-					if ((1 - xFrac) + yFrac < 1) {
-						xPos += 1;
-					}
-				}
-			}
+			// update cell location from mouse position
+			this.updateCellLocation(this.viewMenu.mouseX, this.viewMenu.mouseY);
 
 			// read the state
-			stateDisplay = this.engine.getState(xPos + this.panX, yPos + this.panY, this.multiStateView && this.viewOnly);
-			rawState = this.engine.getState(xPos + this.panX, yPos + this.panY, true);
+			stateDisplay = this.engine.getState(this.cellX, this.cellY, this.multiStateView && this.viewOnly);
+			rawState = this.engine.getState(this.cellX, this.cellY, true);
 
 			// add the offset to display coordinates
-			xPos += this.xOffset;
-			yPos += this.yOffset;
+			xPos = this.cellX - this.panX + this.xOffset;
+			yPos = this.cellY - this.panY + this.yOffset;
 			if (this.engine.boundedGridType !== -1 && !this.posDefined) {
 				xPos -= Math.floor(this.patternWidth / 2 + (this.specifiedWidth - this.patternWidth) / 2);
 				yPos -= Math.floor(this.patternHeight / 2 + (this.specifiedHeight - this.patternHeight) / 2);
 			}
+
+			//console.debug(this.cellX, this.cellY, xPos, yPos);
 
 			// check the size of the coordinates
 			if (xPos < -displayLimit || xPos > displayLimit) {
@@ -10329,9 +10275,6 @@
 			box.rightX = this.engine.width - 1;
 		} else {
 			box.leftX = Math.round((this.engine.width - this.engine.boundedGridWidth) / 2) + offset;
-			if (!this.posDefined) {
-				box.leftX += Math.floor((this.specifiedWidth - this.patternWidth) / 2);
-			}
 			box.rightX = box.leftX + this.engine.boundedGridWidth - 1;
 		}
 
@@ -10340,9 +10283,6 @@
 			box.topY = this.engine.height - 1;
 		} else {
 			box.bottomY = Math.round((this.engine.height - this.engine.boundedGridHeight) / 2) + offset;
-			if (!this.posDefined) {
-				box.bottomY += Math.floor((this.specifiedHeight - this.patternHeight) / 2);
-			}
 			box.topY = box.bottomY + this.engine.boundedGridHeight - 1;
 		}
 
@@ -10378,7 +10318,7 @@
 		// check for drag start
 		if (x !== -1 && y !== -1) {
 			// convert display coordinates to cell location
-			this.updateCellLocation(x, y);
+			me.updateCellLocation(x, y);
 
 			// check if this is the start of a drag
 			if (me.lastDragY === -1) {
@@ -10692,7 +10632,7 @@
 							me.dragErrors(me, y);
 						} else {
 							// check if Cell Period Table displayed
-							if (this.resultsDisplayed && this.periodMapDisplayed === 1 && this.engine.tableMaxRow !== 0) {
+							if (me.resultsDisplayed && me.periodMapDisplayed === 1 && me.engine.tableMaxRow !== 0) {
 								me.dragTable(me, y);
 							} else {
 								// check if panning
@@ -10762,6 +10702,8 @@
 					}
 				}
 			}
+
+			console.debug(me.cellX, me.cellY, "sel", me.selectionBox);
 		}
 	};
 
@@ -13394,8 +13336,8 @@
 			/** @type {number} */ count = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
 			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
-			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ xOff = me.panX - me.xOffset,
+			/** @type {number} */ yOff = me.panY - me.yOffset,
 			/** @type {Uint8Array} */ buffer = null;
 
 		if (me.isSelection) {

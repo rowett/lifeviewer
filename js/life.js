@@ -4135,7 +4135,7 @@
 
 		this.identifyDetectionTime = (performance.now() - this.identifyStartTime) / 1000;
 
-		console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
+		//console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
 
 		// check for PCA, RuleTree, Super or Extended rules
 		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
@@ -4170,7 +4170,7 @@
 				computeStrict = true;
 			}
 
-			console.log("memory", bitFrameInBytes * period, ((100 * bitFrameInBytes * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
+			//console.log("memory", bitFrameInBytes * period, ((100 * bitFrameInBytes * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
 		}
 
 		// if not computing strict volatility then use other method for rotor and stator
@@ -4242,7 +4242,7 @@
 				width0 = (extent.rightX - extent.leftX + 1);
 				height0 = (extent.topY - extent.bottomY + 1);
 
-				console.log(p, "gen", this.counter, "hash0", hash0);
+				//console.log(p, "gen", this.counter, "hash0", hash0);
 
 			} else {
 				if (p === 1) {
@@ -4250,7 +4250,7 @@
 					width1 = (extent.rightX - extent.leftX + 1);
 					height1 = (extent.topY - extent.bottomY + 1);
 
-					console.log(p, "gen", this.counter, "hash1", hash1);
+					//console.log(p, "gen", this.counter, "hash1", hash1);
 
 				} else {
 					if (p === 2 && this.isMargolus && hash0 === hash1) {
@@ -4258,7 +4258,7 @@
 						width2 = (extent.rightX - extent.leftX + 1);
 						height2 = (extent.topY - extent.bottomY + 1);
 	
-						console.log(p, "gen", this.counter, "hash2", hash2);
+						//console.log(p, "gen", this.counter, "hash2", hash2);
 
 					}
 				}
@@ -4290,12 +4290,12 @@
 
 							if (this.modType !== -1) {
 
-								console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
+								//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
 
 								this.modValue = p - checkGenDelta;
 							} else {
 
-								console.log(p, "gen", this.counter, "verify failed");
+								//console.log(p, "gen", this.counter, "verify failed");
 
 								this.modValue = -1;
 							}
@@ -4320,8 +4320,8 @@
 										modChecks[modChecks.length] = new ModCheck(p + 1, modMatch);
 									}
 	
-									console.log(p, "gen", this.counter, "type", modMatch, "check at", p + (this.isMargolus && hash0 === hash1 ? 2 : 1), "delta", deltaX, deltaY);
-									for (cx = 0; cx <= LifeConstants.modRot90FlipY; cx += 1) { if ((modMatch & (1 << cx)) !== 0) { console.log(LifeConstants.modTypeName[cx]); } }
+									//console.log(p, "gen", this.counter, "type", modMatch, "check at", p + (this.isMargolus && hash0 === hash1 ? 2 : 1), "delta", deltaX, deltaY);
+									//for (cx = 0; cx <= LifeConstants.modRot90FlipY; cx += 1) { if ((modMatch & (1 << cx)) !== 0) { console.log(LifeConstants.modTypeName[cx]); } }
 
 								}
 							}
@@ -4437,7 +4437,7 @@
 		// save elapsed time
 		this.identifyElapsedTime = ((performance.now() - this.identifyStartTime) / 1000);
 
-		console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
+		//console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
 
 	};
 
@@ -43315,8 +43315,8 @@
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
 			/** @type {number} */ xZoom = this.zoom,
 			/** @type {number} */ yZoom = this.getYZoom(this.zoom),
-			/** @type {number} */ xOff = (this.width >> 1) - (view.patternWidth >> 1),
-			/** @type {number} */ yOff = (this.height >> 1) - (view.patternHeight >> 1),
+			/** @type {number} */ xOff = view.panX - view.xOffset,
+			/** @type {number} */ yOff = view.panY - view.yOffset,
 			/** @type {number} */ engineY = view.panY - this.yOff,
 			/** @type {number} */ engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
 			/** @type {number} */ angleOff = (this.angle !== 0 ? 1 : 0),
@@ -43518,8 +43518,8 @@
 		var	/** @type {number} */ position = (view.pastePosition + 0.5) | 0,
 			/** @type {number} */ mouseX = view.menuManager.mouseLastX,
 			/** @type {number} */ mouseY = view.menuManager.mouseLastY,
-			/** @type {number} */ xOff = (this.width >> 1) - (view.patternWidth >> 1) + (view.xOffset << 1),
-			/** @type {number} */ yOff = (this.height >> 1) - (view.patternHeight >> 1) + (view.yOffset << 1);
+			/** @type {number} */ xOff = view.panX - view.xOffset,
+			/** @type {number} */ yOff = view.panY - view.yOffset;
 
 		if (view.isSelection || view.drawingSelection) {
 			this.drawBox(view, view.selectionBox, this.selectColour);
@@ -43573,8 +43573,8 @@
 			/** @type {number} */ xy2 = 0,
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0,
-			/** @type {number} */ xOff = (this.width >> 1) - (view.patternWidth >> 1),
-			/** @type {number} */ yOff = (this.height >> 1) - (view.patternHeight >> 1),
+			/** @type {number} */ xOff = view.panX - view.xOffset,
+			/** @type {number} */ yOff = view.panY - view.yOffset,
 			/** @type {number} */ swap = 0,
 			/** @type {number} */ engineY = view.panY - this.yOff,
 			/** @type {number} */ engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
@@ -43597,10 +43597,7 @@
 		width = x2 - x1 + 1;
 		height = y2 - y1 + 1;
 
-		if (this.boundedGridType !== -1 && view.posDefined) {
-			yOff += view.patternHeight - 1;
-			xOff += view.patternWidth - 1;
-		}
+		//console.debug("draw", xOff, yOff);
 
 		// convert cell coordinates to screen coordinates
 		xy1 = xZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
