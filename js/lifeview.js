@@ -5880,8 +5880,6 @@
 				yPos -= Math.floor(this.patternHeight / 2 + (this.specifiedHeight - this.patternHeight) / 2);
 			}
 
-			//console.debug(this.cellX, this.cellY, xPos, yPos);
-
 			// check the size of the coordinates
 			if (xPos < -displayLimit || xPos > displayLimit) {
 				xDisplay = (Number(xPos / 1000).toFixed(1)) + "K";
@@ -10702,8 +10700,6 @@
 					}
 				}
 			}
-
-			console.debug(me.cellX, me.cellY, "sel", me.selectionBox);
 		}
 	};
 
@@ -13358,17 +13354,25 @@
 			height = (y2 - y1 + 1);
 
 			// adjust if CXRLE Pos defined
-			if (me.engine.boundedGridType !== -1 && me.posDefined) {
-				xOff -= Math.floor(me.patternWidth / 2) - me.posXOffset * 2;
-				yOff -= Math.floor(me.patternHeight / 2) - me.posYOffset * 2;
+			if (me.posDefined) {
+				if (me.engine.boundedGridType !== -1) {
+					xOff += me.posXOffset - x1;
+					yOff += me.posYOffset - y1;
+				} else {
+					xOff += me.posXOffset * 2;
+					yOff += me.posYOffset * 2;
+				}
 			}
 
 			// allocate the buffer
 			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number));
 
 			// copy selection to buffer
+			var row = "";
+
 			i = 0;
 			for (y = y1; y <= y2; y += 1) {
+				row = "";
 				for (x = x1; x <= x2; x += 1) {
 					state = me.engine.getState(x + xOff, y + yOff, false);
 					if (state > 0 && invertForGenerations) {
@@ -13379,7 +13383,10 @@
 						count += 1;
 					}
 					i += 1;
+
+					row += String(state);
 				}
+				console.debug(row);
 			}
 
 			// copy to required buffer

@@ -6666,12 +6666,20 @@
 			height = topY - bottomY + 1;
 
 			// adjust if CXRLE Pos defined
-			if (me.boundedGridType !== -1 && view.posDefined) {
-				leftX -= Math.floor(view.patternWidth / 2) - view.posXOffset * 2;
-				rightX -= Math.floor(view.patternWidth / 2) - view.posXOffset * 2;
-				bottomY -= Math.floor(view.patternHeight / 2) - view.posYOffset * 2;
-				topY -= Math.floor(view.patternHeight / 2) - view.posYOffset * 2;
+			if (view.posDefined) {
+				if (me.boundedGridType !== -1) {
+					leftX -= Math.floor(view.specifiedWidth / 2) - view.posXOffset * 2;
+					rightX -= Math.floor(view.specifiedWidth / 2) - view.posXOffset * 2;
+					bottomY -= Math.floor(view.specifiedHeight / 2) - view.posYOffset * 2;
+					topY -= Math.floor(view.specifiedHeight / 2 ) - view.posYOffset * 2;
+				} else {
+					leftX += view.posXOffset * 2;
+					rightX += view.posXOffset * 2;
+					bottomY += view.posYOffset * 2;
+					topY += view.posYOffset * 2;
+				}
 			}
+
 		}
 
 		// check for triangular rules
@@ -43309,7 +43317,6 @@
 			/** @type {number} */ i = 0,
 			/** @type {number} */ x1 = 0,
 			/** @type {number} */ y1 = 0,
-			/** @type {number} */ xy1 = 0,
 			/** @type {number} */ x1d1 = 0,
 			/** @type {number} */ y1d1 = 0,
 			/** @type {number} */ x1d1d2 = 0,
@@ -43318,7 +43325,6 @@
 			/** @type {number} */ y1d2 = 0,
 			/** @type {number} */ x2 = 0,
 			/** @type {number} */ y2 = 0,
-			/** @type {number} */ xy2 = 0,
 			/** @type {number} */ state = 0,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
 			/** @type {number} */ xZoom = this.zoom,
@@ -43374,18 +43380,16 @@
 		y2 = mouseCellY + height;
 
 		// adjust if CXRLE Pos defined
-		if (view.engine.boundedGridType !== -1 && view.posDefined) {
+		if (view.posDefined) {
 			xOff += view.posXOffset * 2;
 			yOff += view.posYOffset * 2;
 		}
 
 		// convert cell coordinates to screen coordinates
-		xy1 = xZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy1) / 2 : 0);
-		xy2 = xZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
 		y2 = yZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy2) / 2 : 0);
+		x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
 
 		// draw a translucent box
 		ctx.fillStyle = colour;
@@ -43438,9 +43442,8 @@
 			}
 
 			// compute starting coordinates
-			xy1 = xZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 			y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-			x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy1) / 2 : 0);
+			x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
 			if (this.camAngle !== 0) {
 				this.rotateCoords(x1, y1, coords);
 				x1 = coords[0];
@@ -43579,12 +43582,10 @@
 			/** @type {number} */ y1 = box.bottomY,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y2 = box.topY,
-			/** @type {number} */ xy1 = 0,
-			/** @type {number} */ xy2 = 0,
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0,
-			/** @type {number} */ xOff = view.panX - view.xOffset,
 			/** @type {number} */ yOff = view.panY - view.yOffset,
+			/** @type {number} */ xOff = view.panX - view.xOffset,
 			/** @type {number} */ swap = 0,
 			/** @type {number} */ engineY = view.panY - this.yOff,
 			/** @type {number} */ engineX = view.panX - this.xOff - (this.isHex ? this.yOff / 2 : 0),
@@ -43608,18 +43609,18 @@
 		height = y2 - y1 + 1;
 
 		// adjust if CXRLE Pos defined
-		if (view.engine.boundedGridType !== -1  && view.posDefined) {
-			xOff += Math.floor(view.patternWidth / 2);
-			yOff += Math.floor(view.patternHeight / 2);
+		if (view.posDefined) {
+			if (view.engine.boundedGridType !== -1) {
+				xOff += Math.floor(view.specifiedWidth / 2);
+				yOff += Math.floor(view.specifiedHeight / 2);
+			}
 		}
 
 		// convert cell coordinates to screen coordinates
-		xy1 = xZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy1) / 2 : 0);
-		xy2 = xZoom * (y2 + 1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
+		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
 		y2 = yZoom * (y2 + 1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x2 = xZoom * (x2 + 1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy2) / 2 : 0);
+		x2 = xZoom * (x2 + 1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
 
 		// draw a translucent box
 		ctx.fillStyle = colour;
