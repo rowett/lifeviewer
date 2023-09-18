@@ -6036,6 +6036,7 @@
 		for (y = bottomY; y <= topY; y += 1) {
 			cy = y - h2;
 			displayY = (cy + yOff1) * yzoom + halfDisplayHeight;
+
 			// clip to display
 			if (displayY >= -yzoom && displayY < this.displayHeight + yzoom) {
 				/* TBD
@@ -43396,6 +43397,10 @@
 		ctx.globalAlpha = 0.5;
 		if (!this.isHex) {
 			if (!this.forceRectangles && this.isTriangular && this.zoom >= 4) {
+				if (view.posDefined) {
+					xOff -= view.posXOffset * 2;
+					yOff -= view.posYOffset * 2;
+				}
 				this.drawTriangleSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff);
 			} else {
 				ctx.beginPath();
@@ -43411,6 +43416,10 @@
 			}
 		} else {
 			if (!this.forceRectangles && this.zoom >= 4) {
+				if (view.posDefined) {
+					xOff -= view.posXOffset * 2;
+					yOff -= view.posYOffset * 2;
+				}
 				this.drawHexSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff);
 			} else {
 				ctx.beginPath();
@@ -43627,6 +43636,10 @@
 		ctx.globalAlpha = 0.5;
 		if (!this.isHex) {
 			if (this.isTriangular && !this.forceRectangles && this.zoom >= 4) {
+				if (view.posDefined) {
+					xOff += view.posXOffset * 2;
+					yOff += view.posYOffset * 2;
+				}
 				this.drawTriangleSelection(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY, xOff, yOff);
 			} else {
 				if (this.angle !== 0) {
@@ -43652,6 +43665,10 @@
 		} else {
 			// check for hexagons (rather than offset squares)
 			if (!this.forceRectangles && this.zoom >= 4) {
+				if (view.posDefined) {
+					xOff += view.posXOffset * 2;
+					yOff += view.posYOffset * 2;
+				}
 				this.drawHexSelection(selBox.leftX, selBox.bottomY, selBox.rightX, selBox.topY, xOff, yOff);
 			} else {
 				ctx.beginPath();
