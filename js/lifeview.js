@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1063,
+		/** @const {number} */ versionBuild : 1064,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -10315,6 +10315,11 @@
 
 		// check for drag start
 		if (x !== -1 && y !== -1) {
+			// check for existing selection
+			if (me.isSelection) {
+				me.removeSelection(me);
+			}
+
 			// convert display coordinates to cell location
 			me.updateCellLocation(x, y);
 
@@ -12845,8 +12850,8 @@
 	View.prototype.selectAllPressed = function(/** @type {View} */ me) {
 		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
-			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.specifiedWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.specifiedHeight >> 1) + (me.yOffset << 1),
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0;
 

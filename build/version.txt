@@ -1,3 +1,7 @@
+Build 1064
+- fixed selections
+- fixed not cancelling current selection when new one is started via drag
+
 Build 1063
 - non-deterministic HROT rules now support an additional parameter
 	- R1,C1,S23,B3,NM,P[survival%[,birth%,[immunity%]]]
