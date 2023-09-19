@@ -1,3 +1,6 @@
+Build 1067
+- small performance improvement for [R]Investigator iterator
+
 Build 1066
 - fixed [R]Investigator alive state handling
 
@@ -36,7 +39,7 @@ Build 1059
 - fixed playback speed from script commands
 
 Build 1058
-- fixed invalid Mods for Indentify
+- fixed invalid Mods for Identify
 
 Build 1057
 - PCA and Margolus rules now show the engine generation in Generation Statistics when in Relative mode
