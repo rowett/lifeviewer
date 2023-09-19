@@ -1,3 +1,6 @@
+Build 1066
+- fixed [R]Investigator alive state handling
+
 Build 1065
 - fixed rectanglur cells offset
 

@@ -227,7 +227,7 @@
 		/** @const {number} */ deadMin : 1,
 
 		// alive flags for [R]Extended states
-		/** @const {Array<boolean>} */ extendedAliveStates : [false, true, true, false, true, false, true, false, true, false, true, false, true, false, false, true, true, false, false, false, false],
+		/** @const {Array<boolean>} */ extendedAliveStates : [false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true],
 
 		// alive count for [R]Extended states used to compute births and deaths
 		/** @const {Array<number>} */ extendedAliveStatesCount : [0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0],
@@ -43558,7 +43558,7 @@
 
 		if (view.evolvingPaste) {
 			if (this.boundedGridType !== -1 && view.posDefined) {
-				this.drawPasteWithCells(view, view.evolveBox.leftX - view.patternWidth, view.evolveBox.bottomY - view.patternHeight, ViewConstants.pastePositionNW, this.advanceColour);
+				this.drawPasteWithCells(view, view.evolveBox.leftX - view.specifiedWidth, view.evolveBox.bottomY - view.specifiedHeight, ViewConstants.pastePositionNW, this.advanceColour);
 			} else {
 				this.drawPasteWithCells(view, view.evolveBox.leftX, view.evolveBox.bottomY, ViewConstants.pastePositionNW, this.advanceColour);
 			}
