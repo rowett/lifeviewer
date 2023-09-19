@@ -1,3 +1,6 @@
+Build 1065
+- fixed rectanglur cells offset
+
 Build 1064
 - fixed selections
 - fixed not cancelling current selection when new one is started via drag

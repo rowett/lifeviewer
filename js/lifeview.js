@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1064,
+		/** @const {number} */ versionBuild : 1065,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -13373,11 +13373,8 @@
 			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number));
 
 			// copy selection to buffer
-			var row = "";
-
 			i = 0;
 			for (y = y1; y <= y2; y += 1) {
-				row = "";
 				for (x = x1; x <= x2; x += 1) {
 					state = me.engine.getState(x + xOff, y + yOff, false);
 					if (state > 0 && invertForGenerations) {
@@ -13388,10 +13385,7 @@
 						count += 1;
 					}
 					i += 1;
-
-					row += String(state);
 				}
-				console.debug(row);
 			}
 
 			// copy to required buffer

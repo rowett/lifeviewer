@@ -43326,6 +43326,8 @@
 			/** @type {number} */ y1d2 = 0,
 			/** @type {number} */ x2 = 0,
 			/** @type {number} */ y2 = 0,
+			/** @type {number} */ xy1 = 0,
+			/** @type {number} */ xy2 = 0,
 			/** @type {number} */ state = 0,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
 			/** @type {number} */ xZoom = this.zoom,
@@ -43387,10 +43389,12 @@
 		}
 
 		// convert cell coordinates to screen coordinates
+		xy1 = xZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy1) / 2 : 0);
+		xy2 = xZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y2 = yZoom * (y2 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
+		x2 = xZoom * (x2 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy2) / 2 : 0);
 
 		// draw a translucent box
 		ctx.fillStyle = colour;
@@ -43451,8 +43455,9 @@
 			}
 
 			// compute starting coordinates
+			xy1 = xZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 			y1 = yZoom * (mouseCellY + y - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-			x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+			x1 = xZoom * (mouseCellX + x - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy1) / 2 : 0);
 			if (this.camAngle !== 0) {
 				this.rotateCoords(x1, y1, coords);
 				x1 = coords[0];
@@ -43591,6 +43596,8 @@
 			/** @type {number} */ y1 = box.bottomY,
 			/** @type {number} */ x2 = box.rightX,
 			/** @type {number} */ y2 = box.topY,
+			/** @type {number} */ xy1 = 0,
+			/** @type {number} */ xy2 = 0,
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0,
 			/** @type {number} */ yOff = view.panY - view.yOffset,
@@ -43626,10 +43633,12 @@
 		}
 
 		// convert cell coordinates to screen coordinates
+		xy1 = xZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y1 = yZoom * (y1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y1) / 2 : 0);
+		x1 = xZoom * (x1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy1) / 2 : 0);
+		xy2 = xZoom * (y2 + 1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
 		y2 = yZoom * (y2 + 1 - yOff + engineY - this.originY + view.panY) + view.displayHeight / 2;
-		x2 = xZoom * (x2 + 1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - y2) / 2 : 0);
+		x2 = xZoom * (x2 + 1 - xOff + engineX - this.originX + view.panX) + view.displayWidth / 2 + (this.isHex ? (view.displayHeight / 2 - xy2) / 2 : 0);
 
 		// draw a translucent box
 		ctx.fillStyle = colour;
