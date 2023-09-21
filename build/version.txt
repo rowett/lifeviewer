@@ -1,3 +1,6 @@
+Build 1069
+- fixed Identify for [R]Super
+
 Build 1068
 - fixed pattern validation for [R]History, [R]Super and [R]Investigator
 - fixed Select All position when incorrect pattern size specified

@@ -757,6 +757,9 @@
 		// state 6 [R]History box
 		/** @type {BoundingBox} */ this.state6Box = null;
 
+		// alive states bounding box for Super
+		/** @type {BoundingBox} */ this.aliveBox = new BoundingBox(0, 0, 0, 0);
+
 		// identify box
 		/** @type {BoundingBox} */ this.identifyBox = new BoundingBox(0, 0, 0, 0);
 
@@ -1083,6 +1086,12 @@
 
 		// row occupancy array for grid bounding box calculation
 		/** @type {Uint16Array} */ this.rowOccupied16 = null;
+
+		// column occupancy array for alive grid bounding box calculation
+		/** @type {Uint16Array} */ this.columnAliveOccupied16 = null;
+
+		// row occupancy array for grid alive bounding box calculation
+		/** @type {Uint16Array} */ this.rowAliveOccupied16 = null;
 
 		// current maximum grid size
 		/** @type {number} */ this.maxGridSize = 8192;
@@ -3593,7 +3602,7 @@
 			f = ((cy - extent.bottomY) * bitRowInBytes) + l;
 			bit = bitStart;
 
-			// check for Super, Extended or RuleTree rules
+			// check for Super or RuleTree rules
 			if (this.isSuper || this.isRuleTree) {
 				// process the row
 				cx = extent.leftX;
@@ -4064,6 +4073,11 @@
 			/** @type {BoundingBox} */ state6Box = this.state6Box,
 			/** @type {BoundingBox} */ identifyBox = this.identifyBox,
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0);
+
+		// check for Super rules
+		if (this.isSuper) {
+			box = this.aliveBox;
+		}
 
 		// found bounded grids use the bounded grid extent
 		if (this.boundedGridType !== -1) {
@@ -8330,6 +8344,12 @@
 		// row occupancy array for grid bounding box calculation
 		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16"));
 
+		// column occupancy array for grid alive bounding box calculation
+		this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16"));
+
+		// row occupancy array for grid alive bounding box calculation
+		this.rowAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowAliveOccupied16"));
+
 		// colour grid
 		this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
 		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
@@ -8408,6 +8428,12 @@
 
 		// row occupancy array for grid bounding box calculation
 		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16"));
+
+		// column occupancy array for grid alive bounding box calculation
+		this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16"));
+
+		// row occupancy array for grid alive bounding box calculation
+		this.rowAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowAliveOccupied16"));
 
 		// colour grid
 		this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid");
@@ -8561,6 +8587,12 @@
 
 			// row occupancy array for grid bounding box calculation
 			this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16"));
+
+			// column occupancy array for grid alive bounding box calculation
+			this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16"));
+
+			// row occupancy array for grid alive bounding box calculation
+			this.rowAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowAliveOccupied16"));
 
 			// count grid
 			if (currentCountList) {
@@ -25787,6 +25819,11 @@
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newBottomY = height,
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {number} */ newAliveLeftX = width,
+			/** @type {number} */ newAliveRightX = -1,
+			/** @type {number} */ newAliveTopY = -1,
+			/** @type {number} */ newAliveBottomY = height,
+			/** @type {BoundingBox} */ aliveBox = this.aliveBox,
 
 			// mask of types in the neighbourhood
 			/** @type {number} */ typeMask = 0,
@@ -25802,12 +25839,16 @@
 
 			// column occupied
 			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnAliveOccupied16 = this.columnAliveOccupied16,
 			/** @type {number} */ colOccupied = 0,
+			/** @type {number} */ colAliveOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
 			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowAliveOccupied16 = this.rowAliveOccupied16,
 			/** @type {number} */ rowOccupied = 0,
+			/** @type {number} */ rowAliveOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
 			// whether the tile is alive
@@ -25868,9 +25909,11 @@
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
+		columnAliveOccupied16.fill(0);
 
 		// clear row occupied flags
 		rowOccupied16.fill(0);
+		rowAliveOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = tileStartRow << this.tilePower;
@@ -25900,9 +25943,11 @@
 						if ((tiles & (1 << b)) !== 0) {
 							// mark no cells in this column
 							colOccupied = 0;
+							colAliveOccupied = 0;
 
 							// mark no cells in the tile rows
 							rowOccupied = 0;
+							rowAliveOccupied = 0;
 							rowIndex = 32768;
 
 							// flag nothing alive in the tile
@@ -26165,6 +26210,12 @@
 									if (value > 0) {
 										colOccupied |= colIndex;
 										rowOccupied |= rowIndex;
+
+										// update alive tracker
+										if (value & 1) {
+											colAliveOccupied |= colIndex;
+											rowAliveOccupied |= rowIndex;
+										}
 									}
 
 									// next bit cell
@@ -26177,6 +26228,8 @@
 							}
 							columnOccupied16[leftX] |= colOccupied;
 							rowOccupied16[th] |= rowOccupied;
+							columnAliveOccupied16[leftX] |= colAliveOccupied;
+							rowAliveOccupied16[th] |= rowAliveOccupied;
 
 							// check if the row was alive
 							if (tileAlive) {
@@ -26213,6 +26266,15 @@
 					newRightX = tw;
 				}
 			}
+
+			if (columnAliveOccupied16[tw]) {
+				if (tw < newAliveLeftX) {
+					newAliveLeftX = tw;
+				}
+				if (tw > newAliveRightX) {
+					newAliveRightX = tw;
+				}
+			}
 		}
 
 		for (th = 0; th < rowOccupied16.length; th += 1) {
@@ -26222,6 +26284,15 @@
 				}
 				if (th > newTopY) {
 					newTopY = th;
+				}
+			}
+
+			if (rowAliveOccupied16[th]) {
+				if (th < newAliveBottomY) {
+					newAliveBottomY = th;
+				}
+				if (th > newAliveTopY) {
+					newAliveTopY = th;
 				}
 			}
 		}
@@ -26267,6 +26338,48 @@
 		zoomBox.bottomY = newBottomY;
 		zoomBox.leftX = newLeftX;
 		zoomBox.rightX = newRightX;
+
+		// convert new width to pixels
+		newAliveLeftX = (newAliveLeftX << 4) + this.leftBitOffset16(columnAliveOccupied16[newAliveLeftX]);
+		newAliveRightX = (newAliveRightX << 4) + this.rightBitOffset16(columnAliveOccupied16[newAliveRightX]);
+
+		// convert new height to pixels
+		newAliveBottomY = (newAliveBottomY << 4) + this.leftBitOffset16(rowAliveOccupied16[newAliveBottomY]);
+		newAliveTopY = (newAliveTopY << 4) + this.rightBitOffset16(rowAliveOccupied16[newAliveTopY]);
+
+		// ensure the alive box is not blank
+		if (newAliveTopY < 0) {
+			newAliveTopY = height - 1;
+		}
+		if (newAliveBottomY >= height) {
+			newAliveBottomY = 0;
+		}
+		if (newAliveLeftX >= width) {
+			newAliveLeftX = 0;
+		}
+		if (newAliveRightX < 0) {
+			newAliveRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newAliveTopY > height - 1) {
+			newAliveTopY = height - 1;
+		}
+		if (newAliveBottomY < 0) {
+			newAliveBottomY = 0;
+		}
+		if (newAliveLeftX < 0) {
+			newAliveLeftX = 0;
+		}
+		if (newAliveRightX > width - 1) {
+			newAliveRightX = width - 1;
+		}
+
+		// save to alive box
+		aliveBox.topY = newAliveTopY;
+		aliveBox.bottomY = newAliveBottomY;
+		aliveBox.leftX = newAliveLeftX;
+		aliveBox.rightX = newAliveRightX;
 	};
 
 	// compute super rule next generation (after state 0 and 1)
@@ -26308,6 +26421,11 @@
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newBottomY = height,
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {number} */ newAliveLeftX = width,
+			/** @type {number} */ newAliveRightX = -1,
+			/** @type {number} */ newAliveTopY = -1,
+			/** @type {number} */ newAliveBottomY = height,
+			/** @type {BoundingBox} */ aliveBox = this.aliveBox,
 
 			// mask of types in the neighbourhood
 			/** @type {number} */ typeMask = 0,
@@ -26321,12 +26439,16 @@
 
 			// column occupied
 			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnAliveOccupied16 = this.columnAliveOccupied16,
 			/** @type {number} */ colOccupied = 0,
+			/** @type {number} */ colAliveOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
 			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowAliveOccupied16 = this.rowAliveOccupied16,
 			/** @type {number} */ rowOccupied = 0,
+			/** @type {number} */ rowAliveOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
 			// whether the tile is alive
@@ -26387,9 +26509,11 @@
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
+		columnAliveOccupied16.fill(0);
 
 		// clear row occupied flags
 		rowOccupied16.fill(0);
+		rowAliveOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = tileStartRow << this.tilePower;
@@ -26419,9 +26543,11 @@
 						if ((tiles & (1 << b)) !== 0) {
 							// mark no cells in this column
 							colOccupied = 0;
+							colAliveOccupied = 0;
 
 							// mark no cells in the tile rows
 							rowOccupied = 0;
+							rowAliveOccupied = 0;
 							rowIndex = 32768;
 
 							// flag nothing alive in the tile
@@ -26679,6 +26805,12 @@
 									if (value > 0) {
 										colOccupied |= colIndex;
 										rowOccupied |= rowIndex;
+
+										// update alive tracker
+										if (value & 1) {
+											colAliveOccupied |= colIndex;
+											rowAliveOccupied |= rowIndex;
+										}
 									}
 
 									// next bit cell
@@ -26691,6 +26823,8 @@
 							}
 							columnOccupied16[leftX] |= colOccupied;
 							rowOccupied16[th] |= rowOccupied;
+							columnAliveOccupied16[leftX] |= colAliveOccupied;
+							rowAliveOccupied16[th] |= rowAliveOccupied;
 
 							// check if the row was alive
 							if (tileAlive) {
@@ -26727,6 +26861,15 @@
 					newRightX = tw;
 				}
 			}
+
+			if (columnAliveOccupied16[tw]) {
+				if (tw < newAliveLeftX) {
+					newAliveLeftX = tw;
+				}
+				if (tw > newAliveRightX) {
+					newAliveRightX = tw;
+				}
+			}
 		}
 
 		for (th = 0; th < rowOccupied16.length; th += 1) {
@@ -26736,6 +26879,15 @@
 				}
 				if (th > newTopY) {
 					newTopY = th;
+				}
+			}
+
+			if (rowAliveOccupied16[th]) {
+				if (th < newAliveBottomY) {
+					newAliveBottomY = th;
+				}
+				if (th > newAliveTopY) {
+					newAliveTopY = th;
 				}
 			}
 		}
@@ -26781,6 +26933,48 @@
 		zoomBox.bottomY = newBottomY;
 		zoomBox.leftX = newLeftX;
 		zoomBox.rightX = newRightX;
+
+		// convert new width to pixels
+		newAliveLeftX = (newAliveLeftX << 4) + this.leftBitOffset16(columnAliveOccupied16[newAliveLeftX]);
+		newAliveRightX = (newAliveRightX << 4) + this.rightBitOffset16(columnAliveOccupied16[newAliveRightX]);
+
+		// convert new height to pixels
+		newAliveBottomY = (newAliveBottomY << 4) + this.leftBitOffset16(rowAliveOccupied16[newAliveBottomY]);
+		newAliveTopY = (newAliveTopY << 4) + this.rightBitOffset16(rowAliveOccupied16[newAliveTopY]);
+
+		// ensure the alive box is not blank
+		if (newAliveTopY < 0) {
+			newAliveTopY = height - 1;
+		}
+		if (newAliveBottomY >= height) {
+			newAliveBottomY = 0;
+		}
+		if (newAliveLeftX >= width) {
+			newAliveLeftX = 0;
+		}
+		if (newAliveRightX < 0) {
+			newAliveRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newAliveTopY > height - 1) {
+			newAliveTopY = height - 1;
+		}
+		if (newAliveBottomY < 0) {
+			newAliveBottomY = 0;
+		}
+		if (newAliveLeftX < 0) {
+			newAliveLeftX = 0;
+		}
+		if (newAliveRightX > width - 1) {
+			newAliveRightX = width - 1;
+		}
+
+		// save to alive box
+		aliveBox.topY = newAliveTopY;
+		aliveBox.bottomY = newAliveBottomY;
+		aliveBox.leftX = newAliveLeftX;
+		aliveBox.rightX = newAliveRightX;
 	};
 
 	// compute super rule next generation (after state 0 and 1)
@@ -26822,6 +27016,11 @@
 			/** @type {number} */ newTopY = -1,
 			/** @type {number} */ newBottomY = height,
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {number} */ newAliveLeftX = width,
+			/** @type {number} */ newAliveRightX = -1,
+			/** @type {number} */ newAliveTopY = -1,
+			/** @type {number} */ newAliveBottomY = height,
+			/** @type {BoundingBox} */ aliveBox = this.aliveBox,
 
 			// mask of types in the neighbourhood
 			/** @type {number} */ typeMask = 0,
@@ -26835,12 +27034,16 @@
 
 			// column occupied
 			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
+			/** @type {Uint16Array} */ columnAliveOccupied16 = this.columnAliveOccupied16,
 			/** @type {number} */ colOccupied = 0,
+			/** @type {number} */ colAliveOccupied = 0,
 			/** @type {number} */ colIndex = 0,
 
 			// row occupied
 			/** @type {Uint16Array} */ rowOccupied16 = this.rowOccupied16,
+			/** @type {Uint16Array} */ rowAliveOccupied16 = this.rowAliveOccupied16,
 			/** @type {number} */ rowOccupied = 0,
+			/** @type {number} */ rowAliveOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
 
 			// whether the tile is alive
@@ -26897,9 +27100,11 @@
 
 		// clear column occupied flags
 		columnOccupied16.fill(0);
+		columnAliveOccupied16.fill(0);
 
 		// clear row occupied flags
 		rowOccupied16.fill(0);
+		rowAliveOccupied16.fill(0);
 
 		// set the initial tile row
 		bottomY = tileStartRow << this.tilePower;
@@ -26929,9 +27134,11 @@
 						if ((tiles & (1 << b)) !== 0) {
 							// mark no cells in this column
 							colOccupied = 0;
+							colAliveOccupied = 0;
 
 							// mark no cells in the tile rows
 							rowOccupied = 0;
+							rowAliveOccupied = 0;
 							rowIndex = 32768;
 
 							// flag nothing alive in the tile
@@ -27168,6 +27375,12 @@
 									if (value > 0) {
 										colOccupied |= colIndex;
 										rowOccupied |= rowIndex;
+
+										// update alive tracker
+										if (value & 1) {
+											colAliveOccupied |= colIndex;
+											rowAliveOccupied |= rowIndex;
+										}
 									}
 
 									// next bit cell
@@ -27180,6 +27393,8 @@
 
 							columnOccupied16[leftX] |= colOccupied;
 							rowOccupied16[th] |= rowOccupied;
+							columnAliveOccupied16[leftX] |= colAliveOccupied;
+							rowAliveOccupied16[th] |= rowAliveOccupied;
 
 							// check if the row was alive
 							if (tileAlive) {
@@ -27216,6 +27431,15 @@
 					newRightX = tw;
 				}
 			}
+
+			if (columnAliveOccupied16[tw]) {
+				if (tw < newAliveLeftX) {
+					newAliveLeftX = tw;
+				}
+				if (tw > newAliveRightX) {
+					newAliveRightX = tw;
+				}
+			}
 		}
 
 		for (th = 0; th < rowOccupied16.length; th += 1) {
@@ -27225,6 +27449,15 @@
 				}
 				if (th > newTopY) {
 					newTopY = th;
+				}
+			}
+
+			if (rowAliveOccupied16[th]) {
+				if (th < newAliveBottomY) {
+					newAliveBottomY = th;
+				}
+				if (th > newAliveTopY) {
+					newAliveTopY = th;
 				}
 			}
 		}
@@ -27270,6 +27503,48 @@
 		zoomBox.bottomY = newBottomY;
 		zoomBox.leftX = newLeftX;
 		zoomBox.rightX = newRightX;
+
+		// convert new width to pixels
+		newAliveLeftX = (newAliveLeftX << 4) + this.leftBitOffset16(columnAliveOccupied16[newAliveLeftX]);
+		newAliveRightX = (newAliveRightX << 4) + this.rightBitOffset16(columnAliveOccupied16[newAliveRightX]);
+
+		// convert new height to pixels
+		newAliveBottomY = (newAliveBottomY << 4) + this.leftBitOffset16(rowAliveOccupied16[newAliveBottomY]);
+		newAliveTopY = (newAliveTopY << 4) + this.rightBitOffset16(rowAliveOccupied16[newAliveTopY]);
+
+		// ensure the alive box is not blank
+		if (newAliveTopY < 0) {
+			newAliveTopY = height - 1;
+		}
+		if (newAliveBottomY >= height) {
+			newAliveBottomY = 0;
+		}
+		if (newAliveLeftX >= width) {
+			newAliveLeftX = 0;
+		}
+		if (newAliveRightX < 0) {
+			newAliveRightX = width - 1;
+		}
+
+		// clip to the screen
+		if (newAliveTopY > height - 1) {
+			newAliveTopY = height - 1;
+		}
+		if (newAliveBottomY < 0) {
+			newAliveBottomY = 0;
+		}
+		if (newAliveLeftX < 0) {
+			newAliveLeftX = 0;
+		}
+		if (newAliveRightX > width - 1) {
+			newAliveRightX = width - 1;
+		}
+
+		// save to alive box
+		aliveBox.topY = newAliveTopY;
+		aliveBox.bottomY = newAliveBottomY;
+		aliveBox.leftX = newAliveLeftX;
+		aliveBox.rightX = newAliveRightX;
 	};
 
 	// compute generations rule next generation (after state 0 and 1)
