@@ -7882,6 +7882,24 @@
 			}
 		}
 
+		// check for multistate rules
+		if (pattern.multiNumStates !== -1) {
+			if (pattern.isPCA) {
+				this.failureReaons = ruleType + " not valid with PCA";
+			} else {
+				if (pattern.isHROT) {
+					this.failureReason = ruleType + " not valid with HROT";
+				} else {
+					this.failureReason = ruleType + " not valid with Generations";
+				}
+			}
+		}
+
+		// check for PCA rule
+		if (pattern.isPCA) {
+			this.failureReason = ruleType + " not valid with PCA rule";
+		}
+
 		// check for Niemiec states
 		if (pattern.isNiemiec) {
 			this.failureReason = ruleType + " not valid with Niemiec states";
@@ -7889,7 +7907,7 @@
 
 		// check for none rule
 		if (pattern.isNone) {
-			this.failureReason = ruleType + " not valid with non rule";
+			this.failureReason = ruleType + " not valid with none rule";
 		}
 
 		// check for triangular neighbourhood
@@ -7900,19 +7918,6 @@
 		// check for Hex Tripod
 		if (pattern.hexNeighbourhood === this.hexTripod) {
 			this.failureReason = ruleType + " not valid with Hex Tripod";
-		}
-
-		// check for generations
-		if (pattern.multiNumStates !== -1) {
-			if (pattern.isPCA) {
-				this.failureReaons = ruleType + " not valid with PCA";
-			} else {
-				if (pattern.isHROT) {
-					this.failureReason = ruleType + " not valid with HROT";
-				} else {
-					this.failureReaons = ruleType + " not valid with Generations";
-				}
-			}
 		}
 
 		// check for LTL

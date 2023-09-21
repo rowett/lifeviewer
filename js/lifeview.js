@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1067,
+		/** @const {number} */ versionBuild : 1068,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -12850,8 +12850,8 @@
 	View.prototype.selectAllPressed = function(/** @type {View} */ me) {
 		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
 			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
-			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.specifiedWidth >> 1) + (me.xOffset << 1),
-			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.specifiedHeight >> 1) + (me.yOffset << 1),
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0;
 
@@ -12860,6 +12860,12 @@
 			// update the pattern extent
 			me.engine.shrinkNeeded = true;
 			me.engine.doShrink();
+
+			// adjust position if in bounded grid
+			if (me.engine.boundedGridType !== -1) {
+				xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+				yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+			}
 
 			// for HROT patterns use alive states only
 			if (!me.engine.isSuper && !me.engine.isExtended && !me.engine.isRuleTree && (me.engine.isPCA || (me.engine.isHROT && me.engine.multiNumStates === 2) || me.engine.multiNumStates > 2)) {

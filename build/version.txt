@@ -1,3 +1,7 @@
+Build 1068
+- fixed pattern validation for [R]History, [R]Super and [R]Investigator
+- fixed Select All position when incorrect pattern size specified
+
 Build 1067
 - small performance improvement for [R]Investigator iterator
 
