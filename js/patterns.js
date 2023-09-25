@@ -4061,6 +4061,22 @@
 		return value;
 	};
 
+	// decode HROT number or # (returns -1 if numer is invalid or -2 if hash symbol)
+	/** @returns {number} */
+	PatternManager.prototype.decodeHROTNumberOrHash = function(/** @type {string} */ rule, /** @type {string} */ partName) {
+		var	/** @type {number} */ value = -1;
+
+		if (this.index < rule.length) {
+			if (rule[this.index + 1] === "#") {
+				this.index += 2;
+				value = -2;
+			} else {
+				value = this.decodeHROTNumber(rule, partName);
+			}
+		}
+		return value;
+	};
+
 	// decode HROT range
 	/** @returns {boolean} */
 	PatternManager.prototype.decodeHROTRange = function(/** @type {string} */ rule, /** @type {Uint8Array} */ list, /** @type {string} */ partName, /** @type {number} */ maxCount, /** @type {boolean} */ outer) {
@@ -4805,10 +4821,10 @@
 					// check for optional births and survivals chances
 					if (this.index < rule.length) {
 						this.index -= 1;
-						value = this.decodeHROTNumber(rule, "P");
+						value = this.decodeHROTNumberOrHash(rule, "P");
 						if (value !== -1) {
-							if (value < 0 || value > 100) {
-								this.failureReason = "HROT P values need to be from 0 to 100";
+							if ((value < 0 || value > 100) && (value !== -2)) {
+								this.failureReason = "HROT P values need to be from 0 to 100 or #";
 							} else {
 								pattern.probabilisticBirths = value;
 								pattern.probabilisticSurvivals = value;
@@ -4816,20 +4832,20 @@
 								// check for comma
 								if (this.index < rule.length) {
 									if (rule[this.index] === ",") {
-										value = this.decodeHROTNumber(rule, "P");
+										value = this.decodeHROTNumberOrHash(rule, "P");
 										if (value !== -1) {
-											if (value < 0 || value > 100) {
-												this.failureReason = "HROT P values need to be from 0 to 100";
+											if ((value < 0 || value > 100) && (value !== -2)) {
+												this.failureReason = "HROT P values need to be from 0 to 100 or #";
 											} else {
 												pattern.probabilisticBirths = value;
 												
 												// check for comma
 												if (this.index < rule.length) {
 													if (rule[this.index] === ",") {
-														value = this.decodeHROTNumber(rule, "P");
+														value = this.decodeHROTNumberOrHash(rule, "P");
 														if (value !== -1) {
-															if (value < 0 || value > 100) {
-																this.failureReason = "HROT P values need to be from 0 to 100";
+															if ((value < 0 || value > 100) && (value !== -2)) {
+																this.failureReason = "HROT P values need to be from 0 to 100 or #";
 															} else {
 																pattern.probabilisticImmunities = value;
 															}
@@ -5757,11 +5773,11 @@
 									if (pattern.probabilisticHROT) {
 										pattern.ruleName += ",P";
 										if (pattern.probabilisticSurvivals !== -1) {
-											pattern.ruleName += pattern.probabilisticSurvivals;
+											pattern.ruleName += (pattern.probabilisticSurvivals === -2 ? "#": pattern.probabilisticSurvivals);
 											if (pattern.probabilisticBirths !== -1) {
-												pattern.ruleName += "," + pattern.probabilisticBirths;
+												pattern.ruleName += "," + (pattern.probabilisticBirths === -2 ? "#" : pattern.probabilisticBirths);
 												if (pattern.probabilisticImmunities !== -1) {
-													pattern.ruleName += "," + pattern.probabilisticImmunities;
+													pattern.ruleName += "," + (pattern.probabilisticImmunities === -2 ? "#" : pattern.probabilisticImmunities);
 												}
 											}
 										}

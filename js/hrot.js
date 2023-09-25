@@ -110,7 +110,7 @@
 		// create birth chances
 		this.birthChances = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.births.length, "HROT.birthChances"));
 		for (i = 0; i < this.births.length; i += 1) {
-			if (this.useRandomBirths === -1) {
+			if (this.useRandomBirths <= -1) {
 				this.birthChances[i] = this.myRand.random();
 			} else {
 				// chance of birth actually happening: 0% never, 100% always
@@ -122,7 +122,7 @@
 		// create survival chances
 		this.survivalChances = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.survivals.length, "HROT.suvivalChances"));
 		for (i = 0; i < this.survivals.length; i += 1) {
-			if (this.useRandomSurvivals === -1) {
+			if (this.useRandomSurvivals <= -1) {
 				this.survivalChances[i] = this.myRand.random();
 			} else {
 				// chance of survival actually happening: 0% never, 100% always
@@ -137,9 +137,13 @@
 			if (this.useRandomImmunities === -1) {
 				this.immunityChances[i] = 1;
 			} else {
-				// chance of immunity: 0% never, 100% always
-				// must be > than this value to be immune
-				this.immunityChances[i] = (100 - this.useRandomImmunities) / 100;
+				if (this.useRandomImmunities === -2) {
+					this.immunityChances[i] = this.myRand.random();
+				} else {
+					// chance of immunity: 0% never, 100% always
+					// must be > than this value to be immune
+					this.immunityChances[i] = (100 - this.useRandomImmunities) / 100;
+				}
 			}
 		}
 		// use the same random chance for all births
