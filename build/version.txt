@@ -1,3 +1,6 @@
+Build 1070
+- fixed crash with HROT patterns hitting grid boundary
+
 Build 1069
 - fixed Identify for [R]Super
 

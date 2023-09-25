@@ -13214,16 +13214,32 @@
 					rowAlive = 0;
 
 					// check each column
-					for (w = 0; w < width; w += 1) {
-						input = colourGridRow[w];
-						rowAlive |= input;
-
-						if (input) {
-							if (w < newLeftX) {
-								newLeftX = w;
+					if (this.multiNumStates === 2) {
+						for (w = 0; w < width; w += 1) {
+							input = colourGridRow[w];
+							rowAlive |= input & 64;
+	
+							if (input) {
+								if (w < newLeftX) {
+									newLeftX = w;
+								}
+								if (w > newRightX) {
+									newRightX = w;
+								}
 							}
-							if (w > newRightX) {
-								newRightX = w;
+						}
+					} else {
+						for (w = 0; w < width; w += 1) {
+							input = colourGridRow[w];
+							rowAlive |= input;
+	
+							if (input) {
+								if (w < newLeftX) {
+									newLeftX = w;
+								}
+								if (w > newRightX) {
+									newRightX = w;
+								}
 							}
 						}
 					}
@@ -19047,16 +19063,9 @@
 		index += 1;
 
 		// remove the cell
-		if (alive === 1) {
-			if (colourGrid[y][x] === alive) {
-				colourGrid[y][x] = dead;
-				cleared += 1;
-			}
-		} else {
-			if (colourGrid[y][x] >= alive) {
-				colourGrid[y][x] = dead;
-				cleared += 1;
-			}
+		if (colourGrid[y][x] >= alive) {
+			colourGrid[y][x] = dead;
+			cleared += 1;
 		}
 
 		// keep going until all cells processed
@@ -19087,7 +19096,7 @@
 					// check cell is on grid
 					if (tx === (tx & widthMask) && ty === (ty & heightMask)) {
 						// check if cell set
-						if ((alive === 1 && colourRow[tx] === alive) || (alive > 1 && colourRow[tx] >= alive)) {
+						if (colourRow[tx] >= alive) {
 							// remove the cell
 							colourRow[tx] = dead;
 							cleared += 1;
