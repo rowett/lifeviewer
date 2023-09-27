@@ -1,3 +1,12 @@
+Build 1072
+- fixed alive count with [R]Investigator patterns on bounded grids
+- fixed some error validation messages for [[ COLOR ]]
+- fixed speed slider position on Reset
+- allow Niemiec states to be translated into [R]Super states
+- fixed [R]Investigator range from grid boundary when cells are killed
+- fixed which [R]Investigator states get killed when they hit the grid boundary
+- fixed showing some Identify results when script errors are shown
+
 Build 1071
 - non-deterministic HROT rules can now randomize a parameter value by specifying # for the value
 	- e.g. R1,C2,S2-3,R3,P100,#,55

@@ -7916,11 +7916,6 @@
 			this.failureReason = ruleType + " not valid with PCA rule";
 		}
 
-		// check for Niemiec states
-		if (pattern.isNiemiec) {
-			this.failureReason = ruleType + " not valid with Niemiec states";
-		}
-
 		// check for none rule
 		if (pattern.isNone) {
 			this.failureReason = ruleType + " not valid with none rule";
@@ -8307,14 +8302,19 @@
 			}
 		}
 
+		// validate Niemiec
+		if (pattern.isNiemiec && (pattern.isHistory || pattern.isExtended)) {
+			if (pattern.isHistory) {
+				this.failureReason = "[R]History not valid with Niemiec states"
+			} else {
+				this.failureReason = "[R]Investigator not valid with Niemiec states"
+			}
+			this.executable = false;
+		}
+
 		// validate [R]History
 		if (pattern.isHistory && this.failureReason === "") {
 			pattern.isHistory = this.validateRRule(pattern);
-		}
-
-		// validate [R]Super
-		if (pattern.isSuper && this.failureReason === "") {
-			pattern.isSuper = this.validateRRule(pattern);
 		}
 
 		// validate [R]Extended
@@ -8322,11 +8322,9 @@
 			pattern.isExtended = this.validateRRule(pattern);
 		}
 
-		// check for Niemiec and [R]Extended
-		if (pattern.isNiemiec && pattern.isExtended && this.failureReason === "") {
-			this.failureReason = "[R]Investigator not valid with Niemiec states";
-			pattern.isExtended = false;
-			this.executable = false;
+		// validate [R]Super (note must come after [R]History and [R]Extended for Niemiec validation)
+		if (pattern.isSuper && this.failureReason === "") {
+			pattern.isSuper = this.validateRRule(pattern);
 		}
 
 		// check for generations and B0
@@ -9984,7 +9982,7 @@
 		// add terminating newline to comments if required
 		if (newPattern) {
 			// if pattern contained Niemiec states then ensure rule name contains Super postfix
-			if (newPattern.isNiemiec && !newPattern.isHistory) {
+			if (newPattern.isNiemiec && !(newPattern.isHistory || newPattern.isExtended)) {
 				this.addSuperPostfix(newPattern);
 			}
 

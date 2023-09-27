@@ -78,9 +78,9 @@
 
 		// [R]Extended state names
 		/** @const {Array<string>} */ namesExtended : ["off", "on", "killer on", "killer off", "eternal on", "eternal off",
-										"P2 killer on", "P2 killer off", "egg on", "egg off", "P2 on",
-										"P2 off", "P2 egg on", "P2 egg off", "inverter", "catalyst",
-										"catalyst killer", "on births", "off births", "on P2 births", "off P2 births"],
+										"p2 killer on", "p2 killer off", "egg on", "egg off", "p2 on",
+										"p2 off", "p2 egg on", "p2 egg off", "inverter", "catalyst",
+										"catalyst killer", "on births", "off births", "on p2 births", "off p2 births"],
 
 		// [R]Super state colours
 		/** @const {Array<Array<number>>} */ coloursSuper : [[0, 0, 0], [0, 255, 0], [0, 0, 160], [255, 216, 255], [255, 0, 0], [255, 255, 0],
@@ -14064,8 +14064,8 @@
 				}
 			}
 
-			// update population for RuleTable rules
-			if (this.isRuleTree) {
+			// update population for RuleTable or Extended rules
+			if (this.isRuleTree || this.isExtended) {
 				this.population -= remove;
 			}
 		}
@@ -17967,11 +17967,15 @@
 			if (this.isHROT) {
 				boundarySize = this.HROT.xrange * 2;
 			} else {
-				boundarySize = 16;
+				if (this.isExtended) {
+					boundarySize = 1;
+				} else {
+					boundarySize = 16;
+				}
 			}
 
 			// check if the pattern is near a boundary
-			if (zoomBox.leftX <= boundarySize || zoomBox.rightX >= (this.maxGridSize - boundarySize) || zoomBox.bottomY <= boundarySize || zoomBox.topY >= (this.maxGridSize - boundarySize)) {
+			if (zoomBox.leftX < boundarySize || zoomBox.rightX >= (this.maxGridSize - boundarySize) || zoomBox.bottomY < boundarySize || zoomBox.topY >= (this.maxGridSize - boundarySize)) {
 				// save current population so we can determine if cells were deleted
 				currentPop = this.population;
 
@@ -17979,11 +17983,15 @@
 				if (this.isHROT) {
 					this.clearHRBoundary();
 				} else {
-					if (this.isRuleTree || this.isExtended) {
+					if (this.isRuleTree) {
 						this.clearRTBoundary();
 					} else {
-						// clear bit grid boundary (and Generations alive states too)
-						this.clearGridBoundary();
+						if (this.isExtended) {
+							this.clearExtendedBoundary();
+						} else {
+							// clear bit grid boundary (and Generations alive states too)
+							this.clearGridBoundary();
+						}
 					}
 				}
 
@@ -19013,6 +19021,136 @@
 		this.deaths += cleared;
 	};
 
+
+	// remove [R]Extended pattern starting at a given cell
+	Life.prototype.removeExtendedPattern = function(/** @type {number} */ x, /** @type {number} */ y) {
+		var	/** @type {number} */ tx = 0,
+			/** @type {number} */ ty = 0,
+
+			// multi-state grid
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+
+			// number of pages
+			/** @type {number} */ pages = this.boundaryPages,
+
+			// current page
+			/** @type {number} */ page = 0,
+
+			// boundary cell stack
+			/** @type {Int32Array} */ bx = this.boundaryX[page],
+			/** @type {Int32Array} */ by = this.boundaryY[page],
+			/** @type {number} */ index = 0,
+
+			// maximum buffer size
+			/** @type {number} */ max = LifeConstants.removePatternBufferSize,
+
+			// page mask
+			/** @type {number} */ mask = max - 1,
+
+			// start and end of current page
+			/** @type {number} */ start = 0,
+			/** @type {number} */ end = max,
+
+			// masks for width and height
+			/** @type {number} */ widthMask = this.widthMask,
+			/** @type {number} */ heightMask = this.heightMask,
+
+			// boundary cell radius
+			/** @type {number} */ radius = this.removePatternRadius,
+
+			// number of cells cleared
+			/** @type {number} */ cleared = 0;
+
+		// swap grids every generation
+		if ((this.counter & 1) !== 0) {
+			colourGrid = this.nextColourGrid;
+		}
+
+		// stack the current cell
+		bx[index] = x;
+		by[index] = y;
+		index += 1;
+
+		// remove the cell
+		if (colourGrid[y][x] === 1) {
+			colourGrid[y][x] = 0;
+			cleared += 1;
+		}
+
+		// keep going until all cells processed
+		while (index > 0) {
+			// get the next cell
+			index -= 1;
+
+			// check for previous page
+			if (index < start) {
+				// switch to previous page
+				page -= 1;
+				start -= max;
+				end -= max;
+
+				// get the page array
+				bx = this.boundaryX[page];
+				by = this.boundaryY[page];
+			}
+			x = bx[index & mask];
+			y = by[index & mask];
+
+			// check the surrounding cells
+			ty = y - radius;
+			while (ty <= y + radius) {
+				tx = x - radius;
+				colourRow = colourGrid[ty];
+				while (tx <= x + radius) {
+					// check cell is on grid
+					if (tx === (tx & widthMask) && ty === (ty & heightMask)) {
+						// check if cell set
+						if (colourRow[tx] === 1) {
+							// remove the cell
+							colourRow[tx] = 0;
+							cleared += 1;
+
+							// stack the cell
+							if (index === end) {
+								// switch to next page
+								page += 1;
+								start += max;
+								end += max;
+
+								// check if page is allocated
+								if (page > pages) {
+									// allocate new page
+									this.boundaryX[page] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, max, "Life.boundaryX" + page));
+									this.boundaryY[page] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, max, "Life.boundaryY" + page));
+
+									// save new page
+									pages += 1;
+									this.boundaryPages = pages;
+								}
+
+								// get the page array
+								bx = this.boundaryX[page];
+								by = this.boundaryY[page];
+							}
+
+							// save the cell
+							bx[index & mask] = tx;
+							by[index & mask] = ty;
+							index += 1;
+						}
+					}
+					tx += 1;
+				}
+				ty += 1;
+			}
+		}
+
+		// update statistics
+		this.population -= cleared;
+		this.deaths += cleared;
+	};
+
 	// remove multi-state pattern starting at a given cell
 	Life.prototype.removeMSPattern = function(/** @type {number} */ x, /** @type {number} */ y) {
 		var	/** @type {number} */ tx = 0,
@@ -19217,6 +19355,90 @@
 				for (x = wd - xrange - 1; x <= rightX; x += 1) {
 					if (colourRow[x] > 0) {
 						this.removeRTPattern(x, y);
+					}
+				}
+			}
+			zoomBox.rightX = wd - xrange;
+		}
+	};
+
+
+	// remove [R]Extended patterns that touch the boundary
+	Life.prototype.clearExtendedBoundary = function() {
+		// grid
+		var	/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+
+			// height and width
+			/** @type {number} */ ht = colourGrid.length,
+			/** @type {number} */ wd = colourGrid[0].length,
+
+			// used grid
+			zoomBox = this.zoomBox,
+			/** @type {number} */ leftX = zoomBox.leftX,
+			/** @type {number} */ rightX = zoomBox.rightX,
+			/** @type {number} */ bottomY = zoomBox.bottomY,
+			/** @type {number} */ topY = zoomBox.topY,
+
+			// distance from grid edge
+			/** @type {number} */ xrange = 1,
+			/** @type {number} */ yrange = 1,
+
+			// counters
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0;
+
+		// swap grids every generation
+		if ((this.counter & 1) !== 0) {
+			colourGrid = this.nextColourGrid;
+		}
+
+		// clear top boundary
+		if ((ht - topY - 1) <= yrange) {
+			for (y = ht - yrange - 1; y <= topY; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = leftX; x <= rightX; x += 1) {
+					if (colourRow[x] > 0) {
+						this.removeExtendedPattern(x, y);
+					}
+				}
+			}
+			zoomBox.topY = ht - yrange;
+		}
+
+		// clear bottom boundary
+		if (bottomY <= yrange) {
+			for (y = bottomY; y <= yrange; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = leftX; x <= rightX; x += 1) {
+					if (colourRow[x] > 0) {
+						this.removeExtendedPattern(x, y);
+					}
+				}
+			}
+			zoomBox.bottomY = yrange;
+		}
+
+		// clear left boundary
+		if (leftX <= xrange) {
+			for (y = bottomY; y <= topY; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = leftX; x <= xrange; x += 1) {
+					if (colourRow[x] > 0) {
+						this.removeExtendedPattern(x, y);
+					}
+				}
+			}
+			zoomBox.leftX = xrange;
+		}
+
+		// clear right boundary
+		if ((wd - rightX - 1) <= xrange) {
+			for (y = bottomY; y <= topY; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = wd - xrange - 1; x <= rightX; x += 1) {
+					if (colourRow[x] > 0) {
+						this.removeExtendedPattern(x, y);
 					}
 				}
 			}

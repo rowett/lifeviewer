@@ -491,6 +491,20 @@
 		}
 	};
 
+	// check if a name is a state name
+	/** @returns {boolean} */
+	ScriptParser.isStateName = function(/** @type {string} */ stateName, /** @type {View} */ view) {
+		var	/** @type {boolean} */ result = false;
+
+		// remove quotes from token if present
+		stateName = stateName.replace(/\"/g, "");
+
+		// check state name in each rule
+		result = (view.getPCAStateFromName(stateName) >= 0 || view.isLifeHistoryStateName(stateName) || view.isSuperStateName(stateName) || view.isExtendedStateName(stateName));
+
+		return result;
+	};
+
 	// get a colour visually different than the supplied one
 	/** @returns {number} */
 	ScriptParser.getDifferentColour = function(/** @type {number} */ colourRGB) {
@@ -3606,7 +3620,7 @@
 	
 										// illegal colour element
 										if (colNum < 0) {
-											if (view.getPCAStateFromName(peekToken) >= 0 || view.isLifeHistoryStateName(peekToken)) {
+											if (this.isStateName(peekToken, view)) {
 												scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "not valid for this rule"];
 
 												// discard colour definition
@@ -3624,6 +3638,17 @@
 
 												// eat the invalid token
 												peekToken = scriptReader.getNextToken();
+
+												// discard colour definition
+												if (scriptReader.nextTokenIsNumeric()) {
+													scriptReader.getNextTokenAsNumber();
+													if (scriptReader.nextTokenIsNumeric()) {
+														scriptReader.getNextTokenAsNumber();
+														if (scriptReader.nextTokenIsNumeric()) {
+															scriptReader.getNextTokenAsNumber();
+														}
+													}
+												}
 											}
 										}
 									}

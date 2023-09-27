@@ -1322,7 +1322,7 @@
 				if (view.stateNames[i] !== undefined) {
 					name = view.stateNames[i];
 					value = view.getStateFromName(name);
-					if (view.getPCAStateFromName(name) >= 0 || view.isLifeHistoryStateName(name) || view.isThemeStateName(name)) {
+					if (view.getPCAStateFromName(name) >= 0 || view.isLifeHistoryStateName(name) || view.isThemeStateName(name) || view.isSuperStateName(name) || view.isExtendedStateName(name)) {
 						name = "\"" + name + "\"";
 					}
 					y = this.renderHelpLine(view, Keywords.colorWord + " " + name + " R G B", "set state " + value + " color ", ctx, x, y, height, helpLine);

@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1071,
+		/** @const {number} */ versionBuild : 1072,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -2211,6 +2211,40 @@
 
 		while (i < ViewConstants.stateNames.length && !result) {
 			if (name === ViewConstants.stateNames[i]) {
+				result = true;
+			} else {
+				i += 1;
+			}
+		}
+
+		return result;
+	};
+
+	// check if a string is an [R]Super state name
+	/** @returns {boolean} */
+	View.prototype.isSuperStateName = function(/** @type {string} */ name) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {number} */ i = 0;
+
+		while (i < LifeConstants.namesSuper.length && !result) {
+			if (name === LifeConstants.namesSuper[i]) {
+				result = true;
+			} else {
+				i += 1;
+			}
+		}
+
+		return result;
+	};
+
+	// check if a string is an [R]Extended state name
+	/** @returns {boolean} */
+	View.prototype.isExtendedStateName = function(/** @type {string} */ name) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {number} */ i = 0;
+
+		while (i < LifeConstants.namesExtended.length && !result) {
+			if (name === LifeConstants.namesExtended[i]) {
 				result = true;
 			} else {
 				i += 1;
@@ -6604,8 +6638,8 @@
 
 		// draw cell period map or table
 		if (me.resultsDisplayed && me.periodMapDisplayed > 0 && me.engine.cellPeriod !== null) {
-			// don't display if Help or Settings open
-			if (me.displayHelp === 0 && me.navToggle.current[0] === false) {
+			// don't display if Help, Errors or Settings open
+			if (me.displayHelp === 0 && me.displayErrors === 0 && me.navToggle.current[0] === false) {
 				if (me.periodMapDisplayed === 1) {
 					// draw cell period table below the main banner
 					me.engine.drawCellPeriodTable(me.identifyBannerLabel);
@@ -8526,7 +8560,12 @@
 			// reset gps and step
 			me.genSpeed = me.defaultGPS;
 			me.gensPerStep = me.defaultStep;
-			me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+			//me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+			if (me.gensPerStep === 1) {
+				me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
+			} else {
+				me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+			}
 
 			// reset layers
 			me.engine.layers = me.defaultLayers;
