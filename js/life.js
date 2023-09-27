@@ -7625,6 +7625,9 @@
 					if (state === 1) {
 						state = this.aliveStart;
 					}
+					if (state === 0 && current >= aliveState) {
+						state = this.historyStates;
+					}
 					colourGrid[y][x] = state;
 				} else {
 					aliveState = this.multiNumStates - 1 + this.historyStates;
@@ -7638,10 +7641,10 @@
 				colourTileGrid[y >> 4][x >> 8] |= cellAsTileBit;
 				colourTileHistoryGrid[y >> 4][x >> 8] |= cellAsTileBit;
 
-				if (current !== aliveState && state === aliveState) {
+				if (current < aliveState && state >= aliveState) {
 					this.population += 1;
 				} else {
-					if (current === aliveState && state !== aliveState) {
+					if (current >= aliveState && state < aliveState) {
 						this.population -= 1;
 					}
 				}
@@ -14151,12 +14154,13 @@
 			/** @type {number} */ dy4 = dy3 + dy,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @type {Uint8Array} */ overlayRow = null,
-			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
-			/** @const {number} */ leftX = this.zoomBox.leftX,
-			/** @const {number} */ rightX = this.zoomBox.rightX,
-			/** @const {number} */ bottomY = this.zoomBox.bottomY,
-			/** @const {number} */ topY = this.zoomBox.topY,
+			//** @type {Uint8Array} */ overlayRow = null,
+			///** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
+			/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
+			/** @const {number} */ leftX = box.leftX,
+			/** @const {number} */ rightX = box.rightX,
+			/** @const {number} */ bottomY = box.bottomY,
+			/** @const {number} */ topY = box.topY,
 			/** @const {number} */ aliveStart = this.aliveStart,
 			/** @type {number} */ cell = 0;
 
@@ -14398,10 +14402,11 @@
 	/** @returns {boolean} */
 	Life.prototype.nearEdge = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ orientation, /** @type {number} */ edge) {
 		var	/** @type {boolean} */ result = false,
-			/** @type {number} */ leftX = this.zoomBox.leftX,
-			/** @type {number} */ rightX = this.zoomBox.rightX,
-			/** @type {number} */ bottomY = this.zoomBox.bottomY,
-			/** @type {number} */ topY = this.zoomBox.topY,
+			/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
+			/** @type {number} */ leftX = box.leftX,
+			/** @type {number} */ rightX = box.rightX,
+			/** @type {number} */ bottomY = box.bottomY,
+			/** @type {number} */ topY = box.topY,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {number} */ aliveStart = this.aliveStart,
 			/** @type {number} */ i = 0,
@@ -14690,10 +14695,11 @@
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ off = 0,
-			/** @type {number} */ leftX = this.zoomBox.leftX,
-			/** @type {number} */ rightX = this.zoomBox.rightX,
-			/** @type {number} */ bottomY = this.zoomBox.bottomY,
-			/** @type {number} */ topY = this.zoomBox.topY,
+			/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
+			/** @type {number} */ leftX = box.leftX,
+			/** @type {number} */ rightX = box.rightX,
+			/** @type {number} */ bottomY = box.bottomY,
+			/** @type {number} */ topY = box.topY,
 			/** @const {number} */ safeBorder = 64,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ topRow = colourGrid[topY],
@@ -14701,8 +14707,8 @@
 			/** @type {number} */ aliveStart = this.aliveStart,
 			/** @type {Uint8Array} */ currentRow = null;
 
-		// ignore bounded grids
-		if (this.boundedGridType === -1) {
+		// ignore bounded grids and HROT rules > range 1
+		if (!(this.boundedGridType !== -1 || (this.isHROT && this.HROT.xrange > 1))) {
 			// clear potential clear list
 			this.potentialClears = [];
 
@@ -14724,7 +14730,7 @@
 			for (x = leftX; x <= rightX; x += 1) {
 				// check several rows
 				for (off = 0; off <= 6; off += 1) {
-					bottomY = this.zoomBox.bottomY + off;
+					bottomY = box.bottomY + off;
 					bottomRow = colourGrid[bottomY];
 
 					if (bottomRow[x] >= aliveStart) {
@@ -14746,7 +14752,7 @@
 						}
 					}
 
-					topY = this.zoomBox.topY - off;
+					topY = box.topY - off;
 					topRow = colourGrid[topY];
 
 					if (topRow[x] >= aliveStart) {
@@ -14775,7 +14781,7 @@
 				// check several columns
 				for (off = 0; off <= 6; off += 1) {
 					currentRow = colourGrid[y];
-					leftX = this.zoomBox.leftX + off;
+					leftX = box.leftX + off;
 
 					if (currentRow[leftX] >= aliveStart) {
 						// NW and SW glider
@@ -14796,7 +14802,7 @@
 						}
 					}
 
-					rightX = this.zoomBox.rightX - off;
+					rightX = box.rightX - off;
 					if (currentRow[rightX] >= aliveStart) {
 						// NE and SE glider
 						if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE, off, LifeConstants.gliderE)) {

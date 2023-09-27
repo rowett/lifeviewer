@@ -1,3 +1,9 @@
+Build 1074
+- fixed [[ KILLGLIDERS ]] for Range 1 HROT rules
+
+Build 1073
+- fixed Paste resetting history
+
 Build 1072
 - fixed alive count with [R]Investigator patterns on bounded grids
 - fixed some error validation messages for [[ COLOR ]]

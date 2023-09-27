@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1072,
+		/** @const {number} */ versionBuild : 1074,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4283,6 +4283,11 @@
 										result = source;
 										sourceFlag = 1;
 										destFlag = 0;
+
+										// ignore if cell hasn't changed
+										if (source === dest) {
+											destFlag = 1;
+										}
 									} else {
 										sourceFlag = source & 1;
 										destFlag = dest & 1;
