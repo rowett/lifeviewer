@@ -1370,7 +1370,7 @@
 			}
 
 			// set Conway rule
-			this.decodeRuleString(pattern, "", allocator);
+			this.decodeRuleString(pattern, "", allocator, false);
 		}
 	};
 
@@ -1548,7 +1548,7 @@
 			pattern.patternFormat = "Life 1.06";
 
 			// set Conway rule
-			this.decodeRuleString(pattern, "", allocator);
+			this.decodeRuleString(pattern, "", allocator, false);
 
 			// set the cells
 			for (i = 0; i < n; i += 1) {
@@ -1926,7 +1926,7 @@
 				}
 			} else {
 				// default to Conway's Life
-				this.decodeRuleString(pattern, "", allocator);
+				this.decodeRuleString(pattern, "", allocator, false);
 			}
 
 			// populate the array
@@ -3153,7 +3153,7 @@
 	};
 
 	// add postfixes to canonical rule name
-	PatternManager.prototype.addNamePostfixes = function(/** @type {Pattern} */ pattern, /** @type {string} */ base64) {
+	PatternManager.prototype.addNamePostfixes = function(/** @type {Pattern} */ pattern, /** @type {string} */ base64, /** @type {boolean} */ ignoreAliases) {
 		var	/** @type {string|null} */ aliasName = null,
 			/** @type {string} */ nameLtL = "";
 
@@ -3198,7 +3198,10 @@
 		}
 
 		// see if there is an alias name for this rule
-		aliasName = AliasManager.getAliasFromRule(pattern.ruleName);
+		if (!ignoreAliases) {
+			aliasName = AliasManager.getAliasFromRule(pattern.ruleName);
+		}
+
 		if (aliasName === null) {
 			// try alternate M1 form for M0 LtL rules
 			if (pattern.isLTL && pattern.middleLTL === 0) {
@@ -5072,7 +5075,7 @@
 
 	// decode rule string and return whether valid
 	/** @return {boolean} */
-	PatternManager.prototype.decodeRuleString = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Allocator} */ allocator) {
+	PatternManager.prototype.decodeRuleString = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Allocator} */ allocator, /** @type {boolean} */ ignoreAliases) {
 		// check for alternate rules
 		var	/** @type {number} */ altIndex = -1,
 			/** @type {Pattern} */ firstPattern = null,
@@ -5084,13 +5087,15 @@
 			/** @type {boolean} */ result = false;
 
 		// check if the rule is an alias
-		alias = AliasManager.getRuleFromAlias(rule);
-		if (alias !== null) {
-			// get the canonical form of the alias
-			aliasName = AliasManager.getAliasFromRule(alias);
-
-			// get the rule
-			rule = alias;
+		if (!ignoreAliases) {
+			alias = AliasManager.getRuleFromAlias(rule);
+			if (alias !== null) {
+				// get the canonical form of the alias
+				aliasName = AliasManager.getAliasFromRule(alias);
+	
+				// get the rule
+				rule = alias;
+			}
 		}
 
 		// check if the rule has an alternate
@@ -5099,7 +5104,7 @@
 		// check if the rule has an alternate
 		if (altIndex === -1) {
 			// single rule so decode
-			result = this.decodeRuleStringPart(pattern, rule, allocator, this.ruleArray);
+			result = this.decodeRuleStringPart(pattern, rule, allocator, this.ruleArray, ignoreAliases);
 			if (result) {
 				// check for triangular rule
 				if (pattern.isTriangular) {
@@ -5126,7 +5131,7 @@
 			// check there is only one separator
 			if ((rule.substring(altIndex + 1).indexOf(this.altRuleSeparator) === -1) && !nestedAlternate) {
 				// decode first rule
-				result = this.decodeRuleStringPart(pattern, rule.substring(0, altIndex), allocator, this.ruleAltArray);
+				result = this.decodeRuleStringPart(pattern, rule.substring(0, altIndex), allocator, this.ruleAltArray, ignoreAliases);
 				if (result) {
 					// save the first pattern details
 					firstPattern = new Pattern(pattern.name, this);
@@ -5134,7 +5139,7 @@
 
 					// if succeeded then decode alternate rule
 					pattern.resetSettings();
-					result = this.decodeRuleStringPart(pattern, rule.substring(altIndex + 1), allocator, this.ruleArray);
+					result = this.decodeRuleStringPart(pattern, rule.substring(altIndex + 1), allocator, this.ruleArray, ignoreAliases);
 					if (result) {
 						// check the two rules are from the same family
 						this.failureReason = pattern.isSameFamilyAs(firstPattern);
@@ -5365,7 +5370,7 @@
 
 	// decode rule string and return whether valid
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeRuleStringPart = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Allocator} */ allocator, /** @type {Uint8Array} */ ruleArray) {
+	PatternManager.prototype.decodeRuleStringPart = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Allocator} */ allocator, /** @type {Uint8Array} */ ruleArray, /** @type {boolean} */ ignoreAliases) {
 		// whether the rule contains a slash
 		var	/** @type {number} */ slashIndex = -1,
 
@@ -5460,13 +5465,15 @@
 		ruleArray[0] = 0;
 
 		// check if the rule is an alias
-		alias = AliasManager.getRuleFromAlias(rule);
-		if (alias !== null) {
-			// check for blank rule
-			if (rule === "") {
-				pattern.ruleName = "Life";
+		if (!ignoreAliases) {
+			alias = AliasManager.getRuleFromAlias(rule);
+			if (alias !== null) {
+				// check for blank rule
+				if (rule === "") {
+					pattern.ruleName = "Life";
+				}
+				rule = alias;
 			}
-			rule = alias;
 		}
 
 		// check for MAP
@@ -6290,7 +6297,7 @@
 
 		if (valid) {
 			// add any postfixes
-			this.addNamePostfixes(pattern, base64);
+			this.addNamePostfixes(pattern, base64, ignoreAliases);
 		} else {
 			// remove rule type
 			pattern.isLTL = false;
@@ -7601,6 +7608,9 @@
 			// extended postfix length
 			/** @type {number} */ extendedLength = this.extendedPostfix.length,
 
+			// whether to ignore aliases
+			/** @type {boolean} */ ignoreAliases = false,
+
 			// rule string
 			/** @type {string} */ ruleString = "",
 			/** @type {string} */ temp = "";
@@ -7700,7 +7710,7 @@
 			// check for Super when alternate rules defined
 			superIndex = ruleString.indexOf(this.altRuleSeparator);
 			if (superIndex !== -1) {
-				// check for History just before separartor
+				// check for Super just before separartor
 				if (ruleString.toLowerCase().substring(0, superIndex).trim().substring(superIndex - superLength) === this.superPostfix) {
 					// rule is a super type
 					pattern.isSuper = true;
@@ -7714,9 +7724,30 @@
 
 		// check for Extended rules
 		if (!pattern.isHistory && !pattern.isSuper) {
-			// allow StateInvestigator as an alias
+			// add [R]Extended aliases
 			if (ruleString.toLowerCase() === "stateinvestigator") {
 				ruleString = "B3/S23Investigator";
+				ignoreAliases = true;
+			} else {
+				if (ruleString.toLowerCase() === "leapinvestigator") {
+					ruleString = "B2n3/S23-qInvestigator";
+					ignoreAliases = true;
+				} else {
+					if (ruleString.toLowerCase() === "eightinvestigator") {
+						ruleString = "B3/S238Investigator";
+						ignoreAliases = true;
+					} else {
+						if (ruleString.toLowerCase() === "pedestrianinvestigator") {
+							ruleString = "B38/S23Investigator";
+							ignoreAliases = true;
+						} else {
+							if (ruleString.toLowerCase() === "merryinvestigator") {
+								ruleString = "B3-eq4ciqt5ky/S2-c3-k4yz5i8Investigator";
+								ignoreAliases = true;
+							}
+						}
+					}
+				}
 			}
 
 			extendedIndex = ruleString.toLowerCase().lastIndexOf(this.extendedPostfix);
@@ -7731,7 +7762,7 @@
 			// check for Extended when alternate rules defined
 			extendedIndex = ruleString.indexOf(this.altRuleSeparator);
 			if (extendedIndex !== -1) {
-				// check for History just before separartor
+				// check for Extended just before separartor
 				if (ruleString.toLowerCase().substring(0, extendedIndex).trim().substring(extendedIndex - extendedLength) === this.extendedPostfix) {
 					// rule is an extended type
 					pattern.isExtended = true;
@@ -7744,7 +7775,7 @@
 		}
 
 		// decode the rule
-		if (boundedIndex !== -2 && this.decodeRuleString(pattern, ruleString, allocator)) {
+		if (boundedIndex !== -2 && this.decodeRuleString(pattern, ruleString, allocator, ignoreAliases)) {
 			// mark executable
 			this.executable = true;
 		} else {
@@ -8133,7 +8164,7 @@
 		// check whether a rule definition was seen
 		if (!sawRule) {
 			// default to Conway's Life
-			if (this.decodeRuleString(pattern, "", allocator)) {
+			if (this.decodeRuleString(pattern, "", allocator, false)) {
 				// mark executable
 				this.executable = true;
 			} else {

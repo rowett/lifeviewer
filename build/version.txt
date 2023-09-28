@@ -1,3 +1,8 @@
+Build 1075
+- added support for some [R]Investigator named rules
+- enabled Layers for 2 state RuleTree/RuleTable rules
+- fixed an issue with Identify, Bounded Grids and [R]Investigator
+
 Build 1074
 - fixed [[ KILLGLIDERS ]] for Range 1 HROT rules
 

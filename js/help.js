@@ -1814,7 +1814,11 @@
 					}
 					if (view.engine.cellPeriodState6) {
 						this.renderColourBox(view, 0x60, 0x60, 0x60, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-						y = this.renderHelpLine(view, "  State6", "    " + view.engine.cellPeriodState6 + "\t\t\t" + this.rgbString(0x60, 0x60, 0x60).trim(), ctx, x, y, height, helpLine);
+						if (view.engine.isExtended) {
+							y = this.renderHelpLine(view, "  State3", "    " + view.engine.cellPeriodState6 + "\t\t\t" + this.rgbString(0x60, 0x60, 0x60).trim(), ctx, x, y, height, helpLine);
+						} else {
+							y = this.renderHelpLine(view, "  State6", "    " + view.engine.cellPeriodState6 + "\t\t\t" + this.rgbString(0x60, 0x60, 0x60).trim(), ctx, x, y, height, helpLine);
+						}
 					}
 					this.renderColourBox(view, 0, 0, 0, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 

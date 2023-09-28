@@ -4872,7 +4872,11 @@
 
 		// temperature
 		if (type === "Oscillator") {
-			tempResult = this.toPlaces(avgHeat / (rotor + stator), 2) + " | " + this.toPlaces(avgHeat / rotor, 2);
+			if (rotor === 0) {
+				tempResult = this.toPlaces(avgHeat / (rotor + stator), 2) + " | " + this.toPlaces(0, 2);
+			} else {
+				tempResult = this.toPlaces(avgHeat / (rotor + stator), 2) + " | " + this.toPlaces(avgHeat / rotor, 2);
+			}
 		}
 
 		// active cells
@@ -10441,53 +10445,64 @@
 				}
 			}
 		} else {
-			// create pixels from rgb and brightness
-			if (this.littleEndian) {
-				// create dead colours
-				for (i = 0; i < this.aliveStart; i += 1) {
-					pixelColours[i] = (alpha << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
-					}
-				}
-
-				// create alive colours
-				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
-					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
-					}
-				}
-
-				// create remaining multi-state colours
-				for (i = this.aliveMax + 1; i < 256; i += 1) {
-					pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
-					}
+			if (this.isRuleTree) {
+				// 2-state RuleLoader
+				if (this.littleEndian) {
+					pixelColours[0] = (alpha << 24) | (blueChannel[0] << 16) | (greenChannel[0] << 8) | redChannel[0];
+					pixelColours[1] = (alpha << 24) | ((blueChannel[1] * brightness) << 16) | ((greenChannel[1] * brightness) << 8) | (redChannel[1] * brightness);
+				} else {
+					pixelColours[0] = (redChannel[0] << 24) | (greenChannel[0] << 16) | (blueChannel[0] << 8) | alpha;
+					pixelColours[1] = ((redChannel[1] * brightness) << 24) | ((greenChannel[1] * brightness) << 16) | ((blueChannel[1] * brightness) << 8) | alpha;
 				}
 			} else {
-				// create dead colours
-				for (i = 0; i < this.aliveStart; i += 1) {
-					pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | alpha;
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+				// create pixels from rgb and brightness
+				if (this.littleEndian) {
+					// create dead colours
+					for (i = 0; i < this.aliveStart; i += 1) {
+						pixelColours[i] = (alpha << 24) | (blueChannel[i] << 16) | (greenChannel[i] << 8) | redChannel[i];
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
 					}
-				}
 
-				// create alive colours
-				for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
-					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+					// create alive colours
+					for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
+						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
 					}
-				}
 
-				// create remaining multi-state colours
-				for (i = this.aliveMax + 1; i < 256; i += 1) {
-					pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
-					if (needStrings) {
-						colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+					// create remaining multi-state colours
+					for (i = this.aliveMax + 1; i < 256; i += 1) {
+						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
+					}
+				} else {
+					// create dead colours
+					for (i = 0; i < this.aliveStart; i += 1) {
+						pixelColours[i] = (redChannel[i] << 24) | (greenChannel[i] << 16) | (blueChannel[i] << 8) | alpha;
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
+					}
+
+					// create alive colours
+					for (i = this.aliveStart; i <= this.aliveMax; i += 1) {
+						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
+					}
+
+					// create remaining multi-state colours
+					for (i = this.aliveMax + 1; i < 256; i += 1) {
+						pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+						if (needStrings) {
+							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+						}
 					}
 				}
 			}
@@ -13911,7 +13926,7 @@
 			/** @type {Uint16Array} */ gridy = null;
 
 		// determine the buffer for current generation
-		if (!(this.isPCA || this.isRuleTree)) {
+		if (!(this.isPCA || this.isRuleTree || this.isExtended)) {
 			if ((this.counter & 1) !== 0) {
 				grid = this.nextGrid16;
 			} else {
@@ -44453,7 +44468,7 @@
 				}
 			}
 		} else {
-			if (this.rainbow) {
+			if (this.rainbow || this.isRuleTree) {
 				result = 1;
 			} else {
 				result = (i * ((this.aliveMax + 1) / this.layers)) | 0;
