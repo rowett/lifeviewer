@@ -83,6 +83,7 @@
 		s.push("OT vN");
 		a.push(["Outer-Totalistic von Neumann", ""]);
 		a.push(["Fredkin2", "B13/S024V"]);
+		a.push(["LifeV", "B3/S23V"]);
 		a.push(["Parity", "B13/S13V"]);
 
 		// add 2-state totalistic Hex aliases
@@ -91,6 +92,7 @@
 		a.push(["HexParity", "B135/S0246H"]);
 		a.push(["Hexagonal Life", "B2/S34H"]);
 		a.push(["HighHexLife", "B25/S34H"]);
+		a.push(["LifeH", "B3/S23H"]);
 		a.push(["Replicator Hex", "B135/S135H"]);
 
 		// add 2 state totalistic Moore aliases
@@ -156,8 +158,6 @@
 		a.push(["Life without Death", "B3/S012345678"]);
 		a.push(["Life", "B3/S23"]);
 		a.push(["Live Free or Die", "B2/S0"]);
-		a.push(["LifeH", "B3/S23H"]);
-		a.push(["LifeV", "B3/S23V"]);
 		a.push(["Logarithmic replicator rule", "B36/S245"]);
 		a.push(["LongLife", "B345/S5"]);
 		a.push(["Long Life", "B345/S5"]);

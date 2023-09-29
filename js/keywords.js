@@ -98,12 +98,6 @@
 		// bezier mode
 		/** @const {string} */ bezierWord : "BEZIER",
 
-		// hex display
-		/** @const {string} */ hexDisplayWord : "HEXDISPLAY",
-
-		// square display
-		/** @const {string} */ squareDisplayWord : "SQUAREDISPLAY",
-
 		// triangular cells
 		/** @const {string} */ triCellsWord : "TRIANGULARCELLS",
 

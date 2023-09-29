@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1075,
+		/** @const {number} */ versionBuild : 1077,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -12707,6 +12707,12 @@
 		if (!me.viewOnly) {
 			// check for selection
 			if (me.isSelection) {
+				// adjust in case specified is different than actual size
+				if (me.engine.boundedGridType !== -1) {
+					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				}
+
 				if (x1 > x2) {
 					swap = x2;
 					x2 = x1;
@@ -12776,6 +12782,12 @@
 		if (!me.viewOnly) {
 			// check for selection
 			if (me.isSelection) {
+				// adjust in case specified is different than actual size
+				if (me.engine.boundedGridType !== -1) {
+					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				}
+
 				if (x1 > x2) {
 					swap = x2;
 					x2 = x1;
@@ -13021,6 +13033,12 @@
 			// compute width and height of selection
 			width = (x2 - x1 + 1);
 			height = (y2 - y1 + 1);
+
+			// adjust in case specified is different than actual size
+			if (me.engine.boundedGridType !== -1) {
+				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+			}
 
 			// allocate the buffer
 			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number));
@@ -13887,6 +13905,12 @@
 				width = rightX - leftX + 1;
 				height = topY - bottomY + 1;
 
+				// adjust in case specified is different than actual size
+				if (me.engine.boundedGridType !== -1) {
+					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				}
+
 				// use bounded grid if defined
 				if (me.engine.boundedGridType !== -1) {
 					if (me.engine.boundedGridWidth !== 0) {
@@ -13937,6 +13961,12 @@
 					width = rightX - leftX + 1;
 					height = topY - bottomY + 1;
 	
+					// adjust in case specified is different than actual size
+					if (me.engine.boundedGridType !== -1) {
+						xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+						yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+					}
+
 					// and then check top right cell with offset
 					me.cellOnGrid(rightX + xOff + dx, topY + yOff + dy);
 	
@@ -13962,6 +13992,12 @@
 					}
 					width = rightX - leftX + 1;
 					height = topY - bottomY + 1;
+
+					// adjust in case specified is different than actual size
+					if (me.engine.boundedGridType !== -1) {
+						xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+						yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+					}
 				}
 	
 				// add border for HROT rules
@@ -14233,6 +14269,12 @@
 				numStates = 2;
 			}
 
+			// adjust in case specified is different than actual size
+			if (me.engine.boundedGridType !== -1) {
+				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+			}
+
 			// draw random cells
 			if (me.engine.isPCA) {
 				for (y = y1; y <= y2; y += 1) {
@@ -14381,6 +14423,12 @@
 				y1 = swap;
 			}
 
+			// adjust in case specified is different than actual size
+			if (me.engine.boundedGridType !== -1) {
+				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+			}
+
 			// allocate the row
 			row = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, (x2 - x1 + 1), "View.flipRow"));
 
@@ -14487,6 +14535,12 @@
 				swap = y2;
 				y2 = y1;
 				y1 = swap;
+			}
+
+			// adjust in case specified is different than actual size
+			if (me.engine.boundedGridType !== -1) {
+				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
 			}
 
 			// allocate the row
@@ -14820,6 +14874,12 @@
 
 		// check for selection
 		if (me.isSelection) {
+			// adjust in case specified is different than actual size
+			if (me.engine.boundedGridType !== -1) {
+				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+			}
+
 			if (x1 > x2) {
 				swap = x2;
 				x2 = x1;
@@ -14880,6 +14940,13 @@
 					// recompute offset in case grid grew
 					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
 					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+
+					// adjust in case specified is different than actual size
+					if (me.engine.boundedGridType !== -1) {
+						xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+						yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+					}
+
 				}
 			}
 
@@ -14936,6 +15003,12 @@
 				// recompute offsets in case grid changed
 				xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
 				yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
+
+				// adjust in case specified is different than actual size
+				if (me.engine.boundedGridType !== -1) {
+					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				}
 
 				// write the cells to their new positions
 				i = 0;
@@ -15114,6 +15187,12 @@
 				// check for 2 state patterns
 				if (numStates === -1) {
 					numStates = 2;
+				}
+
+				// adjust in case specified is different than actual size
+				if (me.engine.boundedGridType !== -1) {
+					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
 				}
 
 				// invert cells in selection

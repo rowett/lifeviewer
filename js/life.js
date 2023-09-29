@@ -2064,6 +2064,11 @@
 						trans = LifeConstants.modFlipXorRot180;
 					}
 				}
+
+				// don't allow flip unless mod is half period
+				if (trans === LifeConstants.modFlipX && modFactor !== 2) {
+					trans = -1;
+				}
 			}	
 
 			// if FlipY then check for FlipX
@@ -2093,6 +2098,11 @@
 					if (modMatch & (1 << LifeConstants.modRot180)) {
 						trans = LifeConstants.modFlipYorRot180;
 					}
+				}
+
+				// don't allow flip unless mod is half period
+				if (trans === LifeConstants.modFlipY && modFactor !== 2) {
+					trans = -1;
 				}
 			}	
 
@@ -13232,7 +13242,7 @@
 					rowAlive = 0;
 
 					// check each column
-					if (this.multiNumStates === 2) {
+					if (this.multiNumStates === 2 && !this.isRuleTree) {
 						for (w = 0; w < width; w += 1) {
 							input = colourGridRow[w];
 							rowAlive |= input & 64;
@@ -17988,7 +17998,7 @@
 			if (this.isHROT) {
 				boundarySize = this.HROT.xrange * 2;
 			} else {
-				if (this.isExtended) {
+				if (this.isExtended || this.isRuleTree) {
 					boundarySize = 1;
 				} else {
 					boundarySize = 16;
@@ -19173,7 +19183,7 @@
 	};
 
 	// remove multi-state pattern starting at a given cell
-	Life.prototype.removeMSPattern = function(/** @type {number} */ x, /** @type {number} */ y) {
+	Life.prototype.removeMSPattern2 = function(/** @type {number} */ x, /** @type {number} */ y) {
 		var	/** @type {number} */ tx = 0,
 			/** @type {number} */ ty = 0,
 
@@ -19207,8 +19217,8 @@
 			/** @type {number} */ heightMask = this.heightMask,
 
 			// alive state
-			/** @type {number} */ alive = (this.multiNumStates > 2 ? 1 : LifeConstants.aliveStart),
-			/** @type {number} */ dead = (this.multiNumStates > 2 ? 0 : LifeConstants.deadStart),
+			/** @type {number} */ alive = LifeConstants.aliveStart,
+			/** @type {number} */ dead = LifeConstants.deadStart,
 
 			// boundary cell radius
 			/** @type {number} */ radius = this.removePatternRadius,
@@ -19256,6 +19266,135 @@
 					if (tx === (tx & widthMask) && ty === (ty & heightMask)) {
 						// check if cell set
 						if (colourRow[tx] >= alive) {
+							// remove the cell
+							colourRow[tx] = dead;
+							cleared += 1;
+
+							// stack the cell
+							if (index === end) {
+								// switch to next page
+								page += 1;
+								start += max;
+								end += max;
+
+								// check if page is allocated
+								if (page > pages) {
+									// allocate new page
+									this.boundaryX[page] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, max, "Life.boundaryX" + page));
+									this.boundaryY[page] = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, max, "Life.boundaryY" + page));
+
+									// save new page
+									pages += 1;
+									this.boundaryPages = pages;
+								}
+
+								// get the page array
+								bx = this.boundaryX[page];
+								by = this.boundaryY[page];
+							}
+
+							// save the cell
+							bx[index & mask] = tx;
+							by[index & mask] = ty;
+							index += 1;
+						}
+					}
+					tx += 1;
+				}
+				ty += 1;
+			}
+		}
+
+		// update statistics
+		this.population -= cleared;
+		this.deaths += cleared;
+	};
+
+
+	// remove multi-state pattern starting at a given cell
+	Life.prototype.removeMSPatternN = function(/** @type {number} */ x, /** @type {number} */ y) {
+		var	/** @type {number} */ tx = 0,
+			/** @type {number} */ ty = 0,
+
+			// multi-state grid
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+
+			// number of pages
+			/** @type {number} */ pages = this.boundaryPages,
+
+			// current page
+			/** @type {number} */ page = 0,
+
+			// boundary cell stack
+			/** @type {Int32Array} */ bx = this.boundaryX[page],
+			/** @type {Int32Array} */ by = this.boundaryY[page],
+			/** @type {number} */ index = 0,
+
+			// maximum buffer size
+			/** @type {number} */ max = LifeConstants.removePatternBufferSize,
+
+			// page mask
+			/** @type {number} */ mask = max - 1,
+
+			// start and end of current page
+			/** @type {number} */ start = 0,
+			/** @type {number} */ end = max,
+
+			// masks for width and height
+			/** @type {number} */ widthMask = this.widthMask,
+			/** @type {number} */ heightMask = this.heightMask,
+
+			// alive state
+			/** @type {number} */ alive = this.multiNumStates + this.historyStates,
+			/** @type {number} */ dead = 0,
+
+			// boundary cell radius
+			/** @type {number} */ radius = this.removePatternRadius,
+
+			// number of cells cleared
+			/** @type {number} */ cleared = 0;
+
+		// stack the current cell
+		bx[index] = x;
+		by[index] = y;
+		index += 1;
+
+		// remove the cell
+		if (colourGrid[y][x] === alive) {
+			colourGrid[y][x] = dead;
+			cleared += 1;
+		}
+
+		// keep going until all cells processed
+		while (index > 0) {
+			// get the next cell
+			index -= 1;
+
+			// check for previous page
+			if (index < start) {
+				// switch to previous page
+				page -= 1;
+				start -= max;
+				end -= max;
+
+				// get the page array
+				bx = this.boundaryX[page];
+				by = this.boundaryY[page];
+			}
+			x = bx[index & mask];
+			y = by[index & mask];
+
+			// check the surrounding cells
+			ty = y - radius;
+			while (ty <= y + radius) {
+				tx = x - radius;
+				colourRow = colourGrid[ty];
+				while (tx <= x + radius) {
+					// check cell is on grid
+					if (tx === (tx & widthMask) && ty === (ty & heightMask)) {
+						// check if cell set
+						if (colourRow[tx] === alive) {
 							// remove the cell
 							colourRow[tx] = dead;
 							cleared += 1;
@@ -19501,7 +19640,11 @@
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
 					if (colourRow[x] >= alive) {
-						this.removeMSPattern(x, y);
+						if (this.multiNumStates === 2) {
+							this.removeMSPattern2(x, y);
+						} else {
+							this.removeMSPatternN(x, y);
+						}
 					}
 				}
 			}
@@ -19514,7 +19657,11 @@
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
 					if (colourRow[x] >= alive) {
-						this.removeMSPattern(x, y);
+						if (this.multiNumStates === 2) {
+							this.removeMSPattern2(x, y);
+						} else {
+							this.removeMSPatternN(x, y);
+						}
 					}
 				}
 			}
@@ -19527,7 +19674,11 @@
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= xrange; x += 1) {
 					if (colourRow[x] >= alive) {
-						this.removeMSPattern(x, y);
+						if (this.multiNumStates === 2) {
+							this.removeMSPattern2(x, y);
+						} else {
+							this.removeMSPatternN(x, y);
+						}
 					}
 				}
 			}
@@ -19540,7 +19691,11 @@
 				colourRow = colourGrid[y];
 				for (x = wd - xrange - 1; x <= rightX; x += 1) {
 					if (colourRow[x] >= alive) {
-						this.removeMSPattern(x, y);
+						if (this.multiNumStates === 2) {
+							this.removeMSPattern2(x, y);
+						} else {
+							this.removeMSPatternN(x, y);
+						}
 					}
 				}
 			}

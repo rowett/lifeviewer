@@ -1,3 +1,12 @@
+Build 1077
+- fixed Select All with 2-state RuleLoader patterns
+- fixed Select All in Bounded Grid with incorrect pattern size specification
+
+Build 1076
+- fixed RuleLoader range from grid boundary when cells are killed
+- fixed Mod case for Identify
+- fixed population calculation for HROT patterns that get killed at the grid boundary
+
 Build 1075
 - added support for some [R]Investigator named rules
 - enabled Layers for 2 state RuleTree/RuleTable rules
