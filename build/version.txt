@@ -1,3 +1,9 @@
+Build 1079
+- fixed [R]Super state 6 cells not always appearing in Identify Map
+
+Build 1078
+- fixed rendering issue when changing zoom levels
+
 Build 1077
 - fixed Select All with 2-state RuleLoader patterns
 - fixed Select All in Bounded Grid with incorrect pattern size specification

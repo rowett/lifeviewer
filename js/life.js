@@ -7490,6 +7490,15 @@
 					}
 				}
 
+				// check for [R]Super
+				if (this.isSuper) {
+					// check if the cell used to be or has become state 6
+					current = colourGrid[y][x];
+					if ((state === 6 && current !== 6) || (state !== 6 && current === 6)) {
+						result = 1;
+					}
+				}
+
 				// draw alive or dead
 				if (bitAlive) {
 					// adjust population if cell was dead
@@ -7727,7 +7736,7 @@
 			}
 		}
 
-		// return whether LifeHistory state 6 changed
+		// return whether LifeHistory or [R]Super state 6 changed
 		return result;
 	};
 
@@ -8209,6 +8218,10 @@
 			snapshot.restoreOverlayGridUsingTile(overlayGrid, this.colourTileHistoryGrid, this);
 			this.populateState6MaskFromColGrid();
 		} else {
+			if (this.isSuper) {
+				this.populateState6MaskFromColGrid();
+			}
+
 			// copy the colour tile history grid into the colour grid
 			Array.copy(this.colourTileHistoryGrid, this.colourTileGrid);
 		}
@@ -9114,114 +9127,139 @@
 			/** @type {number} */ maxY = -1;
 
 		// clear current mask and cells
-		this.state6Mask.whole.fill(0);
-		this.state6Cells.whole.fill(0);
-		this.state6Alive.whole.fill(0);
+		if (this.isLifeHistory) {
+			// [R]History version
+			this.state6Mask.whole.fill(0);
+			this.state6Cells.whole.fill(0);
+			this.state6Alive.whole.fill(0);
 
-		// clear state6 tile grid
-		this.state6TileGrid.whole.fill(0);
+			// clear state6 tile grid
+			this.state6TileGrid.whole.fill(0);
 
-		// remove bits from the mask that are state 6 in the pattern
-		for (y = 0; y < this.height; y += 1) {
-			// get the rows
-			overlayRow = grid[y];
+			// remove bits from the mask that are state 6 in the pattern
+			for (y = 0; y < this.height; y += 1) {
+				// get the rows
+				overlayRow = grid[y];
 
-			if (y > 0) {
-				maskRow0 = this.state6Mask[(y - 1) & hm];
-				tileRow0 = tileGrid[((y - 1) & hm) >> tilePower];
-			} else {
-				maskRow0 = null;
-				tileRow0 = null;
-			}
+				if (y > 0) {
+					maskRow0 = this.state6Mask[(y - 1) & hm];
+					tileRow0 = tileGrid[((y - 1) & hm) >> tilePower];
+				} else {
+					maskRow0 = null;
+					tileRow0 = null;
+				}
 
-			maskRow1 = this.state6Mask[y & hm];
-			tileRow1 = tileGrid[(y & hm) >> tilePower];
-			cellsRow = this.state6Cells[y & hm];
+				maskRow1 = this.state6Mask[y & hm];
+				tileRow1 = tileGrid[(y & hm) >> tilePower];
+				cellsRow = this.state6Cells[y & hm];
 
-			if (y < this.height - 1) {
-				maskRow2 = this.state6Mask[(y + 1) & hm];
-				tileRow2 = tileGrid[((y + 1) & hm) >> tilePower];
-			} else {
-				maskRow2 = null;
-				tileRow2 = null;
-			}
+				if (y < this.height - 1) {
+					maskRow2 = this.state6Mask[(y + 1) & hm];
+					tileRow2 = tileGrid[((y + 1) & hm) >> tilePower];
+				} else {
+					maskRow2 = null;
+					tileRow2 = null;
+				}
 
-			// check row
-			for (x = 0; x < this.width; x += 1) {
-				// check for state 6
-				if (overlayRow[x] === state6) {
-					// update min and max
-					if (x < minX) {
-						minX = x;
-					}
-					if (x > maxX) {
-						maxX = x;
-					}
-					if (y < minY) {
-						minY = y;
-					}
-					if (y > maxY) {
-						maxY = y;
-					}
+				// check row
+				for (x = 0; x < this.width; x += 1) {
+					// check for state 6
+					if (overlayRow[x] === state6) {
+						// update min and max
+						if (x < minX) {
+							minX = x;
+						}
+						if (x > maxX) {
+							maxX = x;
+						}
+						if (y < minY) {
+							minY = y;
+						}
+						if (y > maxY) {
+							maxY = y;
+						}
 
-					// set the cell position itself
-					offset = x & wm;
-					cellsRow[offset >> 4] |= (1 << (~offset & 15));
+						// set the cell position itself
+						offset = x & wm;
+						cellsRow[offset >> 4] |= (1 << (~offset & 15));
 
-					// set the cells around the state 6 cell in the mask
-					// middle column
-					if (maskRow0) {
-						maskRow0[offset >> 4] |= (1 << (~offset & 15));
-						tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					}
-
-					maskRow1[offset >> 4] |= (1 << (~offset & 15));
-					tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-
-					if (maskRow2) {
-						maskRow2[offset >> 4] |= (1 << (~offset & 15));
-						tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-					}
-
-					// left column
-					if (x > 0) {
-						offset = (x - 1) & wm;
-						if (!this.isVonNeumann) {
-							if (maskRow0) {
-								maskRow0[offset >> 4] |= (1 << (~offset & 15));
-								tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-							}
+						// set the cells around the state 6 cell in the mask
+						// middle column
+						if (maskRow0) {
+							maskRow0[offset >> 4] |= (1 << (~offset & 15));
+							tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
 						}
 
 						maskRow1[offset >> 4] |= (1 << (~offset & 15));
 						tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
 
-						if (!(this.isHex || this.isVonNeumann)) {
-							if (maskRow2) {
-								maskRow2[offset >> 4] |= (1 << (~offset & 15));
-								tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+						if (maskRow2) {
+							maskRow2[offset >> 4] |= (1 << (~offset & 15));
+							tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+						}
+
+						// left column
+						if (x > 0) {
+							offset = (x - 1) & wm;
+							if (!this.isVonNeumann) {
+								if (maskRow0) {
+									maskRow0[offset >> 4] |= (1 << (~offset & 15));
+									tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+								}
+							}
+
+							maskRow1[offset >> 4] |= (1 << (~offset & 15));
+							tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+
+							if (!(this.isHex || this.isVonNeumann)) {
+								if (maskRow2) {
+									maskRow2[offset >> 4] |= (1 << (~offset & 15));
+									tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+								}
+							}
+						}
+
+						// right column
+						if (x < this.width - 1) {
+							offset = (x + 1) & wm;
+							if (!(this.isHex || this.isVonNeumann)) {
+								if (maskRow0) {
+									maskRow0[offset >> 4] |= (1 << (~offset & 15));
+									tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+								}
+							}
+
+							maskRow1[offset >> 4] |= (1 << (~offset & 15));
+							tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+
+							if (!this.isVonNeumann) {
+								if (maskRow2) {
+									maskRow2[offset >> 4] |= (1 << (~offset & 15));
+									tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
+								}
 							}
 						}
 					}
-
-					// right column
-					if (x < this.width - 1) {
-						offset = (x + 1) & wm;
-						if (!(this.isHex || this.isVonNeumann)) {
-							if (maskRow0) {
-								maskRow0[offset >> 4] |= (1 << (~offset & 15));
-								tileRow0[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-							}
+				}
+			}
+		} else {
+			// [R]Super version
+			for (y = 0; y < this.height; y += 1) {
+				overlayRow = grid[y];
+				for (x = 0; x < this.width; x += 1) {
+					if (overlayRow[x] === 6) {
+						// update min and max
+						if (x < minX) {
+							minX = x;
 						}
-
-						maskRow1[offset >> 4] |= (1 << (~offset & 15));
-						tileRow1[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-
-						if (!this.isVonNeumann) {
-							if (maskRow2) {
-								maskRow2[offset >> 4] |= (1 << (~offset & 15));
-								tileRow2[(offset >> (tilePower + tilePower))] |= 1 << (~(offset >> tilePower) & 15);
-							}
+						if (x > maxX) {
+							maxX = x;
+						}
+						if (y < minY) {
+							minY = y;
+						}
+						if (y > maxY) {
+							maxY = y;
 						}
 					}
 				}

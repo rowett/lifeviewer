@@ -659,9 +659,6 @@
 		// whether Chrome bug is in effect
 		/** @type {boolean} */ this.chromeBug = false;
 
-		// whether rendering just happened
-		/** @type {boolean} */ this.justRendered = false;
-
 		// whether Life just died
 		/** @type {boolean} */ this.justDied = false;
 
@@ -2703,7 +2700,7 @@
 		}
 
 		// check for state 6 changes to [R]History
-		if (this.engine.isLifeHistory && wasState6) {
+		if ((this.engine.isLifeHistory || this.engine.isSuper) && wasState6) {
 			this.engine.populateState6MaskFromColGrid();
 		}
 
@@ -3126,7 +3123,7 @@
 			me.engine.doShrink();
 
 			// update state 6 grid
-			if (me.engine.isLifeHistory) {
+			if (me.engine.isLifeHistory || me.engine.isSuper) {
 				me.engine.populateState6MaskFromColGrid();
 			}
 
@@ -4347,7 +4344,7 @@
 		}
 
 		// check if [R]History state6 changed
-		if (this.engine.isLifeHistory && wasState6) {
+		if ((this.engine.isLifeHistory || this.engine.isSuper) && wasState6) {
 			// update state 6 grid
 			this.engine.populateState6MaskFromColGrid();
 		}
@@ -6761,9 +6758,6 @@
 			me.mainContext.fillRect(0, 0, me.mainCanvas.width, me.mainCanvas.height);
 			me.mainContext.globalAlpha = 1;
 		}
-
-		// mark rendering just happened
-		me.justRendered = true;
 	};
 
 	// update GPS and Step control background based on performance
@@ -7511,14 +7505,6 @@
 		var	/** @type {BoundingBox} */ zoomBox = this.engine.zoomBox,
 			/** @type {BoundingBox} */ historyBox = this.engine.historyBox,
 			/** @type {number} */ initialPopulation = this.engine.population;
-
-		// check if just rendered
-		if (this.justRendered) {
-			this.justRendered = false;
-			if (this.engine.isExtended) {
-				this.engine.colourTileHistoryGrid.whole.fill(0);
-			}
-		}
 
 		// save bounding box in case all cells die
 		this.engine.saveBox.set(zoomBox);
@@ -8637,9 +8623,6 @@
 		// clear just died flag
 		this.justDied = false;
 
-		// clear just rendered flag
-		this.justRendered = false;
-
 		// reset snow if enabled
 		if (this.drawingSnow) {
 			this.engine.initSnow();
@@ -9490,7 +9473,7 @@
 			}
 			if (numReplaced > 0) {
 				// check for state 6
-				if ((this.engine.isLifeHistory) && (replace === 6 || current === 6)) {
+				if ((this.engine.isLifeHistory || this.engine.isSuper) && (replace === 6 || current === 6)) {
 					this.engine.populateState6MaskFromColGrid();
 				}
 				this.afterEdit("replace states");
@@ -9515,7 +9498,7 @@
 
 			// tbd isExtended
 
-		// delete any cell of the current pen colour
+		// delete any cell of the current pen colour   TBD [R]Super state 6
 		if (current > 0) {
 			// adjust current state if generations style
 			if (me.engine.multiNumStates > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)) {
@@ -9581,7 +9564,7 @@
 					}
 				}
 				if (numCleared > 0) {
-					if (me.engine.isLifeHistory && current === 6) {
+					if ((me.engine.isLifeHistory || me.engine.isSuper) && current === 6) {
 						// update state 6 grid
 						this.engine.populateState6MaskFromColGrid();
 					}
@@ -12750,7 +12733,7 @@
 				}
 
 
-				if (me.engine.isLifeHistory && wasState6) {
+				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 					// update state 6 grid
 					this.engine.populateState6MaskFromColGrid();
 				}
@@ -12823,7 +12806,7 @@
 				}
 
 				// update state 6 grid
-				if (me.engine.isLifeHistory) {
+				if (me.engine.isLifeHistory || me.engine.isSuper) {
 					this.engine.populateState6MaskFromColGrid();
 				}
 
@@ -13060,7 +13043,7 @@
 				}
 			}
 
-			if (me.engine.isLifeHistory && wasState6) {
+			if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 				this.engine.populateState6MaskFromColGrid();
 			}
 
@@ -13847,7 +13830,7 @@
 			}
 		}
 
-		if (me.engine.isLifeHistory && wasState6) {
+		if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 			this.engine.populateState6MaskFromColGrid();
 		}
 
@@ -14030,7 +14013,7 @@
 					}
 					me.pasteBuffers[ViewConstants.numPasteBuffers] = null;
 
-					if (me.engine.isLifeHistory && wasState6) {
+					if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 						this.engine.populateState6MaskFromColGrid();
 					}
 
@@ -14321,7 +14304,7 @@
 				}
 			}
 
-			if (me.engine.isLifeHistory && wasState6) {
+			if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 				this.engine.populateState6MaskFromColGrid();
 			}
 
@@ -14458,7 +14441,7 @@
 				}
 			}
 
-			if (me.engine.isLifeHistory && wasState6) {
+			if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 				this.engine.populateState6MaskFromColGrid();
 			}
 
@@ -14571,7 +14554,7 @@
 				}
 			}
 
-			if (me.engine.isLifeHistory && wasState6) {
+			if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 				this.engine.populateState6MaskFromColGrid();
 			}
 
@@ -14816,7 +14799,7 @@
 					//}
 				//}
 
-				//if (me.engine.isLifeHistory && wasState6) {
+				//if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 					//this.engine.populateState6MaskFromColGrid();
 				//}
 
@@ -15042,7 +15025,7 @@
 					}
 				}
 
-				if (me.engine.isLifeHistory && wasState6) {
+				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 					this.engine.populateState6MaskFromColGrid();
 				}
 
@@ -15206,7 +15189,7 @@
 					}
 				}
 
-				if (me.engine.isLifeHistory && wasState6) {
+				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 					this.engine.populateState6MaskFromColGrid();
 				}
 
