@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1077,
+		/** @const {number} */ versionBuild : 1080,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -13548,6 +13548,7 @@
 			/** @type {Array<Uint16Array>} */ currentNextTileGrid = me.engine.nextTileGrid,
 			/** @type {Array<Uint16Array>} */ currentColourTileGrid = me.engine.colourTileGrid,
 			/** @type {Array<Uint16Array>} */ currentColourTileHistoryGrid = me.engine.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ currentDiedGrid = me.engine.diedGrid,
 			/** @type {number} */ currentWidth = me.engine.width,
 			/** @type {number} */ currentHeight = me.engine.height,
 			/** @type {Array<Uint16Array>} */ currentGrid16 = me.engine.grid16,
@@ -13670,6 +13671,7 @@
 		me.engine.nextTileGrid = currentNextTileGrid;
 		me.engine.colourTileGrid = currentColourTileGrid;
 		me.engine.colourTileHistoryGrid = currentColourTileHistoryGrid;
+		me.engine.diedGrid = currentDiedGrid;
 		me.engine.width = currentWidth;
 		me.engine.height = currentHeight;
 		me.engine.grid16 = currentGrid16;

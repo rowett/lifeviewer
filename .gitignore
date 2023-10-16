@@ -6,7 +6,23 @@ launch.json
 debug.log
 settings.json
 images/triangular*.png
+images/*-mode.png
+images/graph.png
+images/identify-*.png
+images/Selection-menu.png
+images/UI-*.png
+tests/Pattern viewer*
+tests/Conway's Life*
+tests/Life tag*
+tests/Thread For*
+tests/User_HotdogPi*
+tests/_Show*
+tests/bubblegum's*
+tests/lv-plugin*
+tests/popcount*
+tests/viewer*
 .vscode/ipch/*
+build/hrot-perf.xlsx
 *.cpp
 all.js
 end.js

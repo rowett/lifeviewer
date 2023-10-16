@@ -1,3 +1,6 @@
+Build 1080
+- fixed an issue with Advance Selection and growing the grid
+
 Build 1079
 - fixed [R]Super state 6 cells not always appearing in Identify Map
 
