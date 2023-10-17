@@ -1,3 +1,6 @@
+Build 1081
+- improved multiverse handling
+
 Build 1080
 - fixed an issue with Advance Selection and growing the grid
 

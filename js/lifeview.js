@@ -302,7 +302,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1080,
+		/** @const {number} */ versionBuild : 1081,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -20562,17 +20562,35 @@
 		// unpack arguments
 		var	/** @type {string} */ patternString = args[0],
 			rleItem = args[1],
-			textItem = args[2];
+			textItem = args[2],
+			canvasItem = args[3];
 
 		if (pattern && pattern.lifeMap && !pattern.tooBig) {
-			// create the anchor if specified
-			if (rleItem !== null) {
-				createAnchor(rleItem, textItem);
-			}
-
+			// check for multiverse mode
 			if (DocConfig.multi) {
 				// add details to Controller
 				Controller.patterns[Controller.patterns.length] = new PatternInfo(pattern.name, patternString, pattern.ruleName + pattern.boundedGridDef, pattern.width, pattern.height);
+
+				// check if this is the first viewer
+				if (Controller.patterns.length === 1) {
+					// hide the text
+					textItem.style.display = "none";
+					
+					// check if there was a canvas
+					if (canvasItem) {
+						// initalise viewer not in popup
+						canvasItem.contentEditable = "false";
+						startView(patternString, canvasItem, textItem.offsetWidth, false, textItem);
+					}
+				} else {
+					// hide the whole element
+					rleItem.style.display = "none";
+				}
+			} else {
+				// create the anchor if specified
+				if (rleItem !== null) {
+					createAnchor(rleItem, textItem);
+				}
 			}
 		}
 	}
@@ -20591,18 +20609,18 @@
 	}
 
 	// check if a string is a valid pattern
-	function isPattern(/** @type {string} */ patternString, /** @type {Allocator} */ allocator, /** @type {PatternManager} */ manager, rleItem, textItem) {
+	function isPattern(/** @type {string} */ patternString, /** @type {Allocator} */ allocator, /** @type {PatternManager} */ manager, rleItem, textItem, canvasItem) {
 		var	/** @type {Pattern} */ pattern = null;
 
 		// attempt to create a pattern
-		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem], null);
+		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem, canvasItem], null);
 		if (!manager.loadingFromRepository) {
 			if (pattern) {
 				if (pattern.invalid) {
 					pattern.originalFailure = manager.failureReason;
-					completeIsPatternFailed(pattern, [patternString, rleItem, textItem]);
+					completeIsPatternFailed(pattern, [patternString, rleItem, textItem, canvasItem]);
 				} else {
-					completeIsPattern(pattern, [patternString, rleItem, textItem]);
+					completeIsPattern(pattern, [patternString, rleItem, textItem, canvasItem]);
 				}
 			}
 		}
@@ -20711,26 +20729,25 @@
 					// check for multiverse
 					if (DocConfig.multi) {
 						// check if the text is a pattern and add to Controller if in multiverse mode
-						isPattern(cleanItem, allocator, manager, null, null);
-					}
-
-					// check if the canvas exists
-					if (canvasItem && canvasItem.getContext) {
-						// check whether to limit the height of the text item
-						if (DocConfig.patternSourceMaxHeight > -1) {
-							if (textItem.clientHeight > DocConfig.patternSourceMaxHeight) {
-								textItem.style.height = DocConfig.patternSourceMaxHeight + "px";
-							}
-						}
-
-						// initalise viewer not in popup
-						//canvasItem.style.outline = "none";
-						canvasItem.contentEditable = "false";
-						startView(cleanItem, canvasItem, textItem.offsetWidth, false, textItem);
+						isPattern(cleanItem, allocator, manager, rleItem, textItem, canvasItem);
 					} else {
-						// hide the canvas item
-						if (DocConfig.hide && canvasItem) { 
-							canvasItem.style.display = "none";
+						// check if the canvas exists
+						if (canvasItem && canvasItem.getContext) {
+							// check whether to limit the height of the text item
+							if (DocConfig.patternSourceMaxHeight > -1) {
+								if (textItem.clientHeight > DocConfig.patternSourceMaxHeight) {
+									textItem.style.height = DocConfig.patternSourceMaxHeight + "px";
+								}
+							}
+	
+							// initalise viewer not in popup
+							canvasItem.contentEditable = "false";
+							startView(cleanItem, canvasItem, textItem.offsetWidth, false, textItem);
+						} else {
+							// hide the canvas item
+							if (DocConfig.hide && canvasItem) { 
+								canvasItem.style.display = "none";
+							}
 						}
 					}
 				}
@@ -20751,7 +20768,7 @@
 								anchorItem = null;
 
 								// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
-								isPattern(cleanItem, allocator, manager, rleItem, textItem);
+								isPattern(cleanItem, allocator, manager, rleItem, textItem, null);
 							}
 						}
 					}
