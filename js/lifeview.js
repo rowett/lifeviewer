@@ -59,6 +59,11 @@
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
+		// label justification mode
+		/** @const {number} */ labelMiddle : 0,
+		/** @const {number} */ labelLeft : 1,
+		/** @const {number} */ labelRight : 2,
+
 		// number of user-selectable paste buffers
 		/** @const {number} */ numPasteBuffers : 10,
 
@@ -302,7 +307,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1081,
+		/** @const {number} */ versionBuild : 1082,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",

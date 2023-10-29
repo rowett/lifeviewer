@@ -77,6 +77,7 @@
 			case Keywords.labelZoomRangeWord:
 			case Keywords.labelTrackWord:
 			case Keywords.labelViewWord:
+			case Keywords.labelAlignWord:
 			case Keywords.labelShadowWord:
 			case Keywords.noHistoryWord:
 			case Keywords.noReportWord:
@@ -1336,6 +1337,9 @@
 			/** @type {number} */ currentLabelMinZ = -1000,
 			/** @type {number} */ currentLabelMaxZ = -1000,
 
+			// current label text justification
+			/** @type {number} */ currentLabelJustification = ViewConstants.labelMiddle,
+
 			// whether reading label
 			/** @type {boolean} */ readingLabel = false,
 
@@ -2216,6 +2220,33 @@
 							}
 							break;
 
+						// label alignment
+						case Keywords.labelAlignWord:
+							peekToken = scriptReader.getNextToken();
+							itemValid = true;
+
+							switch (peekToken) {
+								case Keywords.labelAlignCenterWord:
+									currentLabelJustification = ViewConstants.labelMiddle;
+									break;
+
+								case Keywords.labelAlignLeftWord:
+									currentLabelJustification = ViewConstants.labelLeft;
+									break;
+
+								case Keywords.labelAlignRightWord:
+									currentLabelJustification = ViewConstants.labelRight;
+									break;
+
+								default:
+									if (peekToken !== "") {
+										scriptErrors[scriptErrors.length] = [nextToken + " " + peekToken, "argument must be " + Keywords.labelAlignLeftWord + ", " + Keywords.labelAlignCenterWord + " or " + Keywords.labelAlignRightWord];
+									} else {
+										itemValid = false;
+									}
+							}
+							break;
+
 						// label T
 						case Keywords.labelTWord:
 							if (scriptReader.nextTokenIsNumeric()) {
@@ -2548,7 +2579,7 @@
 														// save the label
 														currentLabel = view.waypointManager.createLabel(x, y, z, currentLabelMinZ, currentLabelMaxZ, view.customLabelColour, currentLabelAlpha, currentLabelSize, currentLabelSizeFixed,
 															currentLabelT1, currentLabelT2, currentLabelTFade, currentLabelAngle, currentLabelAngleFixed, currentLabelPositionFixed,
-															currentLabelVDistance, currentLabelDX, currentLabelDY, currentLabelShadow);
+															currentLabelVDistance, currentLabelDX, currentLabelDY, currentLabelShadow, currentLabelJustification);
 														readingLabel = true;
 														itemValid = true;
 													} else {

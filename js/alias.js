@@ -141,6 +141,7 @@
 		a.push(["Gems", "B3457/S4568"]);
 		a.push(["Geology", "B3578/S24678"]);
 		a.push(["Gnarl", "B1/S1"]);
+		a.push(["Grounded Life", "B35/S23"]);
 		a.push(["H-Trees", "B1/S012345678"]);
 		a.push(["HighFlock", "B36/S12"]);
 		a.push(["HighLife", "B36/S23"]);

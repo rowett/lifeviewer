@@ -1201,6 +1201,7 @@
 		y = this.renderHelpLine(view, Keywords.labelZoomRangeWord + " MINZOOM MAXZOOM|" + Keywords.offWord, "label zoom visibility", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelTrackWord + " DX DY|" + Keywords.fixedWord, "label move per generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.labelShadowWord + " (" + Keywords.offWord + ")", "turn label shadow on or off", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.labelAlignWord + " " + Keywords.labelAlignCenterWord + "|" + Keywords.labelAlignLeftWord + "|" + Keywords.labelAlignRightWord, "set label text alignment", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowWord + " X1 Y1 X2 Y2 ZOOM", "define arrow at position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " (" + Keywords.fixedWord + ")", "... fix position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.arrowSizeWord + " <" + ViewConstants.minLineSize + ".." + ViewConstants.maxLineSize + "> <0.0..1.0>", "line width and head multiple", ctx, x, y, height, helpLine);

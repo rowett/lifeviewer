@@ -247,6 +247,18 @@
 		// label view radius
 		/** @const {string} */ labelViewWord : "LABELVIEWDIST",
 
+		// label text alignment
+		/** @const {string} */ labelAlignWord : "LABELALIGN",
+
+		// label left alignment
+		/** @const {string} */ labelAlignLeftWord : "LEFT",
+
+		// label right alignment
+		/** @const {string} */ labelAlignRightWord : "RIGHT",
+
+		// label center alignment
+		/** @const {string} */ labelAlignCenterWord : "CENTER",
+
 		// label angle fixed
 		/** @const {string} */ fixedWord: "FIXED",
 

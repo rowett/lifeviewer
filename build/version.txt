@@ -1,3 +1,7 @@
+Build 1082
+- added script command [[ LABELALIGN CENTER|LEFT|RIGHT ]] to set the text alignment for subsequent [[ LABEL ]] definitions
+- added an alias
+
 Build 1081
 - improved multiverse handling
 

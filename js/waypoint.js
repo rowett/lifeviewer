@@ -502,7 +502,7 @@
 	 * @constructor
 	 */
 	function Label(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha,
-			/** @type {number} */ size, /** @type {boolean} */ sizeLocked, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tDistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
+			/** @type {number} */ size, /** @type {boolean} */ sizeLocked, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tDistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow, /** @type {number} */ justification) {
 		// shadow on/off
 		/** @type {boolean} */ this.shadow = shadow;
 
@@ -581,6 +581,9 @@
 			this.minZoom = this.zoom / 4;
 			this.maxZoom = this.zoom * 4;
 		}
+
+		// text justification
+		this.justification = justification;
 	}
 
 	// WaypointManager constructor
@@ -671,8 +674,8 @@
 
 	// create a label
 	WaypointManager.prototype.createLabel = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ zoom, /** @type {number} */ minZoom, /** @type {number} */ maxZoom, /** @type {string} */ colour, /** @type {number} */ alpha,
-			/** @type {number} */ size, /** @type {boolean} */ sizeLocked, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tdistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow) {
-		return new Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow);
+			/** @type {number} */ size, /** @type {boolean} */ sizeLocked, /** @type {number} */ t1, /** @type {number} */ t2, /** @type {number} */ tFade, /** @type {number} */ angle, /** @type {boolean} */ angleLocked, /** @type {boolean} */ positionLocked, /** @type {number} */ tdistance, /** @type {number} */ dx, /** @type {number} */ dy, /** @type {boolean} */ shadow, /** @type {number} */ justification) {
+		return new Label(x, y, zoom, minZoom, maxZoom, colour, alpha, size, sizeLocked, t1, t2, tFade, angle, angleLocked, positionLocked, tdistance, dx, dy, shadow, justification);
 	};
 
 	// clear all labels
@@ -1520,6 +1523,7 @@
 			/** @type {Life} */ engine = view.engine,
 			/** @type {CanvasRenderingContext2D} */ context = engine.context,
 			/** @type {number} */ xPos = 0,
+			/** @type {number} */ maxXPos = 0,
 			/** @type {number} */ xOff = engine.width / 2 - engine.xOff - engine.originX,
 			/** @type {number} */ yOff = engine.height / 2 - engine.yOff - engine.originY,
 			/** @type {number} */ xZoom = engine.zoom * engine.originZ,
@@ -1551,6 +1555,7 @@
 			/** @type {number} */ pz = 1,
 			/** @type {number} */ currentX = 0,
 			/** @type {number} */ currentY = 0,
+			/** @type {number} */ currentAlign = 0,
 			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
 			/** @type {number} */ floatCounter = view.fixedPointCounter / view.refreshRate;
 
@@ -1565,6 +1570,7 @@
 			current = this.labelList[i];
 			currentX = current.x;
 			currentY = current.y;
+			currentAlign = current.justification;
 
 			// adjust position if in bounded grid
 			if (view.engine.boundedGridType !== -1) {
@@ -1782,43 +1788,129 @@
 							context.rotate(theta / 180 * Math.PI);
 							y = 0;
 
-							while (index !== -1) {
-								// get the next line
-								line = message.substring(0, index);
-								message = message.substring(index + 2);
-
-								// measure text line width
-								xPos = context.measureText(line).width >> 1;
+							// check text alignment
+							if (currentAlign === ViewConstants.labelMiddle) {
+								// center text
+								while (index !== -1) {
+									// get the next line
+									line = message.substring(0, index);
+									message = message.substring(index + 2);
+	
+									// measure text line width
+									xPos = context.measureText(line).width >> 1;
+	
+									// draw shadow
+									if (current.shadow) {
+										context.fillStyle = shadowColour;
+										context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
+									}
+	
+									// draw message
+									context.fillStyle = current.colour;
+									context.fillText(line, -xPos, y);
+	
+									// compute y coordinate for next text line
+									y += currentSize;
+	
+									// check for more lines
+									index = message.indexOf("\\n");
+								}
+	
+								// measure final text line width
+								xPos = context.measureText(message).width >> 1;
 
 								// draw shadow
 								if (current.shadow) {
 									context.fillStyle = shadowColour;
-									context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
+									context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
 								}
-
+	
 								// draw message
 								context.fillStyle = current.colour;
-								context.fillText(line, -xPos, y);
+								context.fillText(message, -xPos, y);
+							} else {
+								// left or right alignment so find longest string
+								maxXPos = 0;
+								while (index !== -1) {
+									// get the next line
+									line = message.substring(0, index);
+									message = message.substring(index + 2);
 
-								// compute y coordinate for next text line
-								y += currentSize;
+									// measure text line width
+									xPos = context.measureText(line).width >> 1;
+									if (xPos > maxXPos) {
+										maxXPos = xPos;
+									}
 
-								// check for more lines
+									index = message.indexOf("\\n");
+								}
+
+								// measure final text line width
+								xPos = context.measureText(message).width >> 1;
+								if (xPos > maxXPos) {
+									maxXPos = xPos;
+								}
+
+								// now draw the labels
+								message = current.message;
 								index = message.indexOf("\\n");
+
+								while (index !== -1) {
+									// get the next line
+									line = message.substring(0, index);
+									message = message.substring(index + 2);
+
+									if (currentAlign === ViewConstants.labelRight) {
+										xPos = context.measureText(line).width;
+									}
+
+									// draw shadow
+									if (current.shadow) {
+										context.fillStyle = shadowColour;
+										if (currentAlign === ViewConstants.labelLeft) {
+											context.fillText(line, -maxXPos + shadowOffset, y + shadowOffset);
+										} else {
+											context.fillText(line, maxXPos - xPos + shadowOffset, y + shadowOffset);
+										}
+									}
+	
+									// draw message
+									context.fillStyle = current.colour;
+									if (currentAlign === ViewConstants.labelLeft) {
+										context.fillText(line, -maxXPos, y);
+									} else {
+										context.fillText(line, maxXPos - xPos, y);
+									}
+	
+									// compute y coordinate for next text line
+									y += currentSize;
+	
+									// check for more lines
+									index = message.indexOf("\\n");
+								}
+
+								if (currentAlign === ViewConstants.labelRight) {
+									xPos = context.measureText(message).width;
+								}
+
+								// draw shadow
+								if (current.shadow) {
+									context.fillStyle = shadowColour;
+									if (currentAlign === ViewConstants.labelLeft) {
+										context.fillText(message, -maxXPos + shadowOffset, y + shadowOffset);
+									} else {
+										context.fillText(message, maxXPos - xPos + shadowOffset, y + shadowOffset);
+									}
+								}
+	
+								// draw message
+								context.fillStyle = current.colour;
+								if (currentAlign === ViewConstants.labelLeft) {
+									context.fillText(message, -maxXPos, y);
+								} else {
+									context.fillText(message, maxXPos - xPos, y);
+								}
 							}
-
-							// measure final text line width
-							xPos = context.measureText(message).width >> 1;
-
-							// draw shadow
-							if (current.shadow) {
-								context.fillStyle = shadowColour;
-								context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
-							}
-
-							// draw message
-							context.fillStyle = current.colour;
-							context.fillText(message, -xPos, y);
 
 							// restore context
 							context.restore();
