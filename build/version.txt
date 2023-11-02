@@ -1,3 +1,6 @@
+Build 1083
+- improved Identify performance when calculating Strict Volatility
+
 Build 1082
 - added script command [[ LABELALIGN CENTER|LEFT|RIGHT ]] to set the text alignment for subsequent [[ LABEL ]] definitions
 - added an alias

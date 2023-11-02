@@ -3583,6 +3583,52 @@
 		}
 	};
 
+	// update cell counts
+	Life.prototype.updateCellCounts = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint32Array} */ cellCounts) {
+		var	/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ ci = 0,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {Uint8Array} */ colourRow = null;
+
+		// swap grids every generation
+		if (this.isSuper || this.isExtended || this.isRuleTree) {
+			colourGrid = this.colourGrid;
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
+
+		for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
+			colourRow = colourGrid[cy];
+
+			if (this.isSuper || this.isRuleTree) {
+				for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+					if (colourRow[cx] & 1) {
+						cellCounts[ci] += 1;
+					}
+					ci += 1;
+				}
+			} else {
+				if (this.isExtended) {
+					for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+						if (colourRow[cx]) {
+							cellCounts[ci] += 1;
+						}
+						ci += 1;
+					}
+				} else {
+					for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
+						if (colourRow[cx] >= aliveStart) {
+							cellCounts[ci] += 1;
+						}
+						ci += 1;
+					}
+				}
+			}
+		}
+	};
+
 	// update cell occupancy for rotor and stator calculation (used when computing strict volatility)
 	Life.prototype.updateOccupancyStrict = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {Uint16Array} */ occupiedFrame, /** @type {number} */ p, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitStart) {
 		var	/** @type {number} */ cx = 0,
@@ -3953,52 +3999,82 @@
 	};
 
 	// compute cell factors
-	Life.prototype.computeCellFactors = function(/** @type {Int32Array} */ cellPeriod, /** @type {number} */ period, /** @type {Uint16Array} */ frames, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitStart) {
+	Life.prototype.computeCellFactors = function(/** @type {Int32Array} */ cellPeriod, /** @type {number} */ period, /** @type {Uint16Array} */ frames, /** @type {Uint32Array} */ cellCounts, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitStart) {
 		var	/** @type {number} */ f = 0,
 			/** @type {number} */ j = 0,
-			/** @type {number} */ p = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ bit = 0,
 			/** @type {number} */ mult = 0,
+			/** @type {number} */ tMult = 0,
 			/** @type {number} */ row = 0,
 			/** @type {number} */ off1 = 0,
 			/** @type {number} */ off2 = 0,
+			/** @type {number} */ cellThresh = 0,
+			///** @type {number} */ checks = 0,
+			///** @type {number} */ discards = 0,
+			///** @type {number} */ matches = 0,
 			/** @type {number} */ target = 0;
 
+		// check each factor starting at 1
 		for (f = 1; f <= (period / 2); f += 1) {
 			if (period % f === 0) {
-				// check each factor
 				target = period - f;
+				tMult = target * bitFrameInBytes;
 				mult = f * bitFrameInBytes;
+				cellThresh = period / f;
+				//checks = 0;
+				//discards = 0;
+				//matches = 0;
 
+				//var t0 = performance.now();
+
+				// check each row
 				for (cy = 0; cy < boxHeight; cy += 1) {
 					row = cy * boxWidth;
 					j = cy * bitRowInBytes;
 					bit = bitStart;
-					for (cx = 0; cx < boxWidth; cx += 1) {
-						if (cellPeriod[row + cx] === period) {
-							off1 = (cx >> 4) + j;
-							off2 = off1 + mult;
 
-							for (p = 0; p < target; p += 1) {
-								if ((frames[off1] & bit) !== (frames[off2] & bit)) {
-									break;
+					// check each cell along the row
+					for (cx = 0; cx < boxWidth; cx += 1) {
+
+						// check if the cell was ever occupied during the period
+						if (cellPeriod[row + cx] === period) {
+							if (cellCounts[row + cx] >= cellThresh) {
+								//checks += 1;
+
+								// check if the cell's evolution is identical at the factor offset
+								off1 = (cx >> 4) + j;
+								off2 = off1 + tMult;
+	
+								while (off1 < off2) {
+									if ((frames[off1] & bit) !== (frames[off1 + mult] & bit)) {
+										off1 = off2;
+									}
+									off1 += bitFrameInBytes;
 								}
-								off1 += bitFrameInBytes;
-								off2 += bitFrameInBytes;
-							}
-							if (p === target) {
-								cellPeriod[row + cx] = f;
+	
+								// if evolution is identical then update the subperiod for the cell
+								if (off1 === off2) {
+									// save the subperiod, this also prevents it from being checked at higher subperiods
+									cellPeriod[row + cx] = f;
+									//matches += 1;
+								}
+							//} else {
+								//discards += 1;
 							}
 						}
-						bit >>= 1;
 
+						// rotate the bit mask
+						bit >>= 1;
 						if (!bit) {
 							bit = bitStart;
 						}
 					}
 				}
+
+				//t0 = performance.now() - t0;
+				//console.debug(f, cellThresh, "checks", checks, "discards", discards, "matches", matches, (t0 / 1000).toFixed(2));
 			}
 		}
 	};
@@ -4119,6 +4195,7 @@
 			/** @type {boolean} */ computeStrict = false,
 			/** @type {Uint16Array} */ frames = null,
 			/** @type {Uint16Array} */ occupiedFrame = null,
+			/** @type {Uint32Array} */ cellCounts = null,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
@@ -4177,6 +4254,7 @@
 				frames = new Uint16Array(period * bitFrameInBytes);
 				cellPeriod = new Int32Array(boxWidth * boxHeight);
 				occupiedFrame = new Uint16Array(bitFrameInBytes);
+				cellCounts = new Uint32Array(boxWidth * boxHeight);
 	
 				// get the frame data width most significant bit number
 				frameTypeMSB = (frames.BYTES_PER_ELEMENT * 8) - 1;
@@ -4244,6 +4322,7 @@
 
 			// add to the strict volatility frame if computing strict volatility
 			if (computeStrict) {
+				this.updateCellCounts(extent, colourGrid, cellCounts);
 				this.updateOccupancyStrict(extent, colourGrid, frames, occupiedFrame, p, bitRowInBytes, bitFrameInBytes, bitStart);
 			} else {
 				// use the original method of computing cell occupancy
@@ -4401,7 +4480,7 @@
 			}
 
 			// calculate the factors of the period
-			this.computeCellFactors(cellPeriod, period, frames, boxWidth, boxHeight, bitFrameInBytes, bitRowInBytes, bitStart);
+			this.computeCellFactors(cellPeriod, period, frames, cellCounts, boxWidth, boxHeight, bitFrameInBytes, bitRowInBytes, bitStart);
 
 			//t = performance.now() - t;
 			//console.log("calculated cell factors in " + (t / 1000).toFixed(1) + " seconds");
