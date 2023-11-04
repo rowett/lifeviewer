@@ -3630,7 +3630,7 @@
 	};
 
 	// update cell occupancy for rotor and stator calculation (used when computing strict volatility)
-	Life.prototype.updateOccupancyStrict = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {Uint16Array} */ occupiedFrame, /** @type {number} */ p, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitStart) {
+	Life.prototype.updateOccupancyStrict = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {number} */ p, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitStart) {
 		var	/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ bit = 0,
@@ -3749,7 +3749,6 @@
 					// save frame bits
 					if (frameBits !== 0) {
 						frames[f] = frameBits;
-						occupiedFrame[f - l] |= frameBits;
 						frameBits = 0;
 					}
 
@@ -3768,7 +3767,6 @@
 				}
 				if (frameBits !== 0) {
 					frames[f] = frameBits;
-					occupiedFrame[f - l] |= frameBits;
 				}
 			} else {
 				if (this.isExtended) {
@@ -3861,7 +3859,6 @@
 						// save frame bits
 						if (frameBits !== 0) {
 							frames[f] = frameBits;
-							occupiedFrame[f - l] |= frameBits;
 							frameBits = 0;
 						}
 
@@ -3880,7 +3877,6 @@
 					}
 					if (frameBits !== 0) {
 						frames[f] = frameBits;
-						occupiedFrame[f - l] |= frameBits;
 					}
 				} else {
 					// process the row
@@ -3972,7 +3968,6 @@
 						// save frame bits
 						if (frameBits !== 0) {
 							frames[f] = frameBits;
-							occupiedFrame[f - l] |= frameBits;
 							frameBits = 0;
 						}
 
@@ -3991,7 +3986,6 @@
 					}
 					if (frameBits !== 0) {
 						frames[f] = frameBits;
-						occupiedFrame[f - l] |= frameBits;
 					}
 				}
 			}
@@ -4010,9 +4004,9 @@
 			/** @type {number} */ row = 0,
 			/** @type {number} */ off1 = 0,
 			/** @type {number} */ off2 = 0,
-			/** @type {number} */ cellThresh = 0,
 			///** @type {number} */ checks = 0,
-			///** @type {number} */ discards = 0,
+			/** @type {number} */ modValue = 0,
+			///** @type {number} */ modDiscards = 0,
 			///** @type {number} */ matches = 0,
 			/** @type {number} */ target = 0;
 
@@ -4022,9 +4016,9 @@
 				target = period - f;
 				tMult = target * bitFrameInBytes;
 				mult = f * bitFrameInBytes;
-				cellThresh = period / f;
+				modValue = period / f;
 				//checks = 0;
-				//discards = 0;
+				//modDiscards = 0;
 				//matches = 0;
 
 				//var t0 = performance.now();
@@ -4040,10 +4034,14 @@
 
 						// check if the cell was ever occupied during the period
 						if (cellPeriod[row + cx] === period) {
-							if (cellCounts[row + cx] >= cellThresh) {
+
+							//  cell count must be a multiple of the low threshold
+							if (cellCounts[row + cx] % modValue) {
+								//modDiscards += 1;
+							} else {
 								//checks += 1;
 
-								// check if the cell's evolution is identical at the factor offset
+								// check if the cell's evolution is identical each subperiod run
 								off1 = (cx >> 4) + j;
 								off2 = off1 + tMult;
 	
@@ -4060,8 +4058,6 @@
 									cellPeriod[row + cx] = f;
 									//matches += 1;
 								}
-							//} else {
-								//discards += 1;
 							}
 						}
 
@@ -4074,7 +4070,8 @@
 				}
 
 				//t0 = performance.now() - t0;
-				//console.debug(f, cellThresh, "checks", checks, "discards", discards, "matches", matches, (t0 / 1000).toFixed(2));
+				//var active = modDiscards + checks;
+				//console.debug(f, modValue, "active", active, "mod", modDiscards, ((100 * modDiscards) / active).toFixed(1) + "%", "checks", checks, ((100 * checks) / active).toFixed(1) + "%", "matches", matches, (t0 / 1000).toFixed(1));
 			}
 		}
 	};
@@ -4188,13 +4185,10 @@
 	// compute strict volatility and Mod
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {View} */ view, /** @type {boolean} */ isOscillator, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ p = 0,
-			/** @type {number} */ f = 0,
-			/** @type {number} */ bit = 0,
 			/** @type {number} */ bitRowInBytes = 0,
 			/** @type {number} */ bitFrameInBytes = 0,
 			/** @type {boolean} */ computeStrict = false,
 			/** @type {Uint16Array} */ frames = null,
-			/** @type {Uint16Array} */ occupiedFrame = null,
 			/** @type {Uint32Array} */ cellCounts = null,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
@@ -4208,7 +4202,6 @@
 			/** @type {BoundingBox} */ extent = null,
 			/** @type {number} */ frameTypeMSB = 0,
 			/** @type {number} */ bitStart = 0,
-			/** @type {number} */ v = 0,
 			/** @type {number} */ hash0 = 0,
 			/** @type {number} */ width0 = 0,
 			/** @type {number} */ height0 = 0,
@@ -4252,8 +4245,11 @@
 			if (bitFrameInBytes * period <= LifeConstants.maxStrictMemory) {
 				// allocate memory for each generation in the period (allocation is one bit per cell)
 				frames = new Uint16Array(period * bitFrameInBytes);
+
+				// allocate memory for per-cell period
 				cellPeriod = new Int32Array(boxWidth * boxHeight);
-				occupiedFrame = new Uint16Array(bitFrameInBytes);
+
+				// allocate memory for per-cell alive count
 				cellCounts = new Uint32Array(boxWidth * boxHeight);
 	
 				// get the frame data width most significant bit number
@@ -4322,8 +4318,10 @@
 
 			// add to the strict volatility frame if computing strict volatility
 			if (computeStrict) {
-				this.updateCellCounts(extent, colourGrid, cellCounts);
-				this.updateOccupancyStrict(extent, colourGrid, frames, occupiedFrame, p, bitRowInBytes, bitFrameInBytes, bitStart);
+				if (p < period) {
+					this.updateCellCounts(extent, colourGrid, cellCounts);
+				}
+				this.updateOccupancyStrict(extent, colourGrid, frames, p, bitRowInBytes, bitFrameInBytes, bitStart);
 			} else {
 				// use the original method of computing cell occupancy
 				this.updateOccupancy(extent, p);
@@ -4451,35 +4449,20 @@
 
 		// compute strict volatility
 		if (computeStrict) {
-			// calculate the period of each cell
+			// set any cell that was alive to maximum period
 			for (cy = 0; cy < boxHeight; cy += 1) {
 				// get the next row offsets
 				row = cy * boxWidth;
-				f = cy * bitRowInBytes;
-				bit = bitStart;
 				for (cx = 0; cx < boxWidth; cx += 1) {
 					// skip empty blocks of cells
-					v = occupiedFrame[f];
-					if (v) {
-						// check if the cell was alive in any generation
-						if (v & bit) {
-							cellPeriod[row + cx] = period;
-							popTotal += 1;
-						}
-
-						bit >>= 1;
-						if (!bit) {
-							bit = bitStart;
-							f += 1;
-						}
-					} else {
-						cx += frameTypeMSB;
-						f += 1;
+					if (cellCounts[row + cx]) {
+						cellPeriod[row + cx] = period;
+						popTotal += 1;
 					}
 				}
 			}
 
-			// calculate the factors of the period
+			// calculate the factors of the period (subperiods)
 			this.computeCellFactors(cellPeriod, period, frames, cellCounts, boxWidth, boxHeight, bitFrameInBytes, bitRowInBytes, bitStart);
 
 			//t = performance.now() - t;
