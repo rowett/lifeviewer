@@ -13284,6 +13284,9 @@
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
 			/** @const {number} */ deadStart = LifeConstants.deadStart,
 
+			// safe border size
+			/** @type {number} */ safeBorder = this.isHROT ? (this.view.getSafeBorderSize() >> 1) : 0,
+
 			// flags if something in the column was alive
 			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16;
 
@@ -13365,32 +13368,16 @@
 					rowAlive = 0;
 
 					// check each column
-					if (this.multiNumStates === 2 && !this.isRuleTree) {
-						for (w = 0; w < width; w += 1) {
-							input = colourGridRow[w];
-							rowAlive |= input & 64;
+					for (w = 0; w < width; w += 1) {
+						input = colourGridRow[w];
+						rowAlive |= input;
 	
-							if (input) {
-								if (w < newLeftX) {
-									newLeftX = w;
-								}
-								if (w > newRightX) {
-									newRightX = w;
-								}
+						if (input) {
+							if (w < newLeftX) {
+								newLeftX = w;
 							}
-						}
-					} else {
-						for (w = 0; w < width; w += 1) {
-							input = colourGridRow[w];
-							rowAlive |= input;
-	
-							if (input) {
-								if (w < newLeftX) {
-									newLeftX = w;
-								}
-								if (w > newRightX) {
-									newRightX = w;
-								}
+							if (w > newRightX) {
+								newRightX = w;
 							}
 						}
 					}
@@ -13477,17 +13464,17 @@
 			}
 
 			// clip to display
-			if (newTopY > this.height - 1) {
-				newTopY = this.height - 1;
+			if (newTopY > this.height - 1 - safeBorder) {
+				newTopY = this.height - 1 - safeBorder;
 			}
-			if (newBottomY < 0) {
-				newBottomY = 0;
+			if (newBottomY < safeBorder) {
+				newBottomY = safeBorder;
 			}
-			if (newLeftX < 0) {
-				newLeftX = 0;
+			if (newLeftX < safeBorder) {
+				newLeftX = safeBorder;
 			}
-			if (newRightX > this.width - 1) {
-				newRightX = this.width - 1;
+			if (newRightX > this.width - 1 - safeBorder) {
+				newRightX = this.width - 1 - safeBorder;
 			}
 
 			// save new grid box
@@ -20441,12 +20428,15 @@
 			/** @type {Array<Uint16Array>} */ nextGrid = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
 			/** @type {Array<Uint16Array>} */ nextTileGrid = null,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
 			/** @type {Uint16Array} */ tileRow = null,
 			/** @type {Uint16Array} */ nextTileRow = null,
 			/** @type {Uint16Array} */ belowNextTileRow = null,
 			/** @type {Uint16Array} */ aboveNextTileRow = null,
+			/** @type {Uint16Array} */ diedRow = null,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @type {number} */ diedTiles = 0,
 			/** @type {number} */ belowNextTiles = 0,
 			/** @type {number} */ aboveNextTiles = 0,
 			/** @type {number} */ bottomY = 0,
@@ -20577,6 +20567,7 @@
 			// get the tile row
 			tileRow = tileGrid[th];
 			nextTileRow = nextTileGrid[th];
+			diedRow = diedGrid[th];
 
 			// get the tile row below
 			if (th > 0) {
@@ -20596,6 +20587,7 @@
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileRow[tw];
+				diedTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -21153,6 +21145,11 @@
 									}
 								}
 							}
+
+							// update tiles that died
+							if (colOccupied === 0 && origValue) {
+								diedTiles |= 1 << b;
+							}
 						}
 
 						// next tile columns
@@ -21171,6 +21168,10 @@
 					// skip tile set
 					leftX += xSize << 4;
 				}
+
+
+				// update tiles where all cells died
+				diedRow[tw] = diedTiles;
 			}
 
 			// next tile rows
@@ -21233,6 +21234,9 @@
 
 		// clear the blank tile row since it may have been written to at top and bottom
 		blankTileRow.fill(0);
+
+		// clear tiles in source that died
+		this.clearTilesThatDied16(grid);
 
 		// save statistics
 		this.population = population;
@@ -24632,6 +24636,62 @@
 					}
 				} else {
 					leftX += xSize << 4;
+				}
+			}
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
+	// clear tiles that died on the bit grid
+	Life.prototype.clearTilesThatDied16 = function(/** @type {Array<Uint16Array>} */ grid16) {
+		var	/** @type {number} */ th = 0,
+			/** @type {number} */ tw = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @const {number} */ xSize = this.tileY,  // use height since we need bytes
+			/** @const {number} */ ySize = this.tileY,
+			/** @const {number} */ tileCols16 = this.tileCols >> 4,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ topY = 0,
+			/** @type {number} */ leftX = 0,
+			/** @type {Uint16Array} */ gridRow16 = null,
+			/** @type {Uint16Array} */ diedRow,
+			/** @type {Array<Uint16Array>} */ diedGrid = this.diedGrid,
+			/** @type {number} */ diedTiles = 0,
+			/** @type {number} */ bit = 0;
+
+		// clear tiles that died in source
+		bottomY = 0;
+		topY = bottomY + ySize;
+
+		// process each tile row
+		for (th = 0; th < diedGrid.length; th += 1) {
+			leftX = 0;
+			diedRow = diedGrid[th];
+
+			// process each tile group in the row
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				diedTiles = diedRow[tw];
+
+				// process each tile in the group
+				if (diedTiles) {
+					for (bit = 15; bit >= 0; bit -= 1) {
+						if (diedTiles & (1 << bit)) {
+							// clear source cells for double buffering
+							x = leftX;
+							for (y = bottomY; y < topY; y += 1) {
+								gridRow16 = grid16[y];
+
+								// clear 16 cells
+								gridRow16[x] = 0;
+							}
+
+						}
+						leftX += 1;
+					}
+				} else {
+					leftX += xSize;
 				}
 			}
 			bottomY += ySize;
@@ -44190,16 +44250,25 @@
 				}
 				this.drawTriangleSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff);
 			} else {
-				ctx.beginPath();
-				this.rotateCoords(x1, y1, coords);
-				ctx.moveTo(coords[0], coords[1]);
-				this.rotateCoords(x2 + angleOff, y1, coords);
-				ctx.lineTo(coords[0], coords[1]);
-				this.rotateCoords(x2 + angleOff, y2 + angleOff, coords);
-				ctx.lineTo(coords[0], coords[1]);
-				this.rotateCoords(x1, y2 + angleOff, coords);
-				ctx.lineTo(coords[0], coords[1]);
-				ctx.fill();
+				if (this.angle !== 0) {
+					ctx.beginPath();
+					this.rotateCoords(x1, y1, coords);
+					ctx.moveTo(coords[0], coords[1]);
+					this.rotateCoords(x2 + angleOff, y1, coords);
+					ctx.lineTo(coords[0], coords[1]);
+					this.rotateCoords(x2 + angleOff, y2 + angleOff, coords);
+					ctx.lineTo(coords[0], coords[1]);
+					this.rotateCoords(x1, y2 + angleOff, coords);
+					ctx.lineTo(coords[0], coords[1]);
+					ctx.fill();
+				} else {
+					ctx.beginPath();
+					ctx.moveTo(this.ceilAbove(x1), this.ceilAbove(y1));
+					ctx.lineTo(this.ceilAbove(x2), this.ceilAbove(y1));
+					ctx.lineTo(this.ceilAbove(x2), this.ceilAbove(y2));
+					ctx.lineTo(this.ceilAbove(x1), this.ceilAbove(y2));
+					ctx.fill();
+				}
 			}
 		} else {
 			if (!this.forceRectangles && this.zoom >= 4) {

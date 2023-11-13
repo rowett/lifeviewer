@@ -1,3 +1,12 @@
+Build 1088
+- fixed an issue with history cells for HROT rules
+
+Build 1087
+- fixed Margolus iterator issue
+
+Build 1086
+- improved alignment of Paste overlay
+
 Build 1085
 - enable Kill Gliders button for range 1 HROT rules
 - treat [R]Investigator kill cells as dead for Identify
