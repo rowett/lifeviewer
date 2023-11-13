@@ -1,3 +1,9 @@
+Build 1085
+- enable Kill Gliders button for range 1 HROT rules
+- treat [R]Investigator kill cells as dead for Identify
+- fixed HROT pattern erasing cells leaving history
+- fixed PASTE creating history cells when no alive cells died
+
 Build 1084
 - further performance improvement to Identify when calculating Strict Volatility
 

@@ -3613,7 +3613,12 @@
 				if (this.isExtended) {
 					for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
 						if (colourRow[cx]) {
-							cellCounts[ci] += 1;
+							// ignore kill cells
+							if (colourRow[cx] === 3) {
+								this.population -= 1;
+							} else {
+								cellCounts[ci] += 1;
+							}
 						}
 						ci += 1;
 					}
@@ -4004,10 +4009,14 @@
 			/** @type {number} */ row = 0,
 			/** @type {number} */ off1 = 0,
 			/** @type {number} */ off2 = 0,
-			///** @type {number} */ checks = 0,
 			/** @type {number} */ modValue = 0,
+			/** @type {number} */ v1 = 0,
+			/** @type {number} */ v2 = 0,
+
+			///** @type {number} */ checks = 0,
 			///** @type {number} */ modDiscards = 0,
 			///** @type {number} */ matches = 0,
+
 			/** @type {number} */ target = 0;
 
 		// check each factor starting at 1
@@ -4017,6 +4026,7 @@
 				tMult = target * bitFrameInBytes;
 				mult = f * bitFrameInBytes;
 				modValue = period / f;
+
 				//checks = 0;
 				//modDiscards = 0;
 				//matches = 0;
@@ -4035,18 +4045,24 @@
 						// check if the cell was ever occupied during the period
 						if (cellPeriod[row + cx] === period) {
 
-							//  cell count must be a multiple of the low threshold
+							//  cell count must be a multiple of period divided by the subperiod
 							if (cellCounts[row + cx] % modValue) {
+
 								//modDiscards += 1;
+
 							} else {
+
 								//checks += 1;
 
-								// check if the cell's evolution is identical each subperiod run
+								// check if the cell's evolution is identical in each subperiod run
 								off1 = (cx >> 4) + j;
 								off2 = off1 + tMult;
 	
 								while (off1 < off2) {
-									if ((frames[off1] & bit) !== (frames[off1 + mult] & bit)) {
+									v1 = frames[off1];
+									v2 = frames[off1 + mult];
+									if ((v1 ^ v2) & bit) {
+										// if a mismatch is found then exit the loop and counter will be one past the end
 										off1 = off2;
 									}
 									off1 += bitFrameInBytes;
@@ -4054,18 +4070,17 @@
 	
 								// if evolution is identical then update the subperiod for the cell
 								if (off1 === off2) {
-									// save the subperiod, this also prevents it from being checked at higher subperiods
+									// save the subperiod, this also prevents it from being checked again at higher subperiods
 									cellPeriod[row + cx] = f;
+
 									//matches += 1;
+
 								}
 							}
 						}
 
 						// rotate the bit mask
-						bit >>= 1;
-						if (!bit) {
-							bit = bitStart;
-						}
+						bit = ((bit >> 1) | (bit << 15)) & 65535;
 					}
 				}
 
@@ -4074,6 +4089,9 @@
 				//console.debug(f, modValue, "active", active, "mod", modDiscards, ((100 * modDiscards) / active).toFixed(1) + "%", "checks", checks, ((100 * checks) / active).toFixed(1) + "%", "matches", matches, (t0 / 1000).toFixed(1));
 			}
 		}
+
+		//t1 = performance.now() - t1;
+		//console.log(t1.toFixed(2) + "ms");
 	};
 
 	// add History state 6 cells to cell map
@@ -4425,6 +4443,7 @@
 
 			// update heat
 			if (p < period) {
+				console.debug(this.population);
 				nextHeat = this.births + this.deaths;
 				if (nextHeat < this.minHeat) {
 					this.minHeat = nextHeat;
@@ -7711,7 +7730,11 @@
 						state = this.aliveStart;
 					}
 					if (state === 0 && current >= aliveState) {
-						state = this.historyStates;
+						if (deadZero) {
+							state = 0;
+						} else {
+							state = this.historyStates;
+						}
 					}
 					colourGrid[y][x] = state;
 				} else {

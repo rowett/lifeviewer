@@ -307,7 +307,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1084,
+		/** @const {number} */ versionBuild : 1085,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4338,7 +4338,9 @@
 
 									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 									if ((result !== dest) || mode === ViewConstants.pasteModeCopy) {
-										this.setStateWithCheck(xOff + x, yOff + y, result, false);
+										if (!(source === 0) && (dest === 0)) {
+											this.setStateWithCheck(xOff + x, yOff + y, result, false);
+										}
 									}
 								}
 							}
@@ -7151,7 +7153,7 @@
 		}
 
 		// lock kill button if not 2-state moore
-		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || this.engine.isHROT || this.engine.isTriangular || this.engine.isVonNeumann || this.engine.isHex || this.engine.boundedGridType !== -1 || this.engine.isMargolus || this.engine.multiNumStates > 2 || this.engine.isRuleTree;
+		this.killButton.locked = (this.engine.wolframRule !== -1) || this.engine.patternDisplayMode || (this.engine.isHROT && this.engine.HROT.xrange > 1) || this.engine.isTriangular || this.engine.isVonNeumann || this.engine.isHex || this.engine.boundedGridType !== -1 || this.engine.isMargolus || this.engine.multiNumStates > 2 || this.engine.isRuleTree;
 		if (this.killButton.locked) {
 			this.killButton.current = [false];
 		}
