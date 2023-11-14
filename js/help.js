@@ -2230,13 +2230,17 @@
 		}
 		y = this.renderHelpLine(view, "Enabled", itemName, ctx, x, y, height, helpLine);
 
-		// display grid line colour
-		this.renderColourBox(view, view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Line Color", this.rgbString(view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255), ctx, x, y, height, helpLine);
+		// display grid line colour if major interval is not 1
+		if (view.engine.gridLineMajor !== 1) {
+			this.renderColourBox(view, view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Line Color", this.rgbString(view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255), ctx, x, y, height, helpLine);
+		}
 
-		// display grid line major colour
-		this.renderColourBox(view, view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Major Color", this.rgbString(view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255), ctx, x, y, height, helpLine);
+		// display grid line major colour if not disabled
+		if (view.engine.gridLineMajor > 0) {
+			this.renderColourBox(view, view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "Major Color", this.rgbString(view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255), ctx, x, y, height, helpLine);
+		}
 
 		// grid line major interval
 		if (view.engine.gridLineMajor > 0 && view.engine.gridLineMajorEnabled) {

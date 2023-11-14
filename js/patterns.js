@@ -8221,15 +8221,15 @@
 		}
 		
 		// check whether Spherical bounded grid has been specified for a Hexagonal rule
-		if (pattern.isHex && pattern.gridType === 4 && this.failureReason === "") {
-			this.failureReason = "Hexagonal rules do not support Sphere";
+		if (pattern.isHex && pattern.gridType > 1 && this.failureReason === "") {
+			this.failureReason = "Hexagonal rules only support Plane or Torus";
 			this.executable = false;
 			pattern.gridType = -1;
 		}
 
 		// check whether Spherical bounded grid has been specified for a Triangular rule
-		if (pattern.isTriangular && pattern.gridType === 4 && this.failureReason === "") {
-			this.failureReason = "Triangular rules do not support Sphere";
+		if (pattern.isTriangular && pattern.gridType > 1 && this.failureReason === "") {
+			this.failureReason = "Triangular rules only support Plane or Torus";
 			this.executable = false;
 			pattern.gridType = -1;
 		}
@@ -8251,6 +8251,21 @@
 				pattern.gridType = -1;
 			}
 		}
+
+		// Margolus rules only support plane or torus
+		if ((pattern.isMargolus && pattern.gridType > 1) && this.failureReason === "") {
+			this.failureReason = "Margolus rules only support Plane or Torus";
+			this.executable = false;
+			pattern.gridType = -1;
+		}
+
+		// PCA rules only support plane or torus
+		if ((pattern.isPCA && pattern.gridType > 1) && this.failureReason === "") {
+			this.failureReason = "PCA rules only support Plane or Torus";
+			this.executable = false;
+			pattern.gridType = -1;
+		}
+
 		// check whether LTL bounded grid type is valid
 		if (pattern.isLTL && this.failureReason === "") {
 			if (pattern.gridType > 1) {

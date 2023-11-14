@@ -1,3 +1,10 @@
+Buld 1090
+- fixed Cell Period Table not always allowing scrolling when required
+
+Build 1089
+- improved Help->Info->Gridlines
+- PCA, Margolus, Triangular and Hexagonal rules now only support Plane or Torus Bounded Grids
+
 Build 1088
 - fixed an issue with history cells for HROT rules
 

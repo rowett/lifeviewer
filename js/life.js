@@ -2538,7 +2538,7 @@
 	};
 
 	// create cell period map
-	Life.prototype.createCellPeriodMap = function(/** @type {MenuItem} */ label) {
+	Life.prototype.createCellPeriodMap = function(/** @type {MenuItem} */ label, /** @type {View} */ view) {
 		var	/** @type {number} */ numCols = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -2770,6 +2770,7 @@
 		this.cellPeriodImage.src = this.cellPeriodCanvas.toDataURL("image/png");
 
 		// create the table row values for page up and page down
+		view.setResultsPosition();
 		this.createTableRowNumbers(label);
 	};
 
@@ -2794,12 +2795,12 @@
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
 			/** @type {number} */ rowHeight = 24 * displayScale,
-			/** @type {number} */ startY = label.y + label.height,
+			/** @type {number} */ startY = label.relY + label.height,
 			/** @type {number} */ numRows = 0,
 			/** @type {number} */ value = 0,
 			/** @type {number} */ y = startY;
 
-		// count number of table row
+		// count number of table rows
 		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
 			value = this.popSubPeriod[i];
 			if (value > 0) {
@@ -2807,10 +2808,10 @@
 			}
 		}
 
-		// see if the table would be off the bottom of the display
-		y = startY + (rowHeight >> 1) + (numRows * rowHeight);
+		// see if the table would be off the bottom of the display (add 1 for the column headings)
+		y = startY + (rowHeight >> 1) + ((numRows + 1) * rowHeight);
 
-		if (y > this.displayHeight) {
+		if (y > this.displayHeight - 80 * displayScale) {
 			this.tableMaxRow = numRows - 1;
 		} else {
 			this.tableMaxRow = 0;
@@ -2885,13 +2886,22 @@
 		// draw background
 		ctx.fillStyle = bgCol;
 		ctx.globalAlpha = alpha;
-		ctx.fillRect(leftX, y, width, (numCols + 3) * rowHeight);
+
+		// calculate the height of the table including the column header row
+		y = rowHeight;
+		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
+			value = this.popSubPeriod[i];
+			if (value > 0 && y + startY < this.displayHeight - 80 * displayScale) {
+				y += rowHeight;
+			}
+		}
+		ctx.fillRect(leftX, startY, width, y);
 
 		// draw shadow and then text
 		ctx.font = ((20 * displayScale) | 0) + "px Arial";
 		ctx.globalAlpha = 1;
 		ctx.fillStyle = bgCol;
-		y += rowHeight >> 1;
+		y = startY + (rowHeight >> 1);
 
 		for (j = 0; j < 2; j += 1) {
 			// draw the table header
@@ -4443,7 +4453,6 @@
 
 			// update heat
 			if (p < period) {
-				console.debug(this.population);
 				nextHeat = this.births + this.deaths;
 				if (nextHeat < this.minHeat) {
 					this.minHeat = nextHeat;
@@ -4526,7 +4535,7 @@
 			this.cellPeriodHeight = boxHeight;
 
 			// create the cell period map
-			this.createCellPeriodMap(view.identifyBannerLabel);
+			this.createCellPeriodMap(view.identifyBannerLabel, view);
 		} else {
 			this.popSubPeriod = null;
 		}

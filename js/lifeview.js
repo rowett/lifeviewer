@@ -307,7 +307,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1088,
+		/** @const {number} */ versionBuild : 1090,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -17949,7 +17949,7 @@
 
 		// resize the cell period map if available
 		if (!(this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "") && (this.engine.popSubPeriod !== null)) {
-			this.engine.createCellPeriodMap(this.identifyBannerLabel);
+			this.engine.createCellPeriodMap(this.identifyBannerLabel, this);
 		}
 	};
 
