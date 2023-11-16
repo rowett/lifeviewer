@@ -307,7 +307,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1090,
+		/** @const {number} */ versionBuild : 1091,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4338,7 +4338,7 @@
 
 									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 									if ((result !== dest) || mode === ViewConstants.pasteModeCopy) {
-										if (!(source === 0) && (dest === 0)) {
+										if (!((source === 0) && (dest === 0))) {
 											this.setStateWithCheck(xOff + x, yOff + y, result, false);
 										}
 									}

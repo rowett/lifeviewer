@@ -1,4 +1,7 @@
-Buld 1090
+Build 1091
+- fixed a Paste issue
+
+Build 1090
 - fixed Cell Period Table not always allowing scrolling when required
 
 Build 1089
