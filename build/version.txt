@@ -1,3 +1,7 @@
+Build 1092
+- alert if memory is exhausted
+- improve LifeViewer home page button handling
+
 Build 1091
 - fixed a Paste issue
 

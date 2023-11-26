@@ -7426,6 +7426,7 @@
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
 			/** @type {number} */ cellAsBit = 0,
 			/** @type {number} */ cellAsTileBit = 0,
+			/** @type {number} */ initialState = state,
 
 			// multi-state alive cell
 			/** @type {number} */ aliveState = 0,
@@ -7769,7 +7770,7 @@
 		}
 
 		// if the state is not dead (or history) then update bounding box
-		if (state > 0) {
+		if (initialState > 0) {
 			// check for initial cell
 			if (this.population === 1) {
 				// use shrink since there might be Generations dying cells

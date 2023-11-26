@@ -237,57 +237,62 @@
 		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
 
 		// allocate memory
-		switch (type) {
-		// unsigned 8bit integer
-		case Type.Uint8:
-			result = new Uint8Array(elements);
-			break;
+		try {
+			switch (type) {
+			// unsigned 8bit integer
+			case Type.Uint8:
+				result = new Uint8Array(elements);
+				break;
 
-		// unsigned 8bit clamped integer
-		case Type.Uint8Clamped:
-			result = new Uint8Array(elements);
-			break;
+			// unsigned 8bit clamped integer
+			case Type.Uint8Clamped:
+				result = new Uint8Array(elements);
+				break;
 
-		// unsigned 16bit integer
-		case Type.Uint16:
-			result = new Uint16Array(elements);
-			break;
+			// unsigned 16bit integer
+			case Type.Uint16:
+				result = new Uint16Array(elements);
+				break;
 
-		// unsigned 32bit integer
-		case Type.Uint32:
-			result = new Uint32Array(elements);
-			break;
+			// unsigned 32bit integer
+			case Type.Uint32:
+				result = new Uint32Array(elements);
+				break;
 
-		// signed 8bit integer
-		case Type.Int8:
-			result = new Int8Array(elements);
-			break;
+			// signed 8bit integer
+			case Type.Int8:
+				result = new Int8Array(elements);
+				break;
 
-		// signed 16bit integer
-		case Type.Int16:
-			result = new Int16Array(elements);
-			break;
+			// signed 16bit integer
+			case Type.Int16:
+				result = new Int16Array(elements);
+				break;
 
-		// signed 32bit integer
-		case Type.Int32:
-			result = new Int32Array(elements);
-			break;
+			// signed 32bit integer
+			case Type.Int32:
+				result = new Int32Array(elements);
+				break;
 
-		// signed 32bit float
-		case Type.Float32:
-			result = new Float32Array(elements);
-			break;
+			// signed 32bit float
+			case Type.Float32:
+				result = new Float32Array(elements);
+				break;
 
-		// signed 64bit float
-		case Type.Float64:
-			result = new Float64Array(elements);
-			break;
+			// signed 64bit float
+			case Type.Float64:
+				result = new Float64Array(elements);
+				break;
 
-		default:
-			// illegal type specified
-			result = null;
-			alert("Illegal type specified to allocator.typedMemory for " + name + ": " + type);
+			default:
+				// illegal type specified
+				result = null;
+				alert("Illegal type specified to allocator.typedMemory for " + name + ": " + type);
+			}
+		} catch(e) {
+			alert("Failed to allocate " + elements + " element " + Type.typeName(type) + " array for " + name + "\n\n" + e);
 		}
+
 
 		// return memory
 		return result;
