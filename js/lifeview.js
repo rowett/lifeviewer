@@ -50,15 +50,6 @@
 		// repository rule postfix
 		/** @type {string} */ rulePostfix : "",
 
-		// View button on home page
-		homeViewButton : null,
-
-		// View button on viewer.html
-		viewerViewButton : null,
-
-		// PopUp button on viewer.html
-		viewerPopUpButton : null,
-
 		// patterns (in source RLE)
 		patterns : []
 	},
@@ -316,7 +307,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1092,
+		/** @const {number} */ versionBuild : 1093,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -14003,10 +13994,17 @@
 	
 				// add border for HROT rules
 				if (me.engine.isHROT) {
-					bLeftX += me.engine.HROT.xrange * 2 + 1;
-					bRightX -= me.engine.HROT.xrange * 2 + 1;
-					bBottomY += me.engine.HROT.yrange * 2 + 1;
-					bTopY -= me.engine.HROT.yrange * 2 + 1;
+					if (me.engine.boundedGridType === -1) {
+						bLeftX += me.engine.HROT.xrange * 2 + 1;
+						bRightX -= me.engine.HROT.xrange * 2 + 1;
+						bBottomY += me.engine.HROT.yrange * 2 + 1;
+						bTopY -= me.engine.HROT.yrange * 2 + 1;
+					} else {
+						bLeftX += 1;
+						bRightX -= 1;
+						bBottomY += 1;
+						bTopY -= 1;
+					}
 				}
 
 				// check if the pattern can move
@@ -20291,21 +20289,6 @@
 		viewer[1].startViewer(cleanItem, false);
 	}
 
-	// update the inline viewer from home page view button
-	function updateMeFromViewButton() {
-		updateMe(DocConfig.homeViewButton);
-	}
-
-	// update the inline viewer from viewer.html view button
-	function updateMeFromViewerViewButton() {
-		updateMe(DocConfig.viewerViewButton);
-	}
-
-	// update the inline viewer from viewer.html popup button
-	function updateMeFromViewerPopUpButton() {
-		updateViewer(DocConfig.viewerPopUpButton);
-	}
-
 	// complete update process after potential async load
 	function completeUpdate(/**@type {View} */ view) {
 		var	/** @type {number} */ itemHeight = 28,
@@ -20725,6 +20708,7 @@
 			/** @type {string} */ cleanItem = "",
 			/** @type {HTMLDivElement} */ rleItem = null,
 			/** @type {CSSStyleDeclaration} */ style = null,
+			button = null,
 
 			// temporary allocator and pattern manager
 			/** @type {Allocator} */ allocator = new Allocator(),
@@ -20823,30 +20807,30 @@
 		}
 
 		// check for LifeViewer home page button
-		DocConfig.homeViewButton = document.getElementById("viewbutton");
-		if (DocConfig.homeViewButton) {
-			registerEvent(DocConfig.homeViewButton, "click",  updateMeFromViewButton, false);
+		button = document.getElementById("viewbutton");
+		if (button) {
+			registerEvent(button, "click",  function() {updateMe(button)}, false);
 
 			// style the button and parent TD
-			style = DocConfig.homeViewButton.style;
+			style = button.style;
 			style.fontSize = "24px";
 			style.width = "100px";
 			style.height = "66px";
 
-			style = DocConfig.homeViewButton.parentElement.style;
+			style = button.parentElement.style;
 			style.verticalAlign = "middle";
 			style.padding = "8px";
 		}
 
 		// check for LifeViewer viewer.html buttons
-		DocConfig.viewerViewButton = document.getElementById("viewerview");
-		if (DocConfig.viewerViewButton) {
-			registerEvent(DocConfig.viewerViewButton, "click", updateMeFromViewerViewButton, false);
+		button = document.getElementById("viewerview");
+		if (button) {
+			registerEvent(button, "click", function() {updateMe(button);}, false);
 		}
 
-		DocConfig.viewerPopUpButton = document.getElementById("viewerpopup");
-		if (DocConfig.viewerPopUpButton) {
-			registerEvent(DocConfig.viewerPopUpButton, "click", updateMeFromViewerPopUpButton, false);
+		button = document.getElementById("viewerpopup");
+		if (button) {
+			registerEvent(button, "click", function() {updateViewer(button);}, false);
 		}
 	}
 

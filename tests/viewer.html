@@ -11,22 +11,13 @@
 		<h1>LifeViewer Plugin</h1>
 		<div class="viewer">
 			<textarea rows="5" cols="79">
-<?php
-				if (isset($_GET["rle"])) {
-					$rle=str_replace("<", "{", $_GET["rle"]);
-					$rle=str_replace(">", "}", $dir);
-					$rle=str_replace(";", ":", $dir);
-					echo $dir
-				} else {
-					echo "# Type or paste RLE data into this box and click on the View button."
-					echo "x = 7, y = 3, rule = B3/S23"
-					echo "o3b3o$3o2bo$bo!""
-				}
-?>
+# Type or paste RLE data into this box and click on the View button.
+x = 7, y = 3, rule = B3/S23
+o3b3o$3o2bo$bo!
 </textarea>
 			<br>
-			<button type="button" onclick="updateMe(this); return false;">View</button>
-			<button type="button" onclick="updateViewer(this); return false;">PopUp</button><br>
+			<button type="button" id="viewerview">View</button>
+			<button type="button" id="viewerpopup">PopUp</button><br>
 			<br>
 			<canvas width="560" height="560"></canvas> 
 		</div>
