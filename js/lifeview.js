@@ -20709,6 +20709,8 @@
 			/** @type {HTMLDivElement} */ rleItem = null,
 			/** @type {CSSStyleDeclaration} */ style = null,
 			button = null,
+			button2 = null,
+			button3 = null,
 
 			// temporary allocator and pattern manager
 			/** @type {Allocator} */ allocator = new Allocator(),
@@ -20809,7 +20811,7 @@
 		// check for LifeViewer home page button
 		button = document.getElementById("viewbutton");
 		if (button) {
-			registerEvent(button, "click",  function() {updateMe(button)}, false);
+			registerEvent(button, "click",  function() {updateMe(button);}, false);
 
 			// style the button and parent TD
 			style = button.style;
@@ -20817,20 +20819,22 @@
 			style.width = "100px";
 			style.height = "66px";
 
-			style = button.parentElement.style;
-			style.verticalAlign = "middle";
-			style.padding = "8px";
+			if (button.parentElement) {
+				style = button.parentElement.style;
+				style.verticalAlign = "middle";
+				style.padding = "8px";
+			}
 		}
 
 		// check for LifeViewer viewer.html buttons
-		button = document.getElementById("viewerview");
-		if (button) {
-			registerEvent(button, "click", function() {updateMe(button);}, false);
+		button2 = document.getElementById("viewerview");
+		if (button2) {
+			registerEvent(button2, "click", function() {updateMe(button2);}, false);
 		}
 
-		button = document.getElementById("viewerpopup");
-		if (button) {
-			registerEvent(button, "click", function() {updateViewer(button);}, false);
+		button3 = document.getElementById("viewerpopup");
+		if (button3) {
+			registerEvent(button3, "click", function() {updateViewer(button3);}, false);
 		}
 	}
 
