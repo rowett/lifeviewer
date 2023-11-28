@@ -1,3 +1,6 @@
+Build 1094
+- support Mac Command key for keyboard shortcuts
+
 Build 1093
 - fixed nudging selection with HROT/LtL rules in Bounded Grids
 

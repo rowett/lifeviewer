@@ -175,10 +175,16 @@
 		var	/** @type {boolean} */ processed = true,
 			/** @type {boolean} */ shiftKey = event.shiftKey,
 			/** @type {boolean} */ ctrlKey = event.ctrlKey,
+			/** @type {boolean} */ metaKey = event.metaKey,
 			/** @type {boolean} */ altKey = event.altKey,
 
 			// value for changes
 			/** @type {number} */ value = 0;
+
+		// combine meta and control key so it works on Mac
+		if (metaKey) {
+			ctrlKey = true;
+		}
 
 		// check if gui enabled
 		if (me.noGUI) {
