@@ -43633,7 +43633,7 @@
 		}
 
 		// apply scale factor
-		result = Math.round(result * 1000 / scaleFactor) / 1000;
+		result = Math.round(result * 20000 / scaleFactor) / 20000;
 
 		// ensure in range
 		if (result < minZoom) {
@@ -43888,7 +43888,7 @@
 		}
 
 		// apply scale factor
-		zoom = Math.round(zoom * 1000 / scaleFactor) / 1000;
+		zoom = Math.round(zoom * 20000 / scaleFactor) / 20000;
 
 		// add offset
 		zoom /= this.originZ;

@@ -56,6 +56,14 @@
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// control or command key text
+		/** @const {string} */ ctrlText : "Ctrl",
+		/** @const {string} */ cmdText : "Cmd",
+
+		// alt or option key text
+		/** @const {string} */ altText : "Alt",
+		/** @const {string} */ optionText : "Option",
+
 		// alt keys that LifeViewer uses (any accesskey attributes that match these will be disabled)
 		/** @const {string} */ altKeys : "0123456789rtyopasghjklxcbn",
 
@@ -231,7 +239,7 @@
 		/** @const {number} */ defaultGridPower : 13,  // 2^13 = 8192
 
 		// icons
-		icons : null,
+		/** @type {CanvasRenderingContext2D} */ icons : null,
 
 		// delete radius range
 		/** @const {number} */ minDeleteRadius : 1,
@@ -307,7 +315,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1094,
+		/** @const {number} */ versionBuild : 1096,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -636,6 +644,47 @@
 		return result;
 	};
 
+	// BitVector
+	/**
+	 * @constructor
+	 */
+	function BitVector(/** @type {Uint8Array} */ data) {
+		/** @type {Uint8Array} */ this.buffer = data;
+		/** @type {number} */ this.bit = 0;
+		/** @type {number} */ this.maxBit = this.buffer.length * 8;
+	};
+
+	// get the next bit from the BitVector
+	/** @returns {number} */
+	BitVector.prototype.getNextBit = function() {
+		var	/** @type {number} */ result = 0;
+
+		// get the next bit from the buffer
+		result = (this.buffer[this.bit >> 3] >> (7 - (this.bit & 7))) & 1;
+		this.bit += 1;
+
+		// prevent end of buffer overrun
+		if (this.bit === this.maxBit) {
+			console.log("end of buffer");
+			this.bit -= 1;
+		}
+
+		return result;
+	};
+
+	// get a value from the BitVector
+	/** @returns {number} */
+	BitVector.prototype.getValue = function(/** @type {number} */ bits) {
+		var	/** @type {number} */ result = 0;
+
+		while (bits > 0) {
+			bits -= 1;
+			result |= this.getNextBit() << bits;
+		}
+
+		return result;
+	};
+
 	// PatternInfo object
 	/**
 	 * @constructor
@@ -654,6 +703,12 @@
 	 */
 	function View(element) {
 		var	/** @type {number} */ i = 0;
+
+		// control/command key text
+		/** @const {string} */ this.controlKeyText = Supports.cmdKey ? ViewConstants.cmdText : ViewConstants.ctrlText;
+
+		// alt/option key text
+		/** @const {string} */ this.altKeyText = Supports.cmdKey ? ViewConstants.optionText : ViewConstants.altText;
 
 		// whether state number is displayed in cell info
 		/** @type {boolean} */ this.stateNumberDisplayed = false;
@@ -2280,7 +2335,7 @@
 			} else {
 				tip += " (empty)";
 			}
-			tips[i] = tip + " [Alt " + i + "]";
+			tips[i] = tip + " [" + this.altKeyText + " " + i + "]";
 		}
 		this.clipboardList.toolTip = tips;
 	};
@@ -2797,7 +2852,7 @@
 			if (tooltip === "undo ") {
 				tooltip = "undo";
 			}
-			this.undoButton.toolTip = tooltip + " [Ctrl Z]";
+			this.undoButton.toolTip = tooltip + " [" + this.controlKeyText + " Z]";
 		}
 
 		// update redo tooltip
@@ -2826,7 +2881,7 @@
 			if (tooltip === "redo ") {
 				tooltip = "redo";
 			}
-			this.redoButton.toolTip = tooltip + " [Ctrl Y]";
+			this.redoButton.toolTip = tooltip + " [" + this.controlKeyText + " Y]";
 		}
 	};
 
@@ -6957,7 +7012,7 @@
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
-		this.undoButton.locked = (this.editNum <= 1 || this.undoButton.toolTip === "undo [Ctrl Z]");
+		this.undoButton.locked = (this.editNum <= 1 || this.undoButton.toolTip === "undo [" + this.controlKeyText + " Z]");
 
 		// top menu buttons
 		this.autoFitToggle.deleted = hide;
@@ -7487,7 +7542,7 @@
 		// stop
 		this.stopIndicator.current = [!this.stopDisabled && this.stopGeneration !== -1];
 		this.stopIndicator.locked = (this.stopGeneration === -1);
-		this.stopIndicator.toolTip = ["stop at " + this.stopGeneration + " [Alt P]"];
+		this.stopIndicator.toolTip = ["stop at " + this.stopGeneration + " [" + this.altKeyText + " P]"];
 	};
 
 	// save elapsed time at generation
@@ -10775,24 +10830,358 @@
 		this.lastDragY = -1;
 	};
 
+	// return number of bits needed to represent given number
+	/** @returns {number} */
+	View.prototype.bitsFor = function(/** @type {number} */ n) {
+		return Math.ceil(Math.log2(n + 1));
+	};
+
+	// decode a base64 string into a Uint8Array
+	/** @returns {Uint8Array} */
+	View.prototype.base64Decode = function(/** @type {string} */ dataString) {
+		var	/** @type {Uint8Array} */ result = new Uint8Array(Math.ceil(dataString.length / 8) * 6),
+			/** @type {number} */ i = 0,
+			/** @type {number} */ c = 0,
+			/** @type {number} */ cBit = 0,
+			/** @type {number} */ byte = 0,
+			/** @type {number} */ bit = 0,
+			/** @type {number} */ cCode = 0;
+
+		// read each character in the string
+		bit = 7;
+		c = 0;
+		i = 0;
+		byte = 0;
+
+		while (c < dataString.length) {
+			// convert character into 6 bits
+			cCode = this.manager.base64Characters.indexOf(dataString.charAt(c));
+
+			// add 6 bits to array
+			for (cBit = 5; cBit >= 0; cBit -= 1) {
+				byte |= ((cCode >> cBit) & 1) << bit;
+				bit -= 1;
+
+				// if current byte is full save it and move to next byte
+				if (bit < 0) {
+					result[i] = byte;
+					byte = 0;
+					bit = 7;
+					i += 1;
+				}
+			}
+
+			// next character
+			c += 1;
+		}
+
+		// check if final byte needed
+		if (bit < 7) {
+			result[i] = byte;
+		}
+
+		// return the array
+		return result;
+	};
+
+	// decode the base64 string into a LifeViewer image
+	/** @returns {CanvasRenderingContext2D} */
+	View.prototype.decode = function(/** @type {string} */ encodedData) {
+		var	/** @type {BitVector} */ data = new BitVector(this.base64Decode(encodedData)),
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
+			/** @type {number} */ left = 0,
+			/** @type {number} */ right = 0,
+			/** @type {number} */ bits = 0,
+			/** @const {number} */ smallBits = 3,
+			/** @type {number} */ longBits0 = 0,
+			/** @type {number} */ longBits1 = 0,
+
+			// read the image width and height
+			/** @type {number} */ imageWidth = data.getValue(12),
+			/** @type {number} */ imageHeight = data.getValue(12),
+
+			// read the top and bottom border size (they are the same)
+			/** @type {number} */ topBorder = data.getValue(4),
+
+			/** @type {number} */ numIcons = imageWidth / imageHeight,
+			/** @type {number} */ iconWidth = imageWidth / numIcons,
+			/** @type {Uint8Array} */ borderLeft = new Uint8Array(numIcons),
+			/** @type {Uint8Array} */ borderRight = new Uint8Array(numIcons),
+			/** @type {Uint8Array} */ iconOrder = new Uint8Array(numIcons),
+			/** @type {number} */ pixelsWidth = imageWidth,
+			/** @type {number} */ pixelsHeight = imageHeight - topBorder * 2,
+			/** @type {number} */ uniqueWhites = 0,
+			/** @type {number} */ uniqueBlacks = 0,
+			/** @type {number} */ maxWhiteDelta = 0,
+			/** @type {number} */ maxBlackDelta = 0,
+			/** @type {Uint32Array} */ uniqueBlackValues = null,
+			/** @type {Uint32Array} */ uniqueWhiteValues = null,
+			/** @type {Uint32Array} */ rows = null,
+			/** @type {Uint32Array} */ column = null,
+			/** @type {number} */ rowOffset = 0,
+			/** @type {number} */ lastOffset = 0,
+			/** @type {number} */ currentRow = 0,
+			/** @type {number} */ currentColumn = 0,
+			/** @type {number} */ pixel = 0,
+			/** @type {number} */ rowType = 0,
+			/** @type {number} */ runCount = 0,
+			/** @type {number} */ index = 0,
+			/** @type {HTMLCanvasElement} */ imageCanvas = null,
+			/** @type {CanvasRenderingContext2D} */ imageContext = null,
+			/** @type {ImageData} */ imageData = null,
+			/** @type {Uint32Array} */ imageData32 = null,
+
+			// pixel colour
+			/** @const {number} */ whitePixel = 0xffffffff;
+
+		// read the icon borders and compute the width of the reduced image
+		for (i = 0; i < numIcons; i += 1) {
+			borderLeft[i] = data.getValue(4);
+			borderRight[i] = data.getValue(4);
+
+			// subtract the border widths for this icon from the original image width
+			pixelsWidth -= borderLeft[i] + borderRight[i];
+		}
+
+		// read the icon order
+		bits = this.bitsFor(numIcons);
+		for (i = 0; i < numIcons; i += 1) {
+			iconOrder[i] = data.getValue(bits);
+		}
+
+		// read the number of entries for the unique black counts
+		bits = this.bitsFor(Math.ceil(-1 + Math.sqrt(1 - 8 * (-pixelsWidth * pixelsHeight)) / 2));
+		uniqueBlacks = data.getValue(bits);
+
+		// read the maximum black delta
+		maxBlackDelta = data.getValue(this.bitsFor(pixelsWidth));
+
+		// allocate the values array
+		uniqueBlackValues = new Uint32Array(uniqueBlacks);
+
+		// read the first value
+		uniqueBlackValues[0] = data.getValue(this.bitsFor(pixelsWidth));
+
+		// read the deltas
+		bits = this.bitsFor(maxBlackDelta);
+		for (i = 1; i < uniqueBlacks; i += 1) {
+			uniqueBlackValues[i] = uniqueBlackValues[i - 1] + data.getValue(bits);
+		}
+
+		// read the number of entries for the unique white counts
+		bits = this.bitsFor(Math.ceil(-1 + Math.sqrt(1 - 8 * (-pixelsWidth * pixelsHeight)) / 2));
+		uniqueWhites = data.getValue(bits);
+
+		// read the maximum white delta
+		maxWhiteDelta = data.getValue(this.bitsFor(pixelsWidth));
+
+		// allocate the values array
+		uniqueWhiteValues = new Uint32Array(uniqueWhites);
+
+		// read the first value
+		uniqueWhiteValues[0] = data.getValue(this.bitsFor(pixelsWidth));
+
+		// read the deltas
+		bits = this.bitsFor(maxWhiteDelta);
+		for (i = 1; i < uniqueWhites; i += 1) {
+			uniqueWhiteValues[i] = uniqueWhiteValues[i - 1] + data.getValue(bits);
+		}
+
+		// read the row order
+		bits = this.bitsFor(pixelsHeight);
+		rows = new Uint32Array(pixelsHeight);
+		for (i = 0; i < pixelsHeight; i += 1) {
+			rows[i] = data.getValue(bits);
+		}
+
+		// create the array that maps borderless image columns to full size image columns
+		column = new Uint32Array(pixelsWidth);
+		j = 0;
+		k = 0;
+		for (i = 0; i < numIcons; i += 1) {
+			left = borderLeft[i];
+			right = borderRight[i];
+			for (j = 0; j < iconWidth - left - right; j += 1) {
+				column[k] = iconOrder[i] * iconWidth + left + j;
+				k += 1;
+			}
+		}
+
+		// create a canvas to store the image
+		imageCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+		imageCanvas.width = imageWidth;
+		imageCanvas.height = imageHeight;
+		imageContext = /** @type {!CanvasRenderingContext2D} */ (imageCanvas.getContext("2d"));
+
+		// clear the canvas
+		imageContext.clearRect(0, 0, imageWidth, imageHeight);
+
+		// get the image data
+		imageData = imageContext.getImageData(0, 0, imageWidth, imageHeight);
+		imageData32 = new Uint32Array(imageData.data.buffer);
+
+		// read each row of data
+		i = 0;
+		rowOffset = -1;
+		lastOffset = 0;
+		currentRow = 0;
+		longBits0 = this.bitsFor(uniqueBlackValues.length);
+		longBits1 = this.bitsFor(uniqueWhiteValues.length);
+
+		//var n = 0;
+
+		while (currentRow < pixelsHeight) {
+			if (rowOffset === -1) {
+				rowType = data.getValue(1);
+				pixel = data.getValue(1);
+
+				//console.log("row", rows[currentRow], "type", rowType, "first pixel", pixel);
+
+				// find the start of the row in the image
+				rowOffset = (rows[currentRow] + topBorder) * imageWidth;
+				currentColumn = 0;
+			} else {
+				// read the next run count
+				runCount = data.getValue(smallBits);
+				if (runCount === 0) {
+					// long count
+					if (pixel === 0) {
+						index = data.getValue(longBits0);
+
+						// check for end of row
+						if (index === uniqueBlackValues.length) {
+							runCount = pixelsWidth - currentColumn;
+
+							//console.log("end of row");
+
+						} else {
+							runCount = uniqueBlackValues[index];
+						}
+
+						//console.log(n, "black run", runCount);
+
+					} else {
+						index = data.getValue(longBits1);
+
+						// check for end of row
+						if (index === uniqueWhiteValues.length) {
+							runCount = pixelsWidth - currentColumn;
+
+							//console.log("end of row");
+
+						} else {
+							runCount = uniqueWhiteValues[index];
+						}
+
+						//console.log(n, "white run", runCount);
+
+					}
+
+					// output pixels
+					for (j = 0; j < runCount; j += 1) {
+						if (pixel === 1) {
+							imageData32[rowOffset + column[currentColumn]] = whitePixel;
+						}
+						if (rowType === 1) {
+							imageData32[rowOffset + column[currentColumn]] ^= imageData32[lastOffset + column[currentColumn]];
+						}
+						currentColumn += 1;
+					}
+				} else {
+					// small count
+
+					//console.log(n, "small run", runCount);
+
+					// output pixels
+					for (j = 0; j < runCount; j += 1) {
+						if (pixel === 1) {
+							imageData32[rowOffset + column[currentColumn]] = whitePixel;
+						}
+						if (rowType === 1) {
+							imageData32[rowOffset + column[currentColumn]] ^= imageData32[lastOffset + column[currentColumn]];
+						}
+						currentColumn += 1;
+					}
+				}
+
+				//n += 1; // TBD remove
+
+				// invert pixel
+				pixel = 1 - pixel;
+
+				// check for end of row
+				if (currentColumn === pixelsWidth) {
+					// remember the last row for XOR
+					lastOffset = rowOffset;
+
+					// next row
+					currentRow += 1;
+					rowOffset = -1;
+				}
+			}
+		}
+
+		/*
+		console.log("image size", imageWidth, "x", imageHeight);
+		console.log("top and bottom border", topBorder);
+		console.log("left borders", borderLeft);
+		console.log("right borders", borderRight);
+		console.log("icon order", iconOrder);
+		console.log("pixels size", pixelsWidth, "x", pixelsHeight);
+		console.log("unique blacks", uniqueBlacks);
+		console.log("max black delta", maxBlackDelta);
+		console.log("black values", uniqueBlackValues);
+		console.log("unique whites", uniqueWhites);
+		console.log("max white delta", maxWhiteDelta);
+		console.log("white values", uniqueWhiteValues);
+		console.log("row order", rows);
+		*/
+
+		// write the pixels to the image
+		imageContext.putImageData(imageData, 0, 0);
+
+		return imageContext;
+	};
+
 	// create icons
 	View.prototype.createIcons = function(/** @type {CanvasRenderingContext2D} */ context) {
 		// load icon file
-		var	/** @type {number} */ w = 40,
-			/** @type {number} */ h = 40,
-			icons = ViewConstants.icons;
+		var	/** @const {number} */ w = 40,
+			/** @const {number} */ h = 40,
+			/** @type {CanvasRenderingContext2D} */ icons = ViewConstants.icons,
+			/** @type {Array<number>} */ gridIcons = [8, 11, 16, 17, 44],
+			/** @type {number} */ i = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ offset = 0,
+			/** @type {ImageData} */ data = null,
+			/** @type {Uint32Array} */ data32 = null,
+			/** @const {number} */ greyPixel = 0xff707070;
 
 		// check if the icons exist
 		if (icons === null) {
 			// create the icon image
-			icons = new Image();
-
-			// load the icons from the image file
-			icons.src = "data:image/png;base64,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";
-
-			// save the image
-			ViewConstants.icons = icons;
+			icons = this.decode("dYAoERERERISIiIiIiIiJEM1WIZofMZlWId3d3iHd3iYiIiIiIiIh3uIuJi///M5mZMyC0EbBhyUl4KjK22WobTmDU1FnYowAQgxBSlXHn5JaKT5p7jcDIBAIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIQIIQIQIIIIIIQIIIYQIIIIIwQYQgIIoIYIIQYI4J4IQIJ5oIIIhI6AiI2QUBKAgEEEEEEIEEEEEEEgUIGVFRJNVBY85dg0xlosptwkh14d8YWCESIOMKQECU5555AE8888wk0k0k0k0k4k8k8k8k4888hZfQLIAmEAyC5JCAok8k8kgQQBMIBEAmARAwAAUgEQJIBUASABAmIgKU9AKUtLIIxhAH4Ff5YAU5JJJJJJJJBcMQAAAkAXIIwdggCqsCTGCc4X4gxwAo5oyABSJJJJQeg4kkknuCkITrrrrGEgOwWYQFMAFSWUB5BAlswkiGiwAIKtIA0mpIAaKXqRBEtgOhPCRkkJQEHIHnNGDTjCQADIAG6FZAAgAQAIaiSySkiziApAYgWTEYgNOIJKICSmSYSAiiAZAGqgEQAx7lEETEA5DIgMROQekJiAUhJBAhAokogEQGuMR0DUZG6F/HnnnCSWQHYLMHCUUSzCSACJJAosgjxILLwXkBiARJhJJABgsQIIoBIykmEkNzijiJQAGQAN0ITrrrr000wCeeecJJJA5AcghKJKKKJAABICGknECiTEUWAiyyyAlFARGSSogERQEoA1kASAGOE8lAkoQ6TTzTQIIDoByAuAmgLOIAHMJEAKJhAqN4g0kokgFgGKIOAeSA4CxIboQUU0U0U0U0UK99BMkgOwWYOoADiSUSABAskgeWaiiQxQEYkkACA6AlAGgAcYBpgVgJkwB0J4SMeVAZIqUgQQKKOKIPKIJQAMgAboVUACABAAhpMMRJJcPQBkBiBJh7JAoxQgmgGVaIAEBkBJJAEkgCogDUJJ1LLDTgHQHHEFSARE1AygKQFJkIiAaLLKAZImxAQQKmgFICzCI5hB0jd8888gJ5555jRTRTRTRTIt0JWCzCItaREkkhKQEaIYIBlWiABqJqAkkgCSQBUQBrgErDWwFKAQe4XBIxpIssxwpMnICEBM0B8whMABkADd8888gp5559dddYCoAEACGBgswnZKKMLQiGFGEFUBRRBRAMgDQNkASDxBEg4QHIAEHAkJUDqA9RAGQgIEEkECSSUB5CpBiAUkkkgucQMJJJIAEbvnnnkFPPPPrrrrFqhWwWYOolklEokkmFEJkAxZDwgAyQANRIIknkkAzCAaoIDiAYkDBwAC4JGJuJmOEgCkwIYETQbvnnnkFPPPPrrrrABAAgAQAIXGCzB0tEpEkpE4kgMQGIDECCBZhhhChBSqgFMIBEmEkJiEJaZBY4g6EhGghQHwBiDxAsgWeaWFhWgIKIIOAqAkBAQgAQEAQDCkNdCtgsweJZLMJNKRISMCyHZyKJAAg0UaUQTVBgcMMMJAge4XBIxOowx7wIJoEBRAZzRjdCmQAQAJGpEXWkByTCA04lsoiGkYcYUgICAALSIBKEhHQAoHCAZTgaBhAEgKWUWQFOQHIEEglQDkAaCVAKQKPIOEDSSkBSBYhYhuhroVsFmD6JJ5KJ5pCEgYQrCCc4uSVEEAASaSQFKIBKpAicDQBMMAwgwXBIxWtx5s0ECA00CCAM5oxuhTmmfYsgwBsFmD5RxRLRppANJpIgQQZMIAGENAEFOBCAIkwkgQwXIDEDiAhD4JB9BSgfINEC0SBjKEZBAQAI3Q10K2CzB4k0pFEskgmSSSQfIUkBila3kVCAJAAgAAgNABVUA0SQWTMMKJ4GkCOFwSMQG8wJNEECA00CCAOokohuhANddddKAEAIAVEugWDgEwWYPNtxGFEkB2kkmFBhAIwhSQEUQJAIQIASDJhAUgAQCMIAkAiDLjAoJB1BagBIFEASDBBElAawTMAgGAgKQDAVOI3QgGuuusWqaErBZg+cUSYYUSYQ2IUkBilbFSSABAAgAQCoEQAFVwMkkFIVCAIADgACTjjjgSMQEgBgQRgGAAcBsYYYRuhANddddKAEAIAVEqmhKwWYPmKlkkklEmEPjCAhhEygqYSQJIOEGFDjEGBAAwkkkkkkkkg4gxQAFPNEAyCxA8ggQALCwzQPGEboQE0U0U0U0UyMjBZg8cSSSSUicQ6IUEBilITHCTyAJAAw20gFAANQAgKJIKeEAWcDGLBNRZRDR4AsBAJgQwEAMAA4DDdCCimimimimjAAQAIAELzSA5Jg8qSYiWWoSQ2JOMIDGEHizSECAdA8eQZLPKIAqaIAFNFEByJxAdAdAOTQaLoBEApBQgmWgnIarECCyiN0IKKaKaKaKaKGRgsweKRVRZTMKIbMJyAxScRxSR5AEgAWQJIAzqIA/CCzKiRrf5ArtgoYQAMIz9LxRgIBoCEAoBgAHQVllHFEboQUU0U0U0U0UkACABAAgnIHEBCBx+A7FwySQxnAdmiS6UkcUngOwOGFSRGEGV1OEFAIHRZJA1hygDIGmRKQCzDDJJDDJJC0G6AIwgWQSIBEAEBNRLAMiKgRnQ3fPPPIKeeecnXXXWD+PPPOFFgswdJKXNNJIdkJkcABRJMRxRhAAgAQAKPRXK0xMQC1okGVLjcCWpGzAIZ0iQHIEEBgDAAPAiQ3ImzzzzyAZAEgCWYIwggYoQQMNQHLFuSSNEmoDkAqSANMkk5AcqQZskkqIBECSTyB5AkgiEpAcWQZAwKoEUBXJJGBSjkkmkkjG75555ATzzzyhAx555wosFmEpSaxZSFIk0gAUTWdIQAIAEACAhATQASAlMkkgy1gFoJUHkAiG6FUtQtQtNBIgQQAIEEACBBRpySRpxAggEKNRKJSZVQIIHTDJJDCDBZAIgAEB+qQeQFgQEAQAOSSOICnJJNJJGN0NrBZhOQBJdQpk4gBZKKQAOAIBAIBkkA9AIEXA0boVUACABAAgiQJLIElkCSbBZtAkgMKZIDIEkDZhA4wkCAhrggFAGwDCwRcDRuhCddddYysFmEp5hKqFRgTQDI3QroAEACAAg+gUUQKKIFFiSSSSSSSSSSSSSTUCixhAEoo05AogeIIGAjBKgGI3QgopopopopooZBAIDSABRJFijdCsgAQAIAED6BZJAskgWQPIFkBiZARMgkkHsgkQGo3QgJopopopopkZBAIDEjiyBJBYPG6FPIAQAgAIYCEkBCJQgcYgcUIHGKGFKlIBFCBxjBdgoxuhANdddYzCAUIAFyNxzzzyAJ5555AE888gIgAQAIAFjzzyN0Nw");
 		}
+
+		// re-colour the grid icons
+		data = icons.getImageData(0, 0, icons.canvas.width, icons.canvas.height);
+		data32 = new Uint32Array(data.data.buffer);
+
+		for (i = 0; i < gridIcons.length; i += 1) {
+			for (y = 0; y < h; y += 1) {
+				offset = y * icons.canvas.width + gridIcons[i] * w;
+				for (x = 0; x < w; x += 1) {
+					if (data32[offset + x] !== 0) {
+						data32[offset + x] = greyPixel;
+					}
+				}
+			}
+		}
+
+		icons.putImageData(data, 0, 0);
 
 		// create the icon manager
 		this.iconManager = new IconManager(icons, context);
@@ -16676,12 +17065,12 @@
 		// autostart indicator
 		this.autostartIndicator = this.viewMenu.addListItem(this.toggleAutostart, Menu.northEast, -210, 0, 38, 20, ["START"], [false], Menu.multi);
 		this.autostartIndicator.setFont(ViewConstants.smallMenuFont);
-		this.autostartIndicator.toolTip = ["autostart [Alt O]"];
+		this.autostartIndicator.toolTip = ["autostart [" + this.altKeyText + " O]"];
 
 		// stop indicator
 		this.stopIndicator = this.viewMenu.addListItem(this.toggleStop, Menu.northEast, -210, 20, 38, 20, ["STOP"], [false], Menu.multi);
 		this.stopIndicator.setFont(ViewConstants.smallMenuFont);
-		this.stopIndicator.toolTip = ["stop [Alt P]"];
+		this.stopIndicator.toolTip = ["stop [" + this.altKeyText + " P]"];
 
 		// waypoints indicator
 		this.waypointsIndicator = this.viewMenu.addListItem(this.toggleWP, Menu.northEast, -172, 0, 38, 20, ["WAYPT"], [false], Menu.multi);
@@ -16882,7 +17271,7 @@
 
 		// cell borders toggle button
 		this.bordersButton = this.viewMenu.addListItem(this.viewBordersToggle, Menu.middle, 100, -100, 180, 40, ["Cell Borders"], [this.engine.cellBorders], Menu.multi);
-		this.bordersButton.toolTip = ["toggle cell borders [Alt B]"];
+		this.bordersButton.toolTip = ["toggle cell borders [" + this.altKeyText + " B]"];
 
 		// major gridlines toggle button
 		this.majorButton = this.viewMenu.addListItem(this.viewMajorToggle, Menu.middle, -100, -50, 180, 40, ["Major GridLines"], [this.engine.gridLineMajorEnabled], Menu.multi);
@@ -16894,19 +17283,19 @@
 
 		// label toggle button
 		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 0, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
-		this.labelButton.toolTip = ["toggle annotations [Alt L]"];
+		this.labelButton.toolTip = ["toggle annotations [" + this.altKeyText + " L]"];
 
 		// rainbow button
 		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 100, 0, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
-		this.rainbowButton.toolTip = ["toggle rainbow mode [Alt W]"]; 
+		this.rainbowButton.toolTip = ["toggle rainbow mode [" + this.altKeyText + " W]"]; 
 
 		// autogrid toggle button
 		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 50, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
-		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan [Ctrl G]"]; 
+		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan [" + this.controlKeyText + " G]"]; 
 
 		// alt grid toggle button
 		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 50, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
-		this.altGridButton.toolTip = ["toggle alternating gridlines [Alt D]"]; 
+		this.altGridButton.toolTip = ["toggle alternating gridlines [" + this.altKeyText + " D]"]; 
 
 		// integer zoom button
 		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, 100, 180, 40, "Integer Zoom");
@@ -16914,7 +17303,7 @@
 
 		// quality rendering toggle button
 		this.qualityToggle = this.viewMenu.addListItem(this.viewQualityToggle, Menu.middle, 100, 100, 180, 40, ["Render Quality"], [this.engine.pretty], Menu.multi);
-		this.qualityToggle.toolTip = ["toggle anti-aliased cell display [Ctrl Q]"];
+		this.qualityToggle.toolTip = ["toggle anti-aliased cell display [" + this.controlKeyText + " Q]"];
 
 		// go to generation button
 		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, -100, -50, 180, 40, "Go To Gen");
@@ -16926,7 +17315,7 @@
 
 		// add the throttle toggle button
 		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, -100, 0, 180, 40, ["Throttle"], [this.canBailOut], Menu.multi);
-		this.throttleToggle.toolTip = ["toggle playback throttling [Alt T]"];
+		this.throttleToggle.toolTip = ["toggle playback throttling [" + this.altKeyText + " T]"];
 
 		// add the show lag toggle button
 		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, 100, 0, 180, 40, ["Perf. Warning"], [this.perfWarning], Menu.multi);
@@ -16934,35 +17323,35 @@
 
 		// kill gliders toggle button
 		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, -100, 50, 180, 40, ["Kill Gliders"], [this.engine.clearGliders], Menu.multi);
-		this.killButton.toolTip = ["toggle kill escaping gliders [Ctrl L]"];
+		this.killButton.toolTip = ["toggle kill escaping gliders [" + this.controlKeyText + " L]"];
 
 		// autohide toggle button
 		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 100, 50, 180, 40, ["AutoHide UI"], [this.hideGUI], Menu.multi);
-		this.autoHideButton.toolTip = ["toggle hide UI on playback [Alt U]"]; 
+		this.autoHideButton.toolTip = ["toggle hide UI on playback [" + this.altKeyText + " U]"]; 
 
 		// rule button
 		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -100, 180, 40, "Change Rule");
-		this.ruleButton.toolTip = "change rule [Alt R]";
+		this.ruleButton.toolTip = "change rule [" + this.altKeyText + " R]";
 
 		// new button
 		this.newButton = this.viewMenu.addButtonItem(this.newPressed, Menu.middle, 100, -100, 180, 40, "New Pattern");
-		this.newButton.toolTip = "new pattern [Alt N]";
+		this.newButton.toolTip = "new pattern [" + this.altKeyText + " N]";
 
 		// load button
 		this.loadButton = this.viewMenu.addButtonItem(this.loadPressed, Menu.middle, -100, -50, 180, 40, "Load Pattern");
-		this.loadButton.toolTip = "load last saved pattern [Ctrl O]";
+		this.loadButton.toolTip = "load last saved pattern [" + this.controlKeyText + " O]";
 
 		// save button
 		this.saveButton = this.viewMenu.addButtonItem(this.savePressed, Menu.middle, 100, -50, 180, 40, "Save Pattern");
-		this.saveButton.toolTip = "save pattern [Ctrl S]";
+		this.saveButton.toolTip = "save pattern [" + this.controlKeyText + " S]";
 
 		// randomize button
 		this.randomizeButton = this.viewMenu.addButtonItem(this.randomizePressed, Menu.middle, -100, 0, 180, 40, "Rand All");
-		this.randomizeButton.toolTip = "randomize pattern and rule [Alt Z]";
+		this.randomizeButton.toolTip = "randomize pattern and rule [" + this.altKeyText + " Z]";
 
 		// randomize button
 		this.randomizePatternButton = this.viewMenu.addButtonItem(this.randomizePatternPressed, Menu.middle, 100, 0, 180, 40, "Rand Pattern");
-		this.randomizePatternButton.toolTip = "randomize pattern and keep rule [Ctrl Alt Z]";
+		this.randomizePatternButton.toolTip = "randomize pattern and keep rule [" + this.controlKeyText + " " + this.altKeyText + " Z]";
 
 		// identify button
 		this.identifyButton = this.viewMenu.addButtonItem(this.identifyPressed, Menu.middle, -100, 50, 180, 40, "Identify");
@@ -16982,27 +17371,27 @@
 
 		// open clipboard button
 		this.openClipboardButton = this.viewMenu.addButtonItem(this.openClipboardPressed, Menu.middle, -100, -100, 180, 40, "Open Clipboard");
-		this.openClipboardButton.toolTip = "open clipboard as pattern [Ctrl Shift O]";
+		this.openClipboardButton.toolTip = "open clipboard as pattern [" + this.controlKeyText + " Shift O]";
 
 		// copy original pattern button
 		this.copyOriginalButton = this.viewMenu.addButtonItem(this.copyOriginalPressed, Menu.middle, 100, -100, 180, 40, "Copy Original");
-		this.copyOriginalButton.toolTip = "copy original pattern [Ctrl Shift C]";
+		this.copyOriginalButton.toolTip = "copy original pattern [" + this.controlKeyText + " Shift C]";
 
 		// copy rule button
 		this.copyRuleButton = this.viewMenu.addButtonItem(this.copyRulePressed, Menu.middle, -100, -50, 180, 40, "Copy Rule");
-		this.copyRuleButton.toolTip = "copy rule definition [Ctrl J]";
+		this.copyRuleButton.toolTip = "copy rule definition [" + this.controlKeyText + " J]";
 
 		// copy as MAP button
 		this.copyAsMAPButton = this.viewMenu.addButtonItem(this.copyAsMAPPressed, Menu.middle, 100, -50, 180, 40, "Copy as MAP");
-		this.copyAsMAPButton.toolTip = "copy rule definition as MAP [Alt M]";
+		this.copyAsMAPButton.toolTip = "copy rule definition as MAP [" + this.altKeyText + " M]";
 
 		// copy neighbourhood button
 		this.copyNeighbourhoodButton = this.viewMenu.addButtonItem(this.copyNeighbourhoodPressed, Menu.middle, -100, 0, 180, 40, "Copy Nhood");
-		this.copyNeighbourhoodButton.toolTip = "copy CoordCA neighbourhood definition [Ctrl B]";
+		this.copyNeighbourhoodButton.toolTip = "copy CoordCA neighbourhood definition [" + this.controlKeyText + " B]";
 
 		// copy with comments button
 		this.copyWithCommentsButton = this.viewMenu.addButtonItem(this.copyWithCommentsPressed, Menu.middle, 100, 0, 180, 40, "Copy All");
-		this.copyWithCommentsButton.toolTip = "copy current pattern with comments [Ctrl Alt C]";
+		this.copyWithCommentsButton.toolTip = "copy current pattern with comments [" + this.controlKeyText + " " + this.altKeyText + " C]";
 
 		// copy position button
 		this.copyPositionButton = this.viewMenu.addButtonItem(this.copyPositionPressed, Menu.middle, -100, 50, 180, 40, "Copy Position");
@@ -17014,7 +17403,7 @@
 
 		// paste to selection button
 		this.pasteToSelectionButton = this.viewMenu.addButtonItem(this.pasteToSelectionPressed, Menu.middle, -100, 100, 180, 40, "Paste To Seln");
-		this.pasteToSelectionButton.toolTip = "paste to selection [Ctrl Shift V]";
+		this.pasteToSelectionButton.toolTip = "paste to selection [" + this.controlKeyText + " Shift V]";
 
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -100, 120, 40, "Prev");
@@ -17093,12 +17482,12 @@
 		// states toggle
 		this.statesToggle = this.viewMenu.addListItem(this.toggleStates, Menu.northWest, 45, 45, 40, 40, [""], [this.showStates], Menu.multi);
 		this.statesToggle.icon = [this.iconManager.icon("states")];
-		this.statesToggle.toolTip = ["toggle states display [Ctrl D]"];
+		this.statesToggle.toolTip = ["toggle states display [" + this.controlKeyText + " D]"];
 
 		// pause playback while drawing toggle
 		this.pausePlaybackToggle = this.viewMenu.addListItem(this.togglePausePlayback, Menu.northWest, 90, 45, 40, 40, [""], [this.pauseWhileDrawing], Menu.multi);
 		this.pausePlaybackToggle.icon = [this.iconManager.icon("drawpause")];
-		this.pausePlaybackToggle.toolTip = ["toggle pause playback while drawing [Ctrl P]"];
+		this.pausePlaybackToggle.toolTip = ["toggle pause playback while drawing [" + this.controlKeyText + " P]"];
 
 		// smart drawing toggle
 		this.smartToggle = this.viewMenu.addListItem(this.toggleSmart, Menu.northWest, 135, 45, 40, 40, [""], [this.smartDrawing], Menu.multi);
@@ -17140,19 +17529,19 @@
 
 		// fit selection button
 		this.fitSelectionButton = this.viewMenu.addButtonItem(this.fitSelectionPressed, Menu.middle, -100, -50, 180, 40, "Fit Selection");
-		this.fitSelectionButton.toolTip = "fit selection to display [Ctrl F]";
+		this.fitSelectionButton.toolTip = "fit selection to display [" + this.controlKeyText + " F]";
 
 		// center pattern button
 		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, -50, 180, 40, "Center Pattern");
-		this.centerPatternButton.toolTip = "center pattern [Ctrl M]";
+		this.centerPatternButton.toolTip = "center pattern [" + this.controlKeyText + " M]";
 
 		// clear drawing state cells button
 		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, -100, 0, 180, 40, "Clear Drawing");
-		this.clearDrawingStateButton.toolTip = "clear drawing state cells [Ctrl Alt K]";
+		this.clearDrawingStateButton.toolTip = "clear drawing state cells [" + this.controlKeyText + " " + this.altKeyText + " K]";
 
 		// snap angle to nearest 45 degrees
 		this.snapToNearest45Button = this.viewMenu.addButtonItem(this.snapToNearest45Pressed, Menu.middle, 100, 0, 180, 40, "Snap Angle");
-		this.snapToNearest45Button.toolTip = "snap angle to nearest 45 degrees [Alt /]";
+		this.snapToNearest45Button.toolTip = "snap angle to nearest 45 degrees [" + this.altKeyText + " /]";
 
 		// save view
 		this.saveViewButton = this.viewMenu.addButtonItem(this.saveViewPressed, Menu.middle, -100, 50, 180, 40, "Save View");
@@ -17272,16 +17661,16 @@
 		// add the undo button
 		this.undoButton = this.viewMenu.addButtonItem(this.undoPressed, Menu.southEast, -495, -40, 40, 40, "");
 		this.undoButton.icon = this.iconManager.icon("undo");
-		this.undoButton.toolTip = "undo [Ctrl Z]";
+		this.undoButton.toolTip = "undo [" + this.controlKeyText + " Z]";
 
 		// add the redo button
 		this.redoButton = this.viewMenu.addButtonItem(this.redoPressed, Menu.southEast, -450, -40, 40, 40, "");
 		this.redoButton.icon = this.iconManager.icon("redo");
-		this.redoButton.toolTip = "redo [Ctrl Y]";
+		this.redoButton.toolTip = "redo [" + this.controlKeyText + " Y]";
 
 		// add the copy sync toggle
 		this.copySyncToggle = this.viewMenu.addListItem(this.viewCopySyncList, Menu.northEast, -130, 0, 40, 40, ["Sync"], [this.copySyncExternal], Menu.multi);
-		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard [Alt S]"];
+		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard [" + this.altKeyText + " S]"];
 		this.copySyncToggle.setFont("15px Arial");
 
 		// add play and pause list
@@ -17312,13 +17701,13 @@
 		// select all button
 		this.selectAllButton = this.viewMenu.addButtonItem(this.selectAllPressed, Menu.northWest, 0, 45, 40, 40, "All");
 		this.selectAllButton.icon = this.iconManager.icon("select");
-		this.selectAllButton.toolTip = "select all cells [Ctrl A]";
+		this.selectAllButton.toolTip = "select all cells [" + this.controlKeyText + " A]";
 		this.selectAllButton.setFont("16px Arial");
 
 		// auto-shrink toggle
 		this.autoShrinkToggle = this.viewMenu.addListItem(this.viewAutoShrinkList, Menu.northWest, 45, 45, 40, 40, ["Auto"], [this.autoShrink], Menu.multi);
 		this.autoShrinkToggle.icon = [this.iconManager.icon("autoshrink")];
-		this.autoShrinkToggle.toolTip = ["toggle auto shrink selection [Alt A]"];
+		this.autoShrinkToggle.toolTip = ["toggle auto shrink selection [" + this.altKeyText + " A]"];
 		this.autoShrinkToggle.setFont("16px Arial");
 
 		// add the auto-shrink button
@@ -17343,52 +17732,52 @@
 		// add the cut button
 		this.cutButton = this.viewMenu.addButtonItem(this.cutPressed, Menu.northWest, 180, 45, 40, 40, "");
 		this.cutButton.icon = this.iconManager.icon("cut");
-		this.cutButton.toolTip = "cut [Ctrl X]";
+		this.cutButton.toolTip = "cut [" + this.controlKeyText + " X]";
 
 		// add the copy button
 		this.copyButton = this.viewMenu.addButtonItem(this.copyPressed, Menu.northWest, 225, 45, 40, 40, "");
 		this.copyButton.icon = this.iconManager.icon("copy");
-		this.copyButton.toolTip = "copy [Ctrl C]";
+		this.copyButton.toolTip = "copy [" + this.controlKeyText + " C]";
 
 		// add the paste button
 		this.pasteButton = this.viewMenu.addButtonItem(this.pastePressed, Menu.northWest, 270, 45, 40, 40, "");
 		this.pasteButton.icon = this.iconManager.icon("paste");
-		this.pasteButton.toolTip = "paste [Ctrl V]";
+		this.pasteButton.toolTip = "paste [" + this.controlKeyText + " V]";
 
 		// add the cancel selection button
 		this.cancelSelectionButton = this.viewMenu.addButtonItem(this.cancelSelectionPressed, Menu.southEast, -220, -175, 40, 40, "");
 		this.cancelSelectionButton.icon = this.iconManager.icon("cancelsel");
-		this.cancelSelectionButton.toolTip = "cancel selection [Ctrl K]";
+		this.cancelSelectionButton.toolTip = "cancel selection [" + this.controlKeyText + " K]";
 
 		// add the nudge left button
 		this.nudgeLeftButton = this.viewMenu.addButtonItem(this.nudgeLeftPressed, Menu.southEast, -175, -175, 40, 40, "");
 		this.nudgeLeftButton.icon = this.iconManager.icon("nudgeleft");
-		this.nudgeLeftButton.toolTip = "nudge left [Alt Left]";
+		this.nudgeLeftButton.toolTip = "nudge left [" + this.altKeyText + " Left]";
 
 		// add the nudge right button
 		this.nudgeRightButton = this.viewMenu.addButtonItem(this.nudgeRightPressed, Menu.southEast, -130, -175, 40, 40, "");
 		this.nudgeRightButton.icon = this.iconManager.icon("nudgeright");
-		this.nudgeRightButton.toolTip = "nudge right [Alt Right]";
+		this.nudgeRightButton.toolTip = "nudge right [" + this.altKeyText + " Right]";
 
 		// add the nudge up button
 		this.nudgeUpButton = this.viewMenu.addButtonItem(this.nudgeUpPressed, Menu.southEast, -85, -175, 40, 40, "");
 		this.nudgeUpButton.icon = this.iconManager.icon("nudgeup");
-		this.nudgeUpButton.toolTip = "nudge up [Alt Up]";
+		this.nudgeUpButton.toolTip = "nudge up [" + this.altKeyText + " Up]";
 
 		// add the nudge down button
 		this.nudgeDownButton = this.viewMenu.addButtonItem(this.nudgeDownPressed, Menu.southEast, -40, -175, 40, 40, "");
 		this.nudgeDownButton.icon = this.iconManager.icon("nudgedown");
-		this.nudgeDownButton.toolTip = "nudge down [Alt Down]";
+		this.nudgeDownButton.toolTip = "nudge down [" + this.altKeyText + " Down]";
 
 		// add the flip X button
 		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.southEast, -265, -85, 40, 40, "");
 		this.flipXButton.icon = this.iconManager.icon("flipx");
-		this.flipXButton.toolTip = "flip horizontally [Alt X]";
+		this.flipXButton.toolTip = "flip horizontally [" + this.altKeyText + " X]";
 
 		// add the flip Y button
 		this.flipYButton = this.viewMenu.addButtonItem(this.flipYPressed, Menu.southEast, -220, -85, 40, 40, "");
 		this.flipYButton.icon = this.iconManager.icon("flipy");
-		this.flipYButton.toolTip = "flip vertically [Alt Y]";
+		this.flipYButton.toolTip = "flip vertically [" + this.altKeyText + " Y]";
 
 		// add the rotate clockwise button
 		this.rotateCWButton = this.viewMenu.addButtonItem(this.rotateCWPressed, Menu.southEast, -175, -85, 40, 40, "");
@@ -17413,18 +17802,18 @@
 		// add the clear [R]History or [R]Super button
 		this.clearRHistoryButton = this.viewMenu.addButtonItem(this.clearRHistoryPressed, Menu.southEast, -40, -130, 40, 40, "R");
 		this.clearRHistoryButton.icon = this.iconManager.icon("select");
-		this.clearRHistoryButton.toolTip = "clear History cells [Ctrl Del]";
+		this.clearRHistoryButton.toolTip = "clear History cells [" + this.controlKeyText + " Del]";
 		this.clearRHistoryButton.setFont("16px Arial");
 
 		// add the change cell state button
 		this.changeCellStateButton = this.viewMenu.addButtonItem(this.changeCellStatePressed, Menu.southEast, -40, -130, 40, 40, "");
 		this.changeCellStateButton.icon = this.iconManager.icon("changestate");
-		this.changeCellStateButton.toolTip = "change cells to drawing state [Alt K]";
+		this.changeCellStateButton.toolTip = "change cells to drawing state [" + this.altKeyText + " K]";
 
 		// add the invert selection button
 		this.invertSelectionButton = this.viewMenu.addButtonItem(this.invertSelectionPressed, Menu.southEast, -85, -130, 40, 40, "");
 		this.invertSelectionButton.icon = this.iconManager.icon("invertselection");
-		this.invertSelectionButton.toolTip = "invert cells in selection [Ctrl I]";
+		this.invertSelectionButton.toolTip = "invert cells in selection [" + this.controlKeyText + " I]";
 
 		// add the random button
 		this.randomButton = this.viewMenu.addButtonItem(this.randomPressed, Menu.southEast, -130, -130, 40, 40, "");
@@ -17434,7 +17823,7 @@
 		// add the random 2-state button
 		this.random2Button = this.viewMenu.addButtonItem(this.random2Pressed, Menu.southEast, -175, -130, 40, 40, "2");
 		this.random2Button.icon = this.iconManager.icon("random");
-		this.random2Button.toolTip = "random 2-state fill [Ctrl Shift 5]";
+		this.random2Button.toolTip = "random 2-state fill [" + this.controlKeyText + " Shift 5]";
 
 		// add the random density slider
 		this.randomItem = this.viewMenu.addRangeItem(this.viewRandomRange, Menu.southEast, -275, -130, 100, 40, 1, 100, this.randomDensity, true, "", "%", 0);
@@ -18015,7 +18404,7 @@
 			this.stateList.lower[i] = String(state);
 			message = this.getStateName(state);
 			if (state < 10) {
-				message += " [Ctrl " + state + "]";
+				message += " [" + this.controlKeyText + " " + state + "]";
 			}
 			this.stateList.toolTip[i] = message;
 			this.stateColsList.lower[i] = "";
@@ -18053,13 +18442,13 @@
 			// add LifeHistory states for editor
 			this.stateList.lower = ["0", "1", "2", "3", "4", "5", "6"];
 			this.stateList.setWidth(280);
-			this.stateList.toolTip = ["dead [Ctrl 0]", "alive [Ctrl 1]", "history [Ctrl 2]", "mark 1 [Ctrl 3]", "mark off [Ctrl 4]", "mark 2 [Ctrl 5]", "kill [Ctrl 6]"];
+			this.stateList.toolTip = ["dead [" + this.controlKeyText + " 0]", "alive [" + this.controlKeyText + " 1]", "history [" + this.controlKeyText + " 2]", "mark 1 [" + this.controlKeyText + " 3]", "mark off [" + this.controlKeyText + " 4]", "mark 2 [" + this.controlKeyText + " 5]", "kill [" + this.controlKeyText + " 6]"];
 			this.stateList.current = this.drawState;
 
 			// add LifeHistory state colours for editor
 			this.stateColsList.lower = ["", "", "", "", "", "", ""];
 			this.stateColsList.setWidth(280);
-			this.stateColsList.toolTip = ["dead [Ctrl 0]", "alive [Ctrl 1]", "history [Ctrl 2]", "mark 1 [Ctrl 3]", "mark off [Ctrl 4]", "mark 2 [Ctrl 5]", "kill [Ctrl 6]"];
+			this.stateColsList.toolTip = ["dead [" + this.controlKeyText + " 0]", "alive [" + this.controlKeyText + " 1]", "history [" + this.controlKeyText + " 2]", "mark 1 [" + this.controlKeyText + " 3]", "mark off [" + this.controlKeyText + " 4]", "mark 2 [" + this.controlKeyText + " 5]", "kill [" + this.controlKeyText + " 6]"];
 			this.stateColsList.bgAlpha = 1;
 			this.stateColsList.current = [false, false, false, false, false, false, false];
 		} else {
@@ -18068,13 +18457,13 @@
 				// add states for editor
 				this.stateList.lower = ["0", "1"];
 				this.stateList.setWidth(80);
-				this.stateList.toolTip = ["dead [Ctrl 0]", "alive [Ctrl 1]"];
+				this.stateList.toolTip = ["dead [" + this.controlKeyText + " 0]", "alive [" + this.controlKeyText + " 1]"];
 				this.stateList.current = this.drawState;
 
 				// add state colours for editor
 				this.stateColsList.lower = ["", ""];
 				this.stateColsList.setWidth(80);
-				this.stateColsList.toolTip = ["dead [Ctrl 0]", "alive [Ctrl 1]"];
+				this.stateColsList.toolTip = ["dead [" + this.controlKeyText + " 0]", "alive [" + this.controlKeyText + " 1]"];
 				this.stateColsList.bgAlpha = 1;
 				this.stateColsList.current = [false, false];
 			} else {
@@ -18594,9 +18983,9 @@
 
 			// set toggle button caption
 			// TBD isExtended
-			me.clearRHistoryButton.toolTip = "clear History cells [Ctrl Del]";
+			me.clearRHistoryButton.toolTip = "clear History cells [" + this.controlKeyText + " Del]";
 			if (me.engine.isSuper) {
-				me.clearRHistoryButton.toolTip = "clear Super cells [Ctrl Del]";
+				me.clearRHistoryButton.toolTip = "clear Super cells [" + this.controlKeyText + " Del]";
 			}
 
 			// read the number of states (Generations or HROT)

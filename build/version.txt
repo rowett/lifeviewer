@@ -1,3 +1,9 @@
+Build 1096
+- switch to using internal format for UI icons
+
+Build 1095
+- use Cmd in Help and tooltips on Safari
+
 Build 1094
 - support Mac Command key for keyboard shortcuts
 

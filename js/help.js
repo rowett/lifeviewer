@@ -737,12 +737,11 @@
 			y = this.renderHelpLine(view, "Shift -", "minimum playback speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift +", "maximum playback speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "0", "reset step and speed", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Ctrl P", "toggle pause playback while drawing", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Alt T", "toggle throttling", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.controlKeyText + " P", "toggle pause playback while drawing", ctx, x, y, height, helpLine);
 			if (view.engine.ruleLoaderLookupAvailable()) {
 				y = this.renderHelpLine(view, "F7", "toggle fast lookup", ctx, x, y, height, helpLine);
 			}
-			y = this.renderHelpLine(view, "Alt T", "toggle throttling", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " T", "toggle throttling", ctx, x, y, height, helpLine);
 			if (view.waypointsDefined) {
 				if (view.loopGeneration !== -1) {
 					y = this.renderHelpLine(view, "W", "toggle waypoint playback and loop", ctx, x, y, height, helpLine);
@@ -756,10 +755,10 @@
 				}
 			}
 			if (view.autoStart) {
-				y = this.renderHelpLine(view, "Alt O", "toggle autostart", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, view.altKeyText + " O", "toggle autostart", ctx, x, y, height, helpLine);
 			}
 			if (view.stopGeneration !== -1) {
-				y = this.renderHelpLine(view, "Alt P", "toggle stop", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, view.altKeyText + " P", "toggle stop", ctx, x, y, height, helpLine);
 			}
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -800,7 +799,7 @@
 			}
 			if (!(view.drawing || view.selecting)) {
 				for (i = 1; i <= value; i += 1) {
-					y = this.renderHelpLine(view, "Alt " + String(i), "jump to POI #" + String(i), ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, view.altKeyText + " " + String(i), "jump to POI #" + String(i), ctx, x, y, height, helpLine);
 				}
 			}
 		}
@@ -808,8 +807,8 @@
 		y = this.renderHelpLine(view, "F", "fit pattern to display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift F", "toggle autofit", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift H", "toggle autofit history mode", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl F", "fit selection to display", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl M", "center pattern on display", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " F", "fit selection to display", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " M", "center pattern on display", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
 			y = this.renderHelpLine(view, "Shift S", "toggle autofit state 1 mode", ctx, x, y, height, helpLine);
 		}
@@ -841,10 +840,10 @@
 		y = this.renderHelpLine(view, ">", "rotate right", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift <", "rotate left 90 degrees", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift >", "rotate right 90 degrees", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt <", "rotate left 45 degrees", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt >", "rotate right 45 degrees", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " <", "rotate left 45 degrees", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " >", "rotate right 45 degrees", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "5", "reset angle", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt /", "snap angle to nearest 45 degrees", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " /", "snap angle to nearest 45 degrees", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "'", "tilt down", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "/", "tilt up", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "@", "reset tilt", ctx, x, y, height, helpLine);
@@ -861,7 +860,7 @@
 			y = this.renderHelpLine(view, "L", "decrease layer depth", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "C", "next colour theme", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift C", "previous colour theme", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Alt C", "default theme", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " C", "default theme", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		}
 
@@ -894,25 +893,25 @@
 		y = this.renderHelpLine(view, "Shift T", "toggle extended timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "I", "toggle pattern and engine information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift I", "toggle information bar", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl Q", "toggle cell anti-aliasing", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt B", "toggle cell borders", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " Q", "toggle cell anti-aliasing", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " B", "toggle cell borders", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "X", "toggle gridlines", ctx, x, y, height, helpLine);
 		if (view.engine.gridLineMajor > 0) {
 			y = this.renderHelpLine(view, "Shift X", "toggle major gridlines", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "Ctrl G", "toggle auto gridlines", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " G", "toggle auto gridlines", ctx, x, y, height, helpLine);
 		if (view.engine.isMargolus) {
-			y = this.renderHelpLine(view, "Alt D", "toggle alternating gridlines", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " D", "toggle alternating gridlines", ctx, x, y, height, helpLine);
 		}
 		if (view.engine.isLifeHistory || view.engine.isSuper || view.engine.multiNumStates === -1) {
-			y = this.renderHelpLine(view, "Alt G", "convert pattern to [R]Super", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Alt H", "convert pattern to [R]History", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Alt J", "convert pattern to [R]Standard", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " G", "convert pattern to [R]Super", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " H", "convert pattern to [R]History", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " J", "convert pattern to [R]Standard", ctx, x, y, height, helpLine);
 		}
 		if (view.waypointManager.numAnnotations() > 0) {
-			y = this.renderHelpLine(view, "Alt L", "toggle annotation display", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " L", "toggle annotation display", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "Ctrl L", "toggle kill escaping gliders", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " L", "toggle kill escaping gliders", ctx, x, y, height, helpLine);
 		// check if thumbnail ever on
 		if (view.thumbnailEverOn) {
 			y = this.renderHelpLine(view, "N", "toggle thumbnail view", ctx, x, y, height, helpLine);
@@ -921,9 +920,9 @@
 		y = this.renderHelpLine(view, "O", "save screenshot", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift O", "save population graph screenshot", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift U", "toggle UI", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt U", "toggle autohide UI during playback", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " U", "toggle autohide UI during playback", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates === -1) {
-			y = this.renderHelpLine(view, "Alt W", "toggle rainbow mode", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " W", "toggle rainbow mode", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "D", "toggle cell period map", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift D", "download cell period map", ctx, x, y, height, helpLine);
@@ -934,13 +933,13 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Pattern"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Pattern controls:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt N", "new pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt R", "change rule", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl O", "open original or last saved pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Shift O", "open clipboard as pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl S", "save pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt Z", "randomize pattern and rule", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt Z", "randomize pattern only", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " N", "new pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " R", "change rule", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " O", "open original or last saved pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + "+Shift O", "open clipboard as pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " S", "save pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " Z", "randomize pattern and rule", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + "+" + view.altKeyText + " Z", "randomize pattern only", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F6", "toggle pattern identification", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift F6", "display last identification result", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
@@ -949,16 +948,16 @@
 		view.helpSections[sectionNum] = [view.lineNo, "Clipboard"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "External clipboard controls:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt S", "toggle sync cut and copy with external clipboard", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Shift C", "copy original pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl C", "copy current selection", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt C", "copy current selection with comments", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Shift X", "cut original pattern", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl X", "cut current selection", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt X", "cut current selection with comments", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl J", "copy rule definition", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " S", "toggle sync cut and copy with external clipboard", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + "+Shift C", "copy original pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " C", "copy current selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + "+" + view.altKeyText + " C", "copy current selection with comments", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + "+Shift X", "cut original pattern", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " X", "cut current selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + "+" + view.altKeyText + " X", "cut current selection with comments", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " J", "copy rule definition", ctx, x, y, height, helpLine);
 		if (view.engine.isRuleTree && view.engine.multiNumStates === 2) {
-			y = this.renderHelpLine(view, "Alt M", "copy rule definition as MAP", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " M", "copy rule definition as MAP", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "K", "copy camera position", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift K", "copy camera position and view", ctx, x, y, height, helpLine);
@@ -974,47 +973,47 @@
 		y = this.renderHelpLine(view, "F3", "pick mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F4", "select mode", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F5", "pan mode", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl A", "select all", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " A", "select all", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift A", "shrink selection", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt A", "toggle auto-shrink selection", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl C", "copy", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl D", "toggle states display", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl I", "invert selection", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl K", "remove selection", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl V", "paste", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Shift V", "paste to selection", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl X", "cut", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl Y", "redo edit", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl Z", "undo edit", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Shift Z", "redo edit", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl Space", "advance selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " A", "toggle auto-shrink selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " C", "copy", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " D", "toggle states display", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " I", "invert selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " K", "remove selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " V", "paste", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + "+Shift V", "paste to selection", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " X", "cut", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " Y", "redo edit", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " Z", "undo edit", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + "+Shift Z", "redo edit", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " Space", "advance selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift Space", "advance outside", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift L", "cycle paste location", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift M", "cycle paste mode", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates > 2) {
 			y = this.renderHelpLine(view, "Shift 5", "multi-state random fill", ctx, x, y, height, helpLine);
 			if (!view.engine.isPCA) {
-				y = this.renderHelpLine(view, "Ctrl+Shift 5", "2-state random fill", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, view.controlKeyText + "+Shift 5", "2-state random fill", ctx, x, y, height, helpLine);
 			}
 		} else {
 			y = this.renderHelpLine(view, "Shift 5", "random fill", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "Alt K", "pick cell state to replace with drawing state", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Ctrl+Alt K", "clear current drawing state cells", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " K", "pick cell state to replace with drawing state", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + "+" + view.altKeyText + " K", "clear current drawing state cells", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Del", "clear cells in selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift Del", "clear outside selection", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
-			y = this.renderHelpLine(view, "Ctrl Del", "clear [R]History cells", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Alt Del", "clear [R]History marked cells", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.controlKeyText + " Del", "clear [R]History cells", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " Del", "clear [R]History marked cells", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, ">", "rotate selection clockwise", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "<", "rotate selection counter-clockwise", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt X", "flip selection horizontally", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt Y", "flip selection vertically", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt Left", "nudge selection 1 cell left", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt Right", "nudge selection 1 cell right", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt Up", "nudge selection 1 cell up", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Alt Down", "nudge selection 1 cell down", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " X", "flip selection horizontally", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " Y", "flip selection vertically", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " Left", "nudge selection 1 cell left", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " Right", "nudge selection 1 cell right", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " Up", "nudge selection 1 cell up", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " Down", "nudge selection 1 cell down", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Esc", "hide paste", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Enter", "perform paste", ctx, x, y, height, helpLine);
 		if (view.engine.isLifeHistory) {
@@ -1026,11 +1025,11 @@
 			}
 		}
 		for (i = 0; i < value; i += 1) {
-			y = this.renderHelpLine(view, "Ctrl " + i, "select state " + i + " for drawing", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.controlKeyText + " " + i, "select state " + i + " for drawing", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "Shift B", "toggle clipboard library", ctx, x, y, height, helpLine);
 		for (i = 0; i < 10; i += 1) {
-			y = this.renderHelpLine(view, "Alt " + i, "make clipboard " + i + " active", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " " + i, "make clipboard " + i + " active", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 

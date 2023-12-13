@@ -371,18 +371,18 @@
 	/**
 	 * @constructor
 	 */
-	function IconManager(/** @type {HTMLImageElement} */ iconsImage, /** @type {CanvasRenderingContext2D} */ context) {
+	function IconManager(/** @type {CanvasRenderingContext2D} */ iconsImage, /** @type {CanvasRenderingContext2D} */ context) {
 		// save the drawing context
 		/** @type {CanvasRenderingContext2D} */ this.context = context;
 
 		// save the icon image
-		/** @type {HTMLImageElement} */ this.iconsImage = iconsImage;
+		/** @type {CanvasRenderingContext2D} */ this.iconsImage = iconsImage;
 		/** @type {number} */ this.width = 0;
 		/** @type {number} */ this.height = 0;
 		/** @type {HTMLCanvasElement} */ this.iconCanvas = null;
 		/** @type {CanvasRenderingContext2D} */ this.iconContext = null;
-		/** @type {HTMLImageElement} */ this.convertedImage = null;
-		/** @type {HTMLImageElement} */ this.greyedOutImage = null;
+		/** @type {CanvasRenderingContext2D} */ this.convertedImage = null;
+		/** @type {CanvasRenderingContext2D} */ this.greyedOutImage = null;
 
 		// list of icons
 		/** @type {Array} */ this.iconList = [];
@@ -429,13 +429,14 @@
 			/** @type {number} */ iy = 0,
 			/** @type {number} */ shadowCol = this.shadowCol,
 			/** @type {number} */ iconFGHex = 0xffffffff,
-			/** @type {number} */ iconFG = 255 << 24 | 255 << 16 | 255 << 8 | 255;
+			/** @type {number} */ iconFG = 255 << 24 | 255 << 16 | 255 << 8 | 255,
+			/** @type {HTMLCanvasElement} */ canvas = null;
 
 		// check if image load
-		if (this.iconsImage.width > 0) {
+		if (this.iconsImage.canvas.width > 0) {
 			if (!this.init) {
-				this.width = this.iconsImage.width;
-				this.height = this.iconsImage.height;
+				this.width = this.iconsImage.canvas.width;
+				this.height = this.iconsImage.canvas.height;
 
 				// create a context the same size as the image and draw the image onto it
 				this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
@@ -444,17 +445,23 @@
 				this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d"));
 
 				// create a new image for the converted colours
-				this.convertedImage = new Image();
+				canvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+				canvas.width = this.width;
+				canvas.height = this.height;
+				this.convertedImage = /** @type {!CanvasRenderingContext2D} */ (canvas.getContext("2d"));
 
 				// create a new image for the greyed out icons
-				this.greyedOutImage = new Image();
+				canvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+				canvas.width = this.width;
+				canvas.height = this.height;
+				this.greyedOutImage = /** @type {!CanvasRenderingContext2D} */ (canvas.getContext("2d"));
 			}
 
 			// change the pixel colours if required
 			if (this.recolour) {
 				// get the pixel data from the loaded icons
 				this.iconContext.clearRect(0, 0, this.iconCanvas.width, this.iconCanvas.height);
-				this.iconContext.drawImage(this.iconsImage, 0, 0);
+				this.iconContext.drawImage(this.iconsImage.canvas, 0, 0);
 				data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				data32 = new Uint32Array(data.data.buffer);
 
@@ -491,11 +498,11 @@
 				this.iconContext.putImageData(data, 0, 0);
 
 				// create the greyed out icons
-				this.greyedOutImage.src = this.iconCanvas.toDataURL("image/png");
+				this.greyedOutImage.putImageData(data, 0,0);
 
 				// get the pixel data from the loaded icons
 				this.iconContext.clearRect(0, 0, this.iconCanvas.width, this.iconCanvas.height);
-				this.iconContext.drawImage(this.iconsImage, 0, 0);
+				this.iconContext.drawImage(this.iconsImage.canvas, 0, 0);
 				data = this.iconContext.getImageData(0, 0, this.iconCanvas.width, this.iconCanvas.height);
 				data32 = new Uint32Array(data.data.buffer);
 
@@ -535,7 +542,7 @@
 
 			if (!this.init) {
 				// create a new image with the updated colours
-				this.convertedImage.src = this.iconCanvas.toDataURL("image/png");
+				this.convertedImage.putImageData(data, 0, 0);
 				this.init = true;
 			}
 
@@ -549,9 +556,9 @@
 				y = 0;
 			}
 			if (locked) {
-				this.context.drawImage(this.greyedOutImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
+				this.context.drawImage(this.greyedOutImage.canvas, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
 			} else {
-				this.context.drawImage(this.convertedImage, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
+				this.context.drawImage(this.convertedImage.canvas, icon.number * icon.width, 0, icon.width, icon.height, x, y, icon.width, icon.height);
 			}
 			if (this.scale !== 1) {
 				this.context.restore();

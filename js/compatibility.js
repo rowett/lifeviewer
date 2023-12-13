@@ -10,6 +10,7 @@
 		/** @type {boolean} */ arraySlice : false,
 		/** @type {boolean} */ littleEndian : false,
 		/** @type {boolean} */ copyWithin : false,
+		/** @type {boolean} */ cmdKey : false,
 
 		// for determining endian
 		/** @type {Uint8Array} */ data8 : null,
@@ -520,4 +521,10 @@
 		};
 
 		Supports.copyWithin = false;
+	}
+
+	// check for Safari
+	var ua = navigator.userAgent;
+	if (ua.indexOf("Safari/") !== -1 && (!(ua.indexOf("Chrome/") !== -1 || ua.indexOf("Chromium/") !== -1))) {
+		Supports.cmdKey = true;
 	}
