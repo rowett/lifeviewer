@@ -1,3 +1,7 @@
+Build 1097
+- improved random fill performance at T=0
+- fixed Cell Period Map rendering from website
+
 Build 1096
 - switch to using internal format for UI icons
 

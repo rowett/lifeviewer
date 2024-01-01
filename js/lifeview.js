@@ -315,7 +315,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1096,
+		/** @const {number} */ versionBuild : 1097,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -10894,7 +10894,6 @@
 			/** @type {number} */ left = 0,
 			/** @type {number} */ right = 0,
 			/** @type {number} */ bits = 0,
-			/** @const {number} */ smallBits = 3,
 			/** @type {number} */ longBits0 = 0,
 			/** @type {number} */ longBits1 = 0,
 
@@ -10927,6 +10926,7 @@
 			/** @type {number} */ pixel = 0,
 			/** @type {number} */ rowType = 0,
 			/** @type {number} */ runCount = 0,
+			/** @type {number} */ nextBits = 0,
 			/** @type {number} */ index = 0,
 			/** @type {HTMLCanvasElement} */ imageCanvas = null,
 			/** @type {CanvasRenderingContext2D} */ imageContext = null,
@@ -10964,10 +10964,37 @@
 		// read the first value
 		uniqueBlackValues[0] = data.getValue(this.bitsFor(pixelsWidth));
 
+		// read the number of sequential ones
+		j = data.getValue(this.bitsFor(uniqueBlacks));
+		
+		i = 1;
+		while (j > 0) {
+			uniqueBlackValues[i] = uniqueBlackValues[i - 1] + 1;
+			i += 1;
+			j -= 1;
+		}
+
+		// read the number of 2 bit entries
+		j = i + data.getValue(this.bitsFor(uniqueBlacks));
+		bits = 2;
+		while (i < j) {
+			uniqueBlackValues[i] = uniqueBlackValues[i - 1] + data.getValue(bits) + 1;
+			i += 1;
+		}
+
+		// read the number of 3 bit entries
+		j = i + data.getValue(this.bitsFor(uniqueBlacks));
+		bits = 3;
+		while (i < j) {
+			uniqueBlackValues[i] = uniqueBlackValues[i - 1] + data.getValue(bits) + 1;
+			i += 1;
+		}
+
 		// read the deltas
 		bits = this.bitsFor(maxBlackDelta);
-		for (i = 1; i < uniqueBlacks; i += 1) {
+		while (i < uniqueBlacks) {
 			uniqueBlackValues[i] = uniqueBlackValues[i - 1] + data.getValue(bits);
+			i += 1;
 		}
 
 		// read the number of entries for the unique white counts
@@ -10983,10 +11010,37 @@
 		// read the first value
 		uniqueWhiteValues[0] = data.getValue(this.bitsFor(pixelsWidth));
 
+		// read the number of sequential ones
+		j = data.getValue(this.bitsFor(uniqueWhites));
+		
+		i = 1;
+		while (j > 0) {
+			uniqueWhiteValues[i] = uniqueWhiteValues[i - 1] + 1;
+			i += 1;
+			j -= 1;
+		}
+
+		// read the number of 2 bit entries
+		j = i + data.getValue(this.bitsFor(uniqueWhites));
+		bits = 2;
+		while (i < j) {
+			uniqueWhiteValues[i] = uniqueWhiteValues[i - 1] + data.getValue(bits) + 1;
+			i += 1;
+		}
+
+		// read the number of 3 bit entries
+		j = i + data.getValue(this.bitsFor(uniqueWhites));
+		bits = 3;
+		while (i < j) {
+			uniqueWhiteValues[i] = uniqueWhiteValues[i - 1] + data.getValue(bits) + 1;
+			i += 1;
+		}
+
 		// read the deltas
 		bits = this.bitsFor(maxWhiteDelta);
-		for (i = 1; i < uniqueWhites; i += 1) {
+		while (i < uniqueWhites) {
 			uniqueWhiteValues[i] = uniqueWhiteValues[i - 1] + data.getValue(bits);
+			i += 1;
 		}
 
 		// read the row order
@@ -11030,21 +11084,57 @@
 		longBits0 = this.bitsFor(uniqueBlackValues.length);
 		longBits1 = this.bitsFor(uniqueWhiteValues.length);
 
-		//var n = 0;
-
 		while (currentRow < pixelsHeight) {
 			if (rowOffset === -1) {
 				rowType = data.getValue(1);
 				pixel = data.getValue(1);
-
-				//console.log("row", rows[currentRow], "type", rowType, "first pixel", pixel);
 
 				// find the start of the row in the image
 				rowOffset = (rows[currentRow] + topBorder) * imageWidth;
 				currentColumn = 0;
 			} else {
 				// read the next run count
-				runCount = data.getValue(smallBits);
+				nextBits = data.getValue(2);
+				switch(nextBits) {
+					case 0:
+						nextBits = data.getValue(1);
+						if (nextBits === 0) {
+							runCount = 4;	// code 000
+						} else {
+							runCount = 3;	// code 001
+						}
+						break;
+
+					case 1:
+						runCount = 0;	// code 01
+						break;
+
+					case 2:
+						nextBits = data.getValue(1);
+						if (nextBits === 1) {
+							runCount = 2;	// code 101
+						} else {
+							nextBits = data.getValue(1);
+							if (nextBits === 0) {
+								runCount = 5;	// code 1000
+							} else {
+								nextBits = data.getValue(1);
+								if (nextBits === 0) {
+									runCount = 6;	// code 10010
+								} else {
+									runCount = 7;	// code 10011
+								}
+							}
+						}
+
+						break;
+
+					case 3:
+						runCount = 1;	// code 11
+						break;
+				}
+
+				// check for long run
 				if (runCount === 0) {
 					// long count
 					if (pixel === 0) {
@@ -11054,14 +11144,9 @@
 						if (index === uniqueBlackValues.length) {
 							runCount = pixelsWidth - currentColumn;
 
-							//console.log("end of row");
-
 						} else {
 							runCount = uniqueBlackValues[index];
 						}
-
-						//console.log(n, "black run", runCount);
-
 					} else {
 						index = data.getValue(longBits1);
 
@@ -11069,14 +11154,9 @@
 						if (index === uniqueWhiteValues.length) {
 							runCount = pixelsWidth - currentColumn;
 
-							//console.log("end of row");
-
 						} else {
 							runCount = uniqueWhiteValues[index];
 						}
-
-						//console.log(n, "white run", runCount);
-
 					}
 
 					// output pixels
@@ -11091,9 +11171,6 @@
 					}
 				} else {
 					// small count
-
-					//console.log(n, "small run", runCount);
-
 					// output pixels
 					for (j = 0; j < runCount; j += 1) {
 						if (pixel === 1) {
@@ -11105,8 +11182,6 @@
 						currentColumn += 1;
 					}
 				}
-
-				//n += 1; // TBD remove
 
 				// invert pixel
 				pixel = 1 - pixel;
@@ -11122,22 +11197,6 @@
 				}
 			}
 		}
-
-		/*
-		console.log("image size", imageWidth, "x", imageHeight);
-		console.log("top and bottom border", topBorder);
-		console.log("left borders", borderLeft);
-		console.log("right borders", borderRight);
-		console.log("icon order", iconOrder);
-		console.log("pixels size", pixelsWidth, "x", pixelsHeight);
-		console.log("unique blacks", uniqueBlacks);
-		console.log("max black delta", maxBlackDelta);
-		console.log("black values", uniqueBlackValues);
-		console.log("unique whites", uniqueWhites);
-		console.log("max white delta", maxWhiteDelta);
-		console.log("white values", uniqueWhiteValues);
-		console.log("row order", rows);
-		*/
 
 		// write the pixels to the image
 		imageContext.putImageData(imageData, 0, 0);
@@ -11163,7 +11222,8 @@
 		// check if the icons exist
 		if (icons === null) {
 			// create the icon image
-			icons = this.decode("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");
+			icons = this.decode("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");
+		//	icons = this.decode("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")
 		}
 
 		// re-colour the grid icons

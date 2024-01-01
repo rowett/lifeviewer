@@ -424,7 +424,7 @@
 		this.cellPeriodCanvas.width = 1;
 		this.cellPeriodCanvas.height = 1;
 		/** @type {CanvasRenderingContext2D} */ this.cellPeriodContext = /** @type {!CanvasRenderingContext2D} */ (this.cellPeriodCanvas.getContext("2d"));
-		/** @type {HTMLImageElement} */ this.cellPeriodImage = new Image();
+		///** @type {HTMLImageElement} */ this.cellPeriodImage = new Image();
 		/** @type {Array<number>} */ this.cellPeriodRGB = [];
 		/** @type {number} */ this.cellPeriodNumCols = 0;
 		/** @type {number} */ this.cellPeriodCellSize = 8;
@@ -2655,8 +2655,8 @@
 		// resize the image and canvas to fix the period map with "cellSize" cells
 		rowWidth = cellSize * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) + gridBorderSize;
 		colHeight = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize) + gridBorderSize;
-		this.cellPeriodImage.width = rowWidth;
-		this.cellPeriodImage.height = colHeight;
+		//this.cellPeriodImage.width = rowWidth;
+		//this.cellPeriodImage.height = colHeight;
 		this.cellPeriodCanvas.width = rowWidth;
 		this.cellPeriodCanvas.height = colHeight;
 
@@ -2767,7 +2767,7 @@
 
 		// update the image
 		this.cellPeriodContext.putImageData(data, 0, 0);
-		this.cellPeriodImage.src = this.cellPeriodCanvas.toDataURL("image/png");
+		//this.cellPeriodImage.src = this.cellPeriodCanvas.toDataURL("image/png");
 
 		// create the table row values for page up and page down
 		view.setResultsPosition();
@@ -3005,8 +3005,10 @@
 		}
 
 		// recompute size based on scale factor
-		x = this.cellPeriodImage.width * s;
-		y = this.cellPeriodImage.height * s;
+		//x = this.cellPeriodImage.width * s;
+		//y = this.cellPeriodImage.height * s;
+		x = this.cellPeriodCanvas.width * s;
+		y = this.cellPeriodCanvas.height * s;
 
 		// render the map centered on the display
 		ctx.save();
@@ -3021,7 +3023,7 @@
 		} else {
 			ctx.imageSmoothingEnabled = false;
 		}
-		ctx.drawImage(this.cellPeriodImage, -(this.cellPeriodImage.width >> 1), -(this.cellPeriodImage.height >> 1));
+		ctx.drawImage(this.cellPeriodCanvas, -(this.cellPeriodCanvas.width >> 1), -(this.cellPeriodCanvas.height >> 1));
 		ctx.imageSmoothingEnabled = false;
 		ctx.restore();
 
@@ -18489,19 +18491,14 @@
 
 	// reset population data
 	Life.prototype.resetPopulationData = function() {
-		var	/** @type {number} */ popChunk = 0,
-			/** @type {number} */ popOffset = 0,
-			/** @type {number} */ popMask = (1 << LifeConstants.popChunkPower) - 1,
-			/** @type {number} */ i = 0;
+		var	/** @type {number} */ i = 0;
 
 		// clear population graph data
 		if (this.popGraphData && this.popGraphData.length > 0) {
-			for (i = 0; i < this.popGraphEntries; i += 1) {
-				popChunk = i >> LifeConstants.popChunkPower;
-				popOffset = i & popMask;
-				this.popGraphData[popChunk][popOffset] = 0;
-				this.birthGraphData[popChunk][popOffset] = 0;
-				this.deathGraphData[popChunk][popOffset] = 0;
+			for (i = 0; i < this.popGraphData.length; i += 1) {
+				this.popGraphData[i].fill(0);
+				this.birthGraphData[i].fill(0);
+				this.deathGraphData[i].fill(0);
 			}
 
 			// set initial population
