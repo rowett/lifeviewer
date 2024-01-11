@@ -2219,7 +2219,7 @@
 
 		// check for diagonal spaceships
 		if (isSpaceship) {
-			if (trans == LifeConstants.modFlipDiag) {
+			if (trans === LifeConstants.modFlipDiag) {
 				if (deltaX === deltaY) {
 					trans = LifeConstants.modRot90FlipX;
 				}
@@ -3600,6 +3600,7 @@
 		var	/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ ci = 0,
+			/** @type {number} */ v = 0,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @type {Uint8Array} */ colourRow = null;
 
@@ -3624,12 +3625,56 @@
 			} else {
 				if (this.isExtended) {
 					for (cx = extent.leftX; cx <= extent.rightX; cx += 1) {
-						if (colourRow[cx]) {
-							// ignore kill cells
-							if (colourRow[cx] === 3) {
-								this.population -= 1;
-							} else {
-								cellCounts[ci] += 1;
+						v = colourRow[cx];
+						if (v) {
+							switch (v) {
+								case 3:
+									this.population -= 1;
+									break;
+
+								case 6:
+									this.births += 1;
+									cellCounts[ci] += 1;
+									break;
+
+								case 7:
+									this.population -= 1;
+									this.deaths += 1;
+									break;
+
+								case 10:
+									this.births += 1;
+									cellCounts[ci] += 1;
+									break;
+
+								case 11:
+									this.population -= 1;
+									this.deaths += 1;
+									break;
+
+								case 12:
+									this.births += 1;
+									cellCounts[ci] += 1;
+									break;
+
+								case 13:
+									this.population -= 1;
+									this.deaths += 1;
+									break;
+
+								case 19:
+									this.births += 1;
+									cellCounts[ci] += 1;
+									break;
+
+								case 20:
+									this.population -= 1;
+									this.deaths += 1;
+									break;
+
+								default:
+									cellCounts[ci] += 1;
+									break;
 							}
 						}
 						ci += 1;
@@ -4433,7 +4478,7 @@
 						// no Mod found so check if at a subperiod
 						if (p > 0 && (period % p === 0)) {
 							// ensure bounding box is the same size as the source
-							if ((((extent.rightX - extent.leftX + 1) === width0) && ((extent.topY - extent.bottomY) + 1) === height0) || ((extent.rightX - extent.leftX + 1) === height0) && ((extent.topY - extent.bottomY + 1) == width0)) {
+							if ((((extent.rightX - extent.leftX + 1) === width0) && ((extent.topY - extent.bottomY) + 1) === height0) || ((extent.rightX - extent.leftX + 1) === height0) && ((extent.topY - extent.bottomY + 1) === width0)) {
 								modMatch = this.checkModHash(extent, hash0, deltaX, deltaY);
 								if (modMatch !== 0 && !(this.isMargolus && hash0 === hash1 && p < 2)) {
 									// potential Mod found so create verification record
@@ -5161,7 +5206,7 @@
 											saveResults = false;
 										} else {
 											// pattern hasn't moved
-											if (period === 1 || (period === 2 && this.isMargolus)) {
+											if (period === 1 || (period === 2 && this.isMargolus && this.hashList[0] === this.hashList[1])) {
 												message = "Still Life";
 											} else {
 												message = "Oscillator period " + period;

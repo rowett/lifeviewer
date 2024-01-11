@@ -1,3 +1,7 @@
+Build 1098
+- fixed Identify on Margolus period 2 oscillators
+- fixed Identify for alternating [R]Investigator states
+
 Build 1097
 - improved random fill performance at T=0
 - fixed Cell Period Map rendering from website
