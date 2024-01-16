@@ -182,15 +182,6 @@
 		// hexagonal y zoom factor
 		/** @const {number} */ hexagonalYFactor : 3 / 2 * (1 / Math.sqrt(3)),
 
-		// copy RLE size threshold (bytes) for single pass
-		/** @const (number) */ copySizeThreshold : 65536,
-
-		// copy RLE time threshold (ms) for single pass
-		/** @const (number) */ copyTimeThreshold : 500,
-
-		// copy RLE frames to display before two pass copy to allow notification
-		/** @const (number) */ copyWait: 17,
-
 		// grid line major light background default
 		/** @const (number) */ gridLineLightBoldRawDefault : (209 << 16) | (209 << 8) | 209,
 
@@ -315,7 +306,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1098,
+		/** @const {number} */ versionBuild : 1099,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1097,9 +1088,6 @@
 		// universe number
 		/** @type {number} */ this.universe = 0;
 
-		// running in Edge browser
-		/** @type {boolean} */ this.isEdge = false;
-
 		// icon manager
 		/** @type {IconManager} */ this.iconManager = null;
 
@@ -1303,36 +1291,8 @@
 		// whether computing history
 		/** @type {boolean} */ this.computeHistory = false;
 
-		// whether copying RLE
-		/** @type {boolean} */ this.clipboardCopy = false;
-
-		// copy start time
-		/** @type {number} */ this.copyStartTime = -1;
-
-		// textarea used for RLE copy
-		this.tempInput = null;
-
-		// div used for RLE copy
-		this.tempDiv = null;
-
 		// window scroll position
 		/** @type {number} */ this.scrollPosition = 0;
-
-		// string containing RLE
-		/** @type{string} */ this.tempRLE = "";
-
-		// amount copied and target
-		/** @type {number} */ this.tempRLEAmount = 0;
-		/** @type {number} */ this.tempRLELength = 0;
-
-		// chunk size in bytes to copy
-		/** @type {number} */ this.tempRLEChunkSize = 32768;
-
-		// whether copy complete message displayed
-		/** @type {boolean} */ this.copyCompleteDisplayed = false;
-
-		// frames to display before processing copy to allow notification
-		/** @type {number} */ this.copyFrameWait = 0;
 
 		// history target generation
 		/** @type {number} */ this.computeHistoryTarget = 0;
@@ -5307,18 +5267,6 @@
 	};
 
 
-	// update progress bar for copy RLE
-	View.prototype.updateProgressBarCopy = function(/** @type {View} */ me) {
-		// update the progress bar
-		me.progressBar.current = 100 * (me.tempRLEAmount / me.tempRLELength);
-
-		// show the progress bar
-		me.progressBar.deleted = false;
-
-		// clear the bg alpha to show the progress bar
-		me.genToggle.bgAlpha = 0;
-	};
-
 	// update progress bar for history computation
 	View.prototype.updateProgressBarHistory = function(/** @type {View} */ me, /** @type {number} */ targetGen) {
 		// update the progress bar
@@ -7648,59 +7596,6 @@
 		me.menuManager.setAutoUpdate(true);
 	};
 
-	// view update for copy to clipboard
-	View.prototype.viewAnimateClipboard = function(/** @type {View} */ me) {
-		var	/** @type {number} */ amountToAdd = me.tempRLEChunkSize,
-			/** @type {number} */ amountLeft = me.tempRLELength - me.tempRLEAmount,
-			textArea = null;
-
-		// check if copied
-		if (me.tempRLEAmount < me.tempRLELength) {
-			// check if wait has expired
-			if (me.copyFrameWait > 0) {
-				me.copyFrameWait -= 1;
-			} else {
-				// if running in Edge then copy in one go
-				if (me.isEdge) {
-					me.tempInput.innerHTML = me.tempRLE;
-					me.tempRLEAmount = me.tempRLELength;
-				} else {
-					// copy the next chunk
-					if (amountLeft < amountToAdd) {
-						amountToAdd = amountLeft;
-					}
-					// create a new textarea
-					textArea = document.createElement("textarea");
-					me.hideElement(textArea);
-					// find the nearest newline before the end of the chunk
-					if (amountToAdd !== amountLeft) {
-						while (me.tempRLE[me.tempRLEAmount + amountToAdd] !== "\n") {
-							amountToAdd -= 1;
-						}
-					}
-					textArea.innerHTML = me.tempRLE.substring(me.tempRLEAmount, me.tempRLEAmount + amountToAdd);
-					me.tempRLEAmount += amountToAdd;
-					me.tempInput.appendChild(textArea);
-				}
-			}
-		} else {
-			// draw notification
-			if (!me.copyCompleteDisplayed) {
-				me.menuManager.notification.notify("Press Enter to complete copy", 15, 10000, 15, true);
-				me.copyCompleteDisplayed = true;
-			}
-		}
-
-		// update progress bar
-		me.updateProgressBarCopy(me);
-
-		// render world
-		me.renderWorld(me, false, 0, false);
-
-		// set the auto update mode
-		me.menuManager.setAutoUpdate(true);
-	};
-
 	// stop start from (go to generation)
 	View.prototype.stopStartFrom = function(/** @type {View} */ me, /** @type {boolean} */ cancelled, /** @type {boolean} */ notify) {
 		var	/** @type {number} */ gps = 0,
@@ -8138,18 +8033,14 @@
 				if (me.identify) {
 					me.viewAnimateIdentify(me);
 				} else {
-					if (me.clipboardCopy) {
-						me.viewAnimateClipboard(me);
+					if (me.startFrom !== -1) {
+						me.viewAnimateStartFrom(me);
 					} else {
-						if (me.startFrom !== -1) {
-							me.viewAnimateStartFrom(me);
-						} else {
-							me.viewAnimateNormal(timeSinceLastUpdate, me);
+						me.viewAnimateNormal(timeSinceLastUpdate, me);
 
-							// check if initializing Fast Lookup
-							if (me.engine.isRuleTree && me.engine.ruleLoaderStep !== -1) {
-								me.viewAnimateInitLookup(me, startTime);
-							}
+						// check if initializing Fast Lookup
+						if (me.engine.isRuleTree && me.engine.ruleLoaderStep !== -1) {
+							me.viewAnimateInitLookup(me, startTime);
 						}
 					}
 				}
@@ -16427,133 +16318,21 @@
 
 	// copy string to clipboard
 	View.prototype.copyToClipboard = function(/** @type {View} */ me, /** @type {string} */ contents, /** @type {boolean} */ twoPhase) {
-		var	/** @type {string} */ elementType = "textarea",
-			/** @type {number} */ processingTime = 0,
-			/** @type {Element} */ copyElement = document.getElementById("ViewerCopy");
+		var	/** @type {Element} */ copyElement = document.getElementById("ViewerCopy"),
+			/** @type {string} */ logMsg = contents.substring(0, 40).replace(/[\n\r]/g, " ");
+
+		console.log("copyToClipboard", contents.length, "bytes", "[" + logMsg + "...]");
+
+		// copy the text to the system clipboard
+		navigator.clipboard.writeText(contents);
+
+		// display copy notification
+		me.menuManager.notification.notify("Copied to external clipboard", 15, 180, 15, true);
 
 		// check if a copy text box exists
 		if (copyElement) {
 			copyElement.innerHTML = contents;
 		}
-
-		// remember current window scroll position since Safari moves it
-		me.scrollPosition = document.documentElement.scrollTop || document.body.scrollTop;
-
-		// setup the contents to copy
-		me.tempRLE = contents;
-		me.tempRLEAmount = 0;
-		me.tempRLELength = contents.length;
-
-		// try the copy in a single pass if small and fast enough
-		if (twoPhase) {
-			// check for Edge browser
-			processingTime = performance.now() - me.copyStartTime;
-			if (processingTime < ViewConstants.copyTimeThreshold && me.tempRLELength < ViewConstants.copySizeThreshold) {
-				twoPhase = false;
-			} else {
-				// don't use a div if running on Edge since it can't multi-select elements so we have to use one textarea
-				if (!me.isEdge) {
-					elementType = "div";
-				}
-			}
-		}
-
-		// copy the element contents to a temporary off-screen element
-		// since selection doesn't work on hidden elements
-		me.tempDiv = document.createElement("div");
-		me.tempDiv.contentEditable = true;
-		me.hideElement(me.tempDiv);
-		me.tempInput = document.createElement(elementType);
-		me.hideElement(me.tempInput);
-		me.tempInput.contentEditable = true;
-
-		// add the the textarea to the div
-		me.tempDiv.appendChild(me.tempInput);
-
-		// add the new div to the document
-		document.body.appendChild(me.tempDiv);
-
-		// check if processing in a single phase
-		if (!twoPhase) {
-			me.tempInput.innerHTML = contents;
-			me.completeCopyToClipboard(me, twoPhase);
-		} else {
-			// setup pause to display notification
-			me.copyFrameWait = ViewConstants.copyWait;
-			me.menuManager.notification.notify("Copying...", 15, 10000, 15, true);
-
-			// set copy mode
-			me.clipboardCopy = true;
-			me.copyCompleteDisplayed = false;
-
-			// disable menu
-			me.viewMenu.locked = true;
-		}
-	};
-
-	// complete copy to clipboard
-	View.prototype.completeCopyToClipboard = function(/** @type {View} */ me, /** @type {boolean} */ twoPhase) {
-		var	selection = null,
-			range = null,
-			element = null;
-
-		// select and copy the temporary elements contents to the clipboard
-		if (!me.isEdge) {
-			if (twoPhase) {
-				element = me.tempDiv;
-			} else {
-				element = me.tempInput;
-				element.contentEditable = "true";
-				element.readOnly = "false";
-			}
-		} else {
-			element = me.tempInput;
-		}
-
-		// focus on the element and select it
-		element.focus();
-		range = document.createRange();
-		range.selectNodeContents(element);
-
-		try {
-			if (twoPhase) {
-				document.execCommand("selectAll");
-			} else {
-				selection = window.getSelection();
-				selection.removeAllRanges();
-				selection.addRange(range);
-				element.setSelectionRange(0, 999999);
-			}
-
-			document.execCommand("copy");
-		}
-		catch(err) {
-		}
-
-		// remove the temporary element
-		document.body.removeChild(me.tempDiv);
-		me.tempRLE = "";
-
-		// set focus to the canvas
-		if (!me.menuManager.eventWasTouch) {
-			me.mainContext.canvas.focus();
-		}
-
-		// clear notification
-		me.menuManager.notification.notify("Copied to external clipboard", 15, 180, 15, true);
-
-		if (twoPhase) {
-			// clear copy mode
-			me.clipboardCopy = false;
-
-			// unlock menu
-			me.viewMenu.locked = false;
-		}
-
-		// restore scroll position
-		document.documentElement.scrollTop = document.body.scrollTop = me.scrollPosition;
-
-		me.copyStartTime = -1;
 	};
 
 	// convert a theme colour object to an RGB string or colour name
@@ -16755,7 +16534,6 @@
 	// select and copy reset position rle
 	View.prototype.copyRLE = function(/** @type {View} */ me, /** @type {boolean} */ twoPhase) {
 		// copy the source pattern to the clipboard
-		me.copyStartTime = performance.now();
 		if (DocConfig.multi) {
 			me.copyToClipboard(me, Controller.patterns[me.universe].pattern, twoPhase);
 		} else {
@@ -16766,7 +16544,6 @@
 	// select and copy current rle
 	View.prototype.copyCurrentRLE = function(/** @type {View} */ me, /** @type {boolean} */ addComments) {
 		// copy the current pattern to the clipboard
-		me.copyStartTime = performance.now();
 		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, [], false), false);
 	};
 
@@ -16787,17 +16564,12 @@
 				// process the key in identify mode
 				processed = KeyProcessor.processKeyIdentify(me, keyCode, event);
 			} else {
-				// check for clipboard copy
-				if (me.clipboardCopy) {
-					processed = KeyProcessor.processKeyCopy(me, keyCode, event);
+				// check for go to generation
+				if (me.startFrom !== -1) {
+					processed = KeyProcessor.processKeyGoTo(me, keyCode, event);
 				} else {
-					// check for go to generation
-					if (me.startFrom !== -1) {
-						processed = KeyProcessor.processKeyGoTo(me, keyCode, event);
-					} else {
-						// process the key
-						processed = KeyProcessor.processKey(me, keyCode, event);
-					}
+					// process the key
+					processed = KeyProcessor.processKey(me, keyCode, event);
 				}
 			}
 		}
@@ -18380,9 +18152,6 @@
 				}
 			}
 		}
-
-		// mark copy complete message not displayed
-		me.copyCompleteDisplayed = false;
 	};
 
 	// resize viewer
@@ -18828,13 +18597,6 @@
 			/** @type {boolean} */ growY = false,
 			/** @type {string} */ comments = "";
 
-		// check for Edge browser
-		if (window.navigator.userAgent.indexOf("Edge") !== -1) {
-			me.isEdge = true;
-		} else {
-			me.isEdge = false;
-		}
-
 		// zero population
 		me.engine.population = 0;
 
@@ -19221,9 +18983,6 @@
 
 		// clear compute history mode
 		me.computeHistory = false;
-
-		// clear copy to clipboard mode
-		me.clipboardCopy = false;
 
 		// unlock menu
 		me.viewMenu.locked = false;

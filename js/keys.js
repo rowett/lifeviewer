@@ -6,44 +6,6 @@
 	// key processor
 	var KeyProcessor = {};
 
-	// process keys in copy clipboard mode
-	/** @returns {boolean} */
-	KeyProcessor.processKeyCopy = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
-		// flag event processed
-		var	/** @type {boolean} */ processed = true,
-			/** @type {boolean} */ ctrlKey = event.ctrlKey;
-
-		// check for control-R which would refresh browser
-		if (ctrlKey && keyCode === 82) {
-			return true;
-		}
-
-		// determine if the key can be processed
-		switch (keyCode) {
-		// return for copy
-		case 13:
-			if (me.tempRLEAmount === me.tempRLELength) {
-				me.completeCopyToClipboard(me, true);
-			}
-			break;
-
-		// t for timing display
-		case 84:
-			// toggle fps
-			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
-			break;
-
-		// ignore other keys
-		default:
-			// flag not handled
-			processed = false;
-			break;
-		}
-
-		// return whether key processed
-		return processed;
-	};
-
 	// process keys in go to generation mode
 	/** @returns {boolean} */
 	KeyProcessor.processKeyGoTo = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
