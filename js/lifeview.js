@@ -306,7 +306,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1099,
+		/** @const {number} */ versionBuild : 1100,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -500,7 +500,10 @@
 		/** @type {PopupWindow} */ popupWindow : null,
 
 		// list of patterns in multiverse mode
-		/** @type {Array} */ patterns : []
+		/** @type {Array} */ patterns : [],
+
+		// last copied text
+		/** @type {string} */ clipText : ""
 	};
 
 	// return standalone viewer
@@ -12213,7 +12216,8 @@
 		patternText += me.engine.afterTitle;
 
 		// check whether prompt required
-		if (me.undoButton.locked || me.randomizeGuard) {
+		if (me.undoButton.locked || me.randomizeGuard || (me.editNum === 2 && me.editList[1].gen !== 0)) {
+			// prompt not required because there was nothing to undo, or the only undo is to reset to gen 0
 			result = true;
 		} else {
 			result = window.confirm("Create new random pattern?");
@@ -14590,6 +14594,8 @@
 			/** @type {number} */ numStates = me.engine.multiNumStates,
 			/** @type {number} */ wasState6 = 0;
 
+		console.time("randomSelection");
+
 		// check for selection
 		if (me.isSelection) {
 			if (x1 > x2) {
@@ -14671,6 +14677,8 @@
 			// save edit
 			me.afterEdit("random " + me.randomDensity + "%");
 		}
+
+		console.timeEnd("randomSelection");
 	};
 
 	// random fill
@@ -16316,15 +16324,37 @@
 		element.style.top = "0px";
 	};
 
+	//* @returns {string} */
+	async function getClipText() {
+		return Controller.clipText;
+	}
+
 	// copy string to clipboard
 	View.prototype.copyToClipboard = function(/** @type {View} */ me, /** @type {string} */ contents, /** @type {boolean} */ twoPhase) {
 		var	/** @type {Element} */ copyElement = document.getElementById("ViewerCopy"),
 			/** @type {string} */ logMsg = contents.substring(0, 40).replace(/[\n\r]/g, " ");
 
-		console.log("copyToClipboard", contents.length, "bytes", "[" + logMsg + "...]");
+		// save the contents
+		Controller.clipText = contents;
 
 		// copy the text to the system clipboard
-		navigator.clipboard.writeText(contents);
+		// check if ClipboardItem is available
+		if (window.ClipboardItem) {
+			// create the clipboard item
+			const clipboardItem = new ClipboardItem({
+				'text/plain': getClipText().then(() => {
+					return new Promise(async (resolve) => {
+						resolve(new Blob([contents], {type: "text/plain"}))
+					})
+				}),
+			})
+
+			// write to the clipboard
+			navigator.clipboard.write([clipboardItem])
+		} else {
+			// just write text (Firefox)
+			navigator.clipboard.writeText(contents);
+		}
 
 		// display copy notification
 		me.menuManager.notification.notify("Copied to external clipboard", 15, 180, 15, true);
@@ -20919,6 +20949,7 @@
 			button = null,
 			button2 = null,
 			button3 = null,
+			build = null,
 
 			// temporary allocator and pattern manager
 			/** @type {Allocator} */ allocator = new Allocator(),
@@ -21044,6 +21075,12 @@
 		if (button3) {
 			registerEvent(button3, "click", function() {updateViewer(button3);}, false);
 		}
+
+		// check for LifeViewer build element
+		build = document.getElementById("lvbuild");
+		if (build) {
+			build.innerHTML = String(ViewConstants.versionBuild);
+		}
 	}
 
 	/*  TBD WASM
@@ -21076,4 +21113,3 @@
 	// external interface
 	window['updateViewer'] = updateViewer;
 	window['updateMe'] = updateMe;
-	window['lifeViewerBuild'] = ViewConstants.versionBuild;

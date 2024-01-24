@@ -1,3 +1,8 @@
+Build 1100
+- improved copy to clipboard compatbility on Safari mobile
+- do not prompt when Randomizing the pattern if the only edit was playback from T=0
+- fixed CSP issue with getting build number
+
 Build 1099
 - improved copy to clipboard compatibility
 

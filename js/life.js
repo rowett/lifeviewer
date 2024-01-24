@@ -18540,10 +18540,12 @@
 
 		// clear population graph data
 		if (this.popGraphData && this.popGraphData.length > 0) {
-			for (i = 0; i < this.popGraphData.length; i += 1) {
-				this.popGraphData[i].fill(0);
-				this.birthGraphData[i].fill(0);
-				this.deathGraphData[i].fill(0);
+			if (this.counter > 0) {
+				for (i = 0; i < this.popGraphData.length; i += 1) {
+					this.popGraphData[i].fill(0);
+					this.birthGraphData[i].fill(0);
+					this.deathGraphData[i].fill(0);
+				}
 			}
 
 			// set initial population
