@@ -7037,7 +7037,7 @@
 			// attempt to grow the grid
 			while (growX || growY) {
 				if (growX || growY) {
-					this.growGrid(growX, growY);
+					this.growGrid(growX, growY, true);
 				}
 				if (growX) {
 					x += this.width >> 2;
@@ -7261,7 +7261,7 @@
 			// attempt to grow the grid
 			while (growX || growY) {
 				if (growX || growY) {
-					this.growGrid(growX, growY);
+					this.growGrid(growX, growY, true);
 				}
 				if (growX) {
 					x += this.width >> 2;
@@ -8643,7 +8643,7 @@
 	};
 
 	// grow grid
-	Life.prototype.growGrid = function(/** @type {boolean} */ growX, /** @type {boolean} */ growY) {
+	Life.prototype.growGrid = function(/** @type {boolean} */ growX, /** @type {boolean} */ growY, /** @type {boolean} */ copyContents) {
 		// get the current grid size
 		var	/** @type {number} */ currentWidth = this.width,
 			/** @type {number} */ currentHeight = this.height,
@@ -8803,46 +8803,48 @@
 			this.widthMask = this.width - 1;
 			this.heightMask = this.height - 1;
 
-			// copy the old grids to the center of the new ones
-			this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.grid, currentGrid);
-			this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.nextGrid, currentNextGrid);
-			this.copyGridToCenter(currentHeight, yOffset, xOffset, this.colourGrid, currentColourGrid);
-			this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallColourGrid, currentSmallColourGrid);
-			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
-				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.nextColourGrid, currentNextColourGrid);
-			}
-			if (this.countList) {
-				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.countList, currentCountList);
-			}
-			if (this.initList) {
-				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.initList, currentInitList);
-			}
-			if (currentOverlayGrid && currentSmallOverlayGrid) {
-				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.overlayGrid, currentOverlayGrid);
-				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallOverlayGrid, currentSmallOverlayGrid);
-			}
-			if (currentMaskGrid && currentMaskAliveGrid && currentMaskCellsGrid) {
-				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Mask, currentMaskGrid);
-				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Alive, currentMaskAliveGrid);
-				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Cells, currentMaskCellsGrid);
-			}
+			// copy the old grids to the center of the new ones if required
+			if (copyContents) {
+				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.grid, currentGrid);
+				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.nextGrid, currentNextGrid);
+				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.colourGrid, currentColourGrid);
+				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallColourGrid, currentSmallColourGrid);
+				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
+					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.nextColourGrid, currentNextColourGrid);
+				}
+				if (this.countList) {
+					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.countList, currentCountList);
+				}
+				if (this.initList) {
+					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.initList, currentInitList);
+				}
+				if (currentOverlayGrid && currentSmallOverlayGrid) {
+					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.overlayGrid, currentOverlayGrid);
+					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallOverlayGrid, currentSmallOverlayGrid);
+				}
+				if (currentMaskGrid && currentMaskAliveGrid && currentMaskCellsGrid) {
+					this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Mask, currentMaskGrid);
+					this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Alive, currentMaskAliveGrid);
+					this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Cells, currentMaskCellsGrid);
+				}
 
-			// copy the old tile grids to the center of the new ones
-			if (growY) {
-				yOffsetTile = currentTileHeight >> 1;
-			}
-			if (growX) {
-				xOffsetTile = this.tileGrid[0].length >> 2;
-			}
+				// copy the old tile grids to the center of the new ones
+				if (growY) {
+					yOffsetTile = currentTileHeight >> 1;
+				}
+				if (growX) {
+					xOffsetTile = this.tileGrid[0].length >> 2;
+				}
 
-			if (currentMaskTileGrid) {
-				this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.state6TileGrid, currentMaskTileGrid);
+				if (currentMaskTileGrid) {
+					this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.state6TileGrid, currentMaskTileGrid);
+				}
+				this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.tileGrid, currentTileGrid);
+				this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.nextTileGrid, currentNextTileGrid);
+				this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.colourTileGrid, currentColourTileGrid);
+				this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.colourTileHistoryGrid, currentColourTileHistoryGrid);
+				this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.diedGrid, currentDiedGrid);
 			}
-			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.tileGrid, currentTileGrid);
-			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.nextTileGrid, currentNextTileGrid);
-			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.colourTileGrid, currentColourTileGrid);
-			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.colourTileHistoryGrid, currentColourTileHistoryGrid);
-			this.copyGridToCenter(currentTileHeight, yOffsetTile, xOffsetTile, this.diedGrid, currentDiedGrid);
 
 			// update the snapshots
 			this.snapshotManager.resizeSnapshots(((this.tileCols - 1) >> 4) + 1, this.tileRows, xOffsetTile, yOffsetTile, xOffset, yOffset, this.drawOverlay);
@@ -8915,7 +8917,7 @@
 			if (growX || growY) {
 				// compute the growth direction
 				// grow the grid
-				this.growGrid(growX, growY);
+				this.growGrid(growX, growY, true);
 				result = true;
 
 				// update the default x and y

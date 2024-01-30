@@ -1,3 +1,7 @@
+Build 1101
+- performance improvements when loading patterns
+- embedded viewers with too big [[ WIDTH ]] specified will now attempt to keep aspect ratio rather than flag an error
+
 Build 1100
 - improved copy to clipboard compatbility on Safari mobile
 - do not prompt when Randomizing the pattern if the only edit was playback from T=0

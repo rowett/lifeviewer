@@ -5986,8 +5986,8 @@
 				lower = ViewConstants.minNoGUIWidth;
 			}
 
-			// validate width
-			if (view.requestedWidth < lower || view.requestedWidth > view.maxCodeWidth) {
+			// validate width against lower bound only (upper bound check is later)
+			if (view.requestedWidth < lower) {
 				scriptErrors[scriptErrors.length] = [Keywords.widthWord + " " + view.requestedWidth, "argument out of range"];
 				sizeError = true;
 			}
@@ -6002,6 +6002,32 @@
 			if (view.requestedHeight < lower || view.requestedHeight > ViewConstants.maxViewerHeight) {
 				scriptErrors[scriptErrors.length] = [Keywords.heightWord + " " + view.requestedHeight, "argument out of range"];
 				sizeError = true;
+			}
+		}
+
+		// check if the WIDTH would cause a size error
+		if (view.requestedWidth !== -1 && !sizeError) {
+			if (view.requestedWidth > view.maxCodeWidth) {
+				// requested width is too large so scale WIDTH and HEIGHT to keep aspect ratio
+				numberValue = view.maxCodeWidth / view.requestedWidth;
+				view.requestedWidth = view.maxCodeWidth;
+
+				// check if height was specified
+				if (view.requestedHeight !== -1) {
+					view.requestedHeight = (view.requestedHeight * numberValue) | 0;
+				} else {
+					view.requestedHeight = (view.displayHeight * numberValue) | 0;
+				}
+
+				// ensure height is in range
+				lower = ViewConstants.minViewerHeight;
+				if (view.noGUI) {
+					lower = ViewConstants.minNoGUIHeight;
+				}
+
+				if (view.requestedHeight < lower) {
+					view.requestedHeight = lower;
+				}
 			}
 		}
 

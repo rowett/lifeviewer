@@ -306,7 +306,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1100,
+		/** @const {number} */ versionBuild : 1101,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -2349,7 +2349,7 @@
 			// attempt to grow the grid
 			while (growX || growY) {
 				if (growX || growY) {
-					this.engine.growGrid(growX, growY);
+					this.engine.growGrid(growX, growY, true);
 				}
 				if (growX) {
 					x += this.engine.width >> 2;
@@ -2388,7 +2388,7 @@
 				// attempt to grow the grid
 				while (growX || growY) {
 					if (growX || growY) {
-						this.engine.growGrid(growX, growY);
+						this.engine.growGrid(growX, growY, true);
 					}
 					if (growX) {
 						x += this.engine.width >> 2;
@@ -4515,7 +4515,10 @@
 			/** @type {number} */ numStates = this.engine.multiNumStates,
 
 			// whether pattern is 2-state HROT
-			/** @type {boolean} */ isTwoStateHROT = (numStates === 2 && this.engine.isHROT);
+			/** @type {boolean} */ isTwoStateHROT = (numStates === 2 && this.engine.isHROT),
+
+			// whether the pattern needs clipping along a row
+			/** @type {boolean} */ needsClipping = true;
 
 		// check for bounded grid
 		if (this.engine.boundedGridType !== -1) {
@@ -4578,10 +4581,30 @@
 		dBottomY += this.engine.height >> 1;
 		dTopY += this.engine.height >> 1;
 
+		// clip to grid
+		if (dLeftX < 0) {
+			dLeftX = 0;
+		}
+		if (dRightX >= this.engine.width) {
+			dRightX = this.engine.width - 1;
+		}
+		if (dBottomY < 0) {
+			dBottomY = 0;
+		}
+		if (dTopY >= this.engine.height) {
+			dTopY = this.engine.height -1;
+		}
+
+		// check if the pattern needs clipping along each row
+		if (panX >= dLeftX && panX <= dRightX && width + panX >= dLeftX && width - 1 + panX <= dRightX) {
+			needsClipping = false;
+		}
+
 		// update the life grid
 		for (y = 0; y < height; y += 1) {
 			patternRow = pattern.lifeMap[y];
-			if (y + panY >= dBottomY && y + panY <= dTopY && y + panY >= 0 && y + panY < this.engine.height) {
+			if (y + panY >= dBottomY && y + panY <= dTopY) {
+
 				gridRow = grid[y + panY];
 
 				// check for multi-state view
@@ -4590,13 +4613,25 @@
 					colourGridRow = colourGrid[y + panY];
 
 					// copy colour cells
-					for (x = 0; x < width; x += 1) {
-						if (x + panX >= dLeftX && x + panX <= dRightX && x + panX >= 0 && x + panX < this.engine.width) {
+					if (!needsClipping) {
+						// no clipping needed
+						for (x = 0; x < width; x += 1) {
 							state = multiStateRow[x];
 							if (state > 0) {
 								state += this.historyStates;
 							}
 							colourGridRow[x + panX] = state;
+						}
+					} else {
+						// clipping needed
+						for (x = 0; x < width; x += 1) {
+							if (x + panX >= dLeftX && x + panX <= dRightX) {
+								state = multiStateRow[x];
+								if (state > 0) {
+									state += this.historyStates;
+								}
+								colourGridRow[x + panX] = state;
+							}
 						}
 					}
 				} else {
@@ -4606,14 +4641,27 @@
 						colourGridRow = colourGrid[y + panY];
 
 						// copy colour cells
-						for (x = 0; x < width; x += 1) {
-							if (x + panX >= dLeftX && x + panX <= dRightX && x + panX >= 0 && x + panX < this.engine.width) {
+						if (!needsClipping) {
+							// no clipping needed
+							for (x = 0; x < width; x += 1) {
 								// reverse order for rendering unless "none" rule is used
 								state = multiStateRow[x];
 								if (state > 0 && !this.engine.isNone) {
 									state = numStates + this.historyStates - state;
 								}
 								colourGridRow[x + panX] = state;
+							}
+						} else {
+							// clipping needed
+							for (x = 0; x < width; x += 1) {
+								if (x + panX >= dLeftX && x + panX <= dRightX) {
+									// reverse order for rendering unless "none" rule is used
+									state = multiStateRow[x];
+									if (state > 0 && !this.engine.isNone) {
+										state = numStates + this.historyStates - state;
+									}
+									colourGridRow[x + panX] = state;
+								}
 							}
 						}
 					}
@@ -4622,13 +4670,43 @@
 				// copy 2-state cells
 				if (isTwoStateHROT) {
 					colourGridRow = colourGrid[y + panY];
-				}
-				for (x = 0; x < width; x += 1) {
-					if (x + panX >= dLeftX && x + panX <= dRightX && x + panX >= 0 && x + panX < this.engine.width) {
-						if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
-							gridRow[(x + panX) >> 4] |= 1 << (~(x + panX) & 15);
-							if (isTwoStateHROT) {
+
+					// check if clipping is required
+					if (!needsClipping) {
+						// no clipping needed
+						for (x = 0; x < width; x += 1) {
+							if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
+								gridRow[(x + panX) >> 4] |= 1 << (~(x + panX) & 15);
 								colourGridRow[x + panX] = LifeConstants.aliveStart;
+							}
+						}
+					} else {
+						// clipping needed
+						for (x = 0; x < width; x += 1) {
+							if (x + panX >= dLeftX && x + panX <= dRightX) {
+								if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
+									gridRow[(x + panX) >> 4] |= 1 << (~(x + panX) & 15);
+									colourGridRow[x + panX] = LifeConstants.aliveStart;
+								}
+							}
+						}
+					}
+				} else {
+					// check if clipping is required
+					if (!needsClipping) {
+						// no clipping needed
+						for (x = 0; x < width; x += 1) {
+							if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
+								gridRow[(x + panX) >> 4] |= 1 << (~(x + panX) & 15);
+							}
+						}
+					} else {
+						// clipping needed
+						for (x = 0; x < width; x += 1) {
+							if (x + panX >= dLeftX && x + panX <= dRightX) {
+								if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
+									gridRow[(x + panX) >> 4] |= 1 << (~(x + panX) & 15);
+								}
 							}
 						}
 					}
@@ -4639,18 +4717,31 @@
 		// copy [R]History states to the overlay grid if required
 		if (overlayGrid) {
 			for (y = 0; y < height; y += 1) {
-				if (y + panY >= dBottomY && y + panY <= dTopY && y + panY >= 0 && y + panY < this.engine.height) {
+				if (y + panY >= dBottomY && y + panY <= dTopY) {
 					multiStateRow = pattern.multiStateMap[y];
 					overlayGridRow = overlayGrid[y + panY];
 
 					// copy states
-					for (x = 0; x < width; x += 1) {
-						if (x + panX >= dLeftX && x + panX <= dRightX && x + panX >= 0 && x + panX < this.engine.width) {
+					if (!needsClipping) {
+						// no clipping needed
+						for (x = 0; x < width; x += 1) {
 							// get the next state
 							state = multiStateRow[x];
 							if (state) {
 								// copy to the overlay grid and convert into ascending importance order
 								overlayGridRow[x + panX] = ViewConstants.stateMap[state] + 128;
+							}
+						}
+					} else {
+						// clipping needed
+						for (x = 0; x < width; x += 1) {
+							if (x + panX >= dLeftX && x + panX <= dRightX) {
+								// get the next state
+								state = multiStateRow[x];
+								if (state) {
+									// copy to the overlay grid and convert into ascending importance order
+									overlayGridRow[x + panX] = ViewConstants.stateMap[state] + 128;
+								}
 							}
 						}
 					}
@@ -19552,8 +19643,8 @@
 		growY = (me.engine.height < me.engine.maxGridSize) && ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height);
 
 		while (growX || growY) {
-			// grow the grid
-			me.engine.growGrid(growX, growY);
+			// grow the grid but do not copy any existing contents (since there isn't any)
+			me.engine.growGrid(growX, growY, false);
 
 			// update the default x and y
 			if (growX) {
@@ -20955,6 +21046,8 @@
 			/** @type {Allocator} */ allocator = new Allocator(),
 			/** @type {PatternManager} */ manager = new PatternManager();
 
+		console.time("LifeViewer page scan");
+
 		// read settings
 		readSettingsFromMeta();
 
@@ -20980,6 +21073,9 @@
 
 				// check if typedArrays and Canvas are supported
 				if (Supports.typedArrays && textItem) {
+
+					console.time("LifeViewer read embedded");
+
 					// remove any html tags from the text item and trim
 					cleanItem = cleanPattern(textItem);
 
@@ -21007,6 +21103,9 @@
 							}
 						}
 					}
+	
+					console.timeEnd("LifeViewer read embedded");
+
 				}
 			} else {
 				// check if typedArrays are supported
@@ -21018,6 +21117,9 @@
 							// find the child code block
 							textItem = rleItem.getElementsByTagName(DocConfig.patternSourceName)[0];
 							if (textItem) {
+
+								console.time("LifeViewer read popup");
+
 								// remove any html tags from the text item and trim
 								cleanItem = cleanPattern(textItem);
 
@@ -21026,6 +21128,8 @@
 
 								// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
 								isPattern(cleanItem, allocator, manager, rleItem, textItem, null);
+
+								console.timeEnd("LifeViewer read popup");
 							}
 						}
 					}
@@ -21081,6 +21185,8 @@
 		if (build) {
 			build.innerHTML = String(ViewConstants.versionBuild);
 		}
+
+		console.timeEnd("LifeViewer page scan");
 	}
 
 	/*  TBD WASM
