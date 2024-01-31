@@ -1,3 +1,7 @@
+Build 1102
+- fixed some Chrome warnings about getImageData
+- improved Snapshot performance
+
 Build 1101
 - performance improvements when loading patterns
 - embedded viewers with too big [[ WIDTH ]] specified will now attempt to keep aspect ratio rather than flag an error

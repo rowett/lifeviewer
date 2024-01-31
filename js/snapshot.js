@@ -68,8 +68,8 @@
 			// tile group (16 tiles)
 			/** @type {number} */ tileGroup = 0,
 
-			// tile width (in bytes) and height
-			/** @type {number} */ xSize = life.tileX,
+			// tile width (in 2 byte chunks) and height
+			/** @type {number} */ xSize = life.tileX >> 1,
 			/** @type {number} */ ySize = life.tileY,
 
 			// tile on the grid
@@ -89,7 +89,9 @@
 			/** @type {number} */ rowSize = bufferRow.length,
 
 			// next bytes from the buffer
-			/** @type {number} */ value = 0;
+			/** @type {number} */ value = 0,
+
+			/** @type {Array<Uint16Array>} */ input16 = Array.matrixView(Type.Uint16, grid, "Snapshot.input16");
 
 		// restore the tile grid
 		Array.copy(this.tileGrid, tile);
@@ -120,69 +122,50 @@
 							// get the data from the buffer
 							value = bufferRow[bufInd];
 							bufInd += 1;
-
-							// copy to the grid
-							grid[ty][tx] = value & 255;
-							grid[ty][tx + 1] = (value >> 8) & 255;
-							grid[ty + 1][tx] = (value >> 16) & 255;
-							grid[ty + 1][tx + 1] = value >> 24;
-							ty += 2;
-
-							// loop unroll for whole tile
-							value = bufferRow[bufInd];
-							bufInd += 1;
-							grid[ty][tx] = value & 255;
-							grid[ty][tx + 1] = (value >> 8) & 255;
-							grid[ty + 1][tx] = (value >> 16) & 255;
-							grid[ty + 1][tx + 1] = value >> 24;
+							input16[ty][tx] = value >> 16;
+							input16[ty + 1][tx] = value & 65535;
 							ty += 2;
 
 							value = bufferRow[bufInd];
 							bufInd += 1;
-							grid[ty][tx] = value & 255;
-							grid[ty][tx + 1] = (value >> 8) & 255;
-							grid[ty + 1][tx] = (value >> 16) & 255;
-							grid[ty + 1][tx + 1] = value >> 24;
+							input16[ty][tx] = value >> 16;
+							input16[ty + 1][tx] = value & 65535;
 							ty += 2;
 
 							value = bufferRow[bufInd];
 							bufInd += 1;
-							grid[ty][tx] = value & 255;
-							grid[ty][tx + 1] = (value >> 8) & 255;
-							grid[ty + 1][tx] = (value >> 16) & 255;
-							grid[ty + 1][tx + 1] = value >> 24;
+							input16[ty][tx] = value >> 16;
+							input16[ty + 1][tx] = value & 65535;
 							ty += 2;
 
 							value = bufferRow[bufInd];
 							bufInd += 1;
-							grid[ty][tx] = value & 255;
-							grid[ty][tx + 1] = (value >> 8) & 255;
-							grid[ty + 1][tx] = (value >> 16) & 255;
-							grid[ty + 1][tx + 1] = value >> 24;
+							input16[ty][tx] = value >> 16;
+							input16[ty + 1][tx] = value & 65535;
 							ty += 2;
 
 							value = bufferRow[bufInd];
 							bufInd += 1;
-							grid[ty][tx] = value & 255;
-							grid[ty][tx + 1] = (value >> 8) & 255;
-							grid[ty + 1][tx] = (value >> 16) & 255;
-							grid[ty + 1][tx + 1] = value >> 24;
+							input16[ty][tx] = value >> 16;
+							input16[ty + 1][tx] = value & 65535;
 							ty += 2;
 
 							value = bufferRow[bufInd];
 							bufInd += 1;
-							grid[ty][tx] = value & 255;
-							grid[ty][tx + 1] = (value >> 8) & 255;
-							grid[ty + 1][tx] = (value >> 16) & 255;
-							grid[ty + 1][tx + 1] = value >> 24;
+							input16[ty][tx] = value >> 16;
+							input16[ty + 1][tx] = value & 65535;
 							ty += 2;
 
 							value = bufferRow[bufInd];
 							bufInd += 1;
-							grid[ty][tx] = value & 255;
-							grid[ty][tx + 1] = (value >> 8) & 255;
-							grid[ty + 1][tx] = (value >> 16) & 255;
-							grid[ty + 1][tx + 1] = value >> 24;
+							input16[ty][tx] = value >> 16;
+							input16[ty + 1][tx] = value & 65535;
+							ty += 2;
+
+							value = bufferRow[bufInd];
+							bufInd += 1;
+							input16[ty][tx] = value >> 16;
+							input16[ty + 1][tx] = value & 65535;
 							ty += 2;
 
 							// check if buffer row is full
@@ -237,8 +220,8 @@
 			// count of used tiles
 			/** @type {number} */ usedCount = 0,
 
-			// tile width (in bytes) and height
-			/** @type {number} */ xSize = life.tileX,
+			// tile width (in 2 byte chunks) and height
+			/** @type {number} */ xSize = life.tileX >> 1,
 			/** @type {number} */ ySize = life.tileY,
 
 			// tile on the grid
@@ -261,7 +244,9 @@
 			/** @type {number} */ numRows = buffer.length,
 
 			// bit counts (from manager)
-			/** @type {Uint8Array} */ bitCounts = this.manager.bitCounts;
+			/** @type {Uint8Array} */ bitCounts = this.manager.bitCounts,
+
+			/** @type {Array<Uint16Array>} */ input16 = Array.matrixView(Type.Uint16, grid, "Snapshot.input16");
 
 		// save the tile grid
 		Array.copy(tile, this.tileGrid);
@@ -309,36 +294,35 @@
 								tx = leftX;
 
 								// copy the tile from the grid to the buffer
-								bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty + 1][tx] << 16) | (grid[ty + 1][tx + 1] << 24);
+								bufferRow[bufInd] = (input16[ty][tx] << 16) | input16[ty + 1][tx];
 								bufInd += 1;
 								ty += 2;
 
-								// loop unroll for whole tile
-								bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty + 1][tx] << 16) | (grid[ty + 1][tx + 1] << 24);
+								bufferRow[bufInd] = (input16[ty][tx] << 16) | input16[ty + 1][tx];
 								bufInd += 1;
 								ty += 2;
 
-								bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty + 1][tx] << 16) | (grid[ty + 1][tx + 1] << 24);
+								bufferRow[bufInd] = (input16[ty][tx] << 16) | input16[ty + 1][tx];
 								bufInd += 1;
 								ty += 2;
 
-								bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty + 1][tx] << 16) | (grid[ty + 1][tx + 1] << 24);
+								bufferRow[bufInd] = (input16[ty][tx] << 16) | input16[ty + 1][tx];
 								bufInd += 1;
 								ty += 2;
 
-								bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty + 1][tx] << 16) | (grid[ty + 1][tx + 1] << 24);
+								bufferRow[bufInd] = (input16[ty][tx] << 16) | input16[ty + 1][tx];
 								bufInd += 1;
 								ty += 2;
 
-								bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty + 1][tx] << 16) | (grid[ty + 1][tx + 1] << 24);
+								bufferRow[bufInd] = (input16[ty][tx] << 16) | input16[ty + 1][tx];
 								bufInd += 1;
 								ty += 2;
 
-								bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty + 1][tx] << 16) | (grid[ty + 1][tx + 1] << 24);
+								bufferRow[bufInd] = (input16[ty][tx] << 16) | input16[ty + 1][tx];
 								bufInd += 1;
 								ty += 2;
 
-								bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty + 1][tx] << 16) | (grid[ty + 1][tx + 1] << 24);
+								bufferRow[bufInd] = (input16[ty][tx] << 16) | input16[ty + 1][tx];
 								bufInd += 1;
 								ty += 2;
 
@@ -377,239 +361,8 @@
 		}
 	};
 
-	// restore overlay grid using tile map
-	Snapshot.prototype.restoreOverlayGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, /** @type {Life} */ life) {
-		// length of tile array
-		var	/** @type {number} */ l = tile.length,
-
-			// width of tile row arrays
-			/** @type {number} */ w = tile[0].length,
-
-			// iterators
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ tx = 0,
-			/** @type {number} */ ty = 0,
-
-			// buffer index
-			/** @type {number} */ bufInd = 0,
-
-			// tile row
-			/** @type {Uint16Array} */ tileRow = null,
-
-			// tile group (16 tiles)
-			/** @type {number} */ tileGroup = 0,
-
-			// tile width (in bytes) and height
-			/** @type {number} */ xSize = life.tileX << 3,
-			/** @type {number} */ ySize = life.tileY,
-
-			// tile on the grid
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ bottomY = 0,
-
-			// overlay grid buffer
-			/** @type {Array<Uint32Array>} */ buffer = this.overlayBuffer,
-
-			// row index
-			/** @type {number} */ rowIndex = 0,
-
-			// buffer row
-			/** @type {Uint32Array} */ bufferRow = buffer[rowIndex],
-
-			// row size
-			/** @type {number} */ rowSize = bufferRow.length,
-
-			// next bytes from the buffer
-			/** @type {number} */ value = 0;
-
-		// restore the colour tile grid
-		Array.copy(this.overlayTileGrid, tile);
-
-		// copy the buffer onto the colour grid
-		for (y = 0; y < l; y += 1) {
-			// get the next tile row
-			tileRow = tile[y];
-
-			// set tile column on grid
-			leftX = 0;
-
-			// get each set of tiles in the row
-			for (x = 0; x < w; x += 1) {
-				// get the next tile group
-				tileGroup = tileRow[x];
-
-				// check if any tiles are present in the tile group
-				if (tileGroup) {
-					// check each tile in the group
-					for (b = 15; b >= 0; b -= 1) {
-						// check if this tile is used
-						if ((tileGroup & (1 << b)) !== 0) {
-							// copy the tile
-							for (tx = leftX; tx < leftX + xSize; tx += 4) {
-								ty = bottomY;
-
-								// get the data from the buffer
-								value = bufferRow[bufInd];
-								bufInd += 1;
-
-								// copy to the colour grid
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								// loop unroll for whole tile
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
-
-								// check if buffer row is full
-								if (bufInd >= rowSize) {
-									// get the next row
-									rowIndex += 1;
-									bufferRow = buffer[rowIndex];
-
-									// reset index
-									bufInd = 0;
-								}
-							}
-						}
-
-						// next tile column
-						leftX += xSize;
-					}
-				} else {
-					// skip empty tile group
-					leftX += xSize << 4;
-				}
-			}
-
-			// next tile row
-			bottomY += ySize;
-		}
-	};
-
 	// restore colour grid using tile map
-	Snapshot.prototype.restoreColourGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, /** @type {Life} */ life) {
+	Snapshot.prototype.restoreColourGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, /** @type {Life} */ life, /** @type {Array<Uint32Array>} */ buffer) {
 		// length of tile array
 		var	/** @type {number} */ l = tile.length,
 
@@ -632,16 +385,13 @@
 			// tile group (16 tiles)
 			/** @type {number} */ tileGroup = 0,
 
-			// tile width (in bytes) and height
-			/** @type {number} */ xSize = life.tileX << 3,
+			// tile width (in 4 byte chunks) and height
+			/** @type {number} */ xSize = life.tileX << 1,
 			/** @type {number} */ ySize = life.tileY,
 
 			// tile on the grid
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
-
-			// colour grid buffer
-			/** @type {Array<Uint32Array>} */ buffer = this.colourBuffer,
 
 			// row index
 			/** @type {number} */ rowIndex = 0,
@@ -652,8 +402,8 @@
 			// row size
 			/** @type {number} */ rowSize = bufferRow.length,
 
-			// next bytes from the buffer
-			/** @type {number} */ value = 0;
+			/** @type {Array<Uint32Array>} */ input32 = Array.matrixView(Type.Uint32, grid, "Snapshot.input32"),
+			/** @type {Uint32Array} */ row32 = null;
 
 		// restore the colour tile grid
 		Array.copy(this.colourTileGrid, tile);
@@ -678,150 +428,193 @@
 						// check if this tile is used
 						if ((tileGroup & (1 << b)) !== 0) {
 							// copy the tile
-							for (tx = leftX; tx < leftX + xSize; tx += 4) {
-								ty = bottomY;
+							tx = leftX;
+							ty = bottomY;
 
-								// get the data from the buffer
-								value = bufferRow[bufInd];
-								bufInd += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								// copy to the colour grid
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								// loop unroll for whole tile
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							row32 = input32[ty];
+							row32[tx] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 1] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 2] = bufferRow[bufInd];
+							bufInd += 1;
+							row32[tx + 3] = bufferRow[bufInd];
+							bufInd += 1;
+							ty += 1;
 
-								value = bufferRow[bufInd];
-								bufInd += 1;
-								grid[ty][tx] = value & 255;
-								grid[ty][tx + 1] = (value >> 8) & 255;
-								grid[ty][tx + 2] = (value >> 16) & 255;
-								grid[ty][tx + 3] = value >> 24;
-								ty += 1;
+							// check if buffer row is full
+							if (bufInd >= rowSize) {
+								// get the next row
+								rowIndex += 1;
+								bufferRow = buffer[rowIndex];
 
-								// check if buffer row is full
-								if (bufInd >= rowSize) {
-									// get the next row
-									rowIndex += 1;
-									bufferRow = buffer[rowIndex];
-
-									// reset index
-									bufInd = 0;
-								}
+								// reset index
+								bufInd = 0;
 							}
 						}
 
@@ -839,208 +632,8 @@
 		}
 	};
 
-	// save overlay grid using tile map
-	Snapshot.prototype.saveOverlayGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, /** @type {Life} */ life) {
-		// length of tile array
-		var	/** @type {number} */ l = tile.length,
-
-			// width of tile row arrays
-			/** @type {number} */ w = tile[0].length,
-
-			// iterators
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ b = 0,
-			/** @type {number} */ tx = 0,
-			/** @type {number} */ ty = 0,
-
-			// buffer index
-			/** @type {number} */ bufInd = 0,
-
-			// tile row
-			/** @type {Uint16Array} */ tileRow = null,
-
-			// tile group (16 tiles)
-			/** @type {number} */ tileGroup = 0,
-
-			// count of used tiles
-			/** @type {number} */ usedCount = 0,
-
-			// tile width (in bytes) and height
-			/** @type {number} */ xSize = life.tileX << 3,
-			/** @type {number} */ ySize = life.tileY,
-
-			// tile on the grid
-			/** @type {number} */ leftX = 0,
-			/** @type {number} */ bottomY = 0,
-
-			// overlay grid buffer
-			/** @type {Array<Uint32Array>} */ buffer = this.overlayBuffer,
-
-			// row index
-			/** @type {number} */ rowIndex = 0,
-
-			// first buffer row
-			/** @type {Uint32Array} */ bufferRow = buffer[rowIndex],
-
-			// row size
-			/** @type {number} */ rowSize = bufferRow.length,
-
-			// number of rows
-			/** @type {number} */ numRows = buffer.length,
-
-			// bit counts (from manager)
-			/** @type {Uint8Array} */ bitCounts = this.manager.bitCounts;
-
-		// save the colour tile grid
-		Array.copy(tile, this.overlayTileGrid);
-
-		// count tiles used
-		for (y = 0; y < l; y += 1) {
-			// get the next tile row
-			tileRow = tile[y];
-
-			// get each set of tiles in the row
-			for (x = 0; x < w; x += 1) {
-				// get the next tile group
-				tileGroup = tileRow[x];
-
-				// count the tiles in the group
-				if (tileGroup) {
-					usedCount += bitCounts[tileGroup];
-				}
-			}
-		}
-
-		// allocate array to store grid
-		if (usedCount) {
-			// copy the grid in to the buffer
-			for (y = 0; y < l; y += 1) {
-				// get the next tile row
-				tileRow = tile[y];
-
-				// set tile column on grid
-				leftX = 0;
-
-				// get each set of tiles in the row
-				for (x = 0; x < w; x += 1) {
-					// get the next tile group
-					tileGroup = tileRow[x];
-
-					// check if any tiles are present in the tile group
-					if (tileGroup) {
-						// check each tile in the group
-						for (b = 15; b >= 0; b -= 1) {
-							// check if this tile is used
-							if ((tileGroup & (1 << b)) !== 0) {
-								// copy the tile
-								for (tx = leftX; tx < leftX + xSize; tx += 4) {
-									ty = bottomY;
-
-									// copy the tile from the grid to the buffer
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									// loop unroll for whole tile
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
-
-									// check if buffer row is full
-									if (bufInd >= rowSize) {
-										// go to next row
-										rowIndex += 1;
-
-										// reset index
-										bufInd = 0;
-
-										// check if there is a next row
-										if (rowIndex >= numRows) {
-											// allocate a new row
-											Array.addRow(buffer, 0, "Snapshot.overlayGridBufferRow");
-											numRows += 1;
-										}
-
-										// get the next row
-										bufferRow = buffer[rowIndex];
-									}
-								}
-							}
-
-							// next tile column
-							leftX += xSize;
-						}
-					} else {
-						// skip empty tile group
-						leftX += xSize << 4;
-					}
-				}
-
-				// next tile row
-				bottomY += ySize;
-			}
-		}
-	};
-
 	// save colour grid using tile map
-	Snapshot.prototype.saveColourGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, /** @type {Life} */ life) {
+	Snapshot.prototype.saveColourGridUsingTile = function(/** @type {Array<Uint8Array>} */ grid, /** @type {Array<Uint16Array>} */ tile, /** @type {Life} */ life, /** @type {Array<Uint32Array>} */ buffer, /** @type {Array<Uint16Array>} */ colourTileGrid) {
 		// length of tile array
 		var	/** @type {number} */ l = tile.length,
 
@@ -1066,16 +659,13 @@
 			// count of used tiles
 			/** @type {number} */ usedCount = 0,
 
-			// tile width (in bytes) and height
-			/** @type {number} */ xSize = life.tileX << 3,
+			// tile width (in 4 byte chunks) and height
+			/** @type {number} */ xSize = life.tileX << 1,
 			/** @type {number} */ ySize = life.tileY,
 
 			// tile on the grid
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
-
-			// colour grid buffer
-			/** @type {Array<Uint32Array>} */ buffer = this.colourBuffer,
 
 			// row index
 			/** @type {number} */ rowIndex = 0,
@@ -1090,10 +680,13 @@
 			/** @type {number} */ numRows = buffer.length,
 
 			// bit counts (from manager)
-			/** @type {Uint8Array} */ bitCounts = this.manager.bitCounts;
+			/** @type {Uint8Array} */ bitCounts = this.manager.bitCounts,
+
+			/** @type {Array<Uint32Array>} */ input32 = Array.matrixView(Type.Uint32, grid, "Snapshot.input32"),
+			/** @type {Uint32Array} */ row32 = null;
 
 		// save the colour tile grid
-		Array.copy(tile, this.colourTileGrid);
+		Array.copy(tile, colourTileGrid);
 
 		// count tiles used
 		for (y = 0; y < l; y += 1) {
@@ -1134,97 +727,204 @@
 							// check if this tile is used
 							if ((tileGroup & (1 << b)) !== 0) {
 								// copy the tile
-								for (tx = leftX; tx < leftX + xSize; tx += 4) {
-									ty = bottomY;
+								tx = leftX;
+								ty = bottomY;
 
-									// copy the tile from the grid to the buffer
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									// loop unroll for whole tile
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									bufferRow[bufInd] = grid[ty][tx] | (grid[ty][tx + 1] << 8) | (grid[ty][tx + 2] << 16) | (grid[ty][tx + 3] << 24);
-									bufInd += 1;
-									ty += 1;
+								row32 = input32[ty];
+								bufferRow[bufInd] = row32[tx];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 1];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 2];
+								bufInd += 1;
+								bufferRow[bufInd] = row32[tx + 3];
+								bufInd += 1;
+								ty += 1;
 
-									// check if buffer row is full
-									if (bufInd >= rowSize) {
-										// go to next row
-										rowIndex += 1;
+								// check if buffer row is full
+								if (bufInd >= rowSize) {
+									// go to next row
+									rowIndex += 1;
 
-										// reset index
-										bufInd = 0;
+									// reset index
+									bufInd = 0;
 
-										// check if there is a next row
-										if (rowIndex >= numRows) {
-											// allocate a new row
-											Array.addRow(buffer, 0, "Snapshot.colourGridBufferRow");
-											numRows += 1;
-										}
-
-										// get the next row
-										bufferRow = buffer[rowIndex];
+									// check if there is a next row
+									if (rowIndex >= numRows) {
+										// allocate a new row
+										Array.addRow(buffer, 0, "Snapshot.colourGridBufferRow");
+										numRows += 1;
 									}
+
+									// get the next row
+									bufferRow = buffer[rowIndex];
 								}
 							}
-
-							// next tile column
 							leftX += xSize;
 						}
 					} else {
@@ -1440,11 +1140,11 @@
 		snapshot.saveGridUsingTile(grid, tileGrid, life);
 
 		// save the colour grid
-		snapshot.saveColourGridUsingTile(colourGrid, colourTileGrid, life);
+		snapshot.saveColourGridUsingTile(colourGrid, colourTileGrid, life, snapshot.colourBuffer, snapshot.colourTileGrid);
 
 		if (usingOverlay) {
 			// save the overlay grid
-			snapshot.saveOverlayGridUsingTile(overlayGrid, overlayTileGrid, life);
+			snapshot.saveColourGridUsingTile(overlayGrid, overlayTileGrid, life, snapshot.overlayBuffer, snapshot.overlayTileGrid);
 		}
 
 		// save the bounding box

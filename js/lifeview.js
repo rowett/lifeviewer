@@ -306,7 +306,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1101,
+		/** @const {number} */ versionBuild : 1102,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -507,8 +507,9 @@
 	};
 
 	// return standalone viewer
+	/** @returns {Array} */
 	Controller.standaloneViewer = function() {
-		var	result = null;
+		var	/** @type {Array} */ result = null;
 
 		// check if there is a standalone viewer
 		if (this.standaloneIndex !== -1) {
@@ -520,11 +521,24 @@
 	};
 
 	// return the View for the requested viewer
+	/** @returns {View} */
 	Controller.getView = function(/** @type {number} */ which) {
-		var	result = null;
+		var	/** @type {View} */ result = null;
 
 		if (which >=0 && which < this.viewers.length) {
 			result = this.viewers[which][1];
+		}
+
+		return result;
+	};
+
+	// return the Canvas for the requested viewer
+	/** @returns {HTMLCanvasElement} */
+	Controller.getCanvas = function(/** @type {number} */ which) {
+		var	/** @type {HTMLCanvasElement} */ result = null;
+
+		if (which >=0 && which < this.viewers.length) {
+			result = this.viewers[which][0];
 		}
 
 		return result;
@@ -539,7 +553,7 @@
 	// return number of viewers playing
 	/** @returns {number} */
 	Controller.viewersPlaying = function() {
-		var	currentViewer = null,
+		var	/** @type {View} */ currentViewer = null,
 			/** @type {number} */ count = 0,
 			/** @type {number} */ i = 0;
 
@@ -11058,7 +11072,7 @@
 		imageContext.clearRect(0, 0, imageWidth, imageHeight);
 
 		// get the image data
-		imageData = imageContext.getImageData(0, 0, imageWidth, imageHeight);
+		imageData = imageContext.createImageData(imageWidth, imageHeight);
 		imageData32 = new Uint32Array(imageData.data.buffer);
 
 		// read each row of data
@@ -14685,8 +14699,6 @@
 			/** @type {number} */ numStates = me.engine.multiNumStates,
 			/** @type {number} */ wasState6 = 0;
 
-		console.time("randomSelection");
-
 		// check for selection
 		if (me.isSelection) {
 			if (x1 > x2) {
@@ -14768,8 +14780,6 @@
 			// save edit
 			me.afterEdit("random " + me.randomDensity + "%");
 		}
-
-		console.timeEnd("randomSelection");
 	};
 
 	// random fill
@@ -19933,6 +19943,9 @@
 
 			// save state for reset
 			me.engine.saveGrid(me.noHistory, me);
+			//me.engine.snapshotManager.reset();
+			//me.engine.nextSnapshotTarget = LifeConstants.snapshotInterval;
+
 			me.engine.restoreSavedGrid(me, me.noHistory);
 		}
 
@@ -20530,10 +20543,10 @@
 	// hide the external viewer
 	function hideViewer() {
 		// get the standalone viewer
-		var	externalViewer = Controller.standaloneViewer(),
+		var	/** @type {Array} */ externalViewer = Controller.standaloneViewer(),
 
 			// get the parent node of the Canvas
-			parentItem = externalViewer[0].parentNode,
+			/** @type {Element} */ parentItem = externalViewer[0].parentNode,
 
 			// get the associated View
 			/** @type {View} */ view = externalViewer[1],

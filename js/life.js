@@ -8348,7 +8348,7 @@
 		snapshot.restoreGridUsingTile(grid, tileGrid, this);
 
 		// restore colour grid from snapshot
-		snapshot.restoreColourGridUsingTile(colourGrid, this.colourTileGrid, this);
+		snapshot.restoreColourGridUsingTile(colourGrid, this.colourTileGrid, this, snapshot.colourBuffer);
 		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 			Array.copy(colourGrid, this.nextColourGrid);
 		}
@@ -8357,7 +8357,7 @@
 		if (this.drawOverlay) {
 			overlayGrid.whole.fill(0);
 			this.smallOverlayGrid.whole.fill(0);
-			snapshot.restoreOverlayGridUsingTile(overlayGrid, this.colourTileHistoryGrid, this);
+			snapshot.restoreColourGridUsingTile(overlayGrid, this.colourTileHistoryGrid, this, snapshot.overlayBuffer);
 			this.populateState6MaskFromColGrid();
 		} else {
 			if (this.isSuper) {
