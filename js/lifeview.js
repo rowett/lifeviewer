@@ -306,7 +306,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1102,
+		/** @const {number} */ versionBuild : 1103,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",

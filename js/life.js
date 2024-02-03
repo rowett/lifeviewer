@@ -4785,7 +4785,7 @@
 			// compute Mod for spaceship
 			this.computeStrictVolatility(period, i, view, false, deltaXOrig, deltaYOrig);
 		} else {
-			if (period === 1 || (period === 2 && this.isMargolus)) {
+			if (period === 1 || (period === 2 && this.isMargolus && this.hashList[0] === this.hashList[1])) {
 				type = "Still Life";
 			} else {
 				// oscillator

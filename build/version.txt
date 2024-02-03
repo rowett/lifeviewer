@@ -1,3 +1,6 @@
+Build 1103
+- fixed Identify issue with Margolus period 2 oscillators
+
 Build 1102
 - fixed some Chrome warnings about getImageData
 - improved Snapshot performance
