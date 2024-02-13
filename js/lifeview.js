@@ -306,7 +306,7 @@
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1103,
+		/** @const {number} */ versionBuild : 1106,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -711,6 +711,18 @@
 	 */
 	function View(element) {
 		var	/** @type {number} */ i = 0;
+
+		// pinch touch start locations
+		/** @type {number} */ this.pinchStartX1 = 0;
+		/** @type {number} */ this.pinchStartY1 = 0;
+		/** @type {number} */ this.pinchStartX2 = 0;
+		/** @type {number} */ this.pinchStartY2 = 0;
+
+		// pinch touch current locations
+		/** @type {number} */ this.pinchCurrentX1 = 0;
+		/** @type {number} */ this.pinchCurrentY1 = 0;
+		/** @type {number} */ this.pinchCurrentX2 = 0;
+		/** @type {number} */ this.pinchCurrentY2 = 0;
 
 		// control/command key text
 		/** @const {string} */ this.controlKeyText = Supports.cmdKey ? ViewConstants.cmdText : ViewConstants.ctrlText;
@@ -10190,6 +10202,86 @@
 		return result;
 	};
 
+	// update zoom from pinch
+	View.prototype.updateZoomFromPinch = function() {
+		var	/** @type {number} */ startDx = Math.abs(this.pinchStartX2 - this.pinchStartX1),
+			/** @type {number} */ startDy = Math.abs(this.pinchStartY2 - this.pinchStartY1),
+			/** @type {number} */ currentDx = Math.abs(this.pinchCurrentX2 - this.pinchCurrentX1),
+			/** @type {number} */ currentDy = Math.abs(this.pinchCurrentY2 - this.pinchCurrentY1),
+
+			// compute the distance between the two touches at start
+			/** @type {number} */ startDelta = Math.sqrt((startDx * startDx) + (startDy * startDy)),
+
+			// compute the distance between the two touches now
+			/** @type {number} */ currentDelta = Math.sqrt((currentDx * currentDx) + (currentDy * currentDy)),
+
+			// get the current zoom
+			/** @type {number} */ currentZoom = ViewConstants.minZoom * Math.pow(ViewConstants.maxZoom / ViewConstants.minZoom, this.zoomItem.current[0]);
+
+
+		// adjust the zoom by the ratio of the distance between touches now and at start
+		currentZoom *= (currentDelta / startDelta);
+
+		// ensure zoom is in allowed range
+		if (currentZoom < ViewConstants.minZoom) {
+			currentZoom = ViewConstants.minZoom;
+		} else {
+			if (currentZoom > ViewConstants.maxZoom) {
+				currentZoom = ViewConstants.maxZoom;
+			}
+		}
+
+		// apply new zoom
+		currentZoom = Math.log(currentZoom / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom);
+		this.zoomItem.current = this.viewZoomRange([currentZoom, currentZoom], true, this);
+
+		// save current position as start position
+		this.pinchStartX1 = this.pinchCurrentX1;
+		this.pinchStartY1 = this.pinchCurrentY1;
+		this.pinchStartX2 = this.pinchCurrentX2;
+		this.pinchStartY2 = this.pinchCurrentY2;
+	};
+
+	// pinch callback
+	View.prototype.viewPinch = function(/** @type {number} */ x1, /** @type {number} */ y1, /** @type {number} */ x2, /** @type {number} */ y2, /** @type {number} */ mode, /** @type {View} */ me) {
+		if (!me.noGUI) {
+			switch (mode) {
+				case 0:
+					// pinch started
+					me.pinchStartX1 = x1;
+					me.pinchStartY1 = y1;
+					me.pinchStartX2 = x2;
+					me.pinchStartY2 = y2;
+					me.pinchCurrentX1 = x1;
+					me.pinchCurrentY1 = y1;
+					me.pinchCurrentX2 = x2;
+					me.pinchCurrentY2 = y2;
+					break;
+	
+				case 1:
+					// first touch moved
+					me.pinchCurrentX1 = x1;
+					me.pinchCurrentY1 = y1;
+					me.updateZoomFromPinch();
+					break;
+	
+				case 2:
+					// second touch moved
+					me.pinchCurrentX2 = x1;
+					me.pinchCurrentY2 = y1;
+					me.updateZoomFromPinch();
+					break;
+	
+				default:
+					// ignore others
+					break;
+			}
+		}
+
+		// ensure menu manager updates
+		me.menuManager.setAutoUpdate(true);
+	};
+
 	// view menu wakeup callback
 	View.prototype.viewWakeUp = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {boolean} */ dragOn, /** @type {View} */ me) {
 		// on mouse release pause playback so GUI unhides
@@ -16939,6 +17031,9 @@
 		// add callback for wakeup when GUI locked
 		this.viewMenu.wakeCallback = this.viewWakeUp;
 
+		// add callback for pinch on touch devices
+		this.menuManager.pinchCallback = this.viewPinch;
+
 		// identify banner label
 		this.identifyBannerLabel = this.viewMenu.addLabelItem(Menu.north, 0, 52, 480, 48, "Banner");
 		this.identifyBannerLabel.setFont("32px Arial");
@@ -18726,6 +18821,12 @@
 			/** @type {string} */ name = "",
 			/** @type {boolean} */ growX = false,
 			/** @type {boolean} */ growY = false,
+			/** @type {boolean} */ gridGrew = false,
+			/** @type {number} */ xOffset = 0,
+			/** @type {number} */ yOffset = 0,
+			/** @type {number} */ idBottom = 0,
+			/** @type {number} */ idLeft = 0,
+			/** @type {number} */ idCurrent = 0,
 			/** @type {string} */ comments = "";
 
 		// zero population
@@ -19653,14 +19754,22 @@
 		growY = (me.engine.height < me.engine.maxGridSize) && ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height);
 
 		while (growX || growY) {
-			// grow the grid but do not copy any existing contents (since there isn't any)
-			me.engine.growGrid(growX, growY, false);
+			// mark that grid needs to grow
+			gridGrew = true;
+
+			// clear offsets
+			xOffset = 0;
+			yOffset = 0;
 
 			// update the default x and y
 			if (growX) {
+				xOffset = me.engine.width >> 1;
+				me.engine.width *= 2;
 				me.defaultX += me.engine.width >> 2;
 			}
 			if (growY) {
+				yOffset = me.engine.height >> 1;
+				me.engine.height *= 2;
 				me.defaultY += me.engine.height >> 2;
 			}
 
@@ -19680,9 +19789,52 @@
 				}
 			}
 
+			// adjust camera
+			me.engine.xOff += xOffset;
+			me.engine.yOff += yOffset;
+			if (me.engine.isHex) {
+				me.engine.xOff -= (yOffset / 2 | 0);
+			}
+
+			// update bounding boxes
+			me.engine.zoomBox.leftX += xOffset;
+			me.engine.zoomBox.rightX += xOffset;
+			me.engine.zoomBox.topY += yOffset;
+			me.engine.zoomBox.bottomY += yOffset;
+
+			me.engine.HROTBox.leftX += xOffset;
+			me.engine.HROTBox.rightX += xOffset;
+			me.engine.HROTBox.topY += yOffset;
+			me.engine.HROTBox.bottomY += yOffset;
+
+			me.engine.initialBox.leftX += xOffset;
+			me.engine.initialBox.rightX += xOffset;
+			me.engine.initialBox.topY += yOffset;
+			me.engine.initialBox.bottomY += yOffset;
+
+			me.engine.historyBox.leftX += xOffset;
+			me.engine.historyBox.rightX += xOffset;
+			me.engine.historyBox.topY += yOffset;
+			me.engine.historyBox.bottomY += yOffset;
+
+			// update identify positions
+			if (me.engine.oscLength > 0) {
+				for (i = 0; i < me.engine.oscLength; i += 1) {
+					idCurrent = me.engine.boxList[(i << 1) + 1];
+					idLeft = (idCurrent >> 16) + xOffset;
+					idBottom = (idCurrent & 65535) + yOffset;
+					me.engine.boxList[(i << 1) + 1] = (idLeft << 16) | idBottom;
+				}
+			}
+
 			// see if the grid needs to grow further
 			growX = (me.engine.width < me.engine.maxGridSize) && ((neededWidth + borderSize + Math.abs(me.xOffset) * 2) >= me.engine.width);
 			growY = (me.engine.height < me.engine.maxGridSize) && ((neededHeight + borderSize + Math.abs(me.yOffset) * 2) >= me.engine.height);
+		}
+
+		if (gridGrew) {
+			// allocate the grid without copying contents since it is empty
+			me.engine.growGrid(false, false, false);
 		}
 
 		// resize the HROT buffer to the current width and height
@@ -19943,9 +20095,6 @@
 
 			// save state for reset
 			me.engine.saveGrid(me.noHistory, me);
-			//me.engine.snapshotManager.reset();
-			//me.engine.nextSnapshotTarget = LifeConstants.snapshotInterval;
-
 			me.engine.restoreSavedGrid(me, me.noHistory);
 		}
 

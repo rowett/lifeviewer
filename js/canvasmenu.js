@@ -2479,8 +2479,12 @@
 		// whether last event was touch
 		/** @type {boolean} */ this.eventWasTouch = false;
 
-		// current touch id
-		/** @type {number} */ this.currentTouchId = -1;
+		// id for up to two touch points
+		/** @type {number} */ this.currentTouchId1 = -1;
+		/** @type {number} */ this.currentTouchId2 = -1;
+
+		// callback when pinch happens
+		/** @type {function(number,number,number,number,number,View):void|null} */ this.pinchCallback = null;
 
 		// active menu list
 		/** @type {MenuList} */ this.currentMenu = null;
@@ -3202,6 +3206,24 @@
 			messageWidth = oc.measureText(message).width;
 			oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (12 * yScale));
 
+			if (me.showExtendedTiming && me.eventWasTouch) {
+				oc.save();
+				oc.fillStyle = "black";
+				oc.font = "18px Arial";
+
+				i = 0;
+				while (i < 3) {
+					oc.fillText(String(me.currentTouchId1), 4 - i, 50 - i);
+					oc.fillText(me.caller.pinchCurrentX1 + ", " + me.caller.pinchCurrentY1, 4 - i, 80 - i);
+					oc.fillText(String(me.currentTouchId2), 4 - i, 110 - i);
+					oc.fillText(me.caller.pinchCurrentX2 + ", " + me.caller.pinchCurrentY2, 4 - i, 140 - i);
+					i += 2;
+					oc.fillStyle = "white";
+				}
+
+				oc.restore();
+			}
+
 			// draw extended timing if enabled
 			if (me.showExtendedTiming) {
 				// draw labels
@@ -3362,65 +3384,161 @@
 		}
 	};
 
-	// find touch change by identified
-	MenuManager.prototype.findChangeById = function(/** @type {TouchList} */ changes, /** @type {number} */ id) {
-		var	/** @type {Touch} */ change = null,
-			/** @type {number} */ i = 0;
-
-		// search the change list for the change with the specified id
-		while (change === null && i < changes.length) {
-			if (changes[i].identifier === id) {
-				change = changes[i];
-			} else {
-				i += 1;
-			}
+	// start pinch
+	MenuManager.prototype.startPinch = function(/** @type {number} */ x1, /** @type {number} */ y1, /** @type {number} */ x2, /** @type {number} */ y2) {
+		if (this.pinchCallback) {
+			this.pinchCallback(x1, y1, x2, y2, 0, this.caller);
 		}
+	};
 
-		return change;
+	// update pinch
+	MenuManager.prototype.movePinch = function(/** @type {Touch} */ touch) {
+		if (touch.identifier === this.currentTouchId1) {
+			this.pinchCallback(touch.pageX, touch.pageY, 0, 0, 1, this.caller);
+		} else {
+			this.pinchCallback(touch.pageX, touch.pageY, 0, 0, 2, this.caller);
+		}
+	};
+
+	// cancel pinch
+	MenuManager.prototype.cancelPinch = function() {
+		this.setAutoUpdate(true);
 	};
 
 	// touch event handler
 	MenuManager.prototype.touchHandler = function(/** @type {MenuManager} */ me, /** @type {TouchEvent} */ event) {
 		var	/** @type {TouchList} */ changes = event.changedTouches,
-			/** @type {Touch} */ thisChange = null;
+			/** @type {Touch} */ thisChange = null,
+			/** @type {number} */ numChanges = changes.length,
+			/** @type {number} */ i = 0;
 
 		// determine which event was received
 		switch (event.type) {
 		// touch start
 		case "touchstart":
 			// check if processing a touch
-			if (me.currentTouchId === -1) {
-				thisChange = changes[0];
-				me.currentTouchId = thisChange.identifier;
-				me.performDown(me, thisChange.pageX, thisChange.pageY);
+			if (me.currentTouchId1 === -1) {
+				// no touch being processed so check how many touches just started
+				switch (numChanges) {
+					// single touch so handle like a mouse down event
+					case 1:
+						thisChange = changes[0];
+						me.currentTouchId1 = thisChange.identifier;
+						me.performDown(me, thisChange.pageX, thisChange.pageY);
+						break;
+
+					// double touch so handle like a pinch event
+					case 2:
+						// start the pinch
+						thisChange = changes[0];
+						me.currentTouchId1 = thisChange.identifier;
+
+						thisChange = changes[1];
+						me.currentTouchId2 = thisChange.identifier;
+
+						me.startPinch(changes[0].pageX, changes[i].pageY, thisChange.pageX, thisChange.pageY);
+						break;
+
+					// ignore other multi touches
+					default:
+						break;
+				}
+			} else {
+				// touch being processed so check if single or pinch
+				if (me.currentTouchId2 === -1) {
+					// single touch in progress so stop it
+					me.performUp(me, this.currentMenu.mouseX, this.currentMenu.mouseY); 
+
+					// start the pinch
+					thisChange = changes[0];
+					me.currentTouchId2 = thisChange.identifier;
+
+					me.startPinch(this.currentMenu.mouseX, this.currentMenu.mouseY, thisChange.pageX, thisChange.pageY);
+					break;
+				}
 			}
 			break;
 
 		// touch end
 		case "touchend":
-			// find the change record for the current touch
-			thisChange = me.findChangeById(changes, me.currentTouchId);
-			if (thisChange !== null) {
-				me.performUp(me, thisChange.pageX, thisChange.pageY);
-				me.currentTouchId = -1;
+			// process each change record
+			for (i = 0; i < numChanges; i += 1) {
+				thisChange = changes[i];
+				
+				// check if the change relates to one of the current touches in progress
+				if (thisChange.identifier === me.currentTouchId1) {
+					// matches the first touch so check if single or pinch is in progress
+					if (me.currentTouchId2 === -1) {
+						// currently processing single so end it
+						me.performUp(me, thisChange.pageX, thisChange.pageY);
+						me.currentTouchId1 = -1;
+					} else {
+						// currently processing pinch so end it
+						me.currentTouchId1 = -1;
+						me.currentTouchId2 = -1;
+						me.cancelPinch();
+					}
+				} else {
+					if (thisChange.identifier === me.currentTouchId2) {
+						// currently processing pinch so end it
+						me.currentTouchId1 = -1;
+						me.currentTouchId2 = -1;
+						me.cancelPinch();
+					}
+				}
 			}
 			break;
 
 		// touch move
 		case "touchmove":
-			// find the change record for the current touch
-			thisChange = me.findChangeById(changes, me.currentTouchId);
-			if (thisChange !== null) {
-				me.performMove(me, thisChange.pageX, thisChange.pageY);
+			// process each change record
+			for (i = 0; i < numChanges; i += 1) {
+				thisChange = changes[i];
+
+				// check if the change relates to one of the current touches in progress
+				if (thisChange.identifier === me.currentTouchId1) {
+					// matches the first touch so check if single or pinch is in progress
+					if (me.currentTouchId2 === -1) {
+						// currently processing single so move it
+						me.performMove(me, thisChange.pageX, thisChange.pageY);
+					} else {
+						// currently processing pinch so move it
+						me.movePinch(thisChange);
+					}
+				} else {
+					if (thisChange.identifier === me.currentTouchId2) {
+						me.movePinch(thisChange);
+					}
+				}
 			}
 			break;
 
 		// touch cancel
 		case "touchcancel":
-			// find the change record for the current touch
-			thisChange = me.findChangeById(changes, me.currentTouchId);
-			if (thisChange !== null) {
-				me.performOut(me);
+			// process each change record
+			for (i = 0; i < numChanges; i += 1) {
+				thisChange = changes[i];
+
+				// check if the change relates to one of the current touches in progress
+				if (thisChange.identifier === me.currentTouchId1) {
+					// matches the first touch so check if single or pinch is in progress
+					if (me.currentTouchId2 === -1) {
+						// currently processing single so end it
+						me.performOut(me);
+					} else {
+						// currently processing pinch so end it
+						me.currentTouchId1 = -1;
+						me.currentTouchId2 = -1;
+						me.cancelPinch();
+					}
+				} else {
+					if (thisChange.identifier === me.currentTouchId2) {
+						// currently processing pinch so end it
+						me.currentTouchId1 = -1;
+						me.currentTouchId2 = -1;
+						me.cancelPinch();
+					}
+				}
 			}
 			break;
 		}

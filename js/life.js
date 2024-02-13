@@ -8690,8 +8690,8 @@
 			// row number
 			/** @type {number} */ y = 0;
 
-		// check if already at maximum size
-		if (currentWidth < this.maxGridSize || currentHeight < this.maxGridSize) {
+		// check if already at maximum size or just allocating
+		if (currentWidth < this.maxGridSize || currentHeight < this.maxGridSize || !copyContents) {
 			// double the size
 			if (growX) {
 				xOffset = this.width >> 1;
@@ -9558,10 +9558,10 @@
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ cr = 0,
-			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @type {Uint8Array} */ colourReset = this.colourReset,
-			/** @type {Uint16Array} */gridRow,
-			/** @type {Uint8Array} */colourRow,
+			/** @type {Array<Uint32Array>} */ colourGrid32 = this.colourGrid32,
+			/** @type {Uint32Array} */ colourReset32 = new Uint32Array(this.colourReset.buffer),
+			/** @type {Uint16Array} */ gridRow = null,
+			/** @type {Uint32Array} */ colourRow32 = null,
 			/** @type {number} */ rowOffset = 0,
 
 			// get the grid bounding box
@@ -9576,44 +9576,27 @@
 			// set the colour grid from the grid
 			for (y = bottomY; y <= topY; y += 1) {
 				gridRow = grid[y];
-				colourRow = colourGrid[y];
-				cr = (leftX << 4);
+				colourRow32 = colourGrid32[y];
+
+				//cr = (leftX << 4);
+				cr = (leftX << 2);
 				for (x = leftX; x <= rightX; x += 1) {
 					// get first 8 bits
-					rowOffset = (gridRow[x] >> 8) << 3;
-					colourRow[cr] = colourReset[rowOffset];
+					rowOffset = (gridRow[x] >> 8) << 1;
+
+					// copy 8 pixels
+					colourRow32[cr] = colourReset32[rowOffset];
 					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 1];
+					colourRow32[cr] = colourReset32[rowOffset + 1];
 					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 2];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 3];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 4];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 5];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 6];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 7];
-					cr += 1;
+
 					// get second 8 bits
-					rowOffset = (gridRow[x] & 255) << 3;
-					colourRow[cr] = colourReset[rowOffset];
+					rowOffset = (gridRow[x] & 255) << 1;
+
+					// copy 8 pixels
+					colourRow32[cr] = colourReset32[rowOffset];
 					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 1];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 2];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 3];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 4];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 5];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 6];
-					cr += 1;
-					colourRow[cr] = colourReset[rowOffset + 7];
+					colourRow32[cr] = colourReset32[rowOffset + 1];
 					cr += 1;
 				}
 			}

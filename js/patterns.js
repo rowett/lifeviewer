@@ -6363,6 +6363,23 @@
 
 			// determine what the character was
 			switch (current) {
+			// comment
+			case "#":
+				// skip to end of line
+				index += 1;
+				while (next !== '\n' && index < end) {
+					index += 1;
+					next = string[index];
+				}
+				if (index < end) {
+					next = string[index + 1];
+				} else {
+					if (index === end) {
+						index -= 1;
+					}
+				}
+				break;
+
 			// digit
 			case "0":
 			case "1":
@@ -10076,68 +10093,74 @@
 
 			// check if a pattern was loaded
 			if (this.failureReason !== "" && !this.tooBig && !this.illegalState) {
-				newPattern.originalFailure = this.failureReason;
-				newPattern.originalRuleName = newPattern.ruleName;
-				if (newPattern.gridType !== -1) {
-					index = newPattern.ruleName.lastIndexOf(":");
-					if (index !== -1) {
-						newPattern.boundedGridDef = newPattern.ruleName.substring(index);
-						newPattern.ruleName = newPattern.ruleName.substring(0, index);
-					}
+				// check for alternating rules
+				if (newPattern.ruleName.indexOf(this.altRuleSeparator) !== -1) {
+					this.failureReason = "Alternating RuleLoader rules are not supported";
+
 				} else {
-					newPattern.boundedGridDef = "";
-				}
-
-				// reset pattern after failed decode
-				newPattern.isMargolus = false;
-				newPattern.isPCA = false;
-				newPattern.isNone = false;
-				newPattern.isHistory = false;
-				newPattern.isSuper = false;
-				newPattern.isExtended = false;
-				newPattern.isNiemiec = false;
-				newPattern.isHex = false;
-				newPattern.isTriangular = false;
-				newPattern.wolframRule = -1;
-				newPattern.isVonNeumann = false;
-				newPattern.isLTL = false;
-				newPattern.wasHROT = newPattern.isHROT;
-				newPattern.isHROT = false;
-
-				// check the rule tree cache
-				if (RuleTreeCache.loadIfExists(newPattern)) {
-					// check for pattern states
-					if (newPattern.ruleTableOutput === null) {
-						states = newPattern.ruleTreeStates;
+					newPattern.originalFailure = this.failureReason;
+					newPattern.originalRuleName = newPattern.ruleName;
+					if (newPattern.gridType !== -1) {
+						index = newPattern.ruleName.lastIndexOf(":");
+						if (index !== -1) {
+							newPattern.boundedGridDef = newPattern.ruleName.substring(index);
+							newPattern.ruleName = newPattern.ruleName.substring(0, index);
+						}
 					} else {
-						states = newPattern.ruleTableStates;
+						newPattern.boundedGridDef = "";
 					}
-					if (newPattern.numStates > states) {
-						this.failureReason = "Illegal state in pattern";
-						this.illegalState = true;
+	
+					// reset pattern after failed decode
+					newPattern.isMargolus = false;
+					newPattern.isPCA = false;
+					newPattern.isNone = false;
+					newPattern.isHistory = false;
+					newPattern.isSuper = false;
+					newPattern.isExtended = false;
+					newPattern.isNiemiec = false;
+					newPattern.isHex = false;
+					newPattern.isTriangular = false;
+					newPattern.wolframRule = -1;
+					newPattern.isVonNeumann = false;
+					newPattern.isLTL = false;
+					newPattern.wasHROT = newPattern.isHROT;
+					newPattern.isHROT = false;
+
+					// check the rule tree cache
+					if (RuleTreeCache.loadIfExists(newPattern)) {
+						// check for pattern states
+						if (newPattern.ruleTableOutput === null) {
+							states = newPattern.ruleTreeStates;
+						} else {
+							states = newPattern.ruleTableStates;
+						}
+						if (newPattern.numStates > states) {
+							this.failureReason = "Illegal state in pattern";
+							this.illegalState = true;
+						} else {
+							newPattern.numStates = states;
+							this.failureReason = "";
+							this.executable = true;
+							this.extendedFormat = false;
+							newPattern.isNone = false;
+						}
 					} else {
-						newPattern.numStates = states;
-						this.failureReason = "";
-						this.executable = true;
-						this.extendedFormat = false;
-						newPattern.isNone = false;
-					}
-				} else {
-					// check if the rule table is in the comments
-					ruleIndex = newPattern.afterTitle.indexOf(this.ruleTableRuleName);
-					if (ruleIndex !== -1) {
-						// attempt to decode and if successful do not add to cache since this is a local rule
-						ruleText = newPattern.afterTitle.substring(ruleIndex);
-						this.decodeRuleTable(newPattern, ruleText);
+						// check if the rule table is in the comments
+						ruleIndex = newPattern.afterTitle.indexOf(this.ruleTableRuleName);
+						if (ruleIndex !== -1) {
+							// attempt to decode and if successful do not add to cache since this is a local rule
+							ruleText = newPattern.afterTitle.substring(ruleIndex);
+							this.decodeRuleTable(newPattern, ruleText);
 
-						// keep any error message
-						newPattern.originalFailure = this.failureReason;
-					}
+							// keep any error message
+							newPattern.originalFailure = this.failureReason;
+						}
 
-					// check if local rule was found
-					if (newPattern.ruleTreeStates === -1 && newPattern.ruleTableOutput === null) {
-						// attempt to load rule table from repository
-						this.loadRuleTable(newPattern, succeedCallback, failCallback, args, view);
+						// check if local rule was found
+						if (newPattern.ruleTreeStates === -1 && newPattern.ruleTableOutput === null) {
+							// attempt to load rule table from repository
+							this.loadRuleTable(newPattern, succeedCallback, failCallback, args, view);
+						}
 					}
 				}
 			}
