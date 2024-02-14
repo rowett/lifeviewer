@@ -1,9 +1,24 @@
 // Pattern decoder
-// written by Chris Rowett
-//
 // Supports decoding various pattern formats: Cells, Life 1.05, Life 1.06, and RLE.
 // Also handles fetching RuleTable rules from a remote repository.
 
+/*
+This file is part of LifeViewer
+ Copyright (C) 2015-2024 Chris Rowett
+
+ LifeViewer is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 	// RuleTreeCache singleton
 	var RuleTreeCache = {
