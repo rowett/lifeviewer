@@ -322,7 +322,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1107,
+		/** @const {number} */ versionBuild : 1108,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -21119,12 +21119,16 @@ This file is part of LifeViewer
 	// complete isPattern check after load failure
 	function completeIsPatternFailed(/** @type {Pattern} */ pattern, /** @type {Array} */ args) {
 		// unpack arguments
-		var	rleItem = args[1],
+		var	/** @type {string} */ patternText = args[0],
+			rleItem = args[1],
 			textItem = args[2];
 
 		if (pattern) {
 			if (rleItem !== null) {
-				createError(rleItem, textItem, pattern.ruleName + " - " + pattern.originalFailure);
+				// ignore patterns that look like python code
+				if (!(patternText[0] === "#" && patternText.indexOf("import ") !== -1)) {
+					createError(rleItem, textItem, pattern.ruleName + " - " + pattern.originalFailure);
+				}
 			}
 		}
 	}
