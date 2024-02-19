@@ -67,7 +67,7 @@ Neighbourhoods|Moore, Hexagonal, Von Neumann, Triangular, 1D, Circular, Cross, L
         <div class="viewer">
             <textarea>3o$bbo$bo!</textarea>
             <br>
-            <canvas width="480" height="480"><canvas>
+            <canvas width="560" height="560"><canvas>
         </div>
     </body>
 </html>
@@ -87,7 +87,7 @@ You can put multiple LifeViewers on a single page. Each time you want one just s
 ```
 <div class="viewer">
     <textarea>bo$2bo$3!</textarea>
-    <canvas width="480" height="480"></canvas>
+    <canvas width="560" height="560"></canvas>
 </div>
 ```
 
@@ -111,9 +111,13 @@ Note there is no need for the `<canvas>` element in this case since the pattern 
 Once you have [built](#how-do-i-build-it) the plugin you can see both embedded and popup LifeViewers in action in this [example](build/example.html).
 
 ## How do I build it?
-The **build** folder contains a Windows script to create the single minified plugin file **lv-plugin.js** from the source files in the **js** folder.
+The **build** folder contains scripts to create the single minified plugin file **lv-plugin.js** from the source files in the **js** folder.
 
+On Windows:
 From the **build** folder run **compile.bat**. This requires Java and the included Google Closure compiler **compiler.jar**. The path to Java is hard coded in **compile.bat** and will need to be updated to wherever Java is installed on your machine.
+
+On MacOS or Linux:
+From the **build** folder run **./compile.sh**. This requires Java and the included Google Closure compiler **compiler.jar**.
 
 ## Folders:
 Folder|Description
