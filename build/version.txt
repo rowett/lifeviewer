@@ -1,3 +1,6 @@
+Build 1109
+- prevent keyboard events from propagating when handled
+
 Build 1108
 - don't put error links in forum codeboxes that look like they contain Python
 

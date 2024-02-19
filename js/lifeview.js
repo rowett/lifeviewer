@@ -322,7 +322,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1108,
+		/** @const {number} */ versionBuild : 1109,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -16820,6 +16820,7 @@ This file is part of LifeViewer
 
 			// cancel further processing
 			event.preventDefault();
+			event.stopPropagation();
 		}
 	};
 
