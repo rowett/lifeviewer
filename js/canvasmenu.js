@@ -3823,10 +3823,31 @@ This file is part of LifeViewer
 		}
 	};
 
+	// get element scale
+	//** @returns {number} */
+	MenuManager.prototype.getElementScale = function(/** @type {Element} */ element) {
+		var	/** @type {number} */ result = 1,
+			/** @type {CSSStyleDeclaration} */ css = null,
+			/** @type {string} */ scale = "";
+
+		while (element !== null) {
+			css = window.getComputedStyle(element);
+			scale = css.getPropertyValue("scale");
+			if (scale !== "none") {
+				result *= parseFloat(scale);
+			}
+
+			element = element.parentElement;
+		}
+
+		return result;
+	};
+
 	// get cursor position over canvas
 	MenuManager.prototype.updateCursorPosition = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// get the bounding rectangle of the canvas
-		var	rect = this.mainCanvas.getBoundingClientRect();
+		var	rect = this.mainCanvas.getBoundingClientRect(),
+			/** @type {number} */ scale = me.getElementScale(me.mainCanvas);
 
 		// adjust for window scroll
 		if (!window.scrollX) {
@@ -3840,6 +3861,10 @@ This file is part of LifeViewer
 		// apply zoom
 		x /= me.windowZoom;
 		y /= me.windowZoom;
+
+		// apply css scale
+		x /= scale;
+		y /= scale;
 
 		// update position
 		me.mouseLastX = (x - 1) | 0;

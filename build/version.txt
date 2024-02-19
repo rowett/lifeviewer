@@ -1,3 +1,6 @@
+Build 1100
+- fix cursor position when CSS scaling used
+
 Build 1109
 - prevent keyboard events from propagating when handled
 
