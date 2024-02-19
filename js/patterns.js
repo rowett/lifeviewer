@@ -6406,6 +6406,13 @@ This file is part of LifeViewer
 			case "7":
 			case "8":
 			case "9":
+				// check for leading zero
+				if (current === "0" && runCount === 0) {
+					this.failureReason = "Leading zero in count";
+					pattern.invalid = true;
+					finished = true;
+				}
+
 				// add to run count
 				runCount = (runCount * 10) + parseInt(current, 10);
 				break;
@@ -6603,8 +6610,15 @@ This file is part of LifeViewer
 			if (!valid) {
 				// check if the characters were whitespace
 				if (current === " " || current === "\t" || current === "\n") {
-					// all ok
-					valid = true;
+					// whitespace is allowed unless a count is in progress
+					if (runCount === 0) {
+						// all ok
+						valid = true;
+					} else {
+						this.failureReason = "Illegal whitespace in pattern";
+						pattern.invalid = true;
+						finished = true;
+					}
 				} else {
 					// invalid character found so mark pattern as invalid
 					this.failureReason = "Illegal character in pattern: " + current;
@@ -7671,6 +7685,11 @@ This file is part of LifeViewer
 			if (ruleString[0] === "=") {
 				ruleString = ruleString.substring(1).trim();
 			}
+		}
+
+		// remove any final , from rule name
+		if (ruleString !== "" && ruleString[ruleString.length - 1] === ",") {
+			ruleString = ruleString.substring(0, ruleString.length - 1);
 		}
 
 		// set the pattern rule name

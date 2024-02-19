@@ -1,3 +1,8 @@
+Build 1107
+- ignore comma after rule name
+- fail pattern load if there is whitespace after RLE count
+- fail pattern load if there is a leading zero in RLE count
+
 Build 1106
 - allow comment line in RLE pattern body
 
