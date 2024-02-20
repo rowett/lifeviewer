@@ -322,7 +322,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1110,
+		/** @const {number} */ versionBuild : 1111,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -533,6 +533,23 @@ This file is part of LifeViewer
 		}
 
 		// return the viewer
+		return result;
+	};
+
+	// return the View for the given canvas
+	/** @returns {View} */
+	Controller.findViewerByCanvas = function(/** @type {number} */ tab) {
+		var	/** @type {View} */ result = null,
+			/** @type {number} */ i = 0;
+
+		while (i < Controller.viewers.length) {
+			if (Controller.viewers[i][0].tabIndex === tab) {
+				result = Controller.viewers[i][1];
+				break;
+			}
+			i += 1;
+		}
+
 		return result;
 	};
 
@@ -20773,28 +20790,38 @@ This file is part of LifeViewer
 			// find the element containing the pattern
 			textItem = parentItem.getElementsByTagName(DocConfig.patternSourceName)[0],
 
+			// find the canvas
+			canvasItem = parentItem.getElementsByTagName("canvas")[0],
+
 			/** @type {string} */ cleanItem = "",
-			/**@type {View} */ viewer = Controller.viewers[0];
+			/** @type {View} */ viewer = null;
+			
+			
+		// find the View attached to this canvas
+		if (canvasItem) {
+			viewer = Controller.findViewerByCanvas(canvasItem.tabIndex);
+			if (viewer) {
+				// copy the text item into the inner html
+				textItem.innerHTML = textItem.value;
 
-		// copy the text item into the inner html
-		textItem.innerHTML = textItem.value;
+				// clean the pattern text
+				cleanItem = cleanPattern(textItem);
 
-		// clean the pattern text
-		cleanItem = cleanPattern(textItem);
+				// reset Identify before resizing the Viewer to prevent Cell Period Map generations
+				viewer.lastIdentifyType = "";
+				viewer.engine.countList = null;
 
-		// reset Identify before resizing the Viewer to prevent Cell Period Map generations
-		viewer[1].lastIdentifyType = "";
-		viewer[1].engine.countList = null;
+				// reset the viewer
+				viewer.viewStart(viewer);
 
-		// reset the viewer
-		viewer[1].viewStart(viewer[1]);
+				// hide any notifications immediately
+				viewer.menuManager.notification.clear(true, true);
+				viewer.menuManager.notification.clear(false, true);
 
-		// hide any notifications immediately
-		viewer[1].menuManager.notification.clear(true, true);
-		viewer[1].menuManager.notification.clear(false, true);
-
-		// update the standalone viewer
-		viewer[1].startViewer(cleanItem, false);
+				// update the viewer
+				viewer.startViewer(cleanItem, false);
+			}
+		}
 	}
 
 	// complete update process after potential async load

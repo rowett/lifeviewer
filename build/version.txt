@@ -1,4 +1,7 @@
-Build 1100
+Build 1111
+- fix updateMe only updating the first embedded Viewer
+
+Build 1110
 - fix cursor position when CSS scaling used
 
 Build 1109
