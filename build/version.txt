@@ -1,3 +1,6 @@
+Build 1112
+- try alternate method of reading CSS scaling
+
 Build 1111
 - fix updateMe only updating the first embedded Viewer
 

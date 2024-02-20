@@ -3828,13 +3828,13 @@ This file is part of LifeViewer
 	MenuManager.prototype.getElementScale = function(/** @type {Element} */ element) {
 		var	/** @type {number} */ result = 1,
 			/** @type {CSSStyleDeclaration} */ css = null,
-			/** @type {string} */ scale = "";
+			/** @type {string} */ transform = "";
 
 		while (element !== null) {
 			css = window.getComputedStyle(element);
-			scale = css.getPropertyValue("scale");
-			if (scale !== "none") {
-				result *= parseFloat(scale);
+			transform = css.getPropertyValue("transform");
+			if (transform !== "none") {
+				result *= parseFloat(transform.substring(7, transform.indexOf(",")));
 			}
 
 			element = element.parentElement;
