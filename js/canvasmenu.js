@@ -3823,18 +3823,28 @@ This file is part of LifeViewer
 		}
 	};
 
-	// get element scale
-	//** @returns {number} */
+	// get element scale in x and y direction
+	//** @returns {Array<number>} */
 	MenuManager.prototype.getElementScale = function(/** @type {Element} */ element) {
-		var	/** @type {number} */ result = 1,
+		var	/** @type {Array<number>} */ result = [1, 1],
 			/** @type {CSSStyleDeclaration} */ css = null,
-			/** @type {string} */ transform = "";
+			/** @type {string} */ transform = "",
+			/** @type {Array<string>} */ matrix = [];
 
 		while (element !== null) {
 			css = window.getComputedStyle(element);
 			transform = css.getPropertyValue("transform");
+
+			// result will be "none" or "matrix(scaleX, skewY, skewX, scaleY, translateX, translateY)"
 			if (transform !== "none") {
-				result *= parseFloat(transform.substring(7, transform.indexOf(",")));
+				// convert the string into six elements
+				matrix = transform.split(", ");
+				matrix[0] = matrix[0].substring(7);
+				matrix[5] = matrix[5].substring(0, matrix[5].length - 1);
+
+				// update the scale x and y
+				result[0] *= parseFloat(matrix[0]);	// scaleX
+				result[1] *= parseFloat(matrix[3]);	// scaleY
 			}
 
 			element = element.parentElement;
@@ -3847,7 +3857,7 @@ This file is part of LifeViewer
 	MenuManager.prototype.updateCursorPosition = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// get the bounding rectangle of the canvas
 		var	rect = this.mainCanvas.getBoundingClientRect(),
-			/** @type {number} */ scale = me.getElementScale(me.mainCanvas);
+			/** @type {Array<number>} */ scale = me.getElementScale(me.mainCanvas);
 
 		// adjust for window scroll
 		if (!window.scrollX) {
@@ -3863,8 +3873,8 @@ This file is part of LifeViewer
 		y /= me.windowZoom;
 
 		// apply css scale
-		x /= scale;
-		y /= scale;
+		x /= scale[0];
+		y /= scale[1];
 
 		// update position
 		me.mouseLastX = (x - 1) | 0;

@@ -1,3 +1,6 @@
+Build 1113
+- support scale x and y
+
 Build 1112
 - try alternate method of reading CSS scaling
 
