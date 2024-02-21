@@ -1,3 +1,6 @@
+Build 1114
+- fix scale issue on displays with low resolution and browser zoom
+
 Build 1113
 - support scale x and y
 

@@ -3868,13 +3868,15 @@ This file is part of LifeViewer
 			y -= rect.top + window.scrollY;
 		}
 
-		// apply zoom
-		x /= me.windowZoom;
-		y /= me.windowZoom;
-
 		// apply css scale
 		x /= scale[0];
 		y /= scale[1];
+
+		// apply zoom
+		if (scale[0] === 1 && scale[1] === 1) {
+			x /= me.windowZoom;
+			y /= me.windowZoom;
+		}
 
 		// update position
 		me.mouseLastX = (x - 1) | 0;
