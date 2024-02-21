@@ -2081,6 +2081,22 @@ This file is part of LifeViewer
 				}
 				break;
 
+			// f8 to toggle state number display
+			case 119:
+				if (!me.stateNumberButton.locked) {
+					me.stateNumberButton.current = me.viewStateNumberToggle([!me.stateNumberDisplayed], true, me);
+					me.menuManager.notification.notify("State Numbers " + (me.stateNumberDisplayed ? "On" : "Off"), 15, 40, 15, true);
+				}
+				break;
+
+			// f9 to toggle y coordinate direction
+			case 120:
+				if (!me.yDirectionButton.locked) {
+					me.yDirectionButton.current = me.viewYDirectionToggle([!me.yUp], true, me);
+					me.menuManager.notification.notify("Y Direction " + (me.yUp ? "Up" : "Down"), 15, 40, 15, true);
+				}
+				break;
+
 			// Ins to show Help sections
 			case 45:
 				me.showSections = true;

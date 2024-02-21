@@ -72,6 +72,12 @@ This file is part of LifeViewer
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// settings prefix
+		/** @const {string} */ settingsPrefix : "LV",
+
+		// y coordinate direction setting name
+		/** @const {string} */ ySettingName : "yDirection",
+
 		// control or command key text
 		/** @const {string} */ ctrlText : "Ctrl",
 		/** @const {string} */ cmdText : "Cmd",
@@ -322,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1114,
+		/** @const {number} */ versionBuild : 1115,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -744,6 +750,9 @@ This file is part of LifeViewer
 	 */
 	function View(element) {
 		var	/** @type {number} */ i = 0;
+
+		// y coordinate direction
+		/** @type {boolean} */ this.yUp = false;
 
 		// pinch touch start locations
 		/** @type {number} */ this.pinchStartX1 = 0;
@@ -1925,6 +1934,12 @@ This file is part of LifeViewer
 		// fast lookup button
 		/** @type {MenuItem} */ this.fastLookupButton = null;
 
+		// state number button
+		/** @type {MenuItem} */ this.stateNumberButton = null;
+
+		// y coordinate direction button
+		/** @type {MenuItem} */ this.yDirectionButton = null;
+
 		// info button
 		/** @type {MenuItem} */ this.infoButton = null;
 
@@ -2260,6 +2275,28 @@ This file is part of LifeViewer
 
 		// pen colour for drawing
 		/** @type {number} */ this.penColour = -1;
+	}
+
+	// save boolean setting
+	View.prototype.saveBooleanSetting = function(/** @type {string} */ name, /** @type {boolean} */ value) {
+		var	/** @type {string} */ strValue = value ? "1" : "0";
+
+		localStorage.setItem(ViewConstants.settingsPrefix + name, strValue);
+	};
+
+	// load boolean setting
+	/** @returns {boolean} */
+	View.prototype.loadBooleanSetting = function(/** @type {string} */ name) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {string} */ setting = localStorage.getItem(ViewConstants.settingsPrefix + name);
+
+		if (setting !== null) {
+			if (setting === "1") {
+				result = true;
+			}
+		}
+
+		return result;
 	}
 
 	// check if a string is a Theme state name
@@ -6086,9 +6123,17 @@ This file is part of LifeViewer
 				xDisplay = String(xPos);
 			}
 			if (yPos < -displayLimit || yPos > displayLimit) {
-				yDisplay = (Number(yPos / 1000).toFixed(1)) + "K";
+				if (this.yUp) {
+					yDisplay = (Number(-yPos / 1000).toFixed(1)) + "K";
+				} else {
+					yDisplay = (Number(yPos / 1000).toFixed(1)) + "K";
+				}
 			} else {
-				yDisplay = String(yPos);
+				if (this.yUp) {
+					yDisplay = String(-yPos);
+				} else {
+					yDisplay = String(yPos);
+				}
 			}
 
 			// set the caption
@@ -7232,6 +7277,7 @@ This file is part of LifeViewer
 		this.fastLookupButton.deleted = shown;
 		this.fastLookupButton.locked = !this.engine.isRuleTree || (this.engine.isRuleTree && !this.engine.ruleLoaderLookupAvailable());
 		this.stateNumberButton.deleted = shown;
+		this.yDirectionButton.deleted = shown;
 
 		// display categoy
 		shown = hide || !this.showDisplaySettings;
@@ -8283,7 +8329,7 @@ This file is part of LifeViewer
 		return [me.engine.ruleLoaderLookupEnabled];
 	};
 
-	// toggle stata number display
+	// toggle state number display
 	/** @returns {Array<boolean>} */
 	View.prototype.viewStateNumberToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
@@ -8292,6 +8338,18 @@ This file is part of LifeViewer
 		}
 
 		return [me.stateNumberDisplayed];
+	};
+
+	// toggle y direction
+	/** @returns {Array<boolean>} */
+	View.prototype.viewYDirectionToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		// check if changing
+		if (change) {
+			me.yUp = newValue[0];
+			me.saveBooleanSetting(ViewConstants.ySettingName, me.yUp);
+		}
+
+		return [me.yUp];
 	};
 
 	// toggle graph data elements
@@ -17683,6 +17741,10 @@ This file is part of LifeViewer
 		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 100, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
 		this.stateNumberButton.toolTip = ["toggle state number display [F8]"];
 
+		// y coordinate direction button
+		this.yDirectionButton = this.viewMenu.addListItem(this.viewYDirectionToggle, Menu.middle, 100, 100, 180, 40, ["Y Direction"], [this.yUp], Menu.multi);
+		this.yDirectionButton.toolTip = ["toggle y coordinate direction [F9]"];
+
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
 		this.backButton.toolTip = "back to previous menu [Backspace]";
@@ -18738,6 +18800,9 @@ This file is part of LifeViewer
 			/** @type {number} */ savedH = 0,
 			/** @type {Pattern} */ pattern = null,
 			/** @type {Pattern} */ temp = null;
+
+		// read settings
+		this.yUp = this.loadBooleanSetting(ViewConstants.ySettingName);
 
 		// reset playback speed
 		this.genSpeed = 60;
@@ -20558,6 +20623,9 @@ This file is part of LifeViewer
 		// set the graph UI control
 		me.graphButton.locked = me.graphDisabled;
 		me.graphButton.current = [me.popGraph];
+
+		// set the y direction UI control
+		me.yDirectionButton.current = [me.yUp];
 
 		// check for chrome bug
 		me.checkForChromeBug();

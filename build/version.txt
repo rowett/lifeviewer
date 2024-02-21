@@ -1,3 +1,10 @@
+Build 1115
+- Y coordinate direction (display only) can now be toggled with Settings>Advanced>Y Direction (hotkey F9)
+	- the default is that the Y coordinate increases down the screen
+	- this setting is saved for the current browser on the current device
+	- note: this only changes how the Y coordinate is displayed and script commands that take
+	cell locations (for example [[ PASTE ]]) always use Y increasing down the screen
+
 Build 1114
 - fix scale issue on displays with low resolution and browser zoom
 

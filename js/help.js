@@ -943,6 +943,8 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "D", "toggle cell period map", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift D", "download cell period map", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "E", "toggle cell period table", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F8", "toggle cell state display", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F9", "toggle y coordinate direction", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// pattern controls
