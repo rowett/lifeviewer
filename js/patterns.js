@@ -10128,7 +10128,7 @@ This file is part of LifeViewer
 			// check if a pattern was loaded
 			if (this.failureReason !== "" && !this.tooBig && !this.illegalState) {
 				// check for alternating rules
-				if (newPattern.ruleName.indexOf(this.altRuleSeparator) !== -1) {
+				if (newPattern.ruleName.indexOf(this.altRuleSeparator) !== -1 && this.failureReason !== "Only one alternate allowed") {
 					this.failureReason = "Alternating RuleLoader rules are not supported";
 
 				} else {

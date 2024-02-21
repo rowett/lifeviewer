@@ -1,3 +1,6 @@
+Build 1116
+- fix too many alternates error message
+
 Build 1115
 - Y coordinate direction (display only) can now be toggled with Settings>Advanced>Y Direction (hotkey F9)
 	- the default is that the Y coordinate increases down the screen
