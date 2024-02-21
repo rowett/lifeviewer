@@ -14349,7 +14349,7 @@ This file is part of LifeViewer
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			//** @type {Uint8Array} */ overlayRow = null,
-			///** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
+			//** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
 			/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
 			/** @const {number} */ leftX = box.leftX,
 			/** @const {number} */ rightX = box.rightX,
@@ -14899,7 +14899,13 @@ This file is part of LifeViewer
 			/** @type {Uint8Array} */ topRow = colourGrid[topY],
 			/** @type {Uint8Array} */ bottomRow = colourGrid[bottomY],
 			/** @type {number} */ aliveStart = this.aliveStart,
-			/** @type {Uint8Array} */ currentRow = null;
+			/** @type {Uint8Array} */ currentRow = null,
+			/** @type {number} */ gSize = 6;
+
+		// do nothing if no cells alive
+		if (this.population === 0) {
+			return;
+		}
 
 		// ignore bounded grids and HROT rules > range 1
 		if (!(this.boundedGridType !== -1 || (this.isHROT && this.HROT.xrange > 1))) {
@@ -14910,20 +14916,20 @@ This file is part of LifeViewer
 			if (leftX < safeBorder) {
 				leftX = safeBorder;
 			}
-			if (rightX > this.width - safeBorder) {
-				rightX = this.width - safeBorder;
+			if (rightX >= this.width - safeBorder) {
+				rightX = this.width - safeBorder - 1;
 			}
 			if (bottomY < safeBorder) {
 				bottomY = safeBorder;
 			}
-			if (topY > this.height - safeBorder) {
-				topY = this.height - safeBorder;
+			if (topY >= this.height - safeBorder) {
+				topY = this.height - safeBorder - 1;
 			}
 
 			// check top and bottom rows
-			for (x = leftX; x <= rightX; x += 1) {
+			for (x = leftX - gSize; x <= rightX + gSize; x += 1) {
 				// check several rows
-				for (off = 0; off <= 6; off += 1) {
+				for (off = 0; off <= 5; off += 1) {
 					bottomY = box.bottomY + off;
 					bottomRow = colourGrid[bottomY];
 
@@ -14971,9 +14977,9 @@ This file is part of LifeViewer
 			}
 
 			// check left and right columns
-			for (y = bottomY; y <= topY; y += 1) {
+			for (y = bottomY - gSize; y <= topY + gSize; y += 1) {
 				// check several columns
-				for (off = 0; off <= 6; off += 1) {
+				for (off = 0; off <= 5; off += 1) {
 					currentRow = colourGrid[y];
 					leftX = box.leftX + off;
 
