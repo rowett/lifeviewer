@@ -6994,22 +6994,20 @@ This file is part of LifeViewer
 			endIndex = source.length;
 		}
 
-		// check if first character was space
-		if (source[index] === " ") {
-			prefix += " ";
-		}
+		// get the line of text and remove final whitespace
+		text = source.substring(index, endIndex);
 
-		// get the line of text
-		text = source.substring(index, endIndex).trim();
+		// add to title with leading and trailing whitespace removed
+		pattern.titleConcat.push(text.trim());
 
-		// add to title
-		pattern.titleConcat.push(text);
+		// remove trailing whitespace
+		text = (prefix + text).replace(/[ \t]+$/g, "");
 
 		// add to raw titles
 		if (afterRLE) {
-			pattern.afterTitleConcat.push(prefix + text);
+			pattern.afterTitleConcat.push(text);
 		} else {
-			pattern.beforeTitleConcat.push(prefix + text);
+			pattern.beforeTitleConcat.push(text);
 		}
 
 		// return the length added
