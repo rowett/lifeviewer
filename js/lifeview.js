@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1118,
+		/** @const {number} */ versionBuild : 1119,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -21302,23 +21302,68 @@ This file is part of LifeViewer
 		}
 	}
 
+	// drop handler
+	function dropHandler(/** @type {DragEvent} */ event) {
+		var	/** @type {File} */ firstFile = null,
+			/** @type {DataTransfer} */ dt = event.dataTransfer,
+			/** @type {FileReader} */ reader = null,
+			/** @type {Element} */ button = null;
+
+		// check if there is a data transfer object
+		if (dt) {
+			// check if there are any files being dropped
+			if (dt.files.length > 0) {
+				// only process the firs file
+				firstFile = dt.files[0];
+
+				// read the file
+				reader = new FileReader();
+				reader.onload = function() {
+					var	/** @type {string} */ text = /** @type {!string} */ (reader.result),
+						/** @type {Element} */ node = document.getElementById("rle");
+
+					if (node) {
+						node.innerHTML = text;
+
+						// click the View button
+						button = document.getElementById("viewbutton");
+						if (button) {
+							updateMe(button);
+						}
+					}
+				};
+				reader.readAsText(firstFile);
+			}
+		}
+
+		// disable default behaviour
+		event.preventDefault();
+		event.stopPropagation();
+	};
+
+	// drag over handler
+	function dragOverHandler(/** @type {DragEvent} */ event) {
+		event.preventDefault();
+	};
+
 	// start all viewers in the document
 	function startAllViewers() {
 		// find all viewers in the document (should be enclosed in <div class="rle">)
 		var	divList = document.getElementsByTagName("div"),
 			/** @type {number} */ i = 0,
 			anchorList = null,
-			textItem = null,
-			childItem = null,
+			/** @type {Element} */ textItem = null,
+			/** @type {Element} */ childItem = null,
 			/** @type {HTMLAnchorElement} */ anchorItem = null,
 			/** @type {HTMLCanvasElement} */ canvasItem = null,
 			/** @type {string} */ cleanItem = "",
 			/** @type {HTMLDivElement} */ rleItem = null,
 			/** @type {CSSStyleDeclaration} */ style = null,
-			button = null,
-			button2 = null,
-			button3 = null,
-			build = null,
+			/** @type {Element} */ button = null,
+			/** @type {Element} */ button2 = null,
+			/** @type {Element} */ button3 = null,
+			/** @type {Element} */ build = null,
+			/** @type {Element} */ canvasElement = null,
 
 			// temporary allocator and pattern manager
 			/** @type {Allocator} */ allocator = new Allocator(),
@@ -21444,6 +21489,13 @@ This file is part of LifeViewer
 				style = button.parentElement.style;
 				style.verticalAlign = "middle";
 				style.padding = "8px";
+			}
+			
+			// enable file drag and drop
+			canvasElement = document.getElementById("ViewerCanvas");
+			if (canvasElement) {
+				registerEvent(canvasElement, "drop", function(/** @type {DragEvent} */ event) {dropHandler(event);}, false);
+				registerEvent(canvasElement, "dragover", function(/** @type {DragEvent} */ event) {dragOverHandler(event);}, false);
 			}
 		}
 

@@ -1,3 +1,6 @@
+Build 1119
+- the LifeViewer home page now supports dragging and dropping pattern files onto the LifeViewer window
+
 Build 1118
 - first phase of pinch zoom support for touch devices
 
