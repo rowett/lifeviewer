@@ -2499,6 +2499,12 @@ This file is part of LifeViewer
 		/** @type {number} */ this.currentTouchId1 = -1;
 		/** @type {number} */ this.currentTouchId2 = -1;
 
+		// location for two touch points
+		/** @type {number} */ this.touchId1X = -1;
+		/** @type {number} */ this.touchId1Y = -1;
+		/** @type {number} */ this.touchId2X = -1;
+		/** @type {number} */ this.touchId2Y = -1;
+
 		// callback when pinch happens
 		/** @type {function(number,number,number,number,number,View):void|null} */ this.pinchCallback = null;
 
@@ -3401,18 +3407,24 @@ This file is part of LifeViewer
 	};
 
 	// start pinch
-	MenuManager.prototype.startPinch = function(/** @type {number} */ x1, /** @type {number} */ y1, /** @type {number} */ x2, /** @type {number} */ y2) {
+	MenuManager.prototype.startPinch = function() {
+		var	/** @type {Array<number>} */ pos1 = this.getCursorPosition(this, this.touchId1X, this.touchId1Y),
+			/** @type {Array<number>} */ pos2 = this.getCursorPosition(this, this.touchId2X, this.touchId2Y);
+
 		if (this.pinchCallback) {
-			this.pinchCallback(x1, y1, x2, y2, 0, this.caller);
+			this.pinchCallback(pos1[0], pos1[1], pos2[0], pos2[1], 0, this.caller);
 		}
 	};
 
 	// update pinch
 	MenuManager.prototype.movePinch = function(/** @type {Touch} */ touch) {
+		var	/** @type {Array<number>} */ pos = [];
 		if (touch.identifier === this.currentTouchId1) {
-			this.pinchCallback(touch.pageX, touch.pageY, 0, 0, 1, this.caller);
+			pos = this.getCursorPosition(this, this.touchId1X, this.touchId1Y);
+			this.pinchCallback(pos[0], pos[1], 0, 0, 1, this.caller);
 		} else {
-			this.pinchCallback(touch.pageX, touch.pageY, 0, 0, 2, this.caller);
+			pos = this.getCursorPosition(this, this.touchId2X, this.touchId2Y);
+			this.pinchCallback(pos[0], pos[1], 0, 0, 2, this.caller);
 		}
 	};
 
@@ -3433,13 +3445,15 @@ This file is part of LifeViewer
 		// touch start
 		case "touchstart":
 			// check if processing a touch
-			if (me.currentTouchId1 === -1) {
+			if (me.currentTouchId1 === -1 && me.currentTouchId2 === -1) {
 				// no touch being processed so check how many touches just started
 				switch (numChanges) {
 					// single touch so handle like a mouse down event
 					case 1:
 						thisChange = changes[0];
 						me.currentTouchId1 = thisChange.identifier;
+						me.touchId1X = thisChange.pageX;
+						me.touchId1Y = thisChange.pageY;
 						me.performDown(me, thisChange.pageX, thisChange.pageY);
 						break;
 
@@ -3448,11 +3462,15 @@ This file is part of LifeViewer
 						// start the pinch
 						thisChange = changes[0];
 						me.currentTouchId1 = thisChange.identifier;
+						me.touchId1X = thisChange.pageX;
+						me.touchId1Y = thisChange.pageY;
 
 						thisChange = changes[1];
 						me.currentTouchId2 = thisChange.identifier;
+						me.touchId2X = thisChange.pageX;
+						me.touchId2Y = thisChange.pageY;
 
-						me.startPinch(changes[0].pageX, changes[i].pageY, thisChange.pageX, thisChange.pageY);
+						me.startPinch();
 						break;
 
 					// ignore other multi touches
@@ -3460,17 +3478,32 @@ This file is part of LifeViewer
 						break;
 				}
 			} else {
-				// touch being processed so check if single or pinch
-				if (me.currentTouchId2 === -1) {
+				// touch being processed so check if pinch in progress
+				if (me.currentTouchId1 === -1) {
 					// single touch in progress so stop it
-					me.performUp(me, this.currentMenu.mouseX, this.currentMenu.mouseY); 
+					me.performUp(me, me.touchId2X, this.touchId2Y); 
 
 					// start the pinch
 					thisChange = changes[0];
-					me.currentTouchId2 = thisChange.identifier;
+					me.currentTouchId1 = thisChange.identifier;
+					me.touchId1X = thisChange.pageX;
+					me.touchId1Y = thisChange.pageY;
 
-					me.startPinch(this.currentMenu.mouseX, this.currentMenu.mouseY, thisChange.pageX, thisChange.pageY);
+					me.startPinch();
 					break;
+				} else {
+					if (me.currentTouchId2 === -1) {
+						// single touch in progress so stop it
+						me.performUp(me, this.touchId1X, this.touchId1Y); 
+
+						// start the pinch
+						thisChange = changes[0];
+						me.currentTouchId2 = thisChange.identifier;
+						me.touchId2X = thisChange.pageX;
+						me.touchId2Y = thisChange.pageY;
+
+						me.startPinch();
+					}
 				}
 			}
 			break;
@@ -3491,15 +3524,26 @@ This file is part of LifeViewer
 					} else {
 						// currently processing pinch so end it
 						me.currentTouchId1 = -1;
-						me.currentTouchId2 = -1;
 						me.cancelPinch();
+
+						// mouse down for the remaining touch
+						me.performDown(me, me.touchId2X, me.touchId2Y);
 					}
 				} else {
 					if (thisChange.identifier === me.currentTouchId2) {
-						// currently processing pinch so end it
-						me.currentTouchId1 = -1;
-						me.currentTouchId2 = -1;
-						me.cancelPinch();
+						// matches the second touch so check if single or pinch is in progress
+						if (me.currentTouchId1 === -1) {
+							// currently processing single so end it
+							me.performUp(me, thisChange.pageX, thisChange.pageY);
+							me.currentTouchId2 = -1;
+						} else {
+							// currently processing pinch so end it
+							me.currentTouchId2 = -1;
+							me.cancelPinch();
+
+							// mouse down for the remaining touch
+							me.performDown(me, me.touchId1X, me.touchId2X);
+						}
 					}
 				}
 			}
@@ -3519,11 +3563,22 @@ This file is part of LifeViewer
 						me.performMove(me, thisChange.pageX, thisChange.pageY);
 					} else {
 						// currently processing pinch so move it
+						me.touchId1X = thisChange.pageX;
+						me.touchId1Y = thisChange.pageY;
 						me.movePinch(thisChange);
 					}
 				} else {
 					if (thisChange.identifier === me.currentTouchId2) {
-						me.movePinch(thisChange);
+						// matches the second touch so check if single or pinch is in progress
+						if (me.currentTouchId1 === -1) {
+							// currently processing single so move it
+							me.performMove(me, thisChange.pageX, thisChange.pageY);
+						} else {
+							// currently processing pinch so move it
+							me.touchId2X = thisChange.pageX;
+							me.touchId2Y = thisChange.pageY;
+							me.movePinch(thisChange);
+						}
 					}
 				}
 			}
@@ -3534,25 +3589,37 @@ This file is part of LifeViewer
 			// process each change record
 			for (i = 0; i < numChanges; i += 1) {
 				thisChange = changes[i];
-
+				
 				// check if the change relates to one of the current touches in progress
 				if (thisChange.identifier === me.currentTouchId1) {
 					// matches the first touch so check if single or pinch is in progress
 					if (me.currentTouchId2 === -1) {
 						// currently processing single so end it
-						me.performOut(me);
+						me.performUp(me, thisChange.pageX, thisChange.pageY);
+						me.currentTouchId1 = -1;
 					} else {
 						// currently processing pinch so end it
 						me.currentTouchId1 = -1;
-						me.currentTouchId2 = -1;
 						me.cancelPinch();
+
+						// mouse down for the remaining touch
+						me.performDown(me, me.touchId2X, me.touchId2Y);
 					}
 				} else {
 					if (thisChange.identifier === me.currentTouchId2) {
-						// currently processing pinch so end it
-						me.currentTouchId1 = -1;
-						me.currentTouchId2 = -1;
-						me.cancelPinch();
+						// matches the second touch so check if single or pinch is in progress
+						if (me.currentTouchId1 === -1) {
+							// currently processing single so end it
+							me.performUp(me, thisChange.pageX, thisChange.pageY);
+							me.currentTouchId2 = -1;
+						} else {
+							// currently processing pinch so end it
+							me.currentTouchId2 = -1;
+							me.cancelPinch();
+
+							// mouse down for the remaining touch
+							me.performDown(me, me.touchId1X, me.touchId2X);
+						}
 					}
 				}
 			}
@@ -3854,7 +3921,8 @@ This file is part of LifeViewer
 	};
 
 	// get cursor position over canvas
-	MenuManager.prototype.updateCursorPosition = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
+	/** @returns {Array<number>} */
+	MenuManager.prototype.getCursorPosition = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
 		// get the bounding rectangle of the canvas
 		var	rect = this.mainCanvas.getBoundingClientRect(),
 			/** @type {Array<number>} */ scale = me.getElementScale(me.mainCanvas);
@@ -3878,9 +3946,17 @@ This file is part of LifeViewer
 			y /= me.windowZoom;
 		}
 
+		return [(x - 1) | 0, (y - 1) | 0];
+	};
+
+	// get cursor position over canvas
+	MenuManager.prototype.updateCursorPosition = function(/** @type {MenuManager} */ me, /** @type {number} */ x, /** @type {number} */ y) {
+		// get the bounding rectangle of the canvas
+		var	/** @type {Array<number>} */ position = me.getCursorPosition(me, x, y);
+
 		// update position
-		me.mouseLastX = (x - 1) | 0;
-		me.mouseLastY = (y - 1) | 0;
+		me.mouseLastX = position[0];
+		me.mouseLastY = position[1];
 
 		// schedule update
 		me.scheduleNextUpdate(me);

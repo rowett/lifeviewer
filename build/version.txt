@@ -1,3 +1,6 @@
+Build 1118
+- first phase of pinch zoom support for touch devices
+
 Build 1117
 - preserve leading whitespace in comments
 
