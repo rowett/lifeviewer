@@ -1,3 +1,6 @@
+Build 1120
+- fixed pattern extent on Save for LtL/HROT patterns
+
 Build 1119
 - the LifeViewer home page now supports dragging and dropping pattern files onto the LifeViewer window
 

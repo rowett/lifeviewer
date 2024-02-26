@@ -6776,7 +6776,7 @@ This file is part of LifeViewer
 	/** @returns {string} */
 	Life.prototype.asRLE = function(/** @type {View} */ view, /** @type {Life} */ me, /** @type {boolean} */ addComments, /** @type {number} */ inputStates, /** @type {number} */ outputStates, /** @type {Array<number>} */ mapping, /** @type {boolean} */ useAlias) {
 		var	/** @type {string} */ rle = "",
-			/** @type {BoundingBox} */ zoomBox = (me.isLifeHistory ? me.historyBox : me.zoomBox),
+			/** @type {BoundingBox} */ zoomBox = (me.isLifeHistory ? me.historyBox : (me.isHROT ? me.HROTBox : me.zoomBox)),
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
 			/** @type {number} */ topY = zoomBox.topY,
@@ -6812,7 +6812,7 @@ This file is part of LifeViewer
 		}
 
 		// check for [R]History
-		if (inputStates === outputStates && this.isLifeHistory) {
+		if (inputStates === outputStates && me.isLifeHistory) {
 			inputStates = 7;
 			outputStates = 7;
 		}
