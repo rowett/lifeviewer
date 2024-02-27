@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1120,
+		/** @const {number} */ versionBuild : 1122,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3056,7 +3056,7 @@ This file is part of LifeViewer
 			this.updateUndoToolTips();
 
 			// cells changed so AutoFit if enabled
-			if (this.autoFit) {
+			if (this.autoFit && this.engine.population > 0) {
 				this.engine.shrinkNeeded = true;
 				this.engine.doShrink();
 				this.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
@@ -7180,7 +7180,7 @@ This file is part of LifeViewer
 		this.graphDataToggle.deleted = shown || (this.engine.boundedGridType !== -1);
 
 		// cancel button
-		this.cancelButton.deleted = !(this.identify || this.startFrom !== -1);
+		this.cancelButton.deleted = !((this.identify && this.engine.identifyDeferredCounter === -1) || this.startFrom !== -1);
 		this.cancelButton.locked = false;
 
 		// generation statistics
@@ -7905,31 +7905,33 @@ This file is part of LifeViewer
 
 		// compute the next set of generations without stats for speed
 		while (me.identify && (performance.now() - startTime < timeLimit) && (me.engine.population > 0 || me.pasteEvery || me.engine.counter <= me.maxPasteGen)) {
-			// compute next generation
-			me.computeNextGeneration();
+			if (me.engine.identifyDeferredCounter === -1) {
+				// compute next generation
+				me.computeNextGeneration();
 
-			// check if life just stopped
-			if (me.engine.population === 0) {
-				// remember the generation that life stopped
-				if (me.diedGeneration === -1) {
-					me.diedGeneration = me.engine.counter;
-
-					// notify simulation stopped
-					if (me.genNotifications) {
-						// don't notify if there are pending pastes
-						if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
-							if (me.engine.isPCA || me.engine.isMargolus) {
-								me.menuManager.notification.notify("Life ended at generation " + (me.engine.counterMargolus + me.genOffset), 15, 600, 15, false);
-							} else {
-								me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
+				// check if life just stopped
+				if (me.engine.population === 0) {
+					// remember the generation that life stopped
+					if (me.diedGeneration === -1) {
+						me.diedGeneration = me.engine.counter;
+	
+						// notify simulation stopped
+						if (me.genNotifications) {
+							// don't notify if there are pending pastes
+							if (!(me.isPasteEvery || me.engine.counter <= me.maxPasteGen)) {
+								if (me.engine.isPCA || me.engine.isMargolus) {
+									me.menuManager.notification.notify("Life ended at generation " + (me.engine.counterMargolus + me.genOffset), 15, 600, 15, false);
+								} else {
+									me.menuManager.notification.notify("Life ended at generation " + (me.engine.counter + me.genOffset), 15, 600, 15, false);
+								}
 							}
 						}
 					}
 				}
-			}
 
-			// save elapsed time
-			me.saveElapsedTime(me.engine.counter, 0, 1);
+				// save elapsed time
+				me.saveElapsedTime(me.engine.counter, 0, 1);
+			}
 
 			// check if any cells are alive
 			if (me.engine.population > 0 || me.pasteEvery || me.engine.counter <= me.maxPasteGen) {
@@ -8062,6 +8064,12 @@ This file is part of LifeViewer
 
 				// unlock the menu
 				me.viewMenu.locked = false;
+			}
+
+			// if waiting for deferred calculation to start break out of the loop
+			if (me.engine.identifyDeferredCounter !== -1) {
+				me.cancelButton.locked = true;
+				break;
 			}
 		}
 
@@ -8370,7 +8378,6 @@ This file is part of LifeViewer
 	View.prototype.viewGraphToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
-			me.popGraph = newValue[0];
 			// if just switched on then switch to pan mode
 			if (me.popGraph) {
 				if (me.modeList.current !== ViewConstants.modePan) {
@@ -8381,6 +8388,9 @@ This file is part of LifeViewer
 			if (me.navToggle.current[0]) {
 				me.navToggle.current = me.toggleSettings([false], true, me);
 			}
+
+			// set the graph displayed flag - must come after changing mode above
+			me.popGraph = newValue[0];
 		}
 
 		return [me.popGraph];
@@ -8884,6 +8894,11 @@ This file is part of LifeViewer
 			Array.copy(me.engine.tileGrid, me.engine.colourTileGrid);
 			Array.copy(me.engine.tileGrid, me.engine.colourTileHistoryGrid);
 
+			// set tiles on the bounded grid boundary since the grid size may have grown
+			if (me.engine.boundedGridType !== -1) {
+				me.engine.setBoundedTiles();
+			}
+
 			// re-convert grid to colours so rainbow on/off works
 			if (!me.engine.isLifeHistory) {
 				if (me.engine.multiNumStates === -1) {
@@ -9197,6 +9212,12 @@ This file is part of LifeViewer
 			if (me.navToggle.current[0]) {
 				me.navToggle.current = me.toggleSettings([false], true, me);
 				me.menuManager.toggleRequired = true;
+			}
+
+			// close graph if open
+			if (me.popGraph) {
+				me.popGraph = false;
+				me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
 			}
 		}
 
@@ -18497,6 +18518,11 @@ This file is part of LifeViewer
 		// resize the cell period map if available
 		if (!(this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "") && (this.engine.popSubPeriod !== null)) {
 			this.engine.createCellPeriodMap(this.identifyBannerLabel, this);
+		}
+
+		// if AutoFit is enabled then fit zoom
+		if (this.autoFit) {
+			this.fitZoomDisplay(true, false, ViewConstants.fitZoomPattern);
 		}
 	};
 

@@ -22,6 +22,9 @@ This file is part of LifeViewer
 	// Life constants
 	/** @const */
 	var LifeConstants = {
+		// how long to show notification before Identify phase 2 begins
+		/** @const {number} */ identifyNotificationDuration : 15,
+
 		// state modes
 		/** @const {number} */ mode2 : 0,
 		/** @const {number} */ mode2Table : 1,
@@ -458,6 +461,10 @@ This file is part of LifeViewer
 		/** @type {number} */ this.identifyBoxHeight = 0;
 		/** @type {string} */ this.identifyPopWithTMessage = "";
 		/** @type {string} */ this.identifyBoxWithTMessage = "";
+
+		// identify deferred results
+		/** @type {Array} */ this.identifyDeferredResults = [];
+		/** @type {number} */ this.identifyDeferredCounter = -1;
 
 		// whether any cells were not in rotor
 		/** @type {boolean} */ this.identifyAllCells = false;
@@ -1486,6 +1493,10 @@ This file is part of LifeViewer
 	Life.prototype.initSearch = function(/** @type {boolean} */ on) {
 		// zero array index
 		this.oscLength = 0;
+
+		// clear temporary results
+		this.identifyDeferredCounter = -1;
+		this.identifyDeferredResults = [];
 
 		// check if search has been switched on
 		if (on) {
@@ -5178,6 +5189,24 @@ This file is part of LifeViewer
 			// result
 			/** @type {Array} */ result = [];
 
+		// check for deferred results
+		if (this.identifyDeferredCounter !== -1) {
+			this.identifyDeferredCounter -= 1;
+
+			if (this.identifyDeferredCounter === -1) {
+				this.identifyMessage = this.identifyDeferredResults[0];
+				this.identifyI = this.identifyDeferredResults[1];
+				this.identifyPeriod = this.identifyDeferredResults[2];
+				this.identifyDeltaX = this.identifyDeferredResults[3];
+				this.identifyDeltaY = this.identifyDeferredResults[4];
+				this.identifyBoxWidth = this.identifyDeferredResults[5];
+				this.identifyBoxHeight = this.identifyDeferredResults[6];
+				result = this.identifyResults(view, this.identifyDeferredResults[1], this.identifyDeferredResults[0], this.identifyDeferredResults[2], this.identifyDeferredResults[3], this.identifyDeferredResults[4], this.identifyDeferredResults[5], this.identifyDeferredResults[6]);
+			}
+
+			return result;
+		}
+
 		// check buffer
 		if (this.oscLength < LifeConstants.maxOscillatorGens) {
 			// check population
@@ -5263,14 +5292,10 @@ This file is part of LifeViewer
 										}
 
 										// create the results
-										this.identifyMessage = message;
-										this.identifyI = i;
-										this.identifyPeriod = period;
-										this.identifyDeltaX = deltaX;
-										this.identifyDeltaY = deltaY;
-										this.identifyBoxWidth = boxWidth;
-										this.identifyBoxHeight = boxHeight;
-										result = this.identifyResults(view, i, message, period, deltaX, deltaY, boxWidth, boxHeight);
+										this.identifyDeferredResults = [message, i, period, deltaX, deltaY, boxWidth, boxHeight];
+										this.identifyDeferredCounter = LifeConstants.identifyNotificationDuration;
+										view.menuManager.notification.notify(message, 15, 40, 15, true);
+										view.menuManager.notification.notify("Calculating...", 15, 40, 15, false);
 									} else {
 										// try next
 										lastI = i;
@@ -18385,6 +18410,9 @@ This file is part of LifeViewer
 			/** @type {string} */ graphAliveColor = "rgb(" + this.graphAliveColor[0] + "," + this.graphAliveColor[1] + "," + this.graphAliveColor[2] + ")",
 			/** @type {string} */ graphBirthColor = "rgb(" + this.graphBirthColor[0] + "," + this.graphBirthColor[1] + "," + this.graphBirthColor[2] + ")",
 			/** @type {string} */ graphDeathColor = "rgb(" + this.graphDeathColor[0] + "," + this.graphDeathColor[1] + "," + this.graphDeathColor[2] + ")";
+
+		// save current population
+		this.savePopulationData();
 
 		// check if data exists
 		if (this.popGraphData && this.popGraphData.length > 0) {
@@ -44806,6 +44834,7 @@ This file is part of LifeViewer
 			}
 		}
 	};
+
 	// draw the bounded grid border
 	Life.prototype.drawBoundedGridBorder = function(/** @type {Array<Uint8Array>} */ colourGrid, /** @type {number} */ border) {
 		// get width and height

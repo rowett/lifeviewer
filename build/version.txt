@@ -1,3 +1,13 @@
+Build 1122
+- don't AutoFit with zero population
+
+Build 1121
+- set bounded grid tiles on Reset since the grid may have grown during playback
+- close the Graph if mode changed
+- ensure changes to population at the current generation are reflected when the Graph is opened
+- ensure AutoFit is respected when window resized
+- Identify now displays results of period detection before classification begins
+
 Build 1120
 - fixed pattern extent on Save for LtL/HROT patterns
 
