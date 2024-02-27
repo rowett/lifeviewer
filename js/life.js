@@ -444,7 +444,6 @@ This file is part of LifeViewer
 		this.cellPeriodCanvas.width = 1;
 		this.cellPeriodCanvas.height = 1;
 		/** @type {CanvasRenderingContext2D} */ this.cellPeriodContext = /** @type {!CanvasRenderingContext2D} */ (this.cellPeriodCanvas.getContext("2d"));
-		///** @type {HTMLImageElement} */ this.cellPeriodImage = new Image();
 		/** @type {Array<number>} */ this.cellPeriodRGB = [];
 		/** @type {number} */ this.cellPeriodNumCols = 0;
 		/** @type {number} */ this.cellPeriodCellSize = 8;
@@ -1081,7 +1080,7 @@ This file is part of LifeViewer
 		/** @type {Uint16Array} */ this.margolusReverseLookup2 = null;
 
 		// colour lookup for next generation
-		/** @type {Uint16Array} */ this.colourLookup = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup"));
+		/** @type {Uint16Array} */ this.colourLookup = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.aliveMax + 1) * 2) << 9, "Life.colourLookup"));
 
 		// fast lookup for colour reset
 		/** @type {Uint8Array} */ this.colourReset = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 256 * 8, "Life.colourReset"));
@@ -10115,7 +10114,9 @@ This file is part of LifeViewer
 			/** @type {number} */ deadMin = this.deadMin,
 			/** @type {number} */ deadStart = this.deadStart,
 			/** @type {number} */ i = 0,
-			/** @type {Uint8Array} */ byteIndex = new Uint8Array(256);
+			/** @type {number} */ v = 0,
+			/** @type {Uint8Array} */ byteIndex = new Uint8Array(256),
+			/** @type {Uint16Array} */ tempLookup = new Uint16Array(131072);
 
 		// create byte lookup
 		// first pixel
@@ -10140,7 +10141,13 @@ This file is part of LifeViewer
 
 		// use byte lookup to create 16bit lookup
 		for (i = 0; i < 65536; i += 1) {
-			colourLookup[i] = (byteIndex[i >> 8] << 8) | byteIndex[i & 255];
+			tempLookup[i] = (byteIndex[i >> 8] << 8) | byteIndex[i & 255];
+		}
+
+		// use 16bit lookup to create 17bit lookup
+		for (i = 0; i < 131072; i += 1) {
+			v = (i & 65407) | ((i & 65536) >> 9);
+			colourLookup[i] = tempLookup[v];
 		}
 	};
 
@@ -43417,42 +43424,42 @@ This file is part of LifeViewer
 								nextCell = gridRow[leftX];
 
 								// lookup next colour
-								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 32768) >> 8) | ((nextCell & 16384) << 1)];
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 49152) << 1)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 8192) >> 6) | ((nextCell & 4096) << 3)];
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 12288) << 3)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 2048) >> 4) | ((nextCell & 1024) << 5)];
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 3072) << 5)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 512) >> 2) | ((nextCell & 256) << 7)];
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 768) << 7)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = colourLookup[colourGridRow16[cr] | (nextCell & 128) | ((nextCell & 64) << 9)];
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 192) << 9)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 32) << 2) | ((nextCell & 16) << 11)];
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 48) << 11)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 8) << 4) | ((nextCell & 4) << 13)];
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 12) << 13)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								cr += 1;
 
-								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 2) << 6) | ((nextCell & 1) << 15)];
+								value16 = colourLookup[colourGridRow16[cr] | ((nextCell & 3) << 15)];
 								tileAlive |= value16;
 								colourGridRow16[cr] = value16;
 								// cr += 1 - no need for final increments they will be reset next row

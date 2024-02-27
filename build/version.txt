@@ -1,3 +1,6 @@
+Build 1123
+- minor performance improvement for colour history
+
 Build 1122
 - don't AutoFit with zero population
 
