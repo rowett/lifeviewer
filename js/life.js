@@ -1080,7 +1080,8 @@ This file is part of LifeViewer
 		/** @type {Uint16Array} */ this.margolusReverseLookup2 = null;
 
 		// colour lookup for next generation
-		/** @type {Uint16Array} */ this.colourLookup = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.aliveMax + 1) * 2) << 9, "Life.colourLookup"));
+		/** @type {Uint16Array} */ this.colourLookup16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.aliveMax + 1) * 2) << 8, "Life.colourLookup16"));
+		/** @type {Uint16Array} */ this.colourLookup17 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.aliveMax + 1) * 2) << 9, "Life.colourLookup17"));
 
 		// fast lookup for colour reset
 		/** @type {Uint8Array} */ this.colourReset = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 256 * 8, "Life.colourReset"));
@@ -10077,7 +10078,7 @@ This file is part of LifeViewer
 
 	// create rainbow colour index
 	Life.prototype.createColourIndexRainbow = function() {
-		var	/** @type {Uint16Array} */ colourLookup = this.colourLookup,
+		var	/** @type {Uint16Array} */ colourLookup = this.colourLookup16,
 			/** @type {number} */ left = 0,
 			/** @type {number} */ right = 0,
 			/** @type {number} */ offset = 0,
@@ -10108,15 +10109,15 @@ This file is part of LifeViewer
 
 	// create normal colour index
 	Life.prototype.createColourIndexRegular = function() {
-		var	/** @type {Uint16Array} */ colourLookup = this.colourLookup,
+		var	/** @type {Uint16Array} */ colourLookup16 = this.colourLookup16,
+			/** @type {Uint16Array} */ colourLookup17 = this.colourLookup17,
 			/** @type {number} */ aliveMax = this.aliveMax,
 			/** @type {number} */ aliveStart = this.aliveStart,
 			/** @type {number} */ deadMin = this.deadMin,
 			/** @type {number} */ deadStart = this.deadStart,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ v = 0,
-			/** @type {Uint8Array} */ byteIndex = new Uint8Array(256),
-			/** @type {Uint16Array} */ tempLookup = new Uint16Array(131072);
+			/** @type {Uint8Array} */ byteIndex = new Uint8Array(256);
 
 		// create byte lookup
 		// first pixel
@@ -10141,13 +10142,13 @@ This file is part of LifeViewer
 
 		// use byte lookup to create 16bit lookup
 		for (i = 0; i < 65536; i += 1) {
-			tempLookup[i] = (byteIndex[i >> 8] << 8) | byteIndex[i & 255];
+			colourLookup16[i] = (byteIndex[i >> 8] << 8) | byteIndex[i & 255];
 		}
 
 		// use 16bit lookup to create 17bit lookup
 		for (i = 0; i < 131072; i += 1) {
 			v = (i & 65407) | ((i & 65536) >> 9);
-			colourLookup[i] = tempLookup[v];
+			colourLookup17[i] = colourLookup16[v];
 		}
 	};
 
@@ -43331,7 +43332,7 @@ This file is part of LifeViewer
 			/** @type {Uint16Array} */ colourTileHistoryRow = null,
 			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
 			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourLookup = this.colourLookup,
+			/** @type {Uint16Array} */ colourLookup = this.colourLookup17,
 			/** @type {Array<Uint16Array>} */ grid = null,
 			/** @type {Uint16Array} */ gridRow = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
@@ -43506,7 +43507,7 @@ This file is part of LifeViewer
 			/** @type {Uint16Array} */ colourTileHistoryRow = null,
 			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
 			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
-			/** @type {Uint16Array} */ colourLookup = this.colourLookup,
+			/** @type {Uint16Array} */ colourLookup = this.colourLookup16,
 			/** @type {Array<Uint16Array>} */ grid = null,
 			/** @type {Uint16Array} */gridRow = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,

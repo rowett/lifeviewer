@@ -553,7 +553,7 @@ This file is part of LifeViewer
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
 			/** @type {number} */ aliveIndex = 0,
-			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup,
+			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup16,
 			/** @type {Random} */ myRand = this.myRand,
 			/** @type {Float32Array} */ birthChances = this.birthChances,
 			/** @type {Float32Array} */ survivalChances = this.survivalChances,
@@ -815,7 +815,7 @@ This file is part of LifeViewer
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
 			/** @type {number} */ aliveIndex = 0,
-			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup,
+			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup16,
 
 			// maximum generations state
 			/** @const {number} */ maxGenState = this.engine.multiNumStates + this.engine.historyStates - 1,
@@ -2305,7 +2305,7 @@ This file is part of LifeViewer
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
 			/** @const {number} */ deadMin = LifeConstants.deadMin,
 			/** @type {number} */ aliveIndex = 0,
-			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup,
+			/** @type {Uint16Array} */ colourLookup = this.engine.colourLookup16,
 			/** @type {Uint8Array} */ colUsed = this.colUsed,
 			/** @type {number} */ im1 = 0,
 			/** @type {number} */ im2 = 0,
