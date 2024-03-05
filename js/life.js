@@ -9870,7 +9870,7 @@ This file is part of LifeViewer
 
 		// Golly theme
 		this.themes[i] = new Theme("Golly", new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)), new Colour(48, 48, 48),
-							new Colour(255, 255, 0), new ColourRange(new Colour(255, 0, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new Colour(48, 48, 48),
+							new Colour(255, 0, 0), new ColourRange(new Colour(255, 255, 0), new Colour(-1, -1, -1)), new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)), new Colour(48, 48, 48),
 							[new Colour(0, 255, 127), new Colour(127, 0, 255), new Colour(148, 148, 148), new Colour(128, 255, 9),
 							 new Colour(255, 0, 128), new Colour(0, 128, 255), new Colour(1, 159, 0), new Colour(159, 0, 1),
 							 new Colour(255, 254, 96), new Colour(0, 1, 159), new Colour(96, 255, 254), new Colour(254, 96, 255),
@@ -46954,23 +46954,25 @@ This file is part of LifeViewer
 			this.data32 = new Uint32Array(this.imageData.data.buffer);
 
 			// draw vertical grid lines
-			i = 0;
-			var xOff = (((this.width / 2 - (this.xOff + this.originX)) * this.camZoom) + (this.displayWidth / 2)) % this.camZoom;
-			x = -this.camZoom + xOff;
-			for (j = leftX; j <= rightX; j += 1) {
-				this.drawVLine(x | 0, 0, this.displayHeight - 1, gridCols[i]);
-				x += this.camZoom;
-				i += 1;
-			}
+			if (drawGridLines) {
+				i = 0;
+				var xOff = (((this.width / 2 - (this.xOff + this.originX)) * this.camZoom) + (this.displayWidth / 2)) % this.camZoom;
+				x = -this.camZoom + xOff;
+				for (j = leftX; j <= rightX; j += 1) {
+					this.drawVLine(x | 0, 0, this.displayHeight - 1, gridCols[i]);
+					x += this.camZoom;
+					i += 1;
+				}
 
-			// draw horizontal grid lines
-			i = 0;
-			var yOff = (((this.height / 2 - (this.yOff + this.originY)) * this.camZoom) + (this.displayHeight / 2)) % this.camZoom;
-			y = -this.camZoom + yOff;
-			for (j = bottomY; j <= topY; j += 1) {
-				this.drawHLine(0, this.displayWidth - 1, y | 0, gridRows[i]);
-				y += this.camZoom;
-				i += 1;
+				// draw horizontal grid lines
+				i = 0;
+				var yOff = (((this.height / 2 - (this.yOff + this.originY)) * this.camZoom) + (this.displayHeight / 2)) % this.camZoom;
+				y = -this.camZoom + yOff;
+				for (j = bottomY; j <= topY; j += 1) {
+					this.drawHLine(0, this.displayWidth - 1, y | 0, gridRows[i]);
+					y += this.camZoom;
+					i += 1;
+				}
 			}
 
 			// draw snow if enabled
@@ -47298,23 +47300,25 @@ This file is part of LifeViewer
 			this.data32 = new Uint32Array(this.imageData.data.buffer);
 
 			// draw vertical grid lines
-			i = 0;
-			var xOff = (((this.width / 2 - (this.xOff + this.originX)) * this.camZoom) + (this.displayWidth / 2)) % this.camZoom;
-			x = -this.camZoom + xOff;
-			for (j = leftX; j <= rightX; j += 1) {
-				this.drawVLine(x | 0, 0, this.displayHeight - 1, gridCols[i]);
-				x += this.camZoom;
-				i += 1;
-			}
+			if (drawGridLines) {
+				i = 0;
+				var xOff = (((this.width / 2 - (this.xOff + this.originX)) * this.camZoom) + (this.displayWidth / 2)) % this.camZoom;
+				x = -this.camZoom + xOff;
+				for (j = leftX; j <= rightX; j += 1) {
+					this.drawVLine(x | 0, 0, this.displayHeight - 1, gridCols[i]);
+					x += this.camZoom;
+					i += 1;
+				}
 
-			// draw horizontal grid lines
-			i = 0;
-			var yOff = (((this.height / 2 - (this.yOff + this.originY)) * this.camZoom) + (this.displayHeight / 2)) % this.camZoom;
-			y = -this.camZoom + yOff;
-			for (j = bottomY; j <= topY; j += 1) {
-				this.drawHLine(0, this.displayWidth - 1, y | 0, gridRows[i]);
-				y += this.camZoom;
-				i += 1;
+				// draw horizontal grid lines
+				i = 0;
+				var yOff = (((this.height / 2 - (this.yOff + this.originY)) * this.camZoom) + (this.displayHeight / 2)) % this.camZoom;
+				y = -this.camZoom + yOff;
+				for (j = bottomY; j <= topY; j += 1) {
+					this.drawHLine(0, this.displayWidth - 1, y | 0, gridRows[i]);
+					y += this.camZoom;
+					i += 1;
+				}
 			}
 
 			// draw snow if enabled

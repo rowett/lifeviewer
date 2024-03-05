@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1123,
+		/** @const {number} */ versionBuild : 1124,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -13609,12 +13609,12 @@ This file is part of LifeViewer
 			if (!me.noCopy && me.copySyncExternal) {
 				if (shift) {
 					// copy reset position to external clipboard
-					me.copyRLE(me, true);
+					me.copyRLE(me);
 				} else {
 					// check for view only mode
 					if (me.viewOnly) {
 						// copy reset position to clipboard
-						me.copyRLE(me, true);
+						me.copyRLE(me);
 					} else {
 						// check for alt/meta key
 						if (alt) {
@@ -13741,7 +13741,7 @@ This file is part of LifeViewer
 			Help.copying = true;
 			Help.copyText = "";
 			Help.drawHelpText(me);
-			me.copyToClipboard(me, Help.copyText, false);
+			me.copyToClipboard(me, Help.copyText);
 			Help.copying = false;
 			Help.copyText = "";
 		} else {
@@ -13749,12 +13749,12 @@ This file is part of LifeViewer
 			if (!me.noCopy && (me.copySyncExternal || !me.isSelection)) {
 				if (shift) {
 					// copy reset position to external clipboard
-					me.copyRLE(me, true);
+					me.copyRLE(me);
 				} else {
 					// check for view only mode
 					if (me.viewOnly) {
 						// copy reset position to clipboard
-						me.copyRLE(me, true);
+						me.copyRLE(me);
 					} else {
 						// check for alt/meta key
 						if (alt) {
@@ -13915,7 +13915,7 @@ This file is part of LifeViewer
 				}
 
 				// copy to external clipboard
-				me.copyToClipboard(me, output, false);
+				me.copyToClipboard(me, output);
 				me.menuManager.notification.notify("Weighted R" + ((width - 1) >> 1) + " copied to clipboard", 15, 180, 15, true);
 			}
 		} else {
@@ -14012,7 +14012,7 @@ This file is part of LifeViewer
 				}
 
 				// copy to external clipboard
-				me.copyToClipboard(me, output, false);
+				me.copyToClipboard(me, output);
 				me.menuManager.notification.notify("CoordCA R" + ((width - 1) >> 1) + " copied to clipboard", 15, 180, 15, true);
 			}
 		} else {
@@ -15925,7 +15925,7 @@ This file is part of LifeViewer
 		//if (me.engine.isRuleTree && me.engine.multiNumStates === 2 && !(me.engine.ruleTableOutput && me.engine.ruleTableNeighbourhood === PatternConstants.ruleTableOneD)) {
 		if (me.engine.isRuleTree && me.engine.multiNumStates === 2) {
 			ruleText = me.engine.ruleLoaderToMAP();
-			me.copyToClipboard(me, ruleText, false);
+			me.copyToClipboard(me, ruleText);
 		}
 	};
 
@@ -15941,7 +15941,7 @@ This file is part of LifeViewer
 				ruleText = me.manager.ruleLoaderDefinition;
 			}
 		}
-		me.copyToClipboard(me, ruleText, false);
+		me.copyToClipboard(me, ruleText);
 	};
 
 	// identify button action
@@ -16635,9 +16635,8 @@ This file is part of LifeViewer
 	}
 
 	// copy string to clipboard
-	View.prototype.copyToClipboard = function(/** @type {View} */ me, /** @type {string} */ contents, /** @type {boolean} */ twoPhase) {
-		var	/** @type {Element} */ copyElement = document.getElementById("ViewerCopy"),
-			/** @type {string} */ logMsg = contents.substring(0, 40).replace(/[\n\r]/g, " ");
+	View.prototype.copyToClipboard = function(/** @type {View} */ me, /** @type {string} */ contents) {
+		var	/** @type {Element} */ copyElement = document.getElementById("ViewerCopy");
 
 		// save the contents
 		Controller.clipText = contents;
@@ -16839,7 +16838,7 @@ This file is part of LifeViewer
 		}
 
 		// copy to clipboard
-		me.copyToClipboard(me, string, false);
+		me.copyToClipboard(me, string);
 	};
 
 	// save the current rle to the source document node
@@ -16867,19 +16866,19 @@ This file is part of LifeViewer
 	};
 
 	// select and copy reset position rle
-	View.prototype.copyRLE = function(/** @type {View} */ me, /** @type {boolean} */ twoPhase) {
+	View.prototype.copyRLE = function(/** @type {View} */ me) {
 		// copy the source pattern to the clipboard
 		if (DocConfig.multi) {
-			me.copyToClipboard(me, Controller.patterns[me.universe].pattern, twoPhase);
+			me.copyToClipboard(me, Controller.patterns[me.universe].pattern);
 		} else {
-			me.copyToClipboard(me, cleanPattern(me.element), twoPhase);
+			me.copyToClipboard(me, cleanPattern(me.element));
 		}
 	};
 
 	// select and copy current rle
 	View.prototype.copyCurrentRLE = function(/** @type {View} */ me, /** @type {boolean} */ addComments) {
 		// copy the current pattern to the clipboard
-		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, [], false), false);
+		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, [], false));
 	};
 
 	// key down
@@ -18491,7 +18490,7 @@ This file is part of LifeViewer
 			// check for NOGUI
 			if (me.noGUI) {
 				if (!me.noCopy) {
-					me.copyRLE(me, false);
+					me.copyRLE(me);
 				}
 			}
 		}

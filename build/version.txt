@@ -1,3 +1,7 @@
+Build 1124
+- fix display issue when drawing stars without gridlines with High Quality rendering
+- fix Golly Theme colour order
+
 Build 1123
 - minor performance improvement for colour history
 
