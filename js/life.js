@@ -10020,10 +10020,18 @@ This file is part of LifeViewer
 		this.aliveColTarget.set(newTheme.aliveRange);
 		this.deadColTarget.set(newTheme.deadRange);
 		this.unoccupiedTarget.set(newTheme.unoccupied);
+
+		// set the theme colours
+		this.unoccupiedGenTarget.set(newTheme.unoccupiedGen);
+
+		// for multi-state HROT rules use Generations Theme for Golly Theme
+		if (theme === 12 && this.isHROT) {
+			newTheme = this.themes[11];
+		}
+
 		this.aliveGenColTarget.set(newTheme.aliveGen);
 		this.deadGenColTarget.set(newTheme.deadRangeGen);
 		this.dyingGenColTarget.set(newTheme.dyingRangeGen);
-		this.unoccupiedGenTarget.set(newTheme.unoccupiedGen);
 		for (i = 0; i < this.pcaColsTarget.length; i += 1) {
 			this.pcaColsTarget[i] = newTheme.pcaCols[i];
 		}

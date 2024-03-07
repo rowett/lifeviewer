@@ -2723,6 +2723,7 @@ This file is part of LifeViewer
 				for (i = 0; i < view.engine.themes.length - 1; i += 1) {
 					y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 					theme = view.engine.themes[i];
+
 					view.helpSections[sectionNum] = [view.lineNo, theme.name];
 					sectionNum += 1;
 
@@ -2732,6 +2733,11 @@ This file is part of LifeViewer
 					// background colour
 					this.renderColourBox(view, theme.unoccupiedGen.red, theme.unoccupiedGen.green, theme.unoccupiedGen.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 					y = this.renderHelpLine(view, "BACKGROUND", this.rgbObjectString(theme.unoccupiedGen), ctx, x, y, height, helpLine);
+
+					// for multi-state HROT rules use Generations Theme for Golly Theme
+					if (i === 12 && view.engine.isHROT) {
+						theme = view.engine.themes[11];
+					}
 
 					// alive colour
 					this.renderColourBox(view, theme.aliveGen.red, theme.aliveGen.green, theme.aliveGen.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);

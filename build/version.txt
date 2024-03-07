@@ -1,6 +1,9 @@
+Build 1125
+- fix Golly Theme colour order for HROT multi-state rules
+
 Build 1124
 - fix display issue when drawing stars without gridlines with High Quality rendering
-- fix Golly Theme colour order
+- fix Golly Theme colour order for 2 state rules
 
 Build 1123
 - minor performance improvement for colour history
