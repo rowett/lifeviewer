@@ -10017,24 +10017,28 @@ This file is part of LifeViewer
 		}
 
 		// set the colour target to the theme
-		this.aliveColTarget.set(newTheme.aliveRange);
+		if (theme === 12 && this.isHROT) {
+			this.aliveColTarget.set(this.themes[11].aliveRange);
+		} else {
+			this.aliveColTarget.set(newTheme.aliveRange);
+		}
 		this.deadColTarget.set(newTheme.deadRange);
 		this.unoccupiedTarget.set(newTheme.unoccupied);
 
 		// set the theme colours
 		this.unoccupiedGenTarget.set(newTheme.unoccupiedGen);
+		for (i = 0; i < this.pcaColsTarget.length; i += 1) {
+			this.pcaColsTarget[i] = newTheme.pcaCols[i];
+		}
+		this.deadGenColTarget.set(newTheme.deadRangeGen);
 
-		// for multi-state HROT rules use Generations Theme for Golly Theme
+		// for multi-state HROT rules use Generations Theme for Golly Theme for Alive and Dying colours
 		if (theme === 12 && this.isHROT) {
 			newTheme = this.themes[11];
 		}
 
 		this.aliveGenColTarget.set(newTheme.aliveGen);
-		this.deadGenColTarget.set(newTheme.deadRangeGen);
 		this.dyingGenColTarget.set(newTheme.dyingRangeGen);
-		for (i = 0; i < this.pcaColsTarget.length; i += 1) {
-			this.pcaColsTarget[i] = newTheme.pcaCols[i];
-		}
 
 		// set the change time
 		this.colourChange = switchTime;

@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1125,
+		/** @const {number} */ versionBuild : 1126,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",

@@ -1,3 +1,7 @@
+Build 1126
+- fix spurious "Show Pattern Error" link on forum
+- fix Golly Theme colour for HROT multi-state and two state rules
+
 Build 1125
 - fix Golly Theme colour order for HROT multi-state rules
 
