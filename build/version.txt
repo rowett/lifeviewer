@@ -1,3 +1,6 @@
+Build 1127
+- do not display Settings menu titles if display height is too low
+
 Build 1126
 - fix spurious "Show Pattern Error" link on forum
 - fix Golly Theme colour for HROT multi-state and two state rules

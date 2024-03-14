@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1126,
+		/** @const {number} */ versionBuild : 1127,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7327,7 +7327,7 @@ This file is part of LifeViewer
 		this.fitSelectionButton.locked = shown;
 
 		// set theme section label text
-		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showClipboardSettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings || this.showActionsSettings);
+		this.themeSectionLabel.deleted = hide || !(this.showDisplaySettings || this.showClipboardSettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings || this.showActionsSettings) || this.displayHeight < ViewConstants.preferredMenuHeight;
 		if (this.showDisplaySettings) {
 			this.themeSectionLabel.preText = "Display";
 		} else {
