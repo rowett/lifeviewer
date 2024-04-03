@@ -1,3 +1,11 @@
+Build 1128
+- performance improvement for 2-state patterns when drawing tiles containing only dead cells
+- always switch to Pan mode when Population Graph opened
+- fixed a [[ KILLGLIDERS ]] crash
+- fixed layers sometimes rendering previous generation
+- fixed layers with bounded grid rendering removing cells at distance zooms
+- fixed Population Graph being a cell behind updates at T=0
+
 Build 1127
 - do not display Settings menu titles if display height is too low
 

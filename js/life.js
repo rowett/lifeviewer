@@ -1,4 +1,4 @@
-// written by Chris Rowett
+// LifeViewer engine
 // Implements many rule families and rendering.
 
 /*
@@ -10766,7 +10766,7 @@ This file is part of LifeViewer
 				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 			}
 
-			// for [R]Super or [R]Extended (TBD cehck [R]Extended) the bounded colour will become 31 at Zoom < 1 so set this colour to the bounded grid cell colour
+			// for [R]Super or [R]Extended (TBD check [R]Extended) the bounded colour will become 31 at Zoom < 1 so set this colour to the bounded grid cell colour
 			if (this.isSuper || this.isExtended) {
 				pixelColours[31] = pixelColours[i];
 			}
@@ -14939,6 +14939,7 @@ This file is part of LifeViewer
 			/** @type {number} */ rightX = box.rightX,
 			/** @type {number} */ bottomY = box.bottomY,
 			/** @type {number} */ topY = box.topY,
+			/** @type {BoundingBox} */ safeBox = new BoundingBox(0, 0, 0, 0),
 			/** @const {number} */ safeBorder = 64,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ topRow = colourGrid[topY],
@@ -14971,11 +14972,17 @@ This file is part of LifeViewer
 				topY = this.height - safeBorder - 1;
 			}
 
+			// remember the safe bounding box
+			safeBox.leftX = leftX;
+			safeBox.bottomY = bottomY;
+			safeBox.rightX = rightX;
+			safeBox.topY = topY;
+
 			// check top and bottom rows
 			for (x = leftX - gSize; x <= rightX + gSize; x += 1) {
 				// check several rows
 				for (off = 0; off <= 5; off += 1) {
-					bottomY = box.bottomY + off;
+					bottomY = safeBox.bottomY + off;
 					bottomRow = colourGrid[bottomY];
 
 					if (bottomRow[x] >= aliveStart) {
@@ -14997,7 +15004,7 @@ This file is part of LifeViewer
 						}
 					}
 
-					topY = box.topY - off;
+					topY = safeBox.topY - off;
 					topRow = colourGrid[topY];
 
 					if (topRow[x] >= aliveStart) {
@@ -15026,7 +15033,7 @@ This file is part of LifeViewer
 				// check several columns
 				for (off = 0; off <= 5; off += 1) {
 					currentRow = colourGrid[y];
-					leftX = box.leftX + off;
+					leftX = safeBox.leftX + off;
 
 					if (currentRow[leftX] >= aliveStart) {
 						// NW and SW glider
@@ -15047,7 +15054,7 @@ This file is part of LifeViewer
 						}
 					}
 
-					rightX = box.rightX - off;
+					rightX = safeBox.rightX - off;
 					if (currentRow[rightX] >= aliveStart) {
 						// NE and SE glider
 						if (!this.findAndDeleteGlider(this.gliderNE07x7, rightX - 2, y, -1, -1, LifeConstants.gliderNE, off, LifeConstants.gliderE)) {
@@ -43411,7 +43418,7 @@ This file is part of LifeViewer
 			// scan each set of tiles
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
-				tiles = tileGridRow[tw] | colourTileRow[tw] | colourTileHistoryRow[tw];
+				tiles = tileGridRow[tw] | colourTileRow[tw];
 				nextTiles = 0;
 
 				// check if any are occupied
@@ -45394,7 +45401,15 @@ This file is part of LifeViewer
 							mask = 1;
 						} else {
 							// switch to full resolution grid
+							if ((this.counter & 1) === 0) {
+								colourGrid = this.colourGrid;
+							} else {
+								colourGrid = this.nextColourGrid;
+							}
 							mask = 0;
+							if (this.boundedGridType !== -1) {
+								this.drawBoundedGridBorder(colourGrid, 0);
+							}
 						}
 					}
 				}
@@ -45403,8 +45418,14 @@ This file is part of LifeViewer
 			// check if mask changed
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
-				colourGrid = this.colourGrid;
-				this.drawBoundedGridBorderMask(colourGrid, 0, mask);
+				if ((this.counter & 1) === 0) {
+					colourGrid = this.colourGrid;
+				} else {
+					colourGrid = this.nextColourGrid;
+				}
+				if (this.boundedGridType !== -1) {
+					this.drawBoundedGridBorder(colourGrid, 0);
+				}
 			}
 
 			// create the width and height masks
@@ -45845,7 +45866,15 @@ This file is part of LifeViewer
 							mask = 1;
 						} else {
 							// switch to full resolution grid
+							if ((this.counter & 1) === 0) {
+								colourGrid = this.colourGrid;
+							} else {
+								colourGrid = this.nextColourGrid;
+							}
 							mask = 0;
+							if (this.boundedGridType !== -1) {
+								this.drawBoundedGridBorder(colourGrid, 0);
+							}
 						}
 					}
 				}
@@ -45854,8 +45883,14 @@ This file is part of LifeViewer
 			// check if mask changed
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
-				colourGrid = this.colourGrid;
-				this.drawBoundedGridBorderMask(colourGrid, 0, mask);
+				if ((this.counter & 1) === 0) {
+					colourGrid = this.colourGrid;
+				} else {
+					colourGrid = this.nextColourGrid;
+				}
+				if (this.boundedGridType !== -1) {
+					this.drawBoundedGridBorder(colourGrid, 0);
+				}
 			}
 
 			// create the width and height masks
@@ -46170,8 +46205,15 @@ This file is part of LifeViewer
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
+							if ((this.counter & 1) === 0) {
+								colourGrid = this.colourGrid;
+							} else {
+								colourGrid = this.nextColourGrid;
+							}
 							mask = 0;
+							if (this.boundedGridType !== -1) {
+								this.drawBoundedGridBorder(colourGrid, 0);
+							}
 						}
 					}
 				}
@@ -46180,8 +46222,14 @@ This file is part of LifeViewer
 			// check if mask changed
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
-				colourGrid = this.colourGrid;
-				this.drawBoundedGridBorderMask(colourGrid, 0, mask);
+				if ((this.counter & 1) === 0) {
+					colourGrid = this.colourGrid;
+				} else {
+					colourGrid = this.nextColourGrid;
+				}
+				if (this.boundedGridType !== -1) {
+					this.drawBoundedGridBorder(colourGrid, 0);
+				}
 			}
 
 			// create the width and height masks
@@ -46482,7 +46530,15 @@ This file is part of LifeViewer
 							mask = 1;
 						} else {
 							// switch to full resolution grid
+							if ((this.counter & 1) === 0) {
+								colourGrid = this.colourGrid;
+							} else {
+								colourGrid = this.nextColourGrid;
+							}
 							mask = 0;
+							if (this.boundedGridType !== -1) {
+								this.drawBoundedGridBorder(colourGrid, 0);
+							}
 						}
 					}
 				}
@@ -46491,8 +46547,14 @@ This file is part of LifeViewer
 			// check if mask changed
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
-				colourGrid = this.colourGrid;
-				this.drawBoundedGridBorderMask(colourGrid, 0, mask);
+				if ((this.counter & 1) === 0) {
+					colourGrid = this.colourGrid;
+				} else {
+					colourGrid = this.nextColourGrid;
+				}
+				if (this.boundedGridType !== -1) {
+					this.drawBoundedGridBorder(colourGrid, 0);
+				}
 			}
 
 			// create the width and height masks
@@ -47782,7 +47844,11 @@ This file is part of LifeViewer
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
+							if ((this.counter & 1) === 0) {
+								colourGrid = this.colourGrid;
+							} else {
+								colourGrid = this.nextColourGrid;
+							}
 							mask = 0;
 						}
 					}
@@ -47792,7 +47858,11 @@ This file is part of LifeViewer
 			// check if mask changed
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
-				colourGrid = this.colourGrid;
+				if ((this.counter & 1) === 0) {
+					colourGrid = this.colourGrid;
+				} else {
+					colourGrid = this.nextColourGrid;
+				}
 			}
 
 			// create the width and height masks
@@ -48261,7 +48331,11 @@ This file is part of LifeViewer
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
+							if ((this.counter & 1) === 0) {
+								colourGrid = this.colourGrid;
+							} else {
+								colourGrid = this.nextColourGrid;
+							}
 							mask = 0;
 						}
 					}
@@ -48271,7 +48345,11 @@ This file is part of LifeViewer
 			// check if mask changed
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
-				colourGrid = this.colourGrid;
+				if ((this.counter & 1) === 0) {
+					colourGrid = this.colourGrid;
+				} else {
+					colourGrid = this.nextColourGrid;
+				}
 			}
 
 			// create the width and height masks
@@ -48733,7 +48811,11 @@ This file is part of LifeViewer
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
+							if ((this.counter & 1) === 0) {
+								colourGrid = this.colourGrid;
+							} else {
+								colourGrid = this.nextColourGrid;
+							}
 							mask = 0;
 						}
 					}
@@ -48743,7 +48825,11 @@ This file is part of LifeViewer
 			// check if mask changed
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
-				colourGrid = this.colourGrid;
+				if ((this.counter & 1) === 0) {
+					colourGrid = this.colourGrid;
+				} else {
+					colourGrid = this.nextColourGrid;
+				}
 			}
 
 			// create the width and height masks
@@ -49327,7 +49413,11 @@ This file is part of LifeViewer
 							mask = 1;
 						} else {
 							// switch to full resolution grid
-							colourGrid = this.colourGrid;
+							if ((this.counter & 1) === 0) {
+								colourGrid = this.colourGrid;
+							} else {
+								colourGrid = this.nextColourGrid;
+							}
 							mask = 0;
 						}
 					}
@@ -49337,7 +49427,11 @@ This file is part of LifeViewer
 			// check if mask changed
 			if (mask !== lastMask) {
 				// switch to full resolution colour grid
-				colourGrid = this.colourGrid;
+				if ((this.counter & 1) === 0) {
+					colourGrid = this.colourGrid;
+				} else {
+					colourGrid = this.nextColourGrid;
+				}
 			}
 
 			// create the width and height masks

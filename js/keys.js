@@ -234,11 +234,18 @@ This file is part of LifeViewer
 					case 40:
 						me.pasteOffset(me, 0, 1);
 						break;
-					// Del for clear marked [R]History cells
+					// Alt-Del for clear marked [R]History cells
 					case 46:
-						me.clearCells(me, true, true);
-						me.menuManager.notification.notify("Cleared [R]History marked cells", 15, 120, 15, true);
+						if (me.engine.isLifeHistory || me.engine.isSuper) {
+							me.clearCells(me, true, true);
+							if (me.engine.isLifeHistory) {
+								me.menuManager.notification.notify("Cleared [R]History marked cells", 15, 120, 15, true);
+							} else {
+								me.menuManager.notification.notify("Cleared [R]Super marked cells", 15, 120, 15, true);
+							}
+						}
 						break;
+
 					// a for auto-shrink
 					case 65:
 						// toggle auto-shrink selection
@@ -1437,12 +1444,23 @@ This file is part of LifeViewer
 						me.clearOutside(me);
 					} else {
 						me.doClearSelection(me, ctrlKey);
+						if (ctrlKey && (me.engine.isLifeHistory || me.engine.isSuper)) {
+							if (me.engine.isLifeHistory) {
+								me.menuManager.notification.notify("Cleared [R]History cells", 15, 120, 15, true);
+							} else {
+								me.menuManager.notification.notify("Cleared [R]Super cells", 15, 120, 15, true);
+							}
+						}
 					}
 				} else {
 					if (ctrlKey) {
 						value = me.clearCells(me, ctrlKey, false);
 						if (value) {
-							me.menuManager.notification.notify("Cleared [R]History cells", 15, 120, 15, true);
+							if (me.engine.isLifeHistory) {
+								me.menuManager.notification.notify("Cleared [R]History cells", 15, 120, 15, true);
+							} else {
+								me.menuManager.notification.notify("Cleared [R]Super cells", 15, 120, 15, true);
+							}
 						}
 					}
 				}

@@ -914,6 +914,9 @@ This file is part of LifeViewer
 		// states for generations, LTL or HROT
 		/** @type {number} */ this.multiNumStates = -1;
 
+		// maximum state read
+		/** @type {number} */ this.maxStateRead = -1;
+
 		// HROT corner and edge ranges
 		/** @type {number} */ this.cornerRange = 1;
 		/** @type {number} */ this.edgeRange = 1;
@@ -6364,6 +6367,9 @@ This file is part of LifeViewer
 			// state counts
 			/** @type {Uint32Array} */ stateCount = this.stateCount;
 
+		// reset max state read
+		pattern.maxStateRead = -1;
+
 		// get the first character
 		next = string[index];
 
@@ -6563,6 +6569,11 @@ This file is part of LifeViewer
 					if (stateNum >= pattern.numStates) {
 						pattern.numStates = stateNum + 1;
 					}
+				}
+
+				// always save maximum state found (raw)
+				if (stateNum >= pattern.maxStateRead) {
+					pattern.maxStateRead = stateNum;
 				}
 
 				// add cells to the row if saving and not state 0
@@ -9507,12 +9518,6 @@ This file is part of LifeViewer
 			}
 		}
 
-		// check if the rule supports supplied pattern states
-		if (pattern.numStates > states) {
-			valid = false;
-			this.failureReason = "illegal state in pattern";
-		}
-
 		// check if decoded successfully
 		if (valid) {
 			if (pattern.allocator === null) {
@@ -9783,12 +9788,6 @@ This file is part of LifeViewer
 				if (lev !== neighbours + 1) {
 					this.failureReason = "bad last node (wrong level)";
 					valid = false;
-				} else {
-					// check the rule supports supplied pattern states
-					if (pattern.numStates > states) {
-						valid = false;
-						this.failureReason = "illegal state in pattern";
-					}
 				}
 			}
 		}

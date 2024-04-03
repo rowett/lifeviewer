@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1127,
+		/** @const {number} */ versionBuild : 1128,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -2718,15 +2718,15 @@ This file is part of LifeViewer
 				}
 			}
 
-			// update graph data if at T=0
-			if (!this.graphDisabled && this.engine.counter === 0) {
-				this.engine.resetPopulationData();
-			}
-
 			// set the state
 			result = this.engine.setState(x, y, colour, deadZero);
 			if (this.engine.population !== pop) {
 				this.diedGeneration = -1;
+			}
+
+			// update graph data if at T=0
+			if (!this.graphDisabled && this.engine.counter === 0) {
+				this.engine.resetPopulationData();
 			}
 		}
 
@@ -7467,7 +7467,7 @@ This file is part of LifeViewer
 		this.invertSelectionButton.deleted = shown;
 		this.clearSelectionButton.deleted = shown;
 		this.clearOutsideButton.deleted = shown;
-		this.clearRHistoryButton.deleted = shown || !(this.engine.isLifeHistory || this.engine.isSuper || this.engine.isExtended);
+		this.clearRHistoryButton.deleted = shown || !(this.engine.isLifeHistory || this.engine.isSuper);
 		this.changeCellStateButton.deleted= shown;
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
@@ -8378,12 +8378,11 @@ This file is part of LifeViewer
 	View.prototype.viewGraphToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
-			// if just switched on then switch to pan mode
-			if (me.popGraph) {
-				if (me.modeList.current !== ViewConstants.modePan) {
-					me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
-				}
+			// switch to Pan mode
+			if (me.modeList.current !== ViewConstants.modePan) {
+				me.modeList.current = me.viewModeList(ViewConstants.modePan, true, me);
 			}
+
 			// close settings menu
 			if (me.navToggle.current[0]) {
 				me.navToggle.current = me.toggleSettings([false], true, me);
@@ -9680,8 +9679,6 @@ This file is part of LifeViewer
 			/** @type {BoundingBox} */ historyBox = me.engine.historyBox,
 			/** @type {number} */ numCleared = 0,
 			/** @type {number} */ clearValue = 0;
-
-			// tbd isExtended
 
 		// delete any cell of the current pen colour   TBD [R]Super state 6
 		if (current > 0) {
@@ -19085,6 +19082,21 @@ This file is part of LifeViewer
 
 		// clear icons
 		me.engine.ruleTableIcons = null;
+
+		// check for illegal states in RuleTable
+		if (pattern && (pattern.ruleTableOutput !== null || pattern.ruleTreeStates !== -1)) {
+			if (pattern.ruleTableOutput == null) {
+				if (pattern.maxStateRead > pattern.ruleTreeStates) {
+					me.manager.failureReason = "@TREE illegal state in pattern";
+					pattern = null;
+				}
+			} else {
+				if (pattern.maxStateRead > pattern.ruleTableStates) {
+					me.manager.failureReason = "@TABLE illegal state in pattern";
+					pattern = null;
+				}
+			}
+		}
 
 		// check for failed RuleTable
 		if (me.manager.ruleTableB0 && pattern && (pattern.gridType === -1 || (pattern.gridType !== -1 && (pattern.gridWidth === 0 || pattern.gridHeight === 0)))) {
