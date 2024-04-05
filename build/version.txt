@@ -1,3 +1,6 @@
+Build 1129
+- improved layer rendering when layers go through multiple 2^-n zoom ranges
+
 Build 1128
 - performance improvement for 2-state patterns when drawing tiles containing only dead cells
 - always switch to Pan mode when Population Graph opened
