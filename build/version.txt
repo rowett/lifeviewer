@@ -1,3 +1,9 @@
+Build 1131
+- allow Angle and Tilt to be set by script commands for none rule
+
+Build 1130
+- fixed a layer rendering issue at Zoom < -16x
+
 Build 1129
 - improved layer rendering when layers go through multiple 2^-n zoom ranges
 

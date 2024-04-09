@@ -5790,8 +5790,9 @@ This file is part of LifeViewer
 				view.engine.zoom = currentWaypoint.zoom;
 			}
 
-			// set angle
-			if (!(view.engine.isTriangular || view.engine.isHex || view.engine.isNone)) {
+			// set angle, tilt, depth and layers
+			if (!(view.engine.isTriangular || view.engine.isHex)) {
+				// set angle
 				if (currentWaypoint.angleDefined) {
 					view.engine.angle = currentWaypoint.angle;
 				}
@@ -5802,13 +5803,15 @@ This file is part of LifeViewer
 				}
 
 				// set depth
-				if (currentWaypoint.depthDefined) {
-					view.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
-				}
+				if (!view.engine.isNone) {
+					if (currentWaypoint.depthDefined) {
+						view.engine.layerDepth = (currentWaypoint.depth / ViewConstants.depthScale) + ViewConstants.minDepth;
+					}
 
-				// set layers
-				if (currentWaypoint.layersDefined) {
-					view.engine.layers = currentWaypoint.layers;
+					// set layers
+					if (currentWaypoint.layersDefined) {
+						view.engine.layers = currentWaypoint.layers;
+					}
 				}
 			}
 

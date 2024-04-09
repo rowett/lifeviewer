@@ -24523,8 +24523,6 @@ This file is part of LifeViewer
 
 	// create the small colour grids based on zoom level
 	Life.prototype.createSmallColourGrids = function(/** @type {Array<Uint16Array>} */ colourGrid16, /** @type {Array<Uint32Array>} */ colourGrid32, /** @type {number} */ camZoom) {
-		this.lastZoom16 = true;
-
 		// check if 0.5 <= zoom < 1
 		if (camZoom >= 0.5 && camZoom < 1) {
 			// create 2x2 colour grid
@@ -45386,26 +45384,31 @@ This file is part of LifeViewer
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
-			// check whether to switch to colour grid based on ZOOM >= 1
+			// check whether to switch grid resolution based on zoom
 			lastMask = mask;
-			if (layerZoom < 0.125) {
-				// switch to small grid 16x16
-				mask = 15;
+			if (layerZoom < 0.0625) {
+				// switch to small grid 32x32
+				mask = 31;
 			} else {
-				if (layerZoom < 0.25) {
-					// switch to small grid 8x8
-					mask = 7;
+				if (layerZoom < 0.125) {
+					// switch to small grid 16x16
+					mask = 15;
 				} else {
-					if (layerZoom < 0.5) {
-						// switch to small grid 4x4
-						mask = 3;
+					if (layerZoom < 0.25) {
+						// switch to small grid 8x8
+						mask = 7;
 					} else {
-						if (layerZoom < 1) {
-							// switch to small grid 2x2
-							mask = 1;
+						if (layerZoom < 0.5) {
+							// switch to small grid 4x4
+							mask = 3;
 						} else {
-							// switch to full resolution grid
-							mask = 0;
+							if (layerZoom < 1) {
+								// switch to small grid 2x2
+								mask = 1;
+							} else {
+								// switch to full resolution grid
+								mask = 0;
+							}
 						}
 					}
 				}
@@ -45861,26 +45864,31 @@ This file is part of LifeViewer
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
-			// check whether to switch to colour grid based on ZOOM >= 1
+			// check whether to switch grid resolution based on zoom
 			lastMask = mask;
-			if (layerZoom < 0.125) {
-				// switch to small grid 16x16
-				mask = 15;
+			if (layerZoom < 0.0625) {
+				// switch to small grid 32x32
+				mask = 31;
 			} else {
-				if (layerZoom < 0.25) {
-					// switch to small grid 8x8
-					mask = 7;
+				if (layerZoom < 0.125) {
+					// switch to small grid 16x16
+					mask = 15;
 				} else {
-					if (layerZoom < 0.5) {
-						// switch to small grid 4x4
-						mask = 3;
+					if (layerZoom < 0.25) {
+						// switch to small grid 8x8
+						mask = 7;
 					} else {
-						if (layerZoom < 1) {
-							// switch to small grid 2x2
-							mask = 1;
+						if (layerZoom < 0.5) {
+							// switch to small grid 4x4
+							mask = 3;
 						} else {
-							// switch to full resolution grid
-							mask = 0;
+							if (layerZoom < 1) {
+								// switch to small grid 2x2
+								mask = 1;
+							} else {
+								// switch to full resolution grid
+								mask = 0;
+							}
 						}
 					}
 				}
@@ -46210,26 +46218,31 @@ This file is part of LifeViewer
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
-			// check whether to switch to colour grid based on ZOOM >= 1
+			// check whether to switch grid resolution based on zoom
 			lastMask = mask;
-			if (layerZoom < 0.125) {
-				// switch to small grid 16x16
-				mask = 15;
+			if (layerZoom < 0.0625) {
+				// switch to small grid 32x32
+				mask = 31;
 			} else {
-				if (layerZoom < 0.25) {
-					// switch to small grid 8x8
-					mask = 7;
+				if (layerZoom < 0.125) {
+					// switch to small grid 16x16
+					mask = 15;
 				} else {
-					if (layerZoom < 0.5) {
-						// switch to small grid 4x4
-						mask = 3;
+					if (layerZoom < 0.25) {
+						// switch to small grid 8x8
+						mask = 7;
 					} else {
-						if (layerZoom < 1) {
-							// switch to small grid 2x2
-							mask = 1;
+						if (layerZoom < 0.5) {
+							// switch to small grid 4x4
+							mask = 3;
 						} else {
-							// switch to full resolution grid
-							mask = 0;
+							if (layerZoom < 1) {
+								// switch to small grid 2x2
+								mask = 1;
+							} else {
+								// switch to full resolution grid
+								mask = 0;
+							}
 						}
 					}
 				}
@@ -46545,26 +46558,31 @@ This file is part of LifeViewer
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
-			// check whether to switch to colour grid based on ZOOM >= 1
+			// check whether to switch grid resolution based on zoom
 			lastMask = mask;
-			if (layerZoom < 0.125) {
-				// switch to small grid 16x16
-				mask = 15;
+			if (layerZoom < 0.0625) {
+				// switch to small grid 32x32
+				mask = 31;
 			} else {
-				if (layerZoom < 0.25) {
-					// switch to small grid 8x8
-					mask = 7;
+				if (layerZoom < 0.125) {
+					// switch to small grid 16x16
+					mask = 15;
 				} else {
-					if (layerZoom < 0.5) {
-						// switch to small grid 4x4
-						mask = 3;
+					if (layerZoom < 0.25) {
+						// switch to small grid 8x8
+						mask = 7;
 					} else {
-						if (layerZoom < 1) {
-							// switch to small grid 2x2
-							mask = 1;
+						if (layerZoom < 0.5) {
+							// switch to small grid 4x4
+							mask = 3;
 						} else {
-							// switch to full resolution grid
-							mask = 0;
+							if (layerZoom < 1) {
+								// switch to small grid 2x2
+								mask = 1;
+							} else {
+								// switch to full resolution grid
+								mask = 0;
+							}
 						}
 					}
 				}
@@ -47875,26 +47893,31 @@ This file is part of LifeViewer
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
-			// check whether to switch to colour grid based on ZOOM >= 1
+			// check whether to switch grid resolution based on zoom
 			lastMask = mask;
-			if (layerZoom < 0.125) {
-				// switch to small grid 16x16
-				mask = 15;
+			if (layerZoom < 0.0625) {
+				// switch to small grid 32x32
+				mask = 31;
 			} else {
-				if (layerZoom < 0.25) {
-					// switch to small grid 8x8
-					mask = 7;
+				if (layerZoom < 0.125) {
+					// switch to small grid 16x16
+					mask = 15;
 				} else {
-					if (layerZoom < 0.5) {
-						// switch to small grid 4x4
-						mask = 3;
+					if (layerZoom < 0.25) {
+						// switch to small grid 8x8
+						mask = 7;
 					} else {
-						if (layerZoom < 1) {
-							// switch to small grid 2x2
-							mask = 1;
+						if (layerZoom < 0.5) {
+							// switch to small grid 4x4
+							mask = 3;
 						} else {
-							// switch to full resolution grid
-							mask = 0;
+							if (layerZoom < 1) {
+								// switch to small grid 2x2
+								mask = 1;
+							} else {
+								// switch to full resolution grid
+								mask = 0;
+							}
 						}
 					}
 				}
@@ -48384,26 +48407,31 @@ This file is part of LifeViewer
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
-			// check whether to switch to colour grid based on ZOOM >= 1
+			// check whether to switch grid resolution based on zoom
 			lastMask = mask;
-			if (layerZoom < 0.125) {
-				// switch to small grid 16x16
-				mask = 15;
+			if (layerZoom < 0.0625) {
+				// switch to small grid 32x32
+				mask = 31;
 			} else {
-				if (layerZoom < 0.25) {
-					// switch to small grid 8x8
-					mask = 7;
+				if (layerZoom < 0.125) {
+					// switch to small grid 16x16
+					mask = 15;
 				} else {
-					if (layerZoom < 0.5) {
-						// switch to small grid 4x4
-						mask = 3;
+					if (layerZoom < 0.25) {
+						// switch to small grid 8x8
+						mask = 7;
 					} else {
-						if (layerZoom < 1) {
-							// switch to small grid 2x2
-							mask = 1;
+						if (layerZoom < 0.5) {
+							// switch to small grid 4x4
+							mask = 3;
 						} else {
-							// switch to full resolution grid
-							mask = 0;
+							if (layerZoom < 1) {
+								// switch to small grid 2x2
+								mask = 1;
+							} else {
+								// switch to full resolution grid
+								mask = 0;
+							}
 						}
 					}
 				}
@@ -48886,26 +48914,31 @@ This file is part of LifeViewer
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
-			// check whether to switch to colour grid based on ZOOM >= 1
+			// check whether to switch grid resolution based on zoom
 			lastMask = mask;
-			if (layerZoom < 0.125) {
-				// switch to small grid 16x16
-				mask = 15;
+			if (layerZoom < 0.0625) {
+				// switch to small grid 32x32
+				mask = 31;
 			} else {
-				if (layerZoom < 0.25) {
-					// switch to small grid 8x8
-					mask = 7;
+				if (layerZoom < 0.125) {
+					// switch to small grid 16x16
+					mask = 15;
 				} else {
-					if (layerZoom < 0.5) {
-						// switch to small grid 4x4
-						mask = 3;
+					if (layerZoom < 0.25) {
+						// switch to small grid 8x8
+						mask = 7;
 					} else {
-						if (layerZoom < 1) {
-							// switch to small grid 2x2
-							mask = 1;
+						if (layerZoom < 0.5) {
+							// switch to small grid 4x4
+							mask = 3;
 						} else {
-							// switch to full resolution grid
-							mask = 0;
+							if (layerZoom < 1) {
+								// switch to small grid 2x2
+								mask = 1;
+							} else {
+								// switch to full resolution grid
+								mask = 0;
+							}
 						}
 					}
 				}
@@ -49510,26 +49543,31 @@ This file is part of LifeViewer
 			// update layer zoom
 			layerZoom *= this.camLayerDepth;
 
-			// check whether to switch to colour grid based on ZOOM >= 1
+			// check whether to switch grid resolution based on zoom
 			lastMask = mask;
-			if (layerZoom < 0.125) {
-				// switch to small grid 16x16
-				mask = 15;
+			if (layerZoom < 0.0625) {
+				// switch to small grid 32x32
+				mask = 31;
 			} else {
-				if (layerZoom < 0.25) {
-					// switch to small grid 8x8
-					mask = 7;
+				if (layerZoom < 0.125) {
+					// switch to small grid 16x16
+					mask = 15;
 				} else {
-					if (layerZoom < 0.5) {
-						// switch to small grid 4x4
-						mask = 3;
+					if (layerZoom < 0.25) {
+						// switch to small grid 8x8
+						mask = 7;
 					} else {
-						if (layerZoom < 1) {
-							// switch to small grid 2x2
-							mask = 1;
+						if (layerZoom < 0.5) {
+							// switch to small grid 4x4
+							mask = 3;
 						} else {
-							// switch to full resolution grid
-							mask = 0;
+							if (layerZoom < 1) {
+								// switch to small grid 2x2
+								mask = 1;
+							} else {
+								// switch to full resolution grid
+								mask = 0;
+							}
 						}
 					}
 				}
