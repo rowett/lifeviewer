@@ -1703,7 +1703,7 @@ This file is part of LifeViewer
 				for (i = 0; i < value; i += 1) {
 					itemName = " ";
 					for (j = 0; j < value; j+= 1) {
-						itemName += view.engine.HROT.neighbourhood[i][j] ? "1" : "0";
+						itemName += view.engine.HROT.neighbourhood[value - 1 - i][value - 1 - j] ? "1" : "0";
 					}
 					y = this.renderHelpLine(view, itemName, "", ctx, x, y, height, helpLine);
 				}

@@ -1,3 +1,6 @@
+Build 1132
+- fixed HROT Custom neighbourhood orientation
+
 Build 1131
 - allow Angle and Tilt to be set by script commands for none rule
 

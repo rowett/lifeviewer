@@ -183,6 +183,7 @@ This file is part of LifeViewer
 	HROT.prototype.setTypeAndRange = function(/** @type {number} */ type, /** @type {number} */ range, /** @type {string} */ customNeighbourhood, /** @type {number} */ neighbourCount, /** @type {boolean} */ isTriangular, /** @type {Array<number>} */ weightedNeighbourhood, /** @type {Array<number>} */ weightedStates, /** @type {number} */ cornerRange, /** @type {number} */ edgeRange) {
 		// compute widest width
 		var	/** @const {number} */ width = range * 2 + 1,
+			/** @const {number} */ wm1 = width - 1,
 			/** @const {number} */ r2 = range * range,
 			/** @const {number} */ r2plus = r2 + range,
 			/** @type {number} */ i = 0,
@@ -283,12 +284,12 @@ This file is part of LifeViewer
 			count = 0;
 			numInRow = 0;
 			item = 0;
-			row = this.neighbourhood[j];
+			row = this.neighbourhood[wm1 - j];
 			while (j < width) {
 				// get next 4 bits
 				w = hexDigits.indexOf(customNeighbourhood[k]);
 				if (k === middleK) {
-					row[i] = 1;
+					row[wm1 - i] = 1;
 					i += 1;
 					count += 1;
 					numInRow += 1;
@@ -298,19 +299,19 @@ This file is part of LifeViewer
 				// set neighbourhood
 				for (l = 3; l >=0; l -= 1) {
 					if ((w & (1 << l)) !== 0) {
-						row[i] = 1;
+						row[wm1 - i] = 1;
 						count += 1;
 						numInRow += 1;
 					}
 					i += 1;
 					if (i === width) {
-						rowCount[item] = numInRow;
+						rowCount[wm1 - item] = numInRow;
 						numInRow = 0;
 						item += 1;
 						i = 0;
 						j += 1;
 						if (j < width) {
-							row = this.neighbourhood[j];
+							row = this.neighbourhood[wm1 - j];
 						}
 					}
 				}
