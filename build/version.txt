@@ -1,3 +1,6 @@
+Build 1133
+- fixed Custom nighborhood display in Help->Pattern->N'Hood
+
 Build 1132
 - fixed HROT Custom neighbourhood orientation
 
