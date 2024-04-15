@@ -8850,7 +8850,10 @@ This file is part of LifeViewer
 				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.grid, currentGrid);
 				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.nextGrid, currentNextGrid);
 				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.colourGrid, currentColourGrid);
-				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallColourGrid, currentSmallColourGrid);
+
+				// ignore small colour grid it will be generated next time it is needed
+				//this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallColourGrid, currentSmallColourGrid);
+
 				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.nextColourGrid, currentNextColourGrid);
 				}
@@ -8862,7 +8865,9 @@ This file is part of LifeViewer
 				}
 				if (currentOverlayGrid && currentSmallOverlayGrid) {
 					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.overlayGrid, currentOverlayGrid);
-					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallOverlayGrid, currentSmallOverlayGrid);
+
+					// ignore small overlay grid it will be generated next time it is needed
+					//this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallOverlayGrid, currentSmallOverlayGrid);
 				}
 				if (currentMaskGrid && currentMaskAliveGrid && currentMaskCellsGrid) {
 					this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Mask, currentMaskGrid);
@@ -44825,7 +44830,10 @@ This file is part of LifeViewer
 			/** @type {number} */ topY = bottomY + height + 1,
 
 			// counter
-			/** @type {number} */ i = 0;
+			/** @type {number} */ i = 0,
+
+			/** @type {Uint8Array} */ row = null,
+			/** @type {Uint8Array} */ col = null;
 
 		// apply mask
 		bottomY &= ~mask;
@@ -44836,25 +44844,59 @@ This file is part of LifeViewer
 		// check for infinite width
 		if (width === 0) {
 			// draw top and bottom only
-			colourGrid[bottomY].fill(border, 0, this.width);
-			colourGrid[topY].fill(border, 0, this.width);
+			row = colourGrid[topY];
+			for (i = 0; i < this.width; i += 1) {
+				if (row[i] === 0) {
+					row[i] = border;
+				}
+			}
+
+			row = colourGrid[bottomY];
+			for (i = 0; i < this.width; i += 1) {
+				if (row[i] === 0) {
+					row[i] = border;
+				}
+			}
 		} else {
 			// check for infinite height
 			if (height === 0) {
 				// draw left and right only
 				for (i = 0; i < this.height; i += 1) {
-					colourGrid[i][leftX] = border;
-					colourGrid[i][rightX] = border;
+					col = colourGrid[i];
+					if (col[leftX] === 0) {
+						col[leftX] = border;
+					}
+
+					if (col[rightX] === 0) {
+						col[rightX] = border;
+					}
 				}
 			} else {
 				// draw top and bottom
-				colourGrid[bottomY].fill(border, leftX, rightX + 1);
-				colourGrid[topY].fill(border, leftX, rightX + 1);
+				row = colourGrid[topY];
+				for (i = leftX; i <= rightX; i += 1) {
+					if (row[i] === 0) {
+						row[i] = border;
+					}
+				}
+
+				row = colourGrid[bottomY];
+				for (i = leftX; i <= rightX ; i += 1) {
+					if (row[i] === 0) {
+						row[i] = border;
+					}
+				}
 
 				// draw left and right
 				for (i = bottomY + 1; i <= topY - 1; i += 1) {
-					colourGrid[i][leftX] = border;
-					colourGrid[i][rightX] = border;
+					col = colourGrid[i];
+					if (col[leftX] === 0) {
+						col[leftX] = border;
+					}
+
+					if (col[rightX] === 0) {
+						col[rightX] = border;
+					}
 				}
 			}
 		}
@@ -44941,6 +44983,34 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// get render mask from zoom
+	/** @returns {number} */
+	Life.prototype.getMaskFromZoom = function(/** @type {number} */ zoom) {
+		var	/** @type {number} */ result = 0;
+
+		if (zoom < 0.0625) {
+			result = 31;
+		} else {
+			if (zoom < 0.125) {
+				result = 15;
+			} else {
+				if (zoom < 0.25) {
+					result = 7;
+				} else {
+					if (zoom < 0.5) {
+						result = 3;
+					} else {
+						if (zoom < 1) {
+							result = 1;
+						}
+					}
+				}
+			}
+		}
+
+		return result;
+	};
+
 	// project the life grid onto the canvas
 	Life.prototype.renderGrid = function(/** @type {boolean} */ drawingSnow, /** @type {boolean} */ drawingStars) {
 		var	/** @type {number} */ colour0 = this.pixelColours[0],
@@ -45008,7 +45078,7 @@ This file is part of LifeViewer
 		}
 
 		// create bounded grid border if specified
-		if (this.boundedGridType !== -1) {
+		if (this.boundedGridType !== -1 && this.camZoom >= 1) {
 			this.drawBoundedGridBorder(colourGrid, this.boundedBorderColour);
 		}
 
@@ -45022,7 +45092,13 @@ This file is part of LifeViewer
 		} else {
 			// create small colour grids if zoomed out
 			if (camZoom < 1) {
+				if  (this.boundedGridType !== -1) {
+					this.drawBoundedGridBorder(colourGrid, 0);
+				}
 				this.createSmallColourGrids(colourGrid16, colourGrid32, this.camZoom);
+				if (this.boundedGridType !== -1) {
+					this.drawBoundedGridBorderMask(this.smallColourGrid, this.boundedBorderColour, this.getMaskFromZoom(this.camZoom));
+				}
 			}
 
 			// check if zoom < 0.0625x
@@ -45120,6 +45196,68 @@ This file is part of LifeViewer
 		}
 	};
 
+	// prepare next layer for rendering
+	/** @returns {Array} */
+	Life.prototype.prepareNextLayer = function(/** @type {number} */ zoom, /** @type {boolean} */ firstLayer, /** @type {number} */ lastMask, /** @type {Array<Uint8Array>} */ colourGrid) {
+		var	/** @type {number} */ mask = this.getMaskFromZoom(zoom),
+			/** @type {Array<Uint16Array>} */ colourGrid16 = null,
+			/** @type {Array<Uint32Array>} */ colourGrid32 = null;
+
+		// remove bounded grid if present
+		if (this.boundedGridType !== -1 && firstLayer) {
+			// get the full resolution colour grid
+			colourGrid = this.colourGrid;
+			colourGrid16 = this.colourGrid16;
+			colourGrid32 = this.colourGrid32;
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
+				if ((this.counter & 1) !== 0) {
+					colourGrid = this.nextColourGrid;
+					colourGrid16 = this.nextColourGrid16;
+					colourGrid32 = this.nextColourGrid32;
+				}
+			}
+
+			// clear the bounded grid border
+			this.drawBoundedGridBorder(colourGrid, 0);
+
+			// create the small grid if zoom < 1
+			if (mask !== 0) {
+				this.lastZoom16 = true;
+				this.createSmallColourGrids(colourGrid16, colourGrid32, zoom);
+				colourGrid = this.smallColourGrid;
+			}
+
+			// mark that conversion is complete
+			mask = lastMask;
+
+			firstLayer = false;
+		}
+
+		// check if mask changed
+		if (mask !== lastMask) {
+			// get the full resolution colour grid
+			colourGrid = this.colourGrid;
+			colourGrid16 = this.colourGrid16;
+			colourGrid32 = this.colourGrid32;
+			if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
+				if ((this.counter & 1) !== 0) {
+					colourGrid = this.nextColourGrid;
+					colourGrid16 = this.nextColourGrid16;
+					colourGrid32 = this.nextColourGrid32;
+				}
+			}
+
+			// create small colour grid if Zoom < 1
+			if (mask !== 0) {
+				// create the new small grid
+				this.createSmallColourGrids(colourGrid16, colourGrid32, zoom);
+				colourGrid = this.smallColourGrid;
+			}
+		}
+
+		return [mask, colourGrid];
+	};
+
 	// project the life grid onto the canvas with transformation and clipping
 	Life.prototype.renderGridProjectionClip = function(/** @type {Array<Uint8Array>} */ bottomGrid, /** @type {Array<Uint8Array>} */ layersGrid, /** @type {number} */ mask, /** @type {boolean} */ drawingSnow) {
 		var	/** @type {number} */ w8 = this.displayWidth >> 3,
@@ -45162,9 +45300,6 @@ This file is part of LifeViewer
 			/** @type {number} */ wt = ~mask,
 			/** @type {number} */ ht = ~mask,
 
-			// last mask
-			/** @type {number} */ lastMask = mask,
-
 			// pixel when off max grid
 			/** @type {number} */ offMaxGrid = this.boundaryColour,
 
@@ -45174,12 +45309,12 @@ This file is part of LifeViewer
 			// start with bottom grid
 			/** @type {Array<Uint8Array>} */ colourGrid = bottomGrid,
 
-			// typed colour grids for faster access
-			/** @type {Array<Uint16Array>} */ colourGrid16 = null,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = null,
+			// layer preparation result
+			/** @type {Array} */ prepResult = [],
 
 			// current layer zoom
-			/** @type {number} */ layerZoom = this.camZoom;
+			/** @type {number} */ layerZoom = this.camZoom,
+			/** @type {boolean} */ firstLayer = true;
 
 		// check whether to draw layers
 		if (this.layersOn && this.camLayerDepth > 1) {
@@ -45357,12 +45492,6 @@ This file is part of LifeViewer
 		// draw grid lines and snow
 		this.drawGridLinesAndSnow(drawingSnow);
 
-		// delete bounded grid border if enabled
-		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
-			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
-		}
-
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -45385,61 +45514,10 @@ This file is part of LifeViewer
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch grid resolution based on zoom
-			lastMask = mask;
-			if (layerZoom < 0.0625) {
-				// switch to small grid 32x32
-				mask = 31;
-			} else {
-				if (layerZoom < 0.125) {
-					// switch to small grid 16x16
-					mask = 15;
-				} else {
-					if (layerZoom < 0.25) {
-						// switch to small grid 8x8
-						mask = 7;
-					} else {
-						if (layerZoom < 0.5) {
-							// switch to small grid 4x4
-							mask = 3;
-						} else {
-							if (layerZoom < 1) {
-								// switch to small grid 2x2
-								mask = 1;
-							} else {
-								// switch to full resolution grid
-								mask = 0;
-							}
-						}
-					}
-				}
-			}
-
-			// check if mask changed
-			if (mask !== lastMask) {
-				// get the full resolution colour grid
-				colourGrid = this.colourGrid;
-				colourGrid16 = this.colourGrid16;
-				colourGrid32 = this.colourGrid32;
-				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-						colourGrid16 = this.nextColourGrid16;
-						colourGrid32 = this.nextColourGrid32;
-					}
-				}
-
-				// remove the bounded grid border if present
-				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorder(colourGrid, 0);
-				}
-
-				// create small colour grid if Zoom < 1
-				if (mask !== 0) {
-					// create the new small grid
-					this.createSmallColourGrids(colourGrid16, colourGrid32, layerZoom);
-					colourGrid = this.smallColourGrid;
-				}
-			}
+			prepResult = this.prepareNextLayer(layerZoom, firstLayer, mask, colourGrid);
+			mask = prepResult[0];
+			colourGrid = prepResult[1];
+			firstLayer = false;
 
 			// create the width and height masks
 			wm = this.widthMask & ~mask;
@@ -45604,9 +45682,6 @@ This file is part of LifeViewer
 			/** @type {number} */ wt = ~mask,
 			/** @type {number} */ ht = ~mask,
 
-			// last mask
-			/** @type {number} */ lastMask = mask,
-
 			// pixel when off max grid
 			/** @type {number} */ offMaxGrid = this.boundaryColour,
 
@@ -45619,12 +45694,12 @@ This file is part of LifeViewer
 			// colour grid row
 			/** @type {Uint8Array} */ colourGridRow = null,
 
-			// typed colour grids for faster access
-			/** @type {Array<Uint16Array>} */ colourGrid16 = null,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = null,
+			// layer preparation result
+			/** @type {Array} */ prepResult = [],
 
 			// current layer zoom
-			/** @type {number} */ layerZoom = this.camZoom;
+			/** @type {number} */ layerZoom = this.camZoom,
+			/** @type {boolean} */ firstLayer = true;
 
 		// check whether to draw layers
 		if (this.layersOn && this.camLayerDepth > 1) {
@@ -45837,12 +45912,6 @@ This file is part of LifeViewer
 		// draw grid lines and snow
 		this.drawGridLinesAndSnow(drawingSnow);
 
-		// delete bounded grid border if enabled
-		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
-			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
-		}
-
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -45865,61 +45934,10 @@ This file is part of LifeViewer
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch grid resolution based on zoom
-			lastMask = mask;
-			if (layerZoom < 0.0625) {
-				// switch to small grid 32x32
-				mask = 31;
-			} else {
-				if (layerZoom < 0.125) {
-					// switch to small grid 16x16
-					mask = 15;
-				} else {
-					if (layerZoom < 0.25) {
-						// switch to small grid 8x8
-						mask = 7;
-					} else {
-						if (layerZoom < 0.5) {
-							// switch to small grid 4x4
-							mask = 3;
-						} else {
-							if (layerZoom < 1) {
-								// switch to small grid 2x2
-								mask = 1;
-							} else {
-								// switch to full resolution grid
-								mask = 0;
-							}
-						}
-					}
-				}
-			}
-
-			// check if mask changed
-			if (mask !== lastMask) {
-				// get the full resolution colour grid
-				colourGrid = this.colourGrid;
-				colourGrid16 = this.colourGrid16;
-				colourGrid32 = this.colourGrid32;
-				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-						colourGrid16 = this.nextColourGrid16;
-						colourGrid32 = this.nextColourGrid32;
-					}
-				}
-
-				// remove the bounded grid border if present
-				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorder(colourGrid, 0);
-				}
-
-				// create small colour grid if Zoom < 1
-				if (mask !== 0) {
-					// create the new small grid
-					this.createSmallColourGrids(colourGrid16, colourGrid32, layerZoom);
-					colourGrid = this.smallColourGrid;
-				}
-			}
+			prepResult = this.prepareNextLayer(layerZoom, firstLayer, mask, colourGrid);
+			mask = prepResult[0];
+			colourGrid = prepResult[1];
+			firstLayer = false;
 
 			// create the width and height masks
 			wm = this.widthMask & ~mask;
@@ -46078,18 +46096,15 @@ This file is part of LifeViewer
 			/** @type {number} */ wm = this.widthMask & ~mask,
 			/** @type {number} */ hm = this.heightMask & ~mask,
 
-			// last mask
-			/** @type {number} */ lastMask = mask,
-
 			// start with bottom grid
 			/** @type {Array<Uint8Array>} */ colourGrid = bottomGrid,
 
-			// typed colour grids for faster access
-			/** @type {Array<Uint16Array>} */ colourGrid16 = null,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = null,
+			// layer preparation result
+			/** @type {Array} */ prepResult = [],
 
 			// current layer zoom
-			/** @type {number} */ layerZoom = this.camZoom;
+			/** @type {number} */ layerZoom = this.camZoom,
+			/** @type {boolean} */ firstLayer = true;
 
 		// check whether to draw layers
 		if (this.layersOn && this.camLayerDepth > 1) {
@@ -46191,12 +46206,6 @@ This file is part of LifeViewer
 		// draw grid lines and snow
 		this.drawGridLinesAndSnow(drawingSnow);
 
-		// delete bounded grid border if enabled
-		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
-			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
-		}
-
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -46219,61 +46228,10 @@ This file is part of LifeViewer
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch grid resolution based on zoom
-			lastMask = mask;
-			if (layerZoom < 0.0625) {
-				// switch to small grid 32x32
-				mask = 31;
-			} else {
-				if (layerZoom < 0.125) {
-					// switch to small grid 16x16
-					mask = 15;
-				} else {
-					if (layerZoom < 0.25) {
-						// switch to small grid 8x8
-						mask = 7;
-					} else {
-						if (layerZoom < 0.5) {
-							// switch to small grid 4x4
-							mask = 3;
-						} else {
-							if (layerZoom < 1) {
-								// switch to small grid 2x2
-								mask = 1;
-							} else {
-								// switch to full resolution grid
-								mask = 0;
-							}
-						}
-					}
-				}
-			}
-
-			// check if mask changed
-			if (mask !== lastMask) {
-				// get the full resolution colour grid
-				colourGrid = this.colourGrid;
-				colourGrid16 = this.colourGrid16;
-				colourGrid32 = this.colourGrid32;
-				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-						colourGrid16 = this.nextColourGrid16;
-						colourGrid32 = this.nextColourGrid32;
-					}
-				}
-
-				// remove the bounded grid border if present
-				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorder(colourGrid, 0);
-				}
-
-				// create small colour grid if Zoom < 1
-				if (mask !== 0) {
-					// create the new small grid
-					this.createSmallColourGrids(colourGrid16, colourGrid32, layerZoom);
-					colourGrid = this.smallColourGrid;
-				}
-			}
+			prepResult = this.prepareNextLayer(layerZoom, firstLayer, mask, colourGrid);
+			mask = prepResult[0];
+			colourGrid = prepResult[1];
+			firstLayer = false;
 
 			// create the width and height masks
 			wm = this.widthMask & ~mask;
@@ -46407,21 +46365,18 @@ This file is part of LifeViewer
 			/** @type {number} */ wm = this.widthMask & ~mask,
 			/** @type {number} */ hm = this.heightMask & ~mask,
 
-			// last mask
-			/** @type {number} */ lastMask = mask,
-
 			// start with bottom grid
 			/** @type {Array<Uint8Array>} */ colourGrid = bottomGrid,
 
 			// colour grid row
 			/** @type {Uint8Array} */ colourGridRow = null,
 
-			// typed colour grids for faster access
-			/** @type {Array<Uint16Array>} */ colourGrid16 = null,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = null,
+			// layer preparation result
+			/** @type {Array} */ prepResult = [],
 
 			// current layer zoom
-			/** @type {number} */ layerZoom = this.camZoom;
+			/** @type {number} */ layerZoom = this.camZoom,
+			/** @type {boolean} */ firstLayer = true;
 
 		// check whether to draw layers
 		if (this.layersOn && this.camLayerDepth > 1) {
@@ -46531,12 +46486,6 @@ This file is part of LifeViewer
 		// draw grid lines and snow
 		this.drawGridLinesAndSnow(drawingSnow);
 
-		// delete bounded grid border if enabled
-		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
-			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
-		}
-
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -46559,61 +46508,10 @@ This file is part of LifeViewer
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch grid resolution based on zoom
-			lastMask = mask;
-			if (layerZoom < 0.0625) {
-				// switch to small grid 32x32
-				mask = 31;
-			} else {
-				if (layerZoom < 0.125) {
-					// switch to small grid 16x16
-					mask = 15;
-				} else {
-					if (layerZoom < 0.25) {
-						// switch to small grid 8x8
-						mask = 7;
-					} else {
-						if (layerZoom < 0.5) {
-							// switch to small grid 4x4
-							mask = 3;
-						} else {
-							if (layerZoom < 1) {
-								// switch to small grid 2x2
-								mask = 1;
-							} else {
-								// switch to full resolution grid
-								mask = 0;
-							}
-						}
-					}
-				}
-			}
-
-			// check if mask changed
-			if (mask !== lastMask) {
-				// get the full resolution colour grid
-				colourGrid = this.colourGrid;
-				colourGrid16 = this.colourGrid16;
-				colourGrid32 = this.colourGrid32;
-				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-						colourGrid16 = this.nextColourGrid16;
-						colourGrid32 = this.nextColourGrid32;
-					}
-				}
-
-				// remove the bounded grid border if present
-				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorder(colourGrid, 0);
-				}
-
-				// create small colour grid if Zoom < 1
-				if (mask !== 0) {
-					// create the new small grid
-					this.createSmallColourGrids(colourGrid16, colourGrid32, layerZoom);
-					colourGrid = this.smallColourGrid;
-				}
-			}
+			prepResult = this.prepareNextLayer(layerZoom, firstLayer, mask, colourGrid);
+			mask = prepResult[0];
+			colourGrid = prepResult[1];
+			firstLayer = false;
 
 			// create the width and height masks
 			wm = this.widthMask & ~mask;
@@ -47516,9 +47414,6 @@ This file is part of LifeViewer
 			/** @type {number} */ wm = this.widthMask & ~mask,
 			/** @type {number} */ hm = this.heightMask & ~mask,
 
-			// last mask
-			/** @type {number} */ lastMask = mask,
-
 			// create the comparison masks for clipping
 			/** @type {number} */ wt = ~mask,
 			/** @type {number} */ ht = ~mask,
@@ -47533,12 +47428,12 @@ This file is part of LifeViewer
 			/** @type {Array<Uint8Array>} */ colourGrid = layersGrid,
 			/** @type {Array<Uint8Array>} */ overlayGrid = bottomGrid,
 
-			// typed colour grids for faster access
-			/** @type {Array<Uint16Array>} */ colourGrid16 = null,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = null,
+			// layer preparation result
+			/** @type {Array} */ prepResult = [],
 
 			// current layer zoom
-			/** @type {number} */ layerZoom = this.camZoom;
+			/** @type {number} */ layerZoom = this.camZoom,
+			/** @type {boolean} */ firstLayer = true;
 
 		// check whether to draw layers
 		if (this.layersOn && this.camLayerDepth > 1) {
@@ -47849,12 +47744,6 @@ This file is part of LifeViewer
 		// draw grid lines and snow
 		this.drawGridLinesAndSnow(drawingSnow);
 
-		// delete bounded grid border if enabled
-		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
-			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
-		}
-
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -47894,61 +47783,10 @@ This file is part of LifeViewer
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch grid resolution based on zoom
-			lastMask = mask;
-			if (layerZoom < 0.0625) {
-				// switch to small grid 32x32
-				mask = 31;
-			} else {
-				if (layerZoom < 0.125) {
-					// switch to small grid 16x16
-					mask = 15;
-				} else {
-					if (layerZoom < 0.25) {
-						// switch to small grid 8x8
-						mask = 7;
-					} else {
-						if (layerZoom < 0.5) {
-							// switch to small grid 4x4
-							mask = 3;
-						} else {
-							if (layerZoom < 1) {
-								// switch to small grid 2x2
-								mask = 1;
-							} else {
-								// switch to full resolution grid
-								mask = 0;
-							}
-						}
-					}
-				}
-			}
-
-			// check if mask changed
-			if (mask !== lastMask) {
-				// get the full resolution colour grid
-				colourGrid = this.colourGrid;
-				colourGrid16 = this.colourGrid16;
-				colourGrid32 = this.colourGrid32;
-				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-						colourGrid16 = this.nextColourGrid16;
-						colourGrid32 = this.nextColourGrid32;
-					}
-				}
-
-				// remove the bounded grid border if present
-				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorder(colourGrid, 0);
-				}
-
-				// create small colour grid if Zoom < 1
-				if (mask !== 0) {
-					// create the new small grid
-					this.createSmallColourGrids(colourGrid16, colourGrid32, layerZoom);
-					colourGrid = this.smallColourGrid;
-				}
-			}
+			prepResult = this.prepareNextLayer(layerZoom, firstLayer, mask, colourGrid);
+			mask = prepResult[0];
+			colourGrid = prepResult[1];
+			firstLayer = false;
 
 			// create the width and height masks
 			wm = this.widthMask & ~mask;
@@ -48117,19 +47955,16 @@ This file is part of LifeViewer
 			/** @type {number} */ wm = this.widthMask & ~mask,
 			/** @type {number} */ hm = this.heightMask & ~mask,
 
-			// last mask
-			/** @type {number} */ lastMask = mask,
-
 			// start with bottom grid
 			/** @type {Array<Uint8Array>} */ colourGrid = layersGrid,
 			/** @type {Array<Uint8Array>} */ overlayGrid = bottomGrid,
 
-			// typed colour grids for faster access
-			/** @type {Array<Uint16Array>} */ colourGrid16 = null,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = null,
+			// layer preparation result
+			/** @type {Array} */ prepResult = [],
 
 			// current layer zoom
-			/** @type {number} */ layerZoom = this.camZoom;
+			/** @type {number} */ layerZoom = this.camZoom,
+			/** @type {boolean} */ firstLayer = true;
 
 		// check whether to draw layers
 		if (this.layersOn && this.camLayerDepth > 1) {
@@ -48363,12 +48198,6 @@ This file is part of LifeViewer
 		// draw grid lines and snow
 		this.drawGridLinesAndSnow(drawingSnow);
 
-		// delete bounded grid border if enabled
-		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
-			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
-		}
-
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -48408,61 +48237,10 @@ This file is part of LifeViewer
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch grid resolution based on zoom
-			lastMask = mask;
-			if (layerZoom < 0.0625) {
-				// switch to small grid 32x32
-				mask = 31;
-			} else {
-				if (layerZoom < 0.125) {
-					// switch to small grid 16x16
-					mask = 15;
-				} else {
-					if (layerZoom < 0.25) {
-						// switch to small grid 8x8
-						mask = 7;
-					} else {
-						if (layerZoom < 0.5) {
-							// switch to small grid 4x4
-							mask = 3;
-						} else {
-							if (layerZoom < 1) {
-								// switch to small grid 2x2
-								mask = 1;
-							} else {
-								// switch to full resolution grid
-								mask = 0;
-							}
-						}
-					}
-				}
-			}
-
-			// check if mask changed
-			if (mask !== lastMask) {
-				// get the full resolution colour grid
-				colourGrid = this.colourGrid;
-				colourGrid16 = this.colourGrid16;
-				colourGrid32 = this.colourGrid32;
-				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-						colourGrid16 = this.nextColourGrid16;
-						colourGrid32 = this.nextColourGrid32;
-					}
-				}
-
-				// remove the bounded grid border if present
-				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorder(colourGrid, 0);
-				}
-
-				// create small colour grid if Zoom < 1
-				if (mask !== 0) {
-					// create the new small grid
-					this.createSmallColourGrids(colourGrid16, colourGrid32, layerZoom);
-					colourGrid = this.smallColourGrid;
-				}
-			}
+			prepResult = this.prepareNextLayer(layerZoom, firstLayer, mask, colourGrid);
+			mask = prepResult[0];
+			colourGrid = prepResult[1];
+			firstLayer = false;
 
 			// create the width and height masks
 			wm = this.widthMask & ~mask;
@@ -48610,9 +48388,6 @@ This file is part of LifeViewer
 			/** @type {number} */ wm = this.widthMask & ~mask,
 			/** @type {number} */ hm = this.heightMask & ~mask,
 
-			// last mask
-			/** @type {number} */ lastMask = mask,
-
 			// start with bottom grid
 			/** @type {Array<Uint8Array>} */ colourGrid = layersGrid,
 			/** @type {Array<Uint8Array>} */ overlayGrid = bottomGrid,
@@ -48621,12 +48396,12 @@ This file is part of LifeViewer
 			/** @type {Uint8Array} */ colourGridRow = null,
 			/** @type {Uint8Array} */ overlayGridRow = null,
 
-			// typed colour grids for faster access
-			/** @type {Array<Uint16Array>} */ colourGrid16 = null,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = null,
+			// layer preparation result
+			/** @type {Array} */ prepResult = [],
 
 			// current layer zoom
-			/** @type {number} */ layerZoom = this.camZoom;
+			/** @type {number} */ layerZoom = this.camZoom,
+			/** @type {boolean} */ firstLayer = true;
 
 		// check whether to draw layers
 		if (this.layersOn && this.camLayerDepth > 1) {
@@ -48870,12 +48645,6 @@ This file is part of LifeViewer
 		// draw grid lines and snow
 		this.drawGridLinesAndSnow(drawingSnow);
 
-		// delete bounded grid border if enabled
-		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
-			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
-		}
-
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -48915,61 +48684,10 @@ This file is part of LifeViewer
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch grid resolution based on zoom
-			lastMask = mask;
-			if (layerZoom < 0.0625) {
-				// switch to small grid 32x32
-				mask = 31;
-			} else {
-				if (layerZoom < 0.125) {
-					// switch to small grid 16x16
-					mask = 15;
-				} else {
-					if (layerZoom < 0.25) {
-						// switch to small grid 8x8
-						mask = 7;
-					} else {
-						if (layerZoom < 0.5) {
-							// switch to small grid 4x4
-							mask = 3;
-						} else {
-							if (layerZoom < 1) {
-								// switch to small grid 2x2
-								mask = 1;
-							} else {
-								// switch to full resolution grid
-								mask = 0;
-							}
-						}
-					}
-				}
-			}
-
-			// check if mask changed
-			if (mask !== lastMask) {
-				// get the full resolution colour grid
-				colourGrid = this.colourGrid;
-				colourGrid16 = this.colourGrid16;
-				colourGrid32 = this.colourGrid32;
-				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-						colourGrid16 = this.nextColourGrid16;
-						colourGrid32 = this.nextColourGrid32;
-					}
-				}
-
-				// remove the bounded grid border if present
-				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorder(colourGrid, 0);
-				}
-
-				// create small colour grid if Zoom < 1
-				if (mask !== 0) {
-					// create the new small grid
-					this.createSmallColourGrids(colourGrid16, colourGrid32, layerZoom);
-					colourGrid = this.smallColourGrid;
-				}
-			}
+			prepResult = this.prepareNextLayer(layerZoom, firstLayer, mask, colourGrid);
+			mask = prepResult[0];
+			colourGrid = prepResult[1];
+			firstLayer = false;
 
 			// create the width and height masks
 			wm = this.widthMask & ~mask;
@@ -49131,9 +48849,6 @@ This file is part of LifeViewer
 			/** @type {number} */ wm = this.widthMask & ~mask,
 			/** @type {number} */ hm = this.heightMask & ~mask,
 
-			// last mask
-			/** @type {number} */ lastMask = mask,
-
 			// create the comparison masks for clipping
 			/** @type {number} */ wt = ~mask,
 			/** @type {number} */ ht = ~mask,
@@ -49146,12 +48861,12 @@ This file is part of LifeViewer
 			/** @type {Uint8Array} */ colourGridRow = null,
 			/** @type {Uint8Array} */ overlayGridRow = null,
 
-			// typed colour grids for faster access
-			/** @type {Array<Uint16Array>} */ colourGrid16 = null,
-			/** @type {Array<Uint32Array>} */ colourGrid32 = null,
+			// layer preparation result
+			/** @type {Array} */ prepResult = [],
 
 			// current layer zoom
-			/** @type {number} */ layerZoom = this.camZoom;
+			/** @type {number} */ layerZoom = this.camZoom,
+			/** @type {boolean} */ firstLayer = true;
 
 		// check whether to draw layers
 		if (this.layersOn && this.camLayerDepth > 1) {
@@ -49499,12 +49214,6 @@ This file is part of LifeViewer
 		// draw grid lines and snow
 		this.drawGridLinesAndSnow(drawingSnow);
 
-		// delete bounded grid border if enabled
-		if (this.boundedGridType !== -1) {
-			this.drawBoundedGridBorderMask(colourGrid, 0, mask);
-			this.drawBoundedGridBorderMask(layersGrid, 0, mask);
-		}
-
 		// switch to layers grid
 		colourGrid = layersGrid;
 
@@ -49544,61 +49253,10 @@ This file is part of LifeViewer
 			layerZoom *= this.camLayerDepth;
 
 			// check whether to switch grid resolution based on zoom
-			lastMask = mask;
-			if (layerZoom < 0.0625) {
-				// switch to small grid 32x32
-				mask = 31;
-			} else {
-				if (layerZoom < 0.125) {
-					// switch to small grid 16x16
-					mask = 15;
-				} else {
-					if (layerZoom < 0.25) {
-						// switch to small grid 8x8
-						mask = 7;
-					} else {
-						if (layerZoom < 0.5) {
-							// switch to small grid 4x4
-							mask = 3;
-						} else {
-							if (layerZoom < 1) {
-								// switch to small grid 2x2
-								mask = 1;
-							} else {
-								// switch to full resolution grid
-								mask = 0;
-							}
-						}
-					}
-				}
-			}
-
-			// check if mask changed
-			if (mask !== lastMask) {
-				// get the full resolution colour grid
-				colourGrid = this.colourGrid;
-				colourGrid16 = this.colourGrid16;
-				colourGrid32 = this.colourGrid32;
-				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
-					if ((this.counter & 1) !== 0) {
-						colourGrid = this.nextColourGrid;
-						colourGrid16 = this.nextColourGrid16;
-						colourGrid32 = this.nextColourGrid32;
-					}
-				}
-
-				// remove the bounded grid border if present
-				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorder(colourGrid, 0);
-				}
-
-				// create small colour grid if Zoom < 1
-				if (mask !== 0) {
-					// create the new small grid
-					this.createSmallColourGrids(colourGrid16, colourGrid32, layerZoom);
-					colourGrid = this.smallColourGrid;
-				}
-			}
+			prepResult = this.prepareNextLayer(layerZoom, firstLayer, mask, colourGrid);
+			mask = prepResult[0];
+			colourGrid = prepResult[1];
+			firstLayer = false;
 
 			// create the width and height masks
 			wm = this.widthMask & ~mask;

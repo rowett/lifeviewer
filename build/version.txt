@@ -1,3 +1,6 @@
+Build 1134
+- draw cells above bounded grid border at Zoom < 1
+
 Build 1133
 - fixed Custom nighborhood display in Help->Pattern->N'Hood
 
