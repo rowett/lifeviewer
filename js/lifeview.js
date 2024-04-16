@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1134,
+		/** @const {number} */ versionBuild : 1135,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -11866,11 +11866,23 @@ This file is part of LifeViewer
 		if (this.engine.HROT.useRandom) {
 			result += ",P";
 			if (this.engine.HROT.useRandomSurvivals !== -1) {
-				result += this.engine.HROT.useRandomSurvivals;
+				if (this.engine.HROT.useRandomSurvivals < -1) {
+					result += "#";
+				} else {
+					result += this.engine.HROT.useRandomSurvivals;
+				}
 				if (this.engine.HROT.useRandomBirths !== -1) {
-					result += "," + this.engine.HROT.useRandomBirths;
+					if (this.engine.HROT.useRandomBirths < -1) {
+						result += ",#";
+					} else {
+						result += "," + this.engine.HROT.useRandomBirths;
+					}
 					if (this.engine.HROT.useRandomImmunities !== -1) {
-						result += "," + this.engine.HROT.useRandomImmunities;
+						if (this.engine.HROT.useRandomImmunities < -1) {
+							result += ",#";
+						} else {
+							result += "," + this.engine.HROT.useRandomImmunities;
+						}
 					}
 				}
 			}

@@ -1,3 +1,6 @@
+Build 1135
+- fixed randomizing a non-deterministic HROT pattern
+
 Build 1134
 - draw cells above bounded grid border at Zoom < 1
 
