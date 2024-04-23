@@ -9939,14 +9939,55 @@ This file is part of LifeViewer
 		}
 	};
 
+	// decode embedded rule table
+	/** @returns {boolean} */
+	PatternManager.prototype.decodeEmbeddedRuleTable = function(/** @type {Pattern} */ pattern) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {number} */ ruleIndex = pattern.afterTitle.indexOf(this.ruleTableRuleName),
+			/** @type {number} */ nextIndex = -1,
+			/** @type {string} */ ruleName = pattern.ruleName,
+			/** @type {string} */ ruleString = "";
+
+		// keep any error message
+		pattern.originalFailure = this.failureReason;
+
+		// check if there is a rule definition in the comments
+		while (ruleIndex !== -1 && !result) {
+			// check if there is another @RULE definition after this one
+			nextIndex = pattern.afterTitle.indexOf(this.ruleTableRuleName, ruleIndex + 1);
+
+			// isolate the current definition
+			if (nextIndex === -1) {
+				ruleString = pattern.afterTitle.substring(ruleIndex);
+			} else {
+				ruleString = pattern.afterTitle.substring(ruleIndex, nextIndex);
+			}
+
+			// attempt to decode the embedded rule table
+			this.decodeRuleTable(pattern, ruleString);
+
+			// check if it decoded and the name matches
+			if ((pattern.ruleTreeStates !== -1 || pattern.ruleTableOutput !== null) && ruleName === pattern.ruleTableName) {
+				result = true;
+			} else {
+				// rule table was invalid or the wrong rule name so check if there is another definition
+				ruleIndex = nextIndex;
+
+				// clear the current decoding since it is the wrong rule
+				pattern.ruleTreeStates = -1;
+				pattern.ruleTableOutput = null;
+			}
+		}
+
+		return result;
+	};
+
 	// add a pattern to the list
 	/** @returns {Pattern} */
 	PatternManager.prototype.create = function(/** @type {string} */ name, /** @type {string} */ source, /** @type {Allocator} */ allocator, /** @type {null|function(Pattern,Array,View):void} */ succeedCallback, /** @type {null|function(Pattern,Array,View):void} */ failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
 		// create a pattern skeleton
 		var	/** @type {Pattern} */ newPattern = new Pattern(name, this),
 			/** @type {number} */ states = 0,
-			/** @type {string} */ ruleText = "",
-			/** @type {number} */ ruleIndex = 0,
 			/** @type {number} */ index = 0;
 
 		// clear loading flag
@@ -10157,41 +10198,28 @@ This file is part of LifeViewer
 					newPattern.wasHROT = newPattern.isHROT;
 					newPattern.isHROT = false;
 
-					// check the rule tree cache
-					if (RuleTreeCache.loadIfExists(newPattern)) {
+					// rule was not an alias or built-in so check if a rule table is specified in the comments
+					if (!this.decodeEmbeddedRuleTable(newPattern)) {
+						// no rule in comments so check rule tree cache
+						RuleTreeCache.loadIfExists(newPattern);
+					}
+
+					// if the rule was found embedded or in the cache then check pattern states
+					if (newPattern.ruleTreeStates !== -1 || newPattern.ruleTableOutput !== null) {
 						// check for pattern states
 						if (newPattern.ruleTableOutput === null) {
 							states = newPattern.ruleTreeStates;
 						} else {
 							states = newPattern.ruleTableStates;
 						}
-						if (newPattern.numStates > states) {
-							this.failureReason = "Illegal state in pattern";
-							this.illegalState = true;
-						} else {
-							newPattern.numStates = states;
-							this.failureReason = "";
-							this.executable = true;
-							this.extendedFormat = false;
-							newPattern.isNone = false;
-						}
+						newPattern.numStates = states;
+						this.failureReason = "";
+						this.executable = true;
+						this.extendedFormat = false;
+						newPattern.isNone = false;
 					} else {
-						// check if the rule table is in the comments
-						ruleIndex = newPattern.afterTitle.indexOf(this.ruleTableRuleName);
-						if (ruleIndex !== -1) {
-							// attempt to decode and if successful do not add to cache since this is a local rule
-							ruleText = newPattern.afterTitle.substring(ruleIndex);
-							this.decodeRuleTable(newPattern, ruleText);
-
-							// keep any error message
-							newPattern.originalFailure = this.failureReason;
-						}
-
-						// check if local rule was found
-						if (newPattern.ruleTreeStates === -1 && newPattern.ruleTableOutput === null) {
-							// attempt to load rule table from repository
-							this.loadRuleTable(newPattern, succeedCallback, failCallback, args, view);
-						}
+						// no rule found so attempt to load rule table from repository
+						this.loadRuleTable(newPattern, succeedCallback, failCallback, args, view);
 					}
 				}
 			}

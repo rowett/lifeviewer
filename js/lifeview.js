@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1135,
+		/** @const {number} */ versionBuild : 1136,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -19098,13 +19098,13 @@ This file is part of LifeViewer
 		// check for illegal states in RuleTable
 		if (pattern && (pattern.ruleTableOutput !== null || pattern.ruleTreeStates !== -1)) {
 			if (pattern.ruleTableOutput == null) {
-				if (pattern.maxStateRead > pattern.ruleTreeStates) {
-					me.manager.failureReason = "@TREE illegal state in pattern";
+				if (pattern.maxStateRead >= pattern.ruleTreeStates) {
+					me.manager.failureReason = "Illegal state in pattern for @TREE";
 					pattern = null;
 				}
 			} else {
-				if (pattern.maxStateRead > pattern.ruleTableStates) {
-					me.manager.failureReason = "@TABLE illegal state in pattern";
+				if (pattern.maxStateRead >= pattern.ruleTableStates) {
+					me.manager.failureReason = "Illegal state in pattern for @TABLE";
 					pattern = null;
 				}
 			}

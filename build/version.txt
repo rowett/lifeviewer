@@ -1,3 +1,6 @@
+Build 1136
+- check that embedded @RULE definitions match the rule name in the pattern header
+
 Build 1135
 - fixed randomizing a non-deterministic HROT pattern
 
