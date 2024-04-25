@@ -323,6 +323,27 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// get next token up to the end of the line
+	/** @returns {string} */
+	Script.prototype.getNextTokenToEndOfLine = function() {
+		var	/** @type {string} */ result = "",
+			/** @type {number} */ index = -1;
+
+		// check if there are more tokens
+		if (this.current < this.starts.length) {
+			index = this.source.indexOf("\n", this.starts[this.current]);
+			if (index === -1) {
+				result = this.source.substring(this.starts[this.current]);
+			} else {
+				result = this.source.substring(this.starts[this.current], index);
+			}
+			this.skipToNextLine();
+		}
+
+		// return the token
+		return result;
+	};
+
 	// get next token skipping newlines
 	/** @returns {string} */
 	Script.prototype.getNextTokenSkipNewline = function() {

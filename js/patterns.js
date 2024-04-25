@@ -9844,7 +9844,7 @@ This file is part of LifeViewer
 		if (startIndex !== -1) {
 			// get the rule name
 			if (!reader.nextIsNewline()) {
-				pattern.ruleTableName = reader.getNextToken();
+				pattern.ruleTableName = reader.getNextTokenToEndOfLine();
 
 				// search for a tree from current position
 				treeIndex = reader.findTokenAtLineStart(this.ruleTableTreeName, -1);
