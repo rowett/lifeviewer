@@ -738,7 +738,7 @@ This file is part of LifeViewer
 				// check for control
 				if (ctrlKey) {
 					if (altKey) {
-						if (!me.randomizeButton.locked) {
+						if (!me.randomizePatternButton.locked) {
 							me.randomPattern(me, true);
 						}
 					}

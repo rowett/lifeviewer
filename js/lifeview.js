@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1137,
+		/** @const {number} */ versionBuild : 1138,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7312,7 +7312,7 @@ This file is part of LifeViewer
 
 		// lock buttons depending on rule
 		shown = this.engine.isNone || !this.executable;
-		this.randomizeButton.locked = shown;
+		this.randomizeButton.locked = shown || this.engine.isRuleTree;
 		this.randomizePatternButton.locked = shown;
 		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom || (this.engine.boundedGridType !== -1 && (this.engine.boundedGridWidth === 0 || this.engine.boundedGridHeight === 0)) || this.engine.altSpecified;
 		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";

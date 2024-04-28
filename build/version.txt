@@ -1,3 +1,6 @@
+Build 1138
+- disable Rand All button for RuleTable rules
+
 Build 1137
 - fixed an issue with tokenizing custom rule names containing commas
 
