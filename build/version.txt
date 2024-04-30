@@ -1,3 +1,9 @@
+Build 1140
+- fix disappearing notifications that are being cleared from restarting disappear phase
+
+Build 1139
+- fix paste mode OR for [R]Investigator
+
 Build 1138
 - disable Rand All button for RuleTable rules
 

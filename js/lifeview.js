@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1138,
+		/** @const {number} */ versionBuild : 1140,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4266,7 +4266,7 @@ This file is part of LifeViewer
 							}
 						}
 					} else {
-						if (this.engine.isPCA || this.engine.isRuleTree) {
+						if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isExtended) {
 							for (x = 0; x < stateRow.length; x += 1) {
 								// get the next cell to paste
 								source = stateRow[x];
@@ -4323,7 +4323,14 @@ This file is part of LifeViewer
 										result = source ^ dest;
 										break;
 									case ViewConstants.pasteModeOr:
-										result = source | dest;
+										if (this.engine.isExtended) {
+											result = dest;
+											if (source != 0) {
+												result = source;
+											}
+										} else {
+											result = source | dest;
+										}
 										break;
 									case ViewConstants.pasteModeNOr:
 										result = numStates - (source | dest);
@@ -4362,7 +4369,7 @@ This file is part of LifeViewer
 								this.setStateWithCheck(xOff + x, yOff + y, result, true);
 							}
 						} else {
-							if (this.engine.isLifeHistory || this.engine.isSuper || this.engine.isExtended) {
+							if (this.engine.isLifeHistory || this.engine.isSuper) {
 								for (x = 0; x < stateRow.length; x += 1) {
 									// get the next cell to paste
 									source = stateRow[x];
@@ -14501,7 +14508,7 @@ This file is part of LifeViewer
 			}
 		}
 
-		if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
+		if ((me.engine.isLifeHistory || me.engine.isSuper || me.engine.isExtended) && wasState6) {
 			this.engine.populateState6MaskFromColGrid();
 		}
 

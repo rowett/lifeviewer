@@ -110,6 +110,8 @@ This file is part of LifeViewer
 
 	// clear notification
 	TextAlert.prototype.clear = function(/** @type {boolean} */ priority, /** @type {boolean} */ immediately) {
+		var	/** @type {number} */	elapsed = 0;
+
 		if (priority) {
 			// check if priority message is displayed
 			if (this.priorityMessage !== "") {
@@ -119,7 +121,10 @@ This file is part of LifeViewer
 					this.pendingPriorityClear = false;
 				} else {
 					// switch to disappear section
-					this.priorityStart = performance.now() - (this.priorityAppear + this.priorityHold);
+					elapsed = performance.now() - this.priorityStart;
+					if (elapsed < this.priorityAppear + this.priorityHold) {
+						this.priorityStart = performance.now() - (this.priorityAppear + this.priorityHold);
+					}
 					this.pendingPriorityClear = true;
 				}
 			}
@@ -132,7 +137,10 @@ This file is part of LifeViewer
 					this.message = "";
 				} else {
 					// switch to disappear section
-					this.startTime = performance.now() - (this.textAppear + this.textHold);
+					elapsed = performance.now() - this.startTime;
+					if (elapsed < this.textAppear + this.textHold) {
+						this.startTime = performance.now() - (this.textAppear + this.textHold);
+					}
 					this.pendingNormalClear = true;
 				}
 			}
