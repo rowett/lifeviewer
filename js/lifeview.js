@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1140,
+		/** @const {number} */ versionBuild : 1141,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -14142,7 +14142,7 @@ This file is part of LifeViewer
 	// evolve pressed
 	View.prototype.evolvePressed = function(/** @type {View} */ me, /** @type {boolean} */ shift) {
 		// save paste mode
-		var	/** @type {number} */ savedMode = this.pasteMode,
+		var	/** @type {number} */ savedMode = /** @type {!number} */ (this.pasteModeList.current),
 			/** @type {boolean} */ savedSync = this.copySyncExternal;
 
 		// check for evolve outside
@@ -14158,9 +14158,9 @@ This file is part of LifeViewer
 				me.afterEdit("");
 
 				// process paste but mark advance outside
-				this.pasteMode = ViewConstants.pasteModeCopy;
+				this.pasteModeList.current = 1;  // UI COPY mode
 				me.processPaste(me, true, true);
-				this.pasteMode = savedMode;
+				this.pasteModeList.current = savedMode;
 			} else {
 				me.menuManager.notification.notify("Advance Outside needs a selection", 15, 180, 15, true);
 			}
