@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1141,
+		/** @const {number} */ versionBuild : 1142,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -14063,7 +14063,7 @@ This file is part of LifeViewer
 			/** @type {number} */ state = 0,
 			/** @type {number} */ count = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)),
 			/** @type {number} */ xOff = me.panX - me.xOffset,
 			/** @type {number} */ yOff = me.panY - me.yOffset,
 			/** @type {Uint8Array} */ buffer = null;
@@ -14730,12 +14730,106 @@ This file is part of LifeViewer
 		}
 	};
 
+	// handle successful read of system clipboard during paste
+	View.prototype.handleSuccessfulRead = function(/** @type {string} */ text, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
+		// create a pattern from the text
+		var	/** @type {Pattern} */ pattern = this.manager.create("", text, this.engine.allocator, null, null, null, this),
+			/** @type {Uint8Array} */ buffer = null,
+			/** @type {Uint8Array} */ patternRow = null,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ count = 0,
+			/** @type {number} */ states = this.engine.multiNumStates,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended));
+
+		if (this.manager.failureReason == "") {
+			if (states === -1) {
+				states = 2;
+			}
+
+			// create the copy buffer
+			width = pattern.width;
+			height = pattern.height;
+			buffer = /** @type {!Uint8Array} */ (this.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + this.currentPasteBuffer));
+
+			// read the states from the pattern
+			for (y = 0; y < height; y += 1) {
+				patternRow = pattern.multiStateMap[y];
+				for (x = 0; x < width; x += 1) {
+					state = patternRow[x];
+					if (state > 0 && invertForGenerations) {
+						state = states - state;
+					}
+
+					// check the state is in range for the current pattern
+					if (state < 0) {
+						state = 0;
+					} else {
+						if (state >= states) {
+							state = 1;
+						}
+					}
+
+					// save the state
+					buffer[i] = state;
+					if (state > 0) {
+						count += 1;
+					}
+					i += 1;
+				}
+			}
+
+			// copy to required buffer
+			this.pasteBuffers[this.currentPasteBuffer] = {buffer: buffer, width: width, height: height, count: count};
+			this.pasteBuffer = buffer;
+			this.pasteWidth = width;
+			this.pasteHeight = height;
+			this.createClipboardTooltips();
+
+			// now complete the paste
+			this.completeProcessPaste(shift, evolveStep);
+		} else {
+			this.menuManager.notification.notify("Could not decode system clipboard", 15, 180, 15, true);
+			console.log(this.manager.failureReason);
+		}
+	};
+
+	// handle failed read of system clipboard during paste
+	View.prototype.handleFailedRead = function(/** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
+		// use the internal clipboard instead
+		this.completeProcessPaste(shift, evolveStep);
+	};
+
+	// async function to read the system clipboard
+	async function readSystemClipboard(/** @type {View} */ me, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
+		// try to read the system clipboard
+		try {
+			const text = await navigator.clipboard.readText();
+
+			// if it works then use the contents
+			me.handleSuccessfulRead(text, shift, evolveStep);
+		} catch(error) {
+
+			// if it fails then use the internal clipboard
+			me.handleFailedRead(shift, evolveStep);
+		}
+	};
+
+	// attempt to read the system clipboard
+	View.prototype.readSystemClipboard = function(/** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
+		readSystemClipboard(this, shift, evolveStep);
+	};
+	
 	// process paste
-	View.prototype.processPaste = function(/** @type {View} */ me, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
-		var	/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
-			/** @type {BoundingBox} */ selBox = me.selectionBox,
-			/** @type {BoundingBox} */ evolveBox = me.evolveBox,
+	View.prototype.completeProcessPaste = function(/** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
+		var	/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
+			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1),
+			/** @type {BoundingBox} */ selBox = this.selectionBox,
+			/** @type {BoundingBox} */ evolveBox = this.evolveBox,
 			/** @type {number} */ save = 0,
 			/** @type {number} */ leftX = selBox.leftX,
 			/** @type {number} */ bottomY = selBox.bottomY,
@@ -14747,66 +14841,77 @@ This file is part of LifeViewer
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
-		if (!me.viewOnly) {
-			// check for copy buffer
-			if (me.pasteBuffers[me.currentPasteBuffer] !== null) {
-				// check for paste to selection
-				if (shift) {
-					// check for a selection
-					if (me.isSelection || me.evolvingPaste) {
-						// check if paste has evolved
-						if (me.evolvingPaste) {
-							leftX = evolveBox.leftX;
-							bottomY = evolveBox.bottomY;
-							rightX = evolveBox.rightX;
-							topY = evolveBox.topY;
-						}
-						// order selection
-						if (leftX > rightX) {
-							save = leftX;
-							leftX = rightX;
-							rightX = save;
-						}
-						if (bottomY > topY) {
-							save = bottomY;
-							bottomY = topY;
-							topY = save;
-						}
-						width = rightX - leftX + 1;
-						height = topY - bottomY + 1;
+		// check for copy buffer
+		if (this.pasteBuffers[this.currentPasteBuffer] !== null) {
+			// check for paste to selection
+			if (shift) {
+				// check for a selection
+				if (this.isSelection || this.evolvingPaste) {
+					// check if paste has evolved
+					if (this.evolvingPaste) {
+						leftX = evolveBox.leftX;
+						bottomY = evolveBox.bottomY;
+						rightX = evolveBox.rightX;
+						topY = evolveBox.topY;
+					}
+					// order selection
+					if (leftX > rightX) {
+						save = leftX;
+						leftX = rightX;
+						rightX = save;
+					}
+					if (bottomY > topY) {
+						save = bottomY;
+						bottomY = topY;
+						topY = save;
+					}
+					width = rightX - leftX + 1;
+					height = topY - bottomY + 1;
 
-						// check the paste fits in the selection box
-						if (me.pasteWidth > width || me.pasteHeight > height) {
-							me.menuManager.notification.notify("Paste does not fit in selection", 15, 180, 15, true);
-						} else {
-							// paste top left to always fit in selection box
-							savedLocation = me.pastePosition;
-							me.pastePosition = ViewConstants.pastePositionNW;
-							for (y = bottomY; y <= bottomY + height - me.pasteHeight; y += me.pasteHeight) {
-								for (x = leftX; x <= leftX + width - me.pasteWidth; x += me.pasteWidth) {
-									me.performPaste(me, x + xOff, y + yOff, false);
-								}
-							}
-							me.pastePosition = savedLocation;
-							if (me.autoShrink) {
-								me.autoShrinkSelection(me);
-							}
-							if (evolveStep) {
-								me.afterEdit("advance outside");
-							} else {
-								me.afterEdit("paste to selection");
-							}
-							me.evolvingPaste = false;
-						}
+					// check the paste fits in the selection box
+					if (this.pasteWidth > width || this.pasteHeight > height) {
+						this.menuManager.notification.notify("Paste does not fit in selection", 15, 180, 15, true);
 					} else {
-						me.menuManager.notification.notify("Paste to Selection needs a selection", 15, 180, 15, true);
+						// paste top left to always fit in selection box
+						savedLocation = this.pastePosition;
+						this.pastePosition = ViewConstants.pastePositionNW;
+						for (y = bottomY; y <= bottomY + height - this.pasteHeight; y += this.pasteHeight) {
+							for (x = leftX; x <= leftX + width - this.pasteWidth; x += this.pasteWidth) {
+								this.performPaste(this, x + xOff, y + yOff, false);
+							}
+						}
+						this.pastePosition = savedLocation;
+						if (this.autoShrink) {
+							this.autoShrinkSelection(this);
+						}
+						if (evolveStep) {
+							this.afterEdit("advance outside");
+						} else {
+							this.afterEdit("paste to selection");
+						}
+						this.evolvingPaste = false;
 					}
 				} else {
-					me.pasteSelection(me, me.currentPasteBuffer);
-					me.evolvingPaste = false;
-					me.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
+					this.menuManager.notification.notify("Paste to Selection needs a selection", 15, 180, 15, true);
 				}
+			} else {
+				this.pasteSelection(this, this.currentPasteBuffer);
+				this.evolvingPaste = false;
+				this.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 			}
+		}
+	};
+
+	// process paste
+	View.prototype.processPaste = function(/** @type {View} */ me, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
+		if (!me.viewOnly) {
+			// check system clipboard for a pattern
+			if (me.copySyncExternal) {
+				me.readSystemClipboard(shift, evolveStep);
+			} else {
+				me.completeProcessPaste(shift, evolveStep);
+			}
+
 		}
 	};
 

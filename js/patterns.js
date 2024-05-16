@@ -6620,7 +6620,7 @@ This file is part of LifeViewer
 			// check if processing was valid
 			if (!valid) {
 				// check if the characters were whitespace
-				if (current === " " || current === "\t" || current === "\n") {
+				if (current === " " || current === "\t"  || current === "\r" || current === "\n") {
 					// whitespace is allowed unless a count is in progress
 					if (runCount === 0) {
 						// all ok

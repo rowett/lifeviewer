@@ -1,3 +1,6 @@
+Build 1142
+- initial work on paste from system clipboard
+
 Build 1141
 - fixed fps overlapping box at fps >= 100
 - fixed Advance Outside clearing issue 
