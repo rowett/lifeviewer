@@ -436,6 +436,9 @@ This file is part of LifeViewer
 		// autostart
 		/** @const {string} */ autoStartWord : "AUTOSTART",
 
+		// autoidentify
+		/** @const {string} */ autoIdentifyWord : "AUTOIDENTIFY",
+
 		// loop
 		/** @const {string} */ loopWord : "LOOP",
 

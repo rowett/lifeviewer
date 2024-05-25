@@ -1143,6 +1143,7 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, Keywords.reverseStartWord, "set initial playback to Reverse", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, Keywords.hardResetWord, "always use hard reset", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.autoIdentifyWord, "identify pattern automatically", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.viewOnlyWord, "disable playback", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noHistoryWord, "disable step back", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noReportWord, "disable stop messages", ctx, x, y, height, helpLine);

@@ -1,3 +1,8 @@
+Build 1143
+- new script command [[ AUTOIDENTIFY ]] will automatically Identify pattern on load
+- Paste from system clipboard will now automatically convert [R]Super and [R]History to [R]Standard
+- fixed Random Pattern not correctly respecting RANDWIDTH and RANDHEIGHT
+
 Build 1142
 - initial work on paste from system clipboard
 

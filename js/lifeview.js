@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1142,
+		/** @const {number} */ versionBuild : 1143,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1640,6 +1640,9 @@ This file is part of LifeViewer
 		// whether to autostart
 		/** @type {boolean} */ this.autoStart = false;
 		/** @type {boolean} */ this.autoStartDisabled = false;
+
+		// whether to autoidentify
+		/** @type {boolean} */ this.autoIdentify = false;
 
 		// whether reset is always hard
 		/** @type {boolean} */ this.hardReset = false;
@@ -12535,7 +12538,7 @@ This file is part of LifeViewer
 
 		// create the pattern
 		patternText = me.engine.beforeTitle;
-		patternText += "x = " + ViewConstants.randomDimension + ", y = " + ViewConstants.randomDimension + ", rule = ";
+		patternText += "x = " + me.randomWidth + ", y = " + me.randomHeight + ", rule = ";
 		patternText += (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef + "\n";
 		patternText += rleText;
 		patternText += me.engine.afterTitle;
@@ -14763,6 +14766,13 @@ This file is part of LifeViewer
 					state = patternRow[x];
 					if (state > 0 && invertForGenerations) {
 						state = states - state;
+					}
+
+					// handle [R]Super and [R]History -> [R]Standard
+					if (states === 2) {
+						if (pattern.isHistory || pattern.isSuper) {
+							state = state & 1;
+						}
 					}
 
 					// check the state is in range for the current pattern
@@ -20533,6 +20543,11 @@ This file is part of LifeViewer
 		} else {
 			me.generationOn = false;
 			me.playList.current = ViewConstants.modePause;
+		}
+
+		// check whether autoidentify required
+		if (me.autoIdentify) {
+			me.identifyPressed(me);
 		}
 
 		// set the pause button

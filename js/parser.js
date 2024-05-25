@@ -150,6 +150,7 @@ This file is part of LifeViewer
 			case Keywords.thumbStartWord:
 			case Keywords.thumbZoomWord:
 			case Keywords.autoStartWord:
+			case Keywords.autoIdentifyWord:
 			case Keywords.startFromWord:
 			case Keywords.scriptStartWord:
 			case Keywords.scriptEndWord:
@@ -3841,6 +3842,12 @@ This file is part of LifeViewer
 							}
 							break;
 
+						// autoidentify
+						case Keywords.autoIdentifyWord:
+							view.autoIdentify = true;
+							itemValid = true;
+							break;
+
 						// autostart
 						case Keywords.autoStartWord:
 							// check for OFF
@@ -5933,6 +5940,14 @@ This file is part of LifeViewer
 			if (view.viewOnly) {
 				// create the error message
 				notPossibleError = "not possible due to " + Keywords.viewOnlyWord;
+
+				// autoidentify not possible if playback disabled
+				if (view.autoIdentify) {
+					scriptErrors[scriptErrors.length] = [Keywords.autoIdentifyWord, notPossibleError];
+
+					// disable autoidentify
+					view.autoIdentify = false;
+				}
 
 				// autostart not possible if playback disabled
 				if (view.autoStart) {

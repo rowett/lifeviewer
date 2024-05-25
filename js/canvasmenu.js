@@ -3287,7 +3287,7 @@ This file is part of LifeViewer
 
 			// draw fps
 			message = totalStr + "fps";
-			oc.fillText(message, x + (6 * xScale), y + (12 * yScale));
+			oc.fillText(message, x + (4 * xScale), y + (10 * yScale));
 
 			// draw load%
 			message = ((100 * load) | 0) + "%";
