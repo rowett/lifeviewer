@@ -193,7 +193,7 @@ This file is part of LifeViewer
 		/** @const {Array<number>} */ historyToStandardStates : [0, 1, 0, 1, 0, 1, 0],
 		/** @const {Array<number>} */ historyToSuperStates : [0, 1, 2, 3, 4, 5, 6],
 		/** @const {Array<number>} */ superToStandardStates : [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-		/** @const {Array<number>} */ superToHistoryStates : [0, 1, 2, 3, 4, 5, 6, 3, 4, 1, 0, 1, 0, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1],
+		/** @const {Array<number>} */ superToHistoryStates : [0, 1, 2, 3, 4, 5, 6, 3, 4, 1, 2, 1, 2, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
 
 		// square root of 3 used for triangular grid
 		/** @const {number} */ sqrt3 : Math.sqrt(3),
@@ -328,7 +328,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1143,
+		/** @const {number} */ versionBuild : 1145,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -14733,6 +14733,143 @@ This file is part of LifeViewer
 		}
 	};
 
+	// create state conversion map for pasting patterns from different rules
+	View.prototype.createConversionMap = function(/** @type {Uint8Array} */ map, /** @type {Pattern} */ pattern) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ states = this.engine.multiNumStates,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended));
+
+		// get the number of states in the loaded pattern
+		if (states === -1) {
+			states = 2;
+		}
+
+		if (this.engine.isLifeHistory) {
+			states = 7;
+		}
+
+		// initialise map to identity
+		for (i = 0; i < 256; i += 1) {
+			map[i] = i;
+		}
+
+		// check for generations
+		if (invertForGenerations) {
+			for (i = 1; i < 256; i += 1) {
+				// invert the state number
+				state = states - i;
+
+				// ensure it is in range
+				if (state < 0) {
+					state = 0;
+				} else {
+					if (state >= states) {
+						state = states - 1;
+					}
+				}
+
+				map[i] = state;
+			}
+		} else {
+			// check for 2 state rule
+			if (states === 2) {
+				// [R]Super or [R]History: odd states dead, even states alive
+				if (pattern.isHistory || pattern.isSuper) {
+					for (i = 0; i < 256; i += 1) {
+						map[i] = i & 1;
+					}
+				} else {
+					// [R]Investigator: state 1 alive, everything else dead
+					if (pattern.isExtended) {
+						for (i = 2; i < 256; i += 1) {
+							map[i] = 0;
+						}
+					}
+				}
+			} else {
+				// check for [R]History
+				if (this.engine.isLifeHistory) {
+					// [R]Super: use mapping below
+					if (pattern.isSuper) {
+						// notrail OFF
+						map[14] = 0;
+						map[16] = 0;
+						map[18] = 0;
+						map[20] = 0;
+						map[22] = 0;
+						map[24] = 0;
+
+						// withtrailON
+						map[9] = 1;
+						map[11] = 1;
+
+						// notrailON
+						map[13] = 1;
+						map[15] = 1;
+						map[17] = 1;
+						map[19] = 1;
+						map[21] = 1;
+						map[23] = 1;
+						map[25] = 1;
+
+						// withtrailOFF
+						map[10] = 2;
+						map[12] = 2;
+
+						// markedON
+						map[7] = 3;
+
+						// markedOFF
+						map[8] = 4;
+
+						// clear other states
+						for (i = 26; i < 256; i += 1) {
+							map[i] = 0;
+						}
+					} else {
+						// [R]Investigator: change state 3 to state 6 and all other states >= 2 go to zero
+						if (pattern.isExtended) {
+							for (i = 2; i < 256; i += 1) {
+								map[i] = 0;
+							}
+							map[3] = 6;
+						}
+					}
+				} else {
+					// check for [R]Super
+					if (this.engine.isSuper) {
+						// [R]Extended: change state 3 to state 6 and all other states >=2 go to zero
+						if (pattern.isExtended) {
+							for (i = 2; i < 256; i += 1) {
+								map[i] = 0;
+							}
+							map[3] = 6;
+						}
+					} else {
+						// check for [R]Investigator
+						if (this.engine.isExtended) {
+							// [R]Super and [R]History: change state 6 to state 3 and all other states >=2 go to zero
+							if (pattern.isHistory || pattern.isSuper) {
+								for (i = 2; i < 256; i += 1) {
+									map[i] = 0;
+								}
+								map[6] = 3;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// ensure states are in range
+		for (i = 0; i < 256; i += 1) {
+			if (map[i] >= states) {
+				map[i] = 0;
+			}
+		}
+	};
+
 	// handle successful read of system clipboard during paste
 	View.prototype.handleSuccessfulRead = function(/** @type {string} */ text, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
 		// create a pattern from the text
@@ -14746,13 +14883,11 @@ This file is part of LifeViewer
 			/** @type {number} */ i = 0,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ count = 0,
-			/** @type {number} */ states = this.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended));
+			/** @type {Uint8Array} */ map = new Uint8Array(256);
 
 		if (this.manager.failureReason == "") {
-			if (states === -1) {
-				states = 2;
-			}
+			// get the conversion map
+			this.createConversionMap(map, pattern);
 
 			// create the copy buffer
 			width = pattern.width;
@@ -14764,28 +14899,11 @@ This file is part of LifeViewer
 				patternRow = pattern.multiStateMap[y];
 				for (x = 0; x < width; x += 1) {
 					state = patternRow[x];
-					if (state > 0 && invertForGenerations) {
-						state = states - state;
-					}
 
-					// handle [R]Super and [R]History -> [R]Standard
-					if (states === 2) {
-						if (pattern.isHistory || pattern.isSuper) {
-							state = state & 1;
-						}
-					}
-
-					// check the state is in range for the current pattern
-					if (state < 0) {
-						state = 0;
-					} else {
-						if (state >= states) {
-							state = 1;
-						}
-					}
-
-					// save the state
-					buffer[i] = state;
+					// convert the state using the map and save it in the paste buffer
+					buffer[i] = map[state];
+					
+					// count number of non-zero cells for the clipboard tooltip
 					if (state > 0) {
 						count += 1;
 					}

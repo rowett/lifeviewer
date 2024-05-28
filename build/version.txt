@@ -1,3 +1,10 @@
+Build 1145
+- improved automatic Paste conversion when pasting from system clipboard
+	- now handles conversions between [R]Standard, R[History], R[Super] and [R]Investigator
+
+Build 1144
+- fixed automatic Paste conversion
+
 Build 1143
 - new script command [[ AUTOIDENTIFY ]] will automatically Identify pattern on load
 - Paste from system clipboard will now automatically convert [R]Super and [R]History to [R]Standard
