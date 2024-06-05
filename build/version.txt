@@ -1,6 +1,12 @@
+Build 1146
+- changed Advance Selection so the selection box is static
+- added Advance Selection and Advance Outside buttons
+- Paste from system clipboard now works with unknown rules
+- added error checking when attempting to write to system clipboard
+
 Build 1145
 - improved automatic Paste conversion when pasting from system clipboard
-	- now handles conversions between [R]Standard, R[History], R[Super] and [R]Investigator
+	- now handles conversions between [R]Standard, [R]History, [R]Super and [R]Investigator
 
 Build 1144
 - fixed automatic Paste conversion

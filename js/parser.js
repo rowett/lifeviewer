@@ -462,12 +462,6 @@ This file is part of LifeViewer
 				view.engine.pasteColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
 				break;
 
-			case ViewConstants.customThemeAdvance:
-				// create custom advance colour
-				view.customAdvanceColour = [redValue, greenValue, blueValue];
-				view.engine.advanceColour = "rgb(" + redValue + "," + greenValue + "," + blueValue + ")";
-				break;
-
 			case ViewConstants.customThemeGraphBg:
 				// copy to graph background color
 				view.engine.graphBgColor = [redValue, greenValue, blueValue];
@@ -3568,11 +3562,6 @@ This file is part of LifeViewer
 								// paste
 								case Keywords.pasteWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemePaste, whichColour);
-									break;
-
-								// advance
-								case Keywords.advanceWord:
-									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeAdvance, whichColour);
 									break;
 
 								// selected cells

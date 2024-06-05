@@ -1351,7 +1351,6 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.boundedWord + " R G B", "set bounded color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.selectWord + " R G B", "set select color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.pasteWord + " R G B", "set paste color", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.advanceWord + " R G B", "set advance color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.selectedCellsWord + " R G B", "set selected cells color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.gridWord + " R G B", "set grid color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.gridMajorWord + " R G B", "set grid major color", ctx, x, y, height, helpLine);
@@ -2366,8 +2365,6 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "Paste Box", this.rgbString(view.customPasteColour[0], view.customPasteColour[1], view.customPasteColour[2]), ctx, x, y, height, helpLine);
 		this.renderColourBox(view, view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Paste Cell", this.rgbString(view.customSelectedCellsColour[0], view.customSelectedCellsColour[1], view.customSelectedCellsColour[2]), ctx, x, y, height, helpLine);
-		this.renderColourBox(view, view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-		y = this.renderHelpLine(view, "Advance", this.rgbString(view.customAdvanceColour[0], view.customAdvanceColour[1], view.customAdvanceColour[2]), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// population graph information

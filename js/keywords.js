@@ -325,9 +325,6 @@ This file is part of LifeViewer
 		// select
 		/** @const {string} */ selectWord : "SELECT",
 
-		// advance
-		/** @const {string} */ advanceWord: "ADVANCE",
-
 		// selected cells
 		/** @const {string} */ selectedCellsWord: "SELECTED",
 

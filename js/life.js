@@ -693,9 +693,6 @@ This file is part of LifeViewer
 		// paste colour
 		/** @type {string} */ this.pasteColour = "rgb(255,0,0)";
 
-		// advance colour
-		/** @type {string} */ this.advanceColour = "rgb(255,255,0)";
-
 		// selected cells colour
 		/** @type {string} */ this.selectedCellsColour = "rgb(255,128,0)";
 
@@ -44526,14 +44523,6 @@ This file is part of LifeViewer
 
 		if (view.isSelection || view.drawingSelection) {
 			this.drawBox(view, view.selectionBox, this.selectColour);
-		}
-
-		if (view.evolvingPaste) {
-			if (this.boundedGridType !== -1 && view.posDefined) {
-				this.drawPasteWithCells(view, view.evolveBox.leftX - view.specifiedWidth, view.evolveBox.bottomY - view.specifiedHeight, ViewConstants.pastePositionNW, this.advanceColour);
-			} else {
-				this.drawPasteWithCells(view, view.evolveBox.leftX, view.evolveBox.bottomY, ViewConstants.pastePositionNW, this.advanceColour);
-			}
 		}
 
 		if (view.isPasting) {

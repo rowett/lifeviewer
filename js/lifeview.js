@@ -292,9 +292,8 @@ This file is part of LifeViewer
 		/** @const {number} */ customThemeBounded : 27,
 		/** @const {number} */ customThemeSelect : 28,
 		/** @const {number} */ customThemePaste : 29,
-		/** @const {number} */ customThemeAdvance : 30,
-		/** @const {number} */ customThemeSelectedCells : 31,
-		/** @const {number} */ customThemeHelp : 32,
+		/** @const {number} */ customThemeSelectedCells : 30,
+		/** @const {number} */ customThemeHelp : 31,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -328,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1145,
+		/** @const {number} */ versionBuild : 1146,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1024,9 +1023,6 @@ This file is part of LifeViewer
 			this.pasteBuffers[i] = null;
 		}
 
-		// whether evolving paste
-		/** @type {boolean} */ this.evolvingPaste = false;
-
 		// current paste buffer
 		/** @type {number} */ this.currentPasteBuffer = 0;
 
@@ -1048,9 +1044,6 @@ This file is part of LifeViewer
 
 		// whether paste is happening
 		/** @type {boolean} */ this.isPasting = false;
-
-		// evolve paste selection box
-		/** @type {BoundingBox} */ this.evolveBox = new BoundingBox(0, 0, 0, 0);
 
 		// selection box
 		/** @type {BoundingBox} */ this.selectionBox = new BoundingBox(0, 0, 0, 0);
@@ -1421,9 +1414,6 @@ This file is part of LifeViewer
 
 		// paste colour
 		/** @type {Array<number>} */ this.customPasteColour = [255, 0, 0];
-
-		// advance colour
-		/** @type {Array<number>} */ this.customAdvanceColour = [255, 255, 0];
 
 		// selected cells colour
 		/** @type {Array<number>} */ this.customSelectedCellsColour = [255, 128, 0];
@@ -2144,6 +2134,12 @@ This file is part of LifeViewer
 		// rotate CCW button
 		/** @type {MenuItem} */ this.rotateCCWButton = null;
 
+		// advance outside button
+		/** @type {MenuItem} */ this.advanceOutsideButton = null;
+
+		// advance selection button
+		/** @type {MenuItem} */ this.advanceSelectionButton = null;
+
 		// nudge left button
 		/** @type {MenuItem} */ this.nudgeLeftButton = null;
 
@@ -2843,7 +2839,7 @@ This file is part of LifeViewer
 		while (i >= 0 && !found) {
 			if (this.editList[i].gen <= gen) {
 				// check for multi-step
-				if (this.editList[i].action === "advance outside") {
+				if (this.editList[i].action === "advance outside" || this.editList[i].action === "advance selection") {
 					i -= 1;
 				}
 				found = true;
@@ -3101,7 +3097,7 @@ This file is part of LifeViewer
 					selection = record.selection;
 
 					// check for multi-step
-					if (!multiStep && record.action === "advance outside") {
+					if (!multiStep && (record.action === "advance outside" || record.action === "advance selection")) {
 						multiStep = true;
 						steps = 3;
 					}
@@ -3197,7 +3193,7 @@ This file is part of LifeViewer
 				record = me.editList[me.editNum];
 
 				// check for multi-step
-				if (!multiStep && record.action === "advance outside") {
+				if (!multiStep && (record.action === "advance outside" || record.action === "advance selection")) {
 					multiStep = true;
 					steps = 3;
 				}
@@ -7481,6 +7477,8 @@ This file is part of LifeViewer
 		this.changeCellStateButton.deleted= shown;
 		this.randomButton.deleted = shown;
 		this.randomItem.deleted = shown;
+		this.advanceOutsideButton.deleted = shown;
+		this.advanceSelectionButton.deleted = shown;
 		shown = hide || !this.selecting || settingsMenuOpen || this.engine.multiNumStates <= 2 || this.engine.isNone;
 		this.random2Button.deleted = shown || this.engine.isPCA;
 
@@ -7513,6 +7511,8 @@ This file is part of LifeViewer
 		this.clearOutsideButton.deleteIfShown(shown);
 		this.clearRHistoryButton.deleteIfShown(shown);
 		this.changeCellStateButton.deleteIfShown(shown);
+		this.advanceOutsideButton.deleteIfShown(shown);
+		this.advanceSelectionButton.deleteIfShown(shown);
 		shown = !this.isSelection || this.viewOnly;
 		this.cutButton.locked = shown;
 
@@ -11138,6 +11138,8 @@ This file is part of LifeViewer
 			/** @type {number} */ runCount = 0,
 			/** @type {number} */ nextBits = 0,
 			/** @type {number} */ index = 0,
+
+			// canvas for decoded image
 			/** @type {HTMLCanvasElement} */ imageCanvas = null,
 			/** @type {CanvasRenderingContext2D} */ imageContext = null,
 			/** @type {ImageData} */ imageData = null,
@@ -11499,11 +11501,12 @@ This file is part of LifeViewer
 		this.iconManager.add("nudgeleft", w, h);
 		this.iconManager.add("nudgeup", w, h);
 		this.iconManager.add("nudgedown", w, h);
-		this.iconManager.add("shrinksel", w, h);
+		this.iconManager.add("advancesel", w, h);
 		this.iconManager.add("cancelsel", w, h);
 		this.iconManager.add("trirectgrid", w, h);
 		this.iconManager.add("download", w, h);
 		this.iconManager.add("changestate", w, h);
+		this.iconManager.add("advanceoutside", w, h);
 	};
 
 	// check if a rule is valid and returns the rule string (or "" for invalid)
@@ -13565,29 +13568,29 @@ This file is part of LifeViewer
 	};
 
 	// select all pressed
-	View.prototype.selectAllPressed = function(/** @type {View} */ me) {
-		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
-			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
-			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
-			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+	View.prototype.processSelectAll = function(/** @type {boolean} */ markUndo) {
+		var	/** @type {BoundingBox} */ selBox = this.selectionBox,
+			/** @type {BoundingBox} */ zoomBox = this.engine.zoomBox,
+			/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
+			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1),
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0;
 
 		// check for empty population
-		if (me.engine.population > 0) {
+		if (this.engine.population > 0) {
 			// update the pattern extent
-			me.engine.shrinkNeeded = true;
-			me.engine.doShrink();
+			this.engine.shrinkNeeded = true;
+			this.engine.doShrink();
 
 			// adjust position if in bounded grid
-			if (me.engine.boundedGridType !== -1) {
-				xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
-				yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+			if (this.engine.boundedGridType !== -1) {
+				xOff -= Math.floor((this.specifiedWidth - this.patternWidth) / 2);
+				yOff -= Math.floor((this.specifiedHeight - this.patternHeight) / 2);
 			}
 
 			// for HROT patterns use alive states only
-			if (!me.engine.isSuper && !me.engine.isExtended && !me.engine.isRuleTree && (me.engine.isPCA || (me.engine.isHROT && me.engine.multiNumStates === 2) || me.engine.multiNumStates > 2)) {
-				me.engine.getAliveStatesBox(selBox);
+			if (!this.engine.isSuper && !this.engine.isExtended && !this.engine.isRuleTree && (this.engine.isPCA || (this.engine.isHROT && this.engine.multiNumStates === 2) || this.engine.multiNumStates > 2)) {
+				this.engine.getAliveStatesBox(selBox);
 				selBox.leftX -= xOff;
 				selBox.rightX -= xOff;
 				selBox.bottomY -= yOff;
@@ -13600,8 +13603,8 @@ This file is part of LifeViewer
 				selBox.topY = zoomBox.topY - yOff;
 			}
 
-			me.isSelection = true;
-			me.afterSelectAction = false;
+			this.isSelection = true;
+			this.afterSelectAction = false;
 			if (selBox.rightX < selBox.leftX) {
 				width = selBox.leftX - selBox.rightX + 1;
 			} else {
@@ -13612,13 +13615,21 @@ This file is part of LifeViewer
 			} else {
 				height = selBox.topY - selBox.bottomY + 1;
 			}
-			me.afterEdit("select all (" + width + " x " + height + ")");
+			if (markUndo) {
+				this.afterEdit("select all (" + width + " x " + height + ")");
+			}
 		} else {
-			me.menuManager.notification.notify("No live cells to Select", 15, 120, 15, false);
-			if (me.isSelection) {
-				me.removeSelection(me);
+			this.menuManager.notification.notify("No live cells to Select", 15, 120, 15, false);
+			if (this.isSelection) {
+				this.removeSelection(this);
 			}
 		}
+	};
+
+	// select all pressed
+	View.prototype.selectAllPressed = function(/** @type {View} */ me) {
+		// select all and update undo records
+		me.processSelectAll(true);
 	};
 
 	// process cut
@@ -13739,7 +13750,6 @@ This file is part of LifeViewer
 
 			// mark that a paste can happen
 			me.canPaste = true;
-			me.evolvingPaste = false;
 			me.afterSelectAction = true;
 
 			// save edit
@@ -14127,7 +14137,6 @@ This file is part of LifeViewer
 
 			// mark that a paste can happen
 			me.canPaste = true;
-			me.evolvingPaste = false;
 			me.afterSelectAction = true;
 		}
 	};
@@ -14136,23 +14145,43 @@ This file is part of LifeViewer
 	View.prototype.cancelPaste = function(/** @type {View} */ me) {
 		me.isPasting = false;
 		me.menuManager.notification.clear(true, false);
-		if (me.evolvingPaste) {
-			me.undo(me);
-		}
-		me.evolvingPaste = false;
 	};
 
 	// evolve pressed
 	View.prototype.evolvePressed = function(/** @type {View} */ me, /** @type {boolean} */ shift) {
 		// save paste mode
-		var	/** @type {number} */ savedMode = /** @type {!number} */ (this.pasteModeList.current),
-			/** @type {boolean} */ savedSync = this.copySyncExternal;
+		var	/** @type {number} */ savedMode = /** @type {!number} */ (me.pasteModeList.current),
+			/** @type {boolean} */ savedSync = me.copySyncExternal,
+			/** @type {BoundingBox} */ box = me.selectionBox,
+			/** @type {number} */ origX1 = box.leftX,
+			/** @type {number} */ origX2 = box.rightX,
+			/** @type {number} */ origY1 = box.bottomY,
+			/** @type {number} */ origY2 = box.topY,
+			/** @type {number} */ x1 = 0,
+			/** @type {number} */ x2 = 0,
+			/** @type {number} */ y1 = 0,
+			/** @type {number} */ y2 = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ swap = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ states = me.engine.multiNumStates,
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
+			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
+			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
+			/** @type {Uint8Array} */ buffer = null,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ wasState6 = 0;
 
 		// check for evolve outside
 		if (shift) {
 			if (me.isSelection) {
 				// process cut but mark advance outside
+				me.copySyncExternal = false;
 				me.cutSelection(me, me.currentPasteBuffer, true, false);
+				me.copySyncExternal = savedSync;
 
 				// step
 				me.engine.nextGeneration(me.noHistory);
@@ -14161,234 +14190,127 @@ This file is part of LifeViewer
 				me.afterEdit("");
 
 				// process paste but mark advance outside
-				this.pasteModeList.current = 1;  // UI COPY mode
+				me.pasteModeList.current = 1;  // UI COPY mode
+				me.copySyncExternal = false;
 				me.processPaste(me, true, true);
+				me.copySyncExternal = savedSync;
 				this.pasteModeList.current = savedMode;
-			} else {
-				me.menuManager.notification.notify("Advance Outside needs a selection", 15, 180, 15, true);
 			}
 		} else {
-			// check if already evolving
-			if (me.evolvingPaste) {
-				me.evolvePaste(me);
-				if (!me.evolvingPaste) {
-					me.menuManager.notification.notify("Advance Selection all cells died", 15, 180, 15, true);
-				}
-			} else {
-				// check if there is a selection
-				if (me.isSelection) {
-					// check if there has been an action since selection
-					if (!me.afterSelectAction) {
-						// only use internal clipboard
-						this.copySyncExternal = false;
-						me.cutPressed(me);
-						this.copySyncExternal = savedSync;
-					}
+			// check if there is a selection
+			if (me.isSelection) {
+				// select all cells without updating undo records
+				me.processSelectAll(false);
+				x1 = box.leftX;
+				x2 = box.rightX;
+				y1 = box.bottomY;
+				y2 = box.topY;
 
-					// check whether there is something to paste
-					if (me.canPaste) {
-						me.evolvePaste(me);
-						if (!me.evolvingPaste) {
-							me.menuManager.notification.notify("Advance Selection no live cells", 15, 180, 15, true);
+				if (x1 > x2) {
+					swap = x2;
+					x2 = x1;
+					x1 = swap;
+				}
+				if (y1 > y2) {
+					swap = y2;
+					y2 = y1;
+					y1 = swap;
+				}
+
+				// compute width and height of selection
+				width = (x2 - x1 + 1);
+				height = (y2 - y1 + 1);
+
+				// adjust in case specified is different than actual size
+				if (me.engine.boundedGridType !== -1) {
+					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
+					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				}
+
+				// copy selection into temporary buffer
+				buffer = new Uint8Array(width * height);
+
+				// copy selection to buffer and clear set cells
+				wasState6 = 0;
+				i = 0;
+				for (y = y1; y <= y2; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
+						if (!(x >= origX1 && x <= origX2 && y >= origY1 && y <= origY2)) {
+							state = me.engine.getState(x + xOff, y + yOff, false);
+							if (state > 0 && invertForGenerations) {
+								state = states - state;
+							}
+							buffer[i] = state;
+							wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
+						}
+						i += 1;
+					}
+				}
+
+				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
+					this.engine.populateState6MaskFromColGrid();
+				}
+
+				// shrink needed
+				me.engine.shrinkNeeded = true;
+				me.engine.doShrink();
+				me.afterEdit("advance selection");
+
+				// step
+				me.engine.nextGeneration(me.noHistory);
+				me.engine.convertToPensTile();
+				me.engine.saveSnapshotIfNeeded(me);
+				me.afterEdit("");
+
+				// determine if the pattern escaped the original selection box
+				me.processSelectAll(false);
+				if (box.leftX < origX1 || box.rightX > origX2 || box.bottomY < origY1 || box.topY > origY2) {
+					// clear cells outside original selection
+					wasState6 = 0;
+					i = 0;
+					for (y = box.bottomY; y <= box.topY; y += 1) {
+						for (x = box.leftX; x <= box.rightX; x += 1) {
+							if (!(x >= origX1 && x <= origX2 && y >= origY1 && y <= origY2)) {
+								wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, 0, true, false);
+							}
+							i += 1;
 						}
 					}
-				} else {
-					me.menuManager.notification.notify("Advance Selection needs a selection", 15, 180, 15, true);
-				}
-			}
-		}
-	};
-
-	// evolve paste
-	View.prototype.evolvePaste = function(/** @type {View} */ me) {
-		var	/** @type {number} */ i = 0,
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ width = me.pasteWidth,
-			/** @type {number} */ height = me.pasteHeight,
-			/** @type {number} */ state = 0,
-			/** @type {Uint8Array} */ buffer = me.pasteBuffer,
-			/** @type {number} */ xOff = 0,
-			/** @type {number} */ yOff = 0,
-			/** @type {BoundingBox} */ selBox = me.selectionBox,
-			/** @type {BoundingBox} */ zoomBox = me.engine.zoomBox,
-			/** @type {BoundingBox} */ historyBox = me.engine.historyBox,
-			/** @type {BoundingBox} */ evolveBox = me.evolveBox,
-
-			// save current grid
-			/** @type {Array<Uint8Array>} */ currentGrid = me.engine.grid,
-			/** @type {Array<Uint8Array>} */ currentNextGrid = me.engine.nextGrid,
-			/** @type {Array<Uint8Array>} */ currentColourGrid = me.engine.colourGrid,
-			/** @type {Array<Uint16Array>} */ currentColourGrid16 = me.engine.colourGrid16,
-			/** @type {Array<Uint32Array>} */ currentColourGrid32 = me.engine.colourGrid32,
-			/** @type {Array<Uint8Array>} */ currentSmallColourGrid = me.engine.smallColourGrid,
-			/** @type {Array<Uint8Array>} */ currentNextColourGrid = me.engine.nextColourGrid,
-			/** @type {Array<Uint16Array>} */ currentTileGrid = me.engine.tileGrid,
-			/** @type {Array<Uint16Array>} */ currentNextTileGrid = me.engine.nextTileGrid,
-			/** @type {Array<Uint16Array>} */ currentColourTileGrid = me.engine.colourTileGrid,
-			/** @type {Array<Uint16Array>} */ currentColourTileHistoryGrid = me.engine.colourTileHistoryGrid,
-			/** @type {Array<Uint16Array>} */ currentDiedGrid = me.engine.diedGrid,
-			/** @type {number} */ currentWidth = me.engine.width,
-			/** @type {number} */ currentHeight = me.engine.height,
-			/** @type {Array<Uint16Array>} */ currentGrid16 = me.engine.grid16,
-			/** @type {Array<Uint16Array>} */ currentNextGrid16 = me.engine.nextGrid16,
-			/** @type {Uint8Array} */ currentBlankRow = me.engine.blankRow,
-			/** @type {Uint16Array} */ currentBlankRow16 = me.engine.blankRow16,
-			/** @type {Uint16Array} */ currentBlankTileRow = me.engine.blankTileRow,
-			/** @type {Uint8Array} */ currentBlankColourRow = me.engine.blankColourRow,
-			/** @type {number} */ currentTileRows = me.engine.tileRows,
-			/** @type {number} */ currentTileCols = me.engine.tileCols,
-			/** @type {number} */ currentWidthMask = me.engine.widthMask,
-			/** @type {number} */ currentHeightMask = me.engine.heightMask,
-			/** @type {number} */ currentCounter = me.engine.counter,
-			/** @type {BoundingBox} */ currentZoomBox = new BoundingBox(zoomBox.leftX, zoomBox.bottomY, zoomBox.rightX, zoomBox.topY),
-			/** @type {BoundingBox} */ currentHistoryBox = new BoundingBox(historyBox.leftX, historyBox.bottomY, historyBox.rightX, historyBox.topY),
-			/** @type {Array<Uint16Array>} */ currentState6Mask = me.engine.state6Mask,
-			/** @type {Array<Uint16Array>} */ currentState6Cells = me.engine.state6Cells,
-			/** @type {Array<Uint16Array>} */ currentState6Alive = me.engine.state6Alive,
-			/** @type {Array<Uint16Array>} */ currentState6TileGrid = me.engine.state6TileGrid,
-			/** @type {Array<Uint8Array>} */ currentOverlayGrid = me.engine.overlayGrid,
-			/** @type {Array<Uint8Array>} */ currentSmallOverlayGrid = me.engine.smallOverlayGrid,
-			/** @type {Array<Uint16Array>} */ currentOverlayGrid16 = me.engine.overlayGrid16,
-			/** @type {Array<Uint32Array>} */ currentOverlayGrid32 = me.engine.overlayGrid32,
-			/** @type {Array<Int32Array>} */ currentCounts = null,
-			/** @type {Uint8Array} */ currentColUsed = null,
-			// save anything alive
-			/** @type {number} */ currentPop = me.engine.population,
-			/** @type {number} */ currentBirths = me.engine.births,
-			/** @type {number} */ currentDeaths = me.engine.deaths;
-
-		// check for HROT rules
-		if (me.engine.isHROT) {
-			currentCounts = me.engine.HROT.counts;
-			currentColUsed = me.engine.HROT.colUsed;
-			me.engine.HROT.resize(1024, 1024);
-		}
-
-		// allocate new grid
-		me.engine.allocateGrid(1024, 1024);
-
-		// copy paste to center of grid
-		xOff = Math.round((me.engine.width - me.patternWidth) / 2);
-		yOff = Math.round((me.engine.height - me.patternHeight) / 2);
-
-		i = 0;
-		for (y = 0; y < height; y += 1) {
-			for (x = 0; x < width; x += 1) {
-				state = buffer[i];
-				if (state > 0) {
-					//if (me.engine.multiNumStates > 2 && !(me.engine.isPCA || me.engine.isRuleTree)) {
-						//state = me.engine.multiNumStates - state;
-					//}
-					me.engine.setState(x + xOff, y + yOff, state, true);
-				}
-				i += 1;
-			}
-		}
-
-		// compute next generation
-		me.engine.nextGeneration(true);
-		me.engine.convertToPensTile();
-		me.engine.saveSnapshotIfNeeded(me);
-
-		if (me.engine.population > 0) {
-			// set new paste buffer
-			me.pasteWidth = zoomBox.rightX - zoomBox.leftX + 1;
-			me.pasteHeight = zoomBox.topY - zoomBox.bottomY + 1;
-			me.pasteBuffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, me.pasteWidth * me.pasteHeight, "View.pasteBuffer"));
-
-			// copy cells in
-			i = 0;
-			for (y = zoomBox.bottomY; y <= zoomBox.topY; y += 1) {
-				for (x = zoomBox.leftX; x <= zoomBox.rightX; x += 1) {
-					state = me.engine.getState(x, y, false);
-					if (state > 0 && me.engine.multiNumStates > 2 && !(me.engine.isSuper || me.engine.isExtended || me.engine.isPCA || me.engine.isRuleTree)) {
-						state = me.engine.multiNumStates - state;
+					if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
+						this.engine.populateState6MaskFromColGrid();
 					}
-					me.pasteBuffer[i] = state;
-					i += 1;
+
+					// shrink needed
+					me.engine.shrinkNeeded = true;
+					me.engine.doShrink();
 				}
+
+				// write the original cells outside the selection back
+				wasState6 = 0;
+				i = 0;
+				for (y = y1; y <= y2; y += 1) {
+					for (x = x1; x <= x2; x += 1) {
+						if (!(x >= origX1 && x <= origX2 && y >= origY1 && y <= origY2)) {
+							wasState6 |= me.setStateWithUndo(x + xOff, y + yOff, buffer[i], true, false);
+						}
+						i += 1;
+					}
+				}
+
+				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
+					this.engine.populateState6MaskFromColGrid();
+				}
+
+				// shrink needed
+				me.engine.shrinkNeeded = true;
+				me.engine.doShrink();
+
+				box.leftX = origX1;
+				box.rightX = origX2;
+				box.bottomY = origY1;
+				box.topY = origY2;
+				me.afterEdit("advance selection");
 			}
-
-			// update selection
-			if (!me.evolvingPaste) {
-				if (selBox.leftX < selBox.rightX) {
-					evolveBox.leftX = selBox.leftX + zoomBox.leftX - xOff;
-				} else {
-					evolveBox.leftX = selBox.rightX + zoomBox.leftX - xOff;
-				}
-				if (selBox.bottomY < selBox.topY) {
-					evolveBox.bottomY = selBox.bottomY + zoomBox.bottomY - yOff;
-				} else {
-					evolveBox.bottomY = selBox.topY + zoomBox.bottomY - yOff;
-				}
-				evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
-				evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
-			} else {
-				evolveBox.leftX += zoomBox.leftX - xOff;
-				evolveBox.bottomY += zoomBox.bottomY - yOff;
-				evolveBox.rightX = evolveBox.leftX + me.pasteWidth - 1;
-				evolveBox.topY = evolveBox.bottomY + me.pasteHeight - 1;
-			}
-
-			// mark paste is evolving
-			me.evolvingPaste = true;
-		} else {
-			// mark paste finished since all cells died
-			me.evolvingPaste = false;
-		}
-
-		// restore grid
-		me.engine.grid = currentGrid;
-		me.engine.nextGrid = currentNextGrid;
-		me.engine.colourGrid = currentColourGrid;
-		me.engine.colourGrid16 = currentColourGrid16;
-		me.engine.colourGrid32 = currentColourGrid32;
-		me.engine.smallColourGrid = currentSmallColourGrid;
-		me.engine.nextColourGrid = currentNextColourGrid;
-		me.engine.tileGrid = currentTileGrid;
-		me.engine.nextTileGrid = currentNextTileGrid;
-		me.engine.colourTileGrid = currentColourTileGrid;
-		me.engine.colourTileHistoryGrid = currentColourTileHistoryGrid;
-		me.engine.diedGrid = currentDiedGrid;
-		me.engine.width = currentWidth;
-		me.engine.height = currentHeight;
-		me.engine.grid16 = currentGrid16;
-		me.engine.nextGrid16 = currentNextGrid16;
-		me.engine.zoomBox.leftX = currentZoomBox.leftX;
-		me.engine.blankRow = currentBlankRow;
-		me.engine.blankRow16 = currentBlankRow16;
-		me.engine.blankTileRow = currentBlankTileRow;
-		me.engine.blankColourRow = currentBlankColourRow;
-		me.engine.tileRows = currentTileRows;
-		me.engine.tileCols = currentTileCols;
-		me.engine.widthMask = currentWidthMask;
-		me.engine.heightMask = currentHeightMask;
-		me.engine.counter = currentCounter;
-		me.engine.state6Mask = currentState6Mask;
-		me.engine.state6Cells = currentState6Cells;
-		me.engine.state6Alive = currentState6Alive;
-		me.engine.state6TileGrid = currentState6TileGrid;
-		me.engine.overlayGrid = currentOverlayGrid;
-		me.engine.smallOverlayGrid = currentSmallOverlayGrid;
-		me.engine.overlayGrid16 = currentOverlayGrid16;
-		me.engine.overlayGrid32 = currentOverlayGrid32;
-		zoomBox.leftX = currentZoomBox.leftX;
-		zoomBox.bottomY = currentZoomBox.bottomY;
-		zoomBox.rightX = currentZoomBox.rightX;
-		zoomBox.topY = currentZoomBox.topY;
-		historyBox.leftX = currentHistoryBox.leftX;
-		historyBox.bottomY = currentHistoryBox.bottomY;
-		historyBox.rightX = currentHistoryBox.rightX;
-		historyBox.topY = currentHistoryBox.topY;
-		me.engine.births = currentBirths;
-		me.engine.deaths = currentDeaths;
-		me.engine.population = currentPop;
-
-		// restore HROT
-		if (me.engine.isHROT) {
-			me.engine.HROT.counts = currentCounts;
-			me.engine.HROT.colUsed = currentColUsed;
 		}
 	};
 
@@ -14517,7 +14439,6 @@ This file is part of LifeViewer
 
 		// paste finished
 		me.isPasting = false;
-		me.evolvingPaste = false;
 
 		// clear notification
 		me.menuManager.notification.clear(true, false);
@@ -14885,7 +14806,8 @@ This file is part of LifeViewer
 			/** @type {number} */ count = 0,
 			/** @type {Uint8Array} */ map = new Uint8Array(256);
 
-		if (this.manager.failureReason == "") {
+		// check if the pattern decoded (regardless of whether the rule was valid)
+		if (pattern.multiStateMap !== null) {
 			// get the conversion map
 			this.createConversionMap(map, pattern);
 
@@ -14957,7 +14879,6 @@ This file is part of LifeViewer
 		var	/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
 			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1),
 			/** @type {BoundingBox} */ selBox = this.selectionBox,
-			/** @type {BoundingBox} */ evolveBox = this.evolveBox,
 			/** @type {number} */ save = 0,
 			/** @type {number} */ leftX = selBox.leftX,
 			/** @type {number} */ bottomY = selBox.bottomY,
@@ -14974,14 +14895,7 @@ This file is part of LifeViewer
 			// check for paste to selection
 			if (shift) {
 				// check for a selection
-				if (this.isSelection || this.evolvingPaste) {
-					// check if paste has evolved
-					if (this.evolvingPaste) {
-						leftX = evolveBox.leftX;
-						bottomY = evolveBox.bottomY;
-						rightX = evolveBox.rightX;
-						topY = evolveBox.topY;
-					}
+				if (this.isSelection) {
 					// order selection
 					if (leftX > rightX) {
 						save = leftX;
@@ -15017,14 +14931,12 @@ This file is part of LifeViewer
 						} else {
 							this.afterEdit("paste to selection");
 						}
-						this.evolvingPaste = false;
 					}
 				} else {
 					this.menuManager.notification.notify("Paste to Selection needs a selection", 15, 180, 15, true);
 				}
 			} else {
 				this.pasteSelection(this, this.currentPasteBuffer);
-				this.evolvingPaste = false;
 				this.menuManager.notification.notify("Now click to paste", 15, 180, 15, true);
 			}
 		}
@@ -15045,12 +14957,7 @@ This file is part of LifeViewer
 
 	// paste from enter key
 	View.prototype.pasteFromEnter = function(/** @type {View} */ me) {
-		if (me.evolvingPaste) {
-			me.processPaste(me, true, false);
-			me.afterSelectAction = false;
-		} else {
-			me.performPaste(me, me.cellX, me.cellY, true);
-		}
+		me.performPaste(me, me.cellX, me.cellY, true);
 	};
 
 	// paste pressed
@@ -15064,7 +14971,6 @@ This file is part of LifeViewer
 		if (number >= 0 && number < me.pasteBuffers.length) {
 			if (me.pasteBuffers[number] !== null) {
 				me.isPasting = true;
-				me.evolvingPaste = false;
 				me.pasteBuffer = me.pasteBuffers[number].buffer;
 				me.pasteWidth = me.pasteBuffers[number].width;
 				me.pasteHeight = me.pasteBuffers[number].height;
@@ -15075,7 +14981,6 @@ This file is part of LifeViewer
 				}
 			} else {
 				me.isPasting = false;
-				me.evolvingPaste = false;
 				me.menuManager.notification.notify("Clipboard empty", 15, 180, 15, true);
 			}
 		}
@@ -15990,6 +15895,16 @@ This file is part of LifeViewer
 		}
 	};
 
+	// advance outside pressed
+	View.prototype.advanceOutsidePressed = function(/** @type {View} */ me) {
+		me.evolvePressed(me, true);
+	};
+
+	// advance selection pressed
+	View.prototype.advanceSelectionPressed = function(/** @type {View} */ me) {
+		me.evolvePressed(me, false);
+	};
+
 	// flip X pressed
 	View.prototype.flipXPressed = function(/** @type {View} */ me) {
 		if (!me.viewOnly) {
@@ -16885,7 +16800,8 @@ This file is part of LifeViewer
 
 	// copy string to clipboard
 	View.prototype.copyToClipboard = function(/** @type {View} */ me, /** @type {string} */ contents) {
-		var	/** @type {Element} */ copyElement = document.getElementById("ViewerCopy");
+		var	/** @type {Element} */ copyElement = document.getElementById("ViewerCopy"),
+			/** @type {ClipboardItem} */ clipboardItem = null;
 
 		// save the contents
 		Controller.clipText = contents;
@@ -16893,15 +16809,20 @@ This file is part of LifeViewer
 		// copy the text to the system clipboard
 		// check if ClipboardItem is available
 		if (window.ClipboardItem) {
-			// create the clipboard item
-			const clipboardItem = new ClipboardItem({
-				'text/plain': getClipText().then(() => {
-					return new Promise(async (resolve) => {
-						resolve(new Blob([contents], {type: "text/plain"}))
-					})
-				}),
-			})
+			// attempt to create the clipboard item
+			try {
+				clipboardItem = new ClipboardItem({
+					'text/plain': getClipText().then(() => {
+						return new Promise(async (resolve) => {
+							resolve(new Blob([contents], {type: "text/plain"}))
+						})
+					}),
+				});
+			} catch(err) {
+			}
+		}
 
+		if (clipboardItem) {
 			// write to the clipboard
 			navigator.clipboard.write([clipboardItem])
 		} else {
@@ -18135,7 +18056,7 @@ This file is part of LifeViewer
 
 		// add the auto-shrink button
 		this.autoShrinkButton = this.viewMenu.addButtonItem(this.shrinkSelectionPressed, Menu.northWest, 90, 45, 40, 40, "");
-		this.autoShrinkButton.icon = this.iconManager.icon("shrinksel");
+		this.autoShrinkButton.icon = this.iconManager.icon("shrink");
 		this.autoShrinkButton.toolTip = "shrink selection [Shift A]";
 
 		// library button
@@ -18168,29 +18089,41 @@ This file is part of LifeViewer
 		this.pasteButton.toolTip = "paste [" + this.controlKeyText + " V]";
 
 		// add the cancel selection button
-		this.cancelSelectionButton = this.viewMenu.addButtonItem(this.cancelSelectionPressed, Menu.southEast, -220, -175, 40, 40, "");
+		this.cancelSelectionButton = this.viewMenu.addButtonItem(this.cancelSelectionPressed, Menu.southEast, -40, -220, 40, 40, "");
 		this.cancelSelectionButton.icon = this.iconManager.icon("cancelsel");
 		this.cancelSelectionButton.toolTip = "cancel selection [" + this.controlKeyText + " K]";
 
 		// add the nudge left button
-		this.nudgeLeftButton = this.viewMenu.addButtonItem(this.nudgeLeftPressed, Menu.southEast, -175, -175, 40, 40, "");
+		this.nudgeLeftButton = this.viewMenu.addButtonItem(this.nudgeLeftPressed, Menu.southEast, -265, -175, 40, 40, "");
 		this.nudgeLeftButton.icon = this.iconManager.icon("nudgeleft");
 		this.nudgeLeftButton.toolTip = "nudge left [" + this.altKeyText + " Left]";
 
 		// add the nudge right button
-		this.nudgeRightButton = this.viewMenu.addButtonItem(this.nudgeRightPressed, Menu.southEast, -130, -175, 40, 40, "");
+		this.nudgeRightButton = this.viewMenu.addButtonItem(this.nudgeRightPressed, Menu.southEast, -220, -175, 40, 40, "");
 		this.nudgeRightButton.icon = this.iconManager.icon("nudgeright");
 		this.nudgeRightButton.toolTip = "nudge right [" + this.altKeyText + " Right]";
 
 		// add the nudge up button
-		this.nudgeUpButton = this.viewMenu.addButtonItem(this.nudgeUpPressed, Menu.southEast, -85, -175, 40, 40, "");
+		this.nudgeUpButton = this.viewMenu.addButtonItem(this.nudgeUpPressed, Menu.southEast, -175, -175, 40, 40, "");
 		this.nudgeUpButton.icon = this.iconManager.icon("nudgeup");
 		this.nudgeUpButton.toolTip = "nudge up [" + this.altKeyText + " Up]";
 
 		// add the nudge down button
-		this.nudgeDownButton = this.viewMenu.addButtonItem(this.nudgeDownPressed, Menu.southEast, -40, -175, 40, 40, "");
+		this.nudgeDownButton = this.viewMenu.addButtonItem(this.nudgeDownPressed, Menu.southEast, -130, -175, 40, 40, "");
 		this.nudgeDownButton.icon = this.iconManager.icon("nudgedown");
 		this.nudgeDownButton.toolTip = "nudge down [" + this.altKeyText + " Down]";
+
+		// add the advance selection button
+		this.advanceSelectionButton = this.viewMenu.addButtonItem(this.advanceSelectionPressed, Menu.southEast, -85, -175, 40, 40, "+Sel");
+		this.advanceSelectionButton.icon = this.iconManager.icon("advanceselection");
+		this.advanceSelectionButton.toolTip = "advance selection [" + this.controlKeyText + " Space]";
+		this.advanceSelectionButton.setFont("15px Arial");
+
+		// add the advance outside button
+		this.advanceOutsideButton = this.viewMenu.addButtonItem(this.advanceOutsidePressed, Menu.southEast, -40, -175, 40, 40, "+Out");
+		this.advanceOutsideButton.icon = this.iconManager.icon("advanceoutside");
+		this.advanceOutsideButton.toolTip = "advance outside [Shift Space]";
+		this.advanceOutsideButton.setFont("15px Arial");
 
 		// add the flip X button
 		this.flipXButton = this.viewMenu.addButtonItem(this.flipXPressed, Menu.southEast, -265, -85, 40, 40, "");
@@ -19277,7 +19210,6 @@ This file is part of LifeViewer
 		me.isPasting = false;
 		me.pasteWidth = 0;
 		me.pasteHeight = 0;
-		me.evolvingPaste = false;
 		me.afterSelectAction = false;
 
 		// set default paste mode for UI
@@ -19807,10 +19739,6 @@ This file is part of LifeViewer
 		// reset paste colour
 		me.customPasteColour = [255, 0, 0];
 		me.engine.pasteColour = "rgb(255,0,0)";
-
-		// reset advance colour
-		me.customAdvanceColour = [255, 255, 0];
-		me.engine.advanceColour = "rgb(255,255,0)";
 
 		// reset selected cells colour
 		me.customSelectedCellsColour = [255, 128, 0];
@@ -21129,11 +21057,13 @@ This file is part of LifeViewer
 	/** @returns {string} */
 	function cleanPattern(element) {
 		// remove HTML tags
-		var	/** @type {string} */ result = element.innerHTML.replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/<br *\/>/gi, "\n").replace(/<br>/gi, "\n").replace(/&nbsp;/gi, " ").replace(/<span class="posthilit">/gi, "").replace(/<\/span>/gi, "").trim();
+		var	/** @type {string} */ result = element.innerHTML.replace(/<br *\/>/gi, "\n").replace(/<br>/gi, "\n").replace(/&nbsp;/gi, " ").replace(/<span class="posthilit">/gi, "").replace(/<\/span>/gi, "").trim();
 
 		// remove space or tab at the beginning of lines
-		result = result.replace(/\n[ ]+/g, "\n");
-		result = result.replace(/\n\t+/g, "\n");
+		result = result.replace(/\n[ \t]+/g, "\n");
+
+		// decode HTML entities
+		result = result.replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&amp;/gi, "&");
 
 		// if the result is empty make it a valid pattern
 		if (result === "") {
