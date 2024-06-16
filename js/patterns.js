@@ -8058,8 +8058,14 @@ This file is part of LifeViewer
 			// end of pattern ! index
 			/** @type {number} */ endPatIndex = -1,
 
+			// end of line index 
+			/** @type {number} */ endLineIndex = -1,
+
+			// whether to add to title
+			/** @type {boolean} */ addToComments = true,
+
 			// current character
-			/** @type {string} */ current,
+			/** @type {string} */ current = "",
 
 			// whether decoded
 			/** @type {boolean} */ decoded = false,
@@ -8167,7 +8173,17 @@ This file is part of LifeViewer
 							// decode rule (size is ignored and computed from the read pattern)
 							index += this.decodeRule(pattern, source.substring(index), false, allocator);
 							sawRule = true;
+						} else {
+							// skip to end of line
+							endLineIndex = source.substring(index).indexOf("\n");
+							if (endLineIndex === -1) {
+								endLineIndex = source.substring(index).length;
+							}
+							index += endLineIndex;
 						}
+
+						// don't add #R lines to comments since they will be replaced by a valid RLE header
+						addToComments = false;
 						break;
 
 					case "\n":
@@ -8177,10 +8193,14 @@ This file is part of LifeViewer
 				}
 
 				// add to title
-				if (current === "\n") {
-					index += this.addToTitle(pattern, "#", source, index, decoded);
+				if (addToComments) {
+					if (current === "\n") {
+						index += this.addToTitle(pattern, "#", source, index, decoded);
+					} else {
+						index += this.addToTitle(pattern, "#" + current, source, index, decoded);
+					}
 				} else {
-					index += this.addToTitle(pattern, "#" + current, source, index, decoded);
+					addToComments = true;
 				}
 				break;
 

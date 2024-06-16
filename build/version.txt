@@ -1,3 +1,6 @@
+Build 1148
+- fixes to #R support
+
 Build 1147
 - improve RLE header detection (RLE header must have a space or = after x)
 - support #R in headerless RLE or Life 1.05 to define rule
