@@ -1,3 +1,7 @@
+Build 1147
+- improve RLE header detection (RLE header must have a space or = after x)
+- support #R in headerless RLE or Life 1.05 to define rule
+
 Build 1146
 - changed Advance Selection so the selection box is static
 - added Advance Selection and Advance Outside buttons

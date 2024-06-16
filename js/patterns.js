@@ -7675,8 +7675,13 @@ This file is part of LifeViewer
 			endIndex = source.length;
 		}
 
-		// decode any specified size
-		this.decodeSpecifiedSize(source, endIndex);
+		// determine if prefix is required (optional x = 1, y = 1, and rule =)
+		if (needPrefix) {
+			// decode any specified size
+			this.decodeSpecifiedSize(source, endIndex);
+		} else {
+			ruleIndex = -1;
+		}
 
 		// search for rule
 		if (ruleIndex === -1 || (ruleIndex > endIndex)) {
@@ -8152,9 +8157,17 @@ This file is part of LifeViewer
 						break;
 
 					case "P":
-					case "R":
 						// check for position
 						this.readPosition(source.substring(index), false);
+						break;
+
+					case "R":
+						// check for rule
+						if (!sawRule) {
+							// decode rule (size is ignored and computed from the read pattern)
+							index += this.decodeRule(pattern, source.substring(index), false, allocator);
+							sawRule = true;
+						}
 						break;
 
 					case "\n":
@@ -8179,7 +8192,7 @@ This file is part of LifeViewer
 
 			// other characters should be size and rule definition or bitmap start
 			default:
-				if (current === "x" && !sawRule) {
+				if (current === "x" && index < end && (source[index + 1] === " " || source[index + 1] === "=") && !sawRule) {
 					// decode rule (size is ignored and computed from the read pattern)
 					index += this.decodeRule(pattern, source.substring(index), true, allocator);
 					sawRule = true;
