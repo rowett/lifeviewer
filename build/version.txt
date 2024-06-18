@@ -1,3 +1,6 @@
+Build 1149
+- improve HTML entity handling
+
 Build 1148
 - fixes to #R support
 

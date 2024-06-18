@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1148,
+		/** @const {number} */ versionBuild : 1149,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -21053,6 +21053,14 @@ This file is part of LifeViewer
 		return false;
 	}
 
+	// replace HTML entities
+	/** @returns {string} */
+	function replaceHTMLEntities(/** @type {string} */ input) {
+		var	/** @type {string} */ result = input.replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&amp;/gi, "&");
+
+		return result;
+	}
+
 	// clean the pattern text
 	/** @returns {string} */
 	function cleanPattern(element) {
@@ -21063,7 +21071,7 @@ This file is part of LifeViewer
 		result = result.replace(/\n[ \t]+/g, "\n");
 
 		// decode HTML entities
-		result = result.replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&amp;/gi, "&");
+		result = replaceHTMLEntities(result);
 
 		// if the result is empty make it a valid pattern
 		if (result === "") {

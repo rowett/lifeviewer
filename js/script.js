@@ -39,14 +39,6 @@ This file is part of LifeViewer
 			/** @type {number} */ isNumber = 0,
 			/** @const {number} */ maxValue = 1 << 30;   // maximum unsigned value to cache
 
-		// check for html entities
-		if (source.indexOf("&") !== -1) {
-			source = source.replace(/&amp;/g, "&");
-			source = source.replace(/&lt;/g, "<");
-			source = source.replace(/&gt;/g, ">");
-			l = source.length;
-		}
-
 		// parse the source
 		while (i < l) {
 			v = source.charCodeAt(i);
