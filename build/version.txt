@@ -1,3 +1,6 @@
+Build 1150
+- fixed line break handling
+
 Build 1149
 - improve HTML entity handling
 

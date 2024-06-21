@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1149,
+		/** @const {number} */ versionBuild : 1150,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -21056,22 +21056,28 @@ This file is part of LifeViewer
 	// replace HTML entities
 	/** @returns {string} */
 	function replaceHTMLEntities(/** @type {string} */ input) {
-		var	/** @type {string} */ result = input.replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&amp;/gi, "&");
+		var	/** @type {string} */ result = input;
 
+		// keep processing the input string while it contains HTML entities
+		while (result.indexOf("&amp;") !== -1 || result.indexOf("&lt;") !== -1 || result.indexOf("&gt;") !== -1 || result.indexOf("&nbsp;") !== -1) {
+			result = result.replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&amp;/gi, "&").replace(/&nbsp;/gi, " ");
+		}
+
+		// return the transformed string
 		return result;
 	}
 
 	// clean the pattern text
 	/** @returns {string} */
 	function cleanPattern(element) {
+		// replace HTML entities
+		var	/** @type {string} */ result = replaceHTMLEntities(element.innerHTML);
+		
 		// remove HTML tags
-		var	/** @type {string} */ result = element.innerHTML.replace(/<br *\/>/gi, "\n").replace(/<br>/gi, "\n").replace(/&nbsp;/gi, " ").replace(/<span class="posthilit">/gi, "").replace(/<\/span>/gi, "").trim();
+		result = result.replace(/<br *\/>/gi, "\n").replace(/<br>/gi, "\n").replace(/&nbsp;/gi, " ").replace(/<span class="posthilit">/gi, "").replace(/<\/span>/gi, "").trim();
 
 		// remove space or tab at the beginning of lines
 		result = result.replace(/\n[ \t]+/g, "\n");
-
-		// decode HTML entities
-		result = replaceHTMLEntities(result);
 
 		// if the result is empty make it a valid pattern
 		if (result === "") {
