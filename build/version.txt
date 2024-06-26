@@ -1,3 +1,6 @@
+Build 1151
+- fixed Identify with LtL/HROT >2 state patterns
+
 Build 1150
 - fixed line break handling
 

@@ -730,6 +730,8 @@ This file is part of LifeViewer
 						}
 						if (state === maxGenState) {
 							population += 1;
+						}
+						if (state > deadState) {
 							if (x < minX1) {
 								minX1 = x;
 							}
@@ -955,6 +957,8 @@ This file is part of LifeViewer
 						}
 						if (state === maxGenState) {
 							population += 1;
+						}
+						if (state > deadState) {
 							if (x < minX1) {
 								minX1 = x;
 							}
@@ -4549,6 +4553,8 @@ This file is part of LifeViewer
 				colourTileHistoryGrid[bottomY >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
 				if (state === maxGenState) {
 					population += 1;
+				}
+				if (state > deadState) {
 					minX1 = leftX;
 					maxX1 = leftX;
 					minY1 = bottomY;
@@ -4626,6 +4632,8 @@ This file is part of LifeViewer
 						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 						if (state === maxGenState) {
 							population += 1;
+						}
+						if (state > deadState) {
 							if (x < minX1) {
 								minX1 = x;
 							}
@@ -4679,6 +4687,8 @@ This file is part of LifeViewer
 						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 						if (state === maxGenState) {
 							population += 1;
+						}
+						if (state > deadState) {
 							if (x < minX1) {
 								minX1 = x;
 							}
@@ -4767,6 +4777,8 @@ This file is part of LifeViewer
 						colourTileHistoryGrid[y >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
 						if (state === maxGenState) {
 							population += 1;
+						}
+						if (state > deadState) {
 							if (y < minY1) {
 								minY1 = y;
 							}
@@ -4820,6 +4832,8 @@ This file is part of LifeViewer
 						colourTileHistoryGrid[y >> 4][leftX >> 8] |= (1 << (~(leftX >> 4) & 15));
 						if (state === maxGenState) {
 							population += 1;
+						}
+						if (state > deadState) {
 							if (y < minY1) {
 								minY1 = y;
 							}
@@ -4925,6 +4939,8 @@ This file is part of LifeViewer
 							rowAlive = true;
 							if (state === maxGenState) {
 								population += 1;
+							}
+							if (state > deadState) {
 								liveRowAlive = true;
 								if (x < minX1) {
 									minX1 = x;
@@ -4983,6 +4999,8 @@ This file is part of LifeViewer
 							rowAlive = true;
 							if (state === maxGenState) {
 								population += 1;
+							}
+							if (state > deadState) {
 								liveRowAlive = true;
 								if (x < minX1) {
 									minX1 = x;
@@ -5150,6 +5168,8 @@ This file is part of LifeViewer
 								rowAlive = true;
 								if (state === maxGenState) {
 									population += 1;
+								}
+								if (state > deadState) {
 									liveRowAlive = true;
 									if (jpmincol < minX1) {
 										minX1 = jpmincol;
@@ -5206,6 +5226,8 @@ This file is part of LifeViewer
 								rowAlive = true;
 								if (state === maxGenState) {
 									population += 1;
+								}
+								if (state > deadState) {
 									liveRowAlive = true;
 									if (jpmincol < minX1) {
 										minX1 = jpmincol;
