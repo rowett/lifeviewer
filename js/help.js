@@ -180,7 +180,7 @@ This file is part of LifeViewer
 					ctx.imageSmoothingEnabled = true;
 					ctx.translate(x, y - (height >> 1) - 1);
 					ctx.scale(height / iconSize, height / iconSize);
-					ctx.drawImage(view.engine.cellIconImage, 0, (iconSize + 1) * state, iconSize, iconSize, 0, 0, iconSize, iconSize);
+					ctx.drawImage(view.engine.cellIconCanvas, 0, iconSize * state, iconSize, iconSize, 0, 0, iconSize, iconSize);
 					ctx.restore();
 				} else {
 					// draw the icon shadow
@@ -1744,22 +1744,27 @@ This file is part of LifeViewer
 			} else {
 				// draw the @ICONS information
 				y = this.renderHelpLine(view, "Icons", "Size\tNumber\tColours\tGrayScale", ctx, x, y, height, helpLine);
-				for (i = 0; i < view.engine.ruleTableIcons.length; i += 1) {
-					value = view.engine.ruleTableIcons[i].width;
-					itemName = value + "x" + value + "\t" + view.engine.ruleTableIcons[i].height / value + "\t" + view.engine.ruleTableIcons[i].numColours + "\t" + (view.engine.ruleTableIcons[i].greyScale ? "Yes" : "No");
-					y = this.renderHelpLine(view, "  Set " + i, itemName, ctx, x, y, height, helpLine);
+
+				// find the largest defined set
+				i = 0;
+				iconWidth = view.engine.ruleTableIcons[i].width;
+				iconHeight = view.engine.ruleTableIcons[i].height;
+				for (j = 0; j < view.engine.ruleTableIcons.length; j += 1) {
+					if (view.engine.ruleTableIcons[j].width > iconWidth) {
+						i = j;
+						iconWidth = view.engine.ruleTableIcons[j].width;
+						iconHeight = view.engine.ruleTableIcons[j].height;
+					}
 				}
 
+				itemName = iconWidth + "x" + iconWidth + "\t" + iconHeight / iconWidth + "\t" + view.engine.ruleTableIcons[i].numColours + "\t" + (view.engine.ruleTableIcons[i].greyScale ? "Yes" : "No");
+				y = this.renderHelpLine(view, " ", itemName, ctx, x, y, height, helpLine);
+
 				// draw the Icons
-				if (view.engine.cellIconImage) {
-					iconHeight = view.engine.ruleTableIcons[0].height;
-					iconWidth = view.engine.ruleTableIcons[0].width;
-	
-					for (j = 0; j < iconHeight / iconWidth; j += 1) {
-						this.renderIcon(view, j, iconWidth, ctx, x + view.tabs[0] * xScale, y, height, helpLine);
-						itemName = view.getStateName(j + 1);
-						y = this.renderHelpLine(view, "Icon " + String(j + 1), "      " + itemName, ctx, x, y, height, helpLine);
-					}
+				for (j = 0; j < iconHeight / iconWidth; j += 1) {
+					this.renderIcon(view, j, view.engine.cellIconCanvas.width, ctx, x + view.tabs[0] * xScale, y, height, helpLine);
+					itemName = view.getStateName(j + 1);
+					y = this.renderHelpLine(view, "Icon " + String(j + 1), "      " + itemName, ctx, x, y, height, helpLine);
 				}
 			}
 		}
@@ -2023,8 +2028,8 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, " ", "Partitioned cellular automata (PCA),", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "[R]History, [R]Super, [R]Investigator", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " ", "and Non-Deterministic", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE, @COLORS and", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, " ", "@NAMES)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Repository", "RuleTable (@TABLE, @TREE, @COLORS,", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " ", "@ICONS and @NAMES)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "BoundedGrid", "Plane, Torus, Klein, Cross-surface and Sphere", ctx, x, y, height, helpLine);
 
 		y = this.renderHelpLine(view, "Viewers", numViewers, ctx, x, y, height, helpLine);

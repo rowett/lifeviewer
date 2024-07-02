@@ -8596,7 +8596,9 @@ This file is part of LifeViewer
 			/** @type {boolean} */ isGreyScale = true,
 			/** @type {number} */ builtIn = PatternConstants.ruleTableIconNone,
 			/** @type {number} */ i = 0,
-			iconData = null,
+			/** @type {number} */ j = 0,
+			/** @type {Uint16Array} */ iconData = null,
+			/** @type {Uint16Array} */ temp = null,
 			/** @type {Array} */ xpmSections = [],
 			colourList = {},
 			colourValues = null;
@@ -8673,25 +8675,25 @@ This file is part of LifeViewer
 								case "circles":
 									builtIn = PatternConstants.ruleTableIconCircles;
 									colourList = {};
-									iconData = [];
+									iconData = new Uint16Array(0);
 									colourValues = [];
 									break;
 								case "diamonds":
 									builtIn = PatternConstants.ruleTableIconDiamonds;
 									colourList = {};
-									iconData = [];
+									iconData = new Uint16Array(0);
 									colourValues = [];
 									break;
 								case "hexagons":
 									builtIn = PatternConstants.ruleTableIconHexagons;
 									colourList = {};
-									iconData = [];
+									iconData = new Uint16Array(0);
 									colourValues = [];
 									break;
 								case "triangles":
 									builtIn = PatternConstants.ruleTableIconTriangles;
 									colourList = {};
-									iconData = [];
+									iconData = new Uint16Array(0);
 									colourValues = [];
 									break;
 							}
@@ -8763,6 +8765,19 @@ This file is part of LifeViewer
 									if (colourList[colourChar] === undefined) {
 										valid = false;
 									} else {
+										// check if more icons are present than specified
+										if (lineNo >= height + numColours) {
+											console.log("LifeViewer: unexpected icon data found after icon", height / width);
+
+											// add space for a new icon
+											temp = iconData;
+											height += width;
+											iconData = new Uint16Array(width * height);
+
+											for (j = 0; j < temp.length; j += 1) {
+												iconData[j] = temp[j];
+											}
+										}
 										iconData[(lineNo - numColours) * width + i] = colourList[colourChar];
 									}
 									i += 1;

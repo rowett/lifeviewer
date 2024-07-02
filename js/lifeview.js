@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1151,
+		/** @const {number} */ versionBuild : 1152,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1011,6 +1011,9 @@ This file is part of LifeViewer
 		// whether displaying clipboard settings
 		/** @type {boolean} */ this.showClipboardSettings = false;
 
+		// whether to display icons
+		/** @type {boolean} */ this.useIcons = false;
+
 		// whether to sync copy with external clipboard
 		/** @type {boolean} */ this.copySyncExternal = false;
 
@@ -1692,6 +1695,9 @@ This file is part of LifeViewer
 
 		// copy sync toggle
 		/** @type {MenuItem} */ this.copySyncToggle = null;
+
+		// icon toggle
+		/** @type {MenuItem} */ this.iconToggle = null;
 
 		// navigation menu toggle
 		/** @type {MenuItem} */ this.navToggle = null;
@@ -6938,30 +6944,6 @@ This file is part of LifeViewer
 		// update the infobar
 		me.updateInfoBar();
 
-		// TBD - remove
-		/*
-		if (me.engine.cellIconImage) {
-			me.mainContext.save();
-			me.mainContext.imageSmoothingEnabled = true;
-			me.mainContext.scale(1, 1);
-			me.mainContext.translate(128, 45);
-			me.mainContext.drawImage(me.engine.cellIconImage, 0, 0);
-			me.mainContext.restore();
-			me.mainContext.save();
-			me.mainContext.imageSmoothingEnabled = true;
-			me.mainContext.translate(160, 45);
-			me.mainContext.scale(0.5, 0.5);
-			me.mainContext.drawImage(me.engine.cellIconImage, 0, 0);
-			me.mainContext.restore();
-			me.mainContext.save();
-			me.mainContext.imageSmoothingEnabled = true;
-			me.mainContext.translate(192, 45);
-			me.mainContext.scale(0.25, 0.25);
-			me.mainContext.drawImage(me.engine.cellIconImage, 0, 0);
-			me.mainContext.restore();
-		}
-		*/
-
 		// hide the UI controls if help or errors are displayed
 		me.updateUIForHelp(me.displayHelp !== 0 || me.displayErrors !== 0);
 
@@ -7176,7 +7158,7 @@ This file is part of LifeViewer
 		this.waypointsIndicator.deleted = hide;
 		this.loopIndicator.deleted = hide;
 		this.modeList.deleted = hide;
-		this.copySyncToggle.deleted = hide;
+		this.iconToggle.deleted = hide;
 
 		// graph controls
 		shown = hide || !this.popGraph || this.drawing || this.selecting || settingsMenuOpen;
@@ -7253,6 +7235,7 @@ This file is part of LifeViewer
 		this.copyAsMAPButton.deleted = shown;
 		this.copyNeighbourhoodButton.deleted = shown;
 		this.pasteToSelectionButton.deleted = shown;
+		this.copySyncToggle.deleted = shown;
 		this.copyWithCommentsButton.deleted = shown;
 		this.copyPositionButton.deleted = shown;
 		this.copyViewButton.deleted = shown;
@@ -7597,6 +7580,13 @@ This file is part of LifeViewer
 			} else {
 				this.viewMenu.deleted = false;
 			}
+		}
+
+		// lock use icons if icons not available
+		if (this.engine.cellIconCanvas === null) {
+			this.iconToggle.locked = true;
+		} else {
+			this.iconToggle.locked = false;
 		}
 
 		// lock nav toggle if window height is too short
@@ -9145,6 +9135,16 @@ This file is part of LifeViewer
 	// shrink selection button
 	View.prototype.shrinkSelectionPressed = function(/** @type {View} */ me) {
 		me.autoShrinkSelection(me);
+	};
+
+	// display cells as icons 
+	/** @returns {Array<boolean>} */
+	View.prototype.viewIconList = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		if (change) {
+			me.useIcons = newValue[0];
+		}
+
+		return [me.useIcons];
 	};
 
 	// copy sync with external clipboard
@@ -17745,6 +17745,10 @@ This file is part of LifeViewer
 		this.pasteToSelectionButton = this.viewMenu.addButtonItem(this.pasteToSelectionPressed, Menu.middle, -100, 100, 180, 40, "Paste To Seln");
 		this.pasteToSelectionButton.toolTip = "paste to selection [" + this.controlKeyText + " Shift V]";
 
+		// copy sync extern toggle
+		this.copySyncToggle = this.viewMenu.addListItem(this.viewCopySyncList, Menu.middle, 100, 100, 180, 40, ["External Sync"], [this.copySyncExternal], Menu.multi);
+		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard [" + this.altKeyText + " S]"];
+
 		// previous universe button
 		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -100, 120, 40, "Prev");
 		this.prevUniverseButton.toolTip = "go to previous universe [Page Up]";
@@ -18012,10 +18016,10 @@ This file is part of LifeViewer
 		this.redoButton.icon = this.iconManager.icon("redo");
 		this.redoButton.toolTip = "redo [" + this.controlKeyText + " Y]";
 
-		// add the copy sync toggle
-		this.copySyncToggle = this.viewMenu.addListItem(this.viewCopySyncList, Menu.northEast, -130, 0, 40, 40, ["Sync"], [this.copySyncExternal], Menu.multi);
-		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard [" + this.altKeyText + " S]"];
-		this.copySyncToggle.setFont("15px Arial");
+		// add the icon toggle
+		this.iconToggle = this.viewMenu.addListItem(this.viewIconList, Menu.northEast, -130, 0, 40, 40, ["Icon"], [this.useIcons], Menu.multi);
+		this.iconToggle.toolTip = ["toggle icons [" + this.altKeyText + " I]"];
+		this.iconToggle.setFont("15px Arial");
 
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
@@ -18532,6 +18536,9 @@ This file is part of LifeViewer
 		this.engine.originX = 0;
 		this.engine.originY = 0;
 		this.engine.originZ = 1;
+
+		// clear autoidentify
+		this.autoIdentify = false;
 
 		// clear autofit
 		this.autoFit = false;
@@ -19411,6 +19418,9 @@ This file is part of LifeViewer
 			// process icons if loaded
 			if (pattern.ruleTableIcons) {
 				me.engine.processIcons(pattern.ruleTableIcons);
+			} else {
+				// otherwise clear any previous icons
+				me.engine.cellIconCanvas = null;
 			}
 
 			// check if the rule is HROT
@@ -20848,6 +20858,10 @@ This file is part of LifeViewer
 
 		// set the y direction UI control
 		me.yDirectionButton.current = [me.yUp];
+
+		// turn off icon display
+		me.useIcons = false;
+		me.iconToggle.current = me.viewIconList([me.useIcons], true, me);
 
 		// check for chrome bug
 		me.checkForChromeBug();

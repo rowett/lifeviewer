@@ -1,3 +1,6 @@
+Build 1152
+- fix AutoIdentify persisting across viewers
+
 Build 1151
 - fixed Identify with LtL/HROT >2 state patterns
 

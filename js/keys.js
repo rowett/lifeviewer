@@ -307,6 +307,14 @@ This file is part of LifeViewer
 						}
 						break;
 
+					// i for toggle icons
+					case 73:
+						// toggle icons
+						if (!me.iconToggle.locked) {
+							me.iconToggle.current = me.viewIconList([!me.useIcons], true, me);
+						}
+						break;
+
 					// j for convert to [R]Standard
 					case 74:
 						if (me.engine.isLifeHistory || me.engine.isSuper) {
@@ -358,7 +366,7 @@ This file is part of LifeViewer
 						}
 						break;
 
-					// o for toggle stop
+					// p for toggle stop
 					case 80:
 						// toggle stop
 						if (me.stopGeneration !== -1) {
@@ -595,7 +603,7 @@ This file is part of LifeViewer
 
 			// return for play/pause
 			case 13:
-				if (me.isPasting || me.evolvingPaste) {
+				if (me.isPasting) {
 					me.pasteFromEnter(me);
 				} else {
 					// do not play if view only mode
@@ -1847,7 +1855,7 @@ This file is part of LifeViewer
 						me.displayErrors = 0;
 					} else {
 						// check if pasting
-						if (me.isPasting || me.evolvingPaste) {
+						if (me.isPasting) {
 							me.cancelPaste(me);
 						} else {
 							// check for pick mode
@@ -1882,7 +1890,7 @@ This file is part of LifeViewer
 							me.displayErrors = 0;
 						} else {
 							// check if pasting
-							if (me.isPasting || me.evolvingPaste) {
+							if (me.isPasting) {
 								me.cancelPaste(me);
 							} else {
 								if (me.pickMode) {

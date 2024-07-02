@@ -433,9 +433,6 @@ This file is part of LifeViewer
 		// whether snapshot save is required
 		/** @type {boolean} */ this.snapshotNeeded = false;
 
-		// image for cell icons
-		/** @type {HTMLImageElement} */ this.cellIconImage = null;
-
 		// canvas for cell icons
 		/** @type {HTMLCanvasElement} */ this.cellIconCanvas = null;
 
@@ -523,6 +520,10 @@ This file is part of LifeViewer
 		/** @type {CanvasRenderingContext2D} */ this.sContext = null;
 		/** @type {ImageData} */ this.sImageData = null;
 		/** @type {Uint32Array} */ this.sData32 = null;
+
+		// icon canvas
+		/** @type {HTMLCanvasElement} */ this.iconCanvas = null;
+		/** @type {CanvasRenderingContext2D} */ this.iconContext = null;
 
 		// snow flakes (x, y, dy)
 		/** @type {Uint16Array} */ this.snowX = null;
@@ -1401,6 +1402,33 @@ This file is part of LifeViewer
 		}
 	};
 
+	// apply greyscale to a state colour
+	/** @returns {number} */
+	Life.prototype.applyGreyScale = function(/** @type {number} */ greyScale, /** @type {number} */ stateColour) {
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ r = 0,
+			/** @type {number} */ g = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ l = 0;
+
+		// get state colour r g b components
+		r = (stateColour >> 16);
+		g = (stateColour >> 8) & 255;
+		b = stateColour & 255;
+
+		// get greyscale level as a value from 0 to 1
+		l = (greyScale & 255) / 255;
+
+		// apply greyscale level
+		r = (r * l) | 0;
+		g = (g * l) | 0;
+		b = (b * l) | 0;
+
+		result = (r << 16) | (g <<  8) | b;
+
+		return result;
+	};
+
 	// process icons
 	Life.prototype.processIcons = function(/** @type {Array} */ icons) {
 		var	/** @type {number} */ i = 0,
@@ -1410,34 +1438,50 @@ This file is part of LifeViewer
 			/** @type {number} */ y = 0,
 			/** @type {number} */ col = 0,
 			/** @type {number} */ rgb = 0,
+			/** @type {number} */ stateCol = 0,
+			/** @type {number} */ stateZeroCol = this.ruleTreeColours[0],
 			/** @type {number} */ iconSize = 0,
 			/** @type {number} */ numIcons = 0,
+			/** @type {number} */ mag = 0,
 			/** @type {Uint16Array} */ iconData = null,
 			/** @type {Uint32Array} */ iconColours = null,
+			/** @type {boolean} */ greyScale = false,
 			/** @type {ImageData} */ data = null,
 			/** @type {Uint32Array} */ data32 = null,
-			/** @type {CanvasRenderingContext2D} */ ctx = null;
+			/** @type {CanvasRenderingContext2D} */ ctx = null,
+			/** @type {HTMLCanvasElement} */ tempCanvas = null,
+			/** @type {CanvasRenderingContext2D} */ tempCtx = null;
 
 		// clear previous Icon Image and Canvas
-		this.cellIconImage = null;
 		this.cellIconCanvas = null;
 
 		// get the icon definitions
 		this.ruleTableIcons = icons;
 
-		// get the size and number of icons
-		iconSize = icons[0].width;
-		numIcons = icons[0].height / iconSize;
-		iconData = icons[0].iconData;
-		iconColours = icons[0].colours;
+		// find the largest icon size specified
+		x = 0;
+		y = icons[x].width;
+		for (i = 1; i < icons.length; i += 1) {
+			if (icons[i].width > y) {
+				x = i;
+				y = icons[i].width;
+			}
+		}
 
-		// for now only process size 31 icons TBD
-		if (numIcons > 0 && iconSize === 31) {
+		// get the size and number of icons
+		iconSize = icons[x].width;
+		numIcons = icons[x].height / iconSize;
+		iconData = icons[x].iconData;
+		iconColours = icons[x].colours;
+		greyScale = icons[x].greyScale;
+
+		// process the largest icons
+		if (numIcons > 0) {
 			// create the cell icon canvas if it doesn't exist
 			if (this.cellIconCanvas === null) {
 				this.cellIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
-				this.cellIconCanvas.width = 32;
-				this.cellIconCanvas.height = 32 * numIcons;
+				this.cellIconCanvas.width = iconSize + 1;
+				this.cellIconCanvas.height = (iconSize + 1) * numIcons;
 			}
 
 			// get the context
@@ -1449,6 +1493,13 @@ This file is part of LifeViewer
 			src = 0;
 			dst = 0;
 			for (i = 0; i < numIcons; i += 1) {
+				// check if greyscale set
+				if (greyScale) {
+					// lookup the state colour
+					stateCol = this.ruleTreeColours[i + 1];
+				}
+
+				// process each pixel in the icon
 				for (y = 0; y < iconSize; y += 1) {
 					for (x = 0; x < iconSize; x += 1) {
 						// get the next source pixel colour number
@@ -1457,6 +1508,17 @@ This file is part of LifeViewer
 
 						// lookup the rgb for this colour
 						rgb = iconColours[col];
+
+						// check if greyscale set
+						if (greyScale) {
+							if (rgb === 0) {
+								// black pixels are replaced by state 0 colour
+								rgb = stateZeroCol;
+							} else {
+								// other pixels control current state colour transparency
+								rgb = this.applyGreyScale(rgb, stateCol);
+							}
+						}
 
 						// write the rgb to the canvas
 						data32[dst] = (255 << 24) | ((rgb & 255) << 16) | (rgb & 0xff00) | (rgb >> 16);
@@ -1478,11 +1540,31 @@ This file is part of LifeViewer
 			// write the image data back to the canvas
 			ctx.putImageData(data, 0, 0);
 
-			// create the image from the canvas
-			if (this.cellIconImage === null) {
-				this.cellIconImage = new Image();
+			// get the magnification factor to scale largest icons to 32x32
+			mag = 32 / (iconSize + 1);
+			if (mag > 1) {
+				// create a new canvas at the 32x32 icon size
+				tempCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+				tempCanvas.width = (iconSize + 1) * mag;
+				tempCanvas.height = (iconSize + 1) * mag * numIcons;
+				tempCtx = /** @type {!CanvasRenderingContext2D} */ (tempCanvas.getContext("2d"));
+
+				// draw at scale onto the new canvas
+				tempCtx.imageSmoothingEnabled = false;
+				tempCtx.drawImage(ctx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height, 0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
+
+				// save the new canvas
+				this.cellIconCanvas = tempCanvas;
 			}
-			this.cellIconImage.src = this.cellIconCanvas.toDataURL("image/png");
+
+			// create the icon drawing canvas
+			if (this.iconCanvas === null) {
+				this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+			}
+			this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
+			this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
+
+			this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 		}
 	};
 
@@ -8692,9 +8774,7 @@ This file is part of LifeViewer
 			/** @type {Array<Uint8Array>} */ currentNextGrid = this.nextGrid,
 			/** @type {Array<Uint8Array>} */ currentColourGrid = this.colourGrid,
 			/** @type {Array<Uint8Array>} */ currentNextColourGrid = this.nextColourGrid,
-			/** @type {Array<Uint8Array>} */ currentSmallColourGrid = this.smallColourGrid,
 			/** @type {Array<Uint8Array>} */ currentOverlayGrid = this.overlayGrid,
-			/** @type {Array<Uint8Array>} */ currentSmallOverlayGrid = this.smallOverlayGrid,
 			/** @type {Array<Uint16Array>} */ currentMaskGrid = this.state6Mask,
 			/** @type {Array<Uint16Array>} */ currentMaskAliveGrid = this.state6Alive,
 			/** @type {Array<Uint16Array>} */ currentMaskCellsGrid = this.state6Cells,
@@ -8847,9 +8927,7 @@ This file is part of LifeViewer
 				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.grid, currentGrid);
 				this.copyGridToCenter(currentHeight, yOffset, xOffset >> 3, this.nextGrid, currentNextGrid);
 				this.copyGridToCenter(currentHeight, yOffset, xOffset, this.colourGrid, currentColourGrid);
-
 				// ignore small colour grid it will be generated next time it is needed
-				//this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallColourGrid, currentSmallColourGrid);
 
 				if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
 					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.nextColourGrid, currentNextColourGrid);
@@ -8860,12 +8938,11 @@ This file is part of LifeViewer
 				if (this.initList) {
 					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.initList, currentInitList);
 				}
-				if (currentOverlayGrid && currentSmallOverlayGrid) {
+				if (currentOverlayGrid) {
 					this.copyGridToCenter(currentHeight, yOffset, xOffset, this.overlayGrid, currentOverlayGrid);
-
 					// ignore small overlay grid it will be generated next time it is needed
-					//this.copyGridToCenter(currentHeight, yOffset, xOffset, this.smallOverlayGrid, currentSmallOverlayGrid);
 				}
+
 				if (currentMaskGrid && currentMaskAliveGrid && currentMaskCellsGrid) {
 					this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Mask, currentMaskGrid);
 					this.copyGridToCenter(currentHeight, yOffset, xOffset >> 4, this.state6Alive, currentMaskAliveGrid);
@@ -9190,6 +9267,14 @@ This file is part of LifeViewer
 
 			// resize the scale canvas to double the drawing canvas plus one zoom cell
 			this.initPretty();
+
+			// resize the icon drawing canvas if it exists
+			if (this.iconCanvas !== null) {
+				this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
+				this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
+
+				this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
+			}
 		}
 	};
 
@@ -10620,7 +10705,7 @@ This file is part of LifeViewer
 			/** @type {number} */ gridLineRaw = this.gridLineRaw,
 			/** @type {number} */ gridLineBoldRaw = this.gridLineBoldRaw,
 			/** @type {Array<string>} */ colourStrings = this.cellColourStrings,
-			/** @type {boolean} */ needStrings = (this.isHex && !this.forceRectangles) || (this.isTriangular && !this.forceRectangles),
+			/** @type {boolean} */ needStrings = (this.isHex && !this.forceRectangles) || (this.isTriangular && !this.forceRectangles) || this.cellIconCanvas !== null,
 			/** @type {number} */ alpha = 255,
 			/** @type {number} */ i = 0;
 
@@ -46690,12 +46775,17 @@ This file is part of LifeViewer
 		if ((boundLeft | 0) < 0 || (boundRight | 0) >= this.width || (boundBottom | 0) < 0 || (boundTop | 0) >= this.height) {
 			// check angle
 			if (this.camAngle === 0) {
-				// render with clipping and no rotation
-				if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1) {
-					this.createPixelColours(1);
-					this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
+				// check for icons
+				if (this.camZoom >= 4 && this.cellIconCanvas !== null && this.view.useIcons) {
+					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars); // TBD
 				} else {
-					this.renderGridProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+					// render with clipping and no rotation
+					if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1) {
+						this.createPixelColours(1);
+						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
+					} else {
+						this.renderGridProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+					}
 				}
 			} else {
 				// render with clipping and rotation
@@ -46704,17 +46794,123 @@ This file is part of LifeViewer
 		} else {
 			// check angle
 			if (this.camAngle === 0) {
-				// render with no clipping and rotation
-				if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1) {
-					this.createPixelColours(1);
-					this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
+				// check for icons
+				if (this.camZoom >= 4 && this.cellIconCanvas !== null && this.view.useIcons) {
+					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars); // TBD
 				} else {
-					this.renderGridProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+					// render with no clipping and rotation
+					if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1) {
+						this.createPixelColours(1);
+						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
+					} else {
+						this.renderGridProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+					}
 				}
 			} else {
 				this.renderGridProjectionNoClip(bottomGrid, layersGrid, mask, drawingSnow);
 			}
 		}
+	};
+
+	// render the grid using icons
+	Life.prototype.renderGridProjectionIcons = function(/** @type {Array<Uint8Array>} */ grid, /** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {boolean} */ drawingSnow, /** @type {boolean} */ drawingStars) {
+		var	/** @type {HTMLCanvasElement} */ iconCanvas = this.iconCanvas,
+			/** @type {CanvasRenderingContext2D} */ iconContext = this.iconContext,
+			/** @type {Array<string>} */ colourStrings = this.cellColourStrings,
+			/** @type {Uint8Array} */ gridRow = null,
+			/** @type {number} */ width = rightX - leftX,
+			/** @type {number} */ height = topY - bottomY,
+			/** @type {number} */ yZoom = this.getYZoom(this.camZoom),
+			/** @type {number} */ dx = leftX < 0 ? -(leftX - Math.ceil(leftX)) * this.camZoom : -(leftX - Math.floor(leftX)) * this.camZoom,
+			/** @type {number} */ dy = bottomY < 0 ? -(bottomY - Math.ceil(bottomY)) * yZoom : -(bottomY - Math.floor(bottomY)) * yZoom,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ maxIcon = this.cellIconCanvas.height / this.cellIconCanvas.width,
+			/** @type {number} */ maxGridSize = this.maxGridSize,
+			/** @const {number} */ widthMask = this.width - 1,
+			/** @const {number} */ heightMask = this.height - 1,
+			/** @type {number} */ boundaryCol = this.boundaryColour,
+			/** @type {number} */ xg = this.width,
+			/** @type {number} */ yg = this.height,
+			/** @type {number} */ xadj = 0,
+			/** @type {number} */ yadj = 0,
+			/** @type {string} */ boundaryRGB = "";
+
+		// compute the x and y adjustments for full grid size
+		while (xg < maxGridSize) {
+			xadj += xg >> 1;
+			xg <<= 1;
+		}
+
+		while (yg < maxGridSize) {
+			yadj += yg >> 1;
+			yg <<= 1;
+		}
+
+		// align coordinates size to integers
+		bottomY |= 0;
+		leftX |= 0;
+		width = (width | 0) + 2;
+		height = (height | 0) + 2;
+		rightX = leftX + width;
+		topY = bottomY + height;
+
+		// set background colour and fill canvas with it so we don't need to draw state 0 cells individually
+		iconContext.fillStyle = colourStrings[0];
+		iconContext.fillRect(0, 0, iconCanvas.width, iconCanvas.height);
+
+		// get the boundary cell colour
+		boundaryRGB = "rgb(" + (boundaryCol & 255) + "," + ((boundaryCol >> 8) & 255) + "," + ((boundaryCol >> 16) & 255) + ")";
+
+		// draw each row of cells
+		j = 0;
+		iconContext.imageSmoothingEnabled = true;
+		var scale = this.camZoom;
+
+		for (y = bottomY; y < topY; y += 1) {
+			if ((y & heightMask) === y) {
+				gridRow = grid[y];
+			}
+
+			// draw each cell on the row
+			i = 0;
+			for (x = leftX; x < rightX; x += 1) {
+				// check if the cell is on the maximum grid
+				if (x + xadj < 0 || x + xadj >= maxGridSize || y + yadj < 0 || y + yadj >= maxGridSize) {
+					iconContext.fillStyle = boundaryRGB;
+					iconContext.fillRect(i * scale, j * scale, scale, scale);
+				} else {
+					// check if the cell is on the current allocated grid
+					if (!(((x & widthMask) !== x) || ((y & heightMask) !== y))) {
+						// get the cell state
+						state = gridRow[x];
+						if (state > 0) {
+							// check if there is a state for the icon
+							if (state > maxIcon) {
+								// draw filled square in state colour
+								iconContext.fillStyle = colourStrings[state];
+								iconContext.fillRect(i * scale, j * scale, scale, scale);
+							} else {
+								// draw icon
+								iconContext.drawImage(this.cellIconCanvas, 0, (state - 1) * 32, 31, 31, (i * scale) | 0, (j * scale) | 0, scale, scale);
+							}
+						}
+					}
+				}
+				i += 1;
+			}
+			j += 1;
+		}
+		iconContext.imageSmoothingEnabled = false;
+
+		// draw on the display
+		this.context.drawImage(iconCanvas, 0, 0, width * this.camZoom, height * yZoom, dx, dy, width * this.camZoom, height * yZoom);
+
+		// no need to draw the grid since it's already been rendered and there are no overlays (snow, stars, gridlines)
+		this.doDrawGrid = false;
 	};
 
 	// render the grid using anti-aliasing
@@ -46731,8 +46927,8 @@ This file is part of LifeViewer
 			/** @type {number} */ width = rightX - leftX,
 			/** @type {number} */ height = topY - bottomY,
 			/** @type {number} */ yZoom = this.getYZoom(this.camZoom),
-			/** @type {number} */ dx = -(leftX - Math.floor(leftX)) * this.camZoom,
-			/** @type {number} */ dy = -(bottomY - Math.floor(bottomY)) * yZoom,
+			/** @type {number} */ dx = leftX < 0 ? -(leftX - Math.ceil(leftX)) * this.camZoom : -(leftX - Math.floor(leftX)) * this.camZoom,
+			/** @type {number} */ dy = bottomY < 0 ? -(bottomY - Math.ceil(bottomY)) * yZoom : -(bottomY - Math.floor(bottomY)) * yZoom,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
