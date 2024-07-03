@@ -46777,7 +46777,7 @@ This file is part of LifeViewer
 			if (this.camAngle === 0) {
 				// check for icons
 				if (this.camZoom >= 4 && this.cellIconCanvas !== null && this.view.useIcons) {
-					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars); // TBD
+					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
 					// render with clipping and no rotation
 					if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1) {
@@ -46796,7 +46796,7 @@ This file is part of LifeViewer
 			if (this.camAngle === 0) {
 				// check for icons
 				if (this.camZoom >= 4 && this.cellIconCanvas !== null && this.view.useIcons) {
-					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars); // TBD
+					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
 					// render with no clipping and rotation
 					if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1) {
@@ -46837,7 +46837,8 @@ This file is part of LifeViewer
 			/** @type {number} */ yg = this.height,
 			/** @type {number} */ xadj = 0,
 			/** @type {number} */ yadj = 0,
-			/** @type {string} */ boundaryRGB = "";
+			/** @type {string} */ boundaryRGB = "",
+			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid();
 
 		// compute the x and y adjustments for full grid size
 		while (xg < maxGridSize) {
@@ -46909,8 +46910,22 @@ This file is part of LifeViewer
 		// draw on the display
 		this.context.drawImage(iconCanvas, 0, 0, width * this.camZoom, height * yZoom, dx, dy, width * this.camZoom, height * yZoom);
 
-		// no need to draw the grid since it's already been rendered and there are no overlays (snow, stars, gridlines)
-		this.doDrawGrid = false;
+		// update the image data if further rendering is required
+		if (drawingSnow || drawingStars || drawGridLines) {
+			// update the image data array from the rendered image
+			this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
+			this.data32 = new Uint32Array(this.imageData.data.buffer);
+
+			// draw snow if enabled
+			if (drawingSnow) {
+				this.drawSnow();
+			}
+
+			this.drawGridLines();
+		} else {
+			// no need to draw the grid since it's already been rendered and there are no overlays (snow, stars, gridlines)
+			this.doDrawGrid = false;
+		}
 	};
 
 	// render the grid using anti-aliasing

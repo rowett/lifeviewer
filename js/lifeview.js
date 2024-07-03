@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1152,
+		/** @const {number} */ versionBuild : 1153,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -18260,7 +18260,7 @@ This file is part of LifeViewer
 			}
 
 			// setup the 2d drawing context
-			this.mainContext = /** @type {!CanvasRenderingContext2D} */ (this.mainCanvas.getContext("2d", {alpha: false}));
+			this.mainContext = /** @type {!CanvasRenderingContext2D} */ (this.mainCanvas.getContext("2d", {alpha: false, "willReadFrequently": true}));
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;
@@ -18491,6 +18491,9 @@ This file is part of LifeViewer
 
 		// clear disable snow
 		this.snowDisabled = false;
+
+		// disable icons
+		this.useIcons = false;
 
 		// reset rainbow mode
 		this.engine.rainbow = false;
@@ -20859,8 +20862,7 @@ This file is part of LifeViewer
 		// set the y direction UI control
 		me.yDirectionButton.current = [me.yUp];
 
-		// turn off icon display
-		me.useIcons = false;
+		// set the icons control
 		me.iconToggle.current = me.viewIconList([me.useIcons], true, me);
 
 		// check for chrome bug

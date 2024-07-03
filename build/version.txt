@@ -1,3 +1,6 @@
+Build 1153
+- initial work on @ICONS rendering
+
 Build 1152
 - fix AutoIdentify persisting across viewers
 

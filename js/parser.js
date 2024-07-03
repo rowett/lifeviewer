@@ -50,6 +50,7 @@ This file is part of LifeViewer
 			case Keywords.triCellsWord:
 			case Keywords.hexCellsWord:
 			case Keywords.squareCellsWord:
+			case Keywords.useIconsWord:
 			case Keywords.bordersWord:
 			case Keywords.randomCellsWord:
 			case Keywords.randomizeWord:
@@ -4964,6 +4965,15 @@ This file is part of LifeViewer
 						case Keywords.squareCellsWord:
 							// set square cells
 							view.engine.forceRectangles = true;
+							itemValid = true;
+							break;
+
+						// use icons
+						case Keywords.useIconsWord:
+							// enable icons if present
+							if (view.engine.cellIconCanvas !== null) {
+								view.useIcons = true;
+							}
 							itemValid = true;
 							break;
 

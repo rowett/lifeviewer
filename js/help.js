@@ -1271,6 +1271,7 @@ This file is part of LifeViewer
 			}
 		}
 		y = this.renderHelpLine(view, Keywords.bordersWord, "display cell borders", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.useIconsWord, "display cells as icons", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.noGUIWord, "disable menus and hotkeys", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.hideGUIWord, "hide menus during playback", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.showTimingWord, "show timing information", ctx, x, y, height, helpLine);

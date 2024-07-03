@@ -123,6 +123,9 @@ This file is part of LifeViewer
 		// square cells
 		/** @const {string} */ squareCellsWord : "SQUARECELLS",
 
+		// use icons
+		/** @const {string} */ useIconsWord : "ICONS",
+
 		// draw cell borders
 		/** @const {string} */ bordersWord : "CELLBORDERS",
 
