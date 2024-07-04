@@ -1,3 +1,6 @@
+Build 1154
+- added icons for PCA rules
+
 Build 1153
 - initial work on @ICONS rendering
 

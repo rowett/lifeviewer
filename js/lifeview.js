@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1153,
+		/** @const {number} */ versionBuild : 1154,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -19418,12 +19418,17 @@ This file is part of LifeViewer
 				me.engine.isRuleTree = true;
 			}
 
-			// process icons if loaded
-			if (pattern.ruleTableIcons) {
-				me.engine.processIcons(pattern.ruleTableIcons);
+			// decode PCA icons
+			if (pattern.isPCA) {
+				me.engine.createPCAIcons(pattern);
 			} else {
-				// otherwise clear any previous icons
-				me.engine.cellIconCanvas = null;
+				// process icons if loaded
+				if (pattern.ruleTableIcons) {
+					me.engine.processIcons(pattern.ruleTableIcons);
+				} else {
+					// otherwise clear any previous icons
+					me.engine.cellIconCanvas = null;
+				}
 			}
 
 			// check if the rule is HROT
