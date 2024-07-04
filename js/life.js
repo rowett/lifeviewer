@@ -1437,7 +1437,7 @@ This file is part of LifeViewer
 			/** @type {number} */ o = 0,
 			/** @type {number} */ base = 0,
 			/** @const {number} */ iconSize = 32,
-			/** @const {number} */ numIcons = 16,
+			/** @const {number} */ numIcons = 15,
 			/** @type {ImageData} */ data = null,
 			/** @type {Uint32Array} */ data32 = null,
 			/** @type {CanvasRenderingContext2D} */ ctx = null,
@@ -1517,6 +1517,9 @@ This file is part of LifeViewer
 		this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
 
 		this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
+
+		// create the rule table icon entry
+		pattern.ruleTableIcons = [{builtIn: PatternConstants.ruleTableIconNone, width: iconSize - 1, height: (iconSize - 1) * numIcons, numColours: 4, colours: [], iconData: [], greyScale: false}];
 	};
 
 	// process icons

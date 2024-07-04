@@ -19421,6 +19421,7 @@ This file is part of LifeViewer
 			// decode PCA icons
 			if (pattern.isPCA) {
 				me.engine.createPCAIcons(pattern);
+				me.engine.ruleTableIcons = pattern.ruleTableIcons;
 			} else {
 				// process icons if loaded
 				if (pattern.ruleTableIcons) {
