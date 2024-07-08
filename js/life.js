@@ -440,7 +440,7 @@ This file is part of LifeViewer
 		/** @type {HTMLCanvasElement} */ this.cellPeriodCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 		this.cellPeriodCanvas.width = 1;
 		this.cellPeriodCanvas.height = 1;
-		/** @type {CanvasRenderingContext2D} */ this.cellPeriodContext = /** @type {!CanvasRenderingContext2D} */ (this.cellPeriodCanvas.getContext("2d"));
+		/** @type {CanvasRenderingContext2D} */ this.cellPeriodContext = /** @type {!CanvasRenderingContext2D} */ (this.cellPeriodCanvas.getContext("2d", {"willReadFrequently": true}));
 		/** @type {Array<number>} */ this.cellPeriodRGB = [];
 		/** @type {number} */ this.cellPeriodNumCols = 0;
 		/** @type {number} */ this.cellPeriodCellSize = 8;
@@ -2768,7 +2768,12 @@ This file is part of LifeViewer
 			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
 			/** @type {number} */ legendWidth = 50,
 			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
-			/** @type {number} */ height = this.displayHeight - (displayScale * 90);
+			/** @type {number} */ height = this.displayHeight - (displayScale * 90),
+			/** @type {number} */ offset = 0,
+			/** @type {number} */ inc = 0,
+			/** @type {number} */ minX = 0,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ xPos = 0;
 
 		// adjust the colours based on endian
 		if (!this.littleEndian) {
@@ -2855,8 +2860,6 @@ This file is part of LifeViewer
 		// resize the image and canvas to fix the period map with "cellSize" cells
 		rowWidth = cellSize * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) + gridBorderSize;
 		colHeight = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize) + gridBorderSize;
-		//this.cellPeriodImage.width = rowWidth;
-		//this.cellPeriodImage.height = colHeight;
 		this.cellPeriodCanvas.width = rowWidth;
 		this.cellPeriodCanvas.height = colHeight;
 
@@ -2868,18 +2871,50 @@ This file is part of LifeViewer
 		data = this.cellPeriodContext.getImageData(0, 0, this.cellPeriodCanvas.width, this.cellPeriodCanvas.height);
 		data32 = new Uint32Array(data.data.buffer);
 
+		// check for hex cells
+		if (this.isHex) {
+			// calculate the bounding box once hexagonal offset has been applied
+			inc = -0.5;
+			offset = this.cellPeriodHeight >> 2;
+
+			minX = this.cellPeriodWidth;
+			maxX = -1;
+
+			for (y = 0; y < this.cellPeriodHeight; y += 1) {
+				for (x = 0; x < this.cellPeriodWidth; x += 1) {
+					p = this.cellPeriod[y * this.cellPeriodWidth + x];
+					if (p > 0) {
+						cx = x + offset;
+						if (cx < minX) {
+							minX = cx;
+						}
+						if (cx > maxX) {
+							maxX = cx;
+						}
+					}
+				}
+				offset += inc;
+			}
+
+			// set the offset for drawing using the minx and maxx to center the image
+			inc = -cellSize / 2;
+			offset = (this.cellPeriodHeight >> 2) * cellSize;
+			offset += (((this.cellPeriodWidth - maxX - minX)) >> 1) * cellSize;
+		}
+
 		// draw the cells
 		for (y = 0; y < this.cellPeriodHeight; y += 1) {
 			for (x = 0; x < this.cellPeriodWidth; x += 1) {
 				p = this.cellPeriod[y * this.cellPeriodWidth + x];
 				pixCol = this.cellPeriodRGB[p];
 				for (cy = 0; cy < cellSize; cy += 1) {
-					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth + ((x + cellBorderSize) * cellSize);
+					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth + ((x + cellBorderSize) * cellSize) + offset;
 					for (cx = 0; cx < cellSize; cx += 1) {
-						data32[row + cx] = pixCol;
+						data32[(row + cx) | 0] = pixCol;
 					}
 				}
 			}
+			offset += inc;
 		}
 
 		// draw the bounded grid if required
@@ -2914,6 +2949,7 @@ This file is part of LifeViewer
 
 		// draw the grid if required
 		if (drawGrid) {
+			// draw the grid
 			for (y = -1; y <= this.cellPeriodHeight + 1; y += 1) {
 				row = ((y + cellBorderSize) * cellSize) * rowWidth;
 				for (x = 0; x < (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1; x += 1) {
@@ -2923,7 +2959,15 @@ This file is part of LifeViewer
 
 			for (x = -1; x <= this.cellPeriodWidth + 1; x += 1) {
 				for (y = 0; y < (this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize; y += 1) {
-					data32[(y * rowWidth) + ((x + cellBorderSize) * cellSize)] = gridCol;
+					if (((y / cellSize) & 1) === 0) {
+						offset = inc;
+					} else {
+						offset = 0;
+					}
+					xPos = ((x + cellBorderSize) * cellSize) + offset;
+					if (xPos >= 0 && xPos < this.cellPeriodCanvas.width) {
+						data32[(y * rowWidth) + xPos] = gridCol;
+					}
 				}
 			}
 		} else {
@@ -2967,7 +3011,6 @@ This file is part of LifeViewer
 
 		// update the image
 		this.cellPeriodContext.putImageData(data, 0, 0);
-		//this.cellPeriodImage.src = this.cellPeriodCanvas.toDataURL("image/png");
 
 		// create the table row values for page up and page down
 		view.setResultsPosition();
@@ -3205,8 +3248,6 @@ This file is part of LifeViewer
 		}
 
 		// recompute size based on scale factor
-		//x = this.cellPeriodImage.width * s;
-		//y = this.cellPeriodImage.height * s;
 		x = this.cellPeriodCanvas.width * s;
 		y = this.cellPeriodCanvas.height * s;
 

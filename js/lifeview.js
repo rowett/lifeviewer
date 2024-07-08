@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1154,
+		/** @const {number} */ versionBuild : 1156,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -8177,6 +8177,7 @@ This file is part of LifeViewer
 			// clear the canvas
 			if (me.engine.data32) {
 				me.engine.data32.fill(pixelColour);
+				me.engine.doDrawGrid = true;
 			}
 		}
 

@@ -909,6 +909,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "Shift T", "toggle extended timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "I", "toggle pattern and engine information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift I", "toggle information bar", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " I", "toggle icons", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.controlKeyText + " Q", "toggle cell anti-aliasing", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.altKeyText + " B", "toggle cell borders", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "X", "toggle gridlines", ctx, x, y, height, helpLine);
