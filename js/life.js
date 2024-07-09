@@ -1662,8 +1662,8 @@ This file is part of LifeViewer
 
 				// set it to 32x32 icon size
 				this.scaleIconCanvas.width = (iconSize + 1) * mag;
-				this.scaleIconCanvas.height = (iconSize + 2) * mag * numIcons;
-				tempCtx = /** @type {!CanvasRenderingContext2D} */ (tempCanvas.getContext("2d"));
+				this.scaleIconCanvas.height = (((iconSize + 1) * mag) + 1) * numIcons;
+				tempCtx = /** @type {!CanvasRenderingContext2D} */ (this.scaleIconCanvas.getContext("2d"));
 
 				// draw at scale onto the new canvas
 				tempCtx.imageSmoothingEnabled = false;
