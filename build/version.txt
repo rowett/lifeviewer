@@ -1,3 +1,7 @@
+Build 1157
+- sharper rendering of icons
+- PCA icons now use Theme colours
+
 Build 1156
 - Identify now uses offset square grid for hexagonal Cell Period Maps
 

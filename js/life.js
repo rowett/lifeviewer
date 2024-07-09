@@ -436,6 +436,9 @@ This file is part of LifeViewer
 		// canvas for cell icons
 		/** @type {HTMLCanvasElement} */ this.cellIconCanvas = null;
 
+		// canvas to scale cell icons
+		/** @type {HTMLCanvasElement} */ this.scaleIconCanvas = null;
+
 		// canvas for cell period map
 		/** @type {HTMLCanvasElement} */ this.cellPeriodCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 		this.cellPeriodCanvas.width = 1;
@@ -1441,20 +1444,29 @@ This file is part of LifeViewer
 			/** @type {ImageData} */ data = null,
 			/** @type {Uint32Array} */ data32 = null,
 			/** @type {CanvasRenderingContext2D} */ ctx = null,
-			/** @type {number} */ nCol = (255 << 24) | (0 << 16) | (0 << 8) | 255,
-			/** @type {number} */ eCol = (255 << 24) | (0 << 16) | (255 << 8) | 0,
-			/** @type {number} */ sCol = (255 << 24) | (255 << 16) | (16 << 8) | 16,
-			/** @type {number} */ wCol = (255 << 24) | (0 << 16) | (255 << 8) | 255;
+			/** @type {Uint32Array} */ pixelColours = this.pixelColours,
+			/** @type {number} */ historyStates = this.historyStates,
+			/** @type {number} */ nCol = pixelColours[1 + historyStates],
+			/** @type {number} */ eCol = pixelColours[2 + historyStates],
+			/** @type {number} */ sCol = pixelColours[4 + historyStates],
+			/** @type {number} */ wCol = pixelColours[8 + historyStates];
 
 		// create the cell icon canvas if it doesn't exist
 		if (this.cellIconCanvas === null) {
 			this.cellIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 		}
 		this.cellIconCanvas.width = iconSize;
-		this.cellIconCanvas.height = iconSize * numIcons;
+
+		// add an extra row between icons to prevent anti-aliasing using pixels from the next icon
+		this.cellIconCanvas.height = (iconSize + 1) * numIcons;
 
 		// get the context
-		ctx = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas.getContext("2d"));
+		ctx = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas.getContext("2d", {"willReadFrequently": true}));
+
+		// fill the canvas with the first history state
+		ctx.fillStyle = this.cellColourStrings[historyStates];
+		ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
 		data = ctx.getImageData(0, 0, this.cellIconCanvas.width, this.cellIconCanvas.height);
 		data32 = new Uint32Array(data.data.buffer);
 
@@ -1503,7 +1515,7 @@ This file is part of LifeViewer
 					o += 1;
 				}
 			}
-			base += iconSize * iconSize;
+			base += (iconSize + 1) * iconSize;
 		}
 
 		// write the image data back to the canvas
@@ -1512,14 +1524,15 @@ This file is part of LifeViewer
 		// create the icon drawing canvas
 		if (this.iconCanvas === null) {
 			this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+			this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
+			this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
 		}
-		this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
-		this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
-
 		this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 
 		// create the rule table icon entry
-		pattern.ruleTableIcons = [{builtIn: PatternConstants.ruleTableIconNone, width: iconSize - 1, height: (iconSize - 1) * numIcons, numColours: 4, colours: [], iconData: [], greyScale: false}];
+		if (pattern !== null) {
+			pattern.ruleTableIcons = [{builtIn: PatternConstants.ruleTableIconNone, width: iconSize - 1, height: (iconSize - 1) * numIcons, numColours: 4, colours: [], iconData: [], greyScale: false}];
+		}
 	};
 
 	// process icons
@@ -1574,8 +1587,12 @@ This file is part of LifeViewer
 			if (this.cellIconCanvas === null) {
 				this.cellIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 			}
+
+			// size the canvas one pixel wider than the icons
 			this.cellIconCanvas.width = iconSize + 1;
-			this.cellIconCanvas.height = (iconSize + 1) * numIcons;
+
+			// size the canvas two pixels higher per icon so that anti-aliasing doesn't reach pixels from the next icon vertically
+			this.cellIconCanvas.height = (iconSize + 2) * numIcons;
 
 			// get the context
 			ctx = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas.getContext("2d"));
@@ -1623,10 +1640,12 @@ This file is part of LifeViewer
 					dst += 1;
 				}
 
-				// skip bottom row in destination
-				for (x = 0; x < iconSize + 1; x += 1) {
-					data32[dst] = 0;
-					dst += 1;
+				// skip bottom two rows in destination
+				for (y = 0; y < 2; y += 1) {
+					for (x = 0; x < iconSize + 1; x += 1) {
+						data32[dst] = 0;
+						dst += 1;
+					}
 				}
 			}
 
@@ -1636,18 +1655,24 @@ This file is part of LifeViewer
 			// get the magnification factor to scale largest icons to 32x32
 			mag = 32 / (iconSize + 1);
 			if (mag > 1) {
-				// create a new canvas at the 32x32 icon size
-				tempCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
-				tempCanvas.width = (iconSize + 1) * mag;
-				tempCanvas.height = (iconSize + 1) * mag * numIcons;
+				// create the scaling icon canvas if it doesn't exist
+				if (this.scaleIconCanvas === null) {
+					this.scaleIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+				}
+
+				// set it to 32x32 icon size
+				this.scaleIconCanvas.width = (iconSize + 1) * mag;
+				this.scaleIconCanvas.height = (iconSize + 2) * mag * numIcons;
 				tempCtx = /** @type {!CanvasRenderingContext2D} */ (tempCanvas.getContext("2d"));
 
 				// draw at scale onto the new canvas
 				tempCtx.imageSmoothingEnabled = false;
 				tempCtx.drawImage(ctx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height, 0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
 
-				// save the new canvas
-				this.cellIconCanvas = tempCanvas;
+				// copy back to the original canvas
+				this.cellIconCanvas.width = this.scaleIconCanvas.width;
+				this.cellIconCanvas.height = this.scaleIconCanvas.height;
+				ctx.drawImage(this.scaleIconCanvas, 0, 0);
 			}
 
 			// create the icon drawing canvas
@@ -47004,6 +47029,7 @@ This file is part of LifeViewer
 		// update the pixel colours for PCA rule
 		if (this.isPCA) {
 			this.createPixelColours(1);
+			this.createPCAIcons(null);
 		}
 
 		// get the boundary cell colour
@@ -47043,13 +47069,14 @@ This file is part of LifeViewer
 						} else {
 							// check for PCA rule
 							if (this.isPCA) {
-								if (state < 64) {
+								if (state <= this.historyStates) {
 									// draw filled square in state colour
 									iconContext.fillStyle = colourStrings[state];
 									iconContext.fillRect(iScale, jScale, scaleUp, scaleUp);
 								} else {
 									// draw icon
-									iconContext.drawImage(this.cellIconCanvas, 0, (state - 64) * 32, 31, 31, iScale, jScale, scale, scale);
+									state -= this.historyStates;
+									iconContext.drawImage(this.cellIconCanvas, 0, (state - 1) * 33, 32, 32, iScale, jScale, scale, scale);
 								}
 							} else {
 								// RuleLoader rule
@@ -47061,7 +47088,7 @@ This file is part of LifeViewer
 										iconContext.fillRect(iScale, jScale, scaleUp, scaleUp);
 									} else {
 										// draw icon
-										iconContext.drawImage(this.cellIconCanvas, 0, (state - 1) * 32, 31, 31, iScale, jScale, scale, scale);
+										iconContext.drawImage(this.cellIconCanvas, 0, (state - 1) * 33, 32, 32, iScale, jScale, scale, scale);
 									}
 								}
 							}

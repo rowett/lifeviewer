@@ -180,7 +180,7 @@ This file is part of LifeViewer
 					ctx.imageSmoothingEnabled = true;
 					ctx.translate(x, y - (height >> 1) - 1);
 					ctx.scale(height / iconSize, height / iconSize);
-					ctx.drawImage(view.engine.cellIconCanvas, 0, iconSize * state, iconSize, iconSize, 0, 0, iconSize, iconSize);
+					ctx.drawImage(view.engine.cellIconCanvas, 0, (iconSize + 1) * state, iconSize, iconSize, 0, 0, iconSize, iconSize);
 					ctx.restore();
 				} else {
 					// draw the icon shadow
