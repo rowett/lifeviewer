@@ -44901,6 +44901,19 @@ This file is part of LifeViewer
 		ctx.globalAlpha = 1;
 	};
 
+	/** @returns {string} */
+	Life.prototype.getColourString = function(/** @type {number} */ colour) {
+		var	/** @type {string} */ result = "";
+
+		if (this.littleEndian) {
+			result = "rgb(" + (colour & 255) + "," + ((colour >> 8) & 255) + "," + ((colour >> 16) & 255) + ")";
+		} else {
+			result = "rgb(" + (colour >> 24) + "," + ((colour >> 16) & 255) + "," + ((colour >> 8) & 255) + ")";
+		}
+
+		return result;
+	};
+
 	// draw grid lines
 	Life.prototype.drawGridLines = function() {
 		var	/** @type {number} */ x = 0,
@@ -46976,6 +46989,7 @@ This file is part of LifeViewer
 		var	/** @type {HTMLCanvasElement} */ iconCanvas = this.iconCanvas,
 			/** @type {CanvasRenderingContext2D} */ iconContext = this.iconContext,
 			/** @type {Array<string>} */ colourStrings = this.cellColourStrings,
+			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
 			/** @type {Uint8Array} */ gridRow = null,
 			/** @type {number} */ width = rightX - leftX,
 			/** @type {number} */ height = topY - bottomY,
@@ -47001,7 +47015,15 @@ This file is part of LifeViewer
 			/** @type {number} */ xadj = 0,
 			/** @type {number} */ yadj = 0,
 			/** @type {string} */ boundaryRGB = "",
-			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid();
+			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid(),
+			/** @type {Array<number>} */ rowPos = [],
+			/** @type {Array<number>} */ colPos = [],
+			/** @type {boolean} */ drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled),
+			/** @type {number} */ gridLineMajor = this.gridLineMajor,
+			/** @type {number} */ gridCol = this.gridLineColour,
+			/** @type {number} */ gridBoldCol = this.gridLineBoldColour,
+			/** @type {number} */ mx = 0,
+			/** @type {number} */ my = 0;
 
 		// compute the x and y adjustments for full grid size
 		while (xg < maxGridSize) {
@@ -47046,9 +47068,14 @@ This file is part of LifeViewer
 
 			// draw each cell on the row
 			jScale = (j * scale) | 0;
+			rowPos[rowPos.length] = jScale;
+
 			i = 0;
 			for (x = leftX; x < rightX; x += 1) {
 				iScale = (i * scale) | 0;
+				if (y === bottomY) {
+					colPos[colPos.length] = iScale;
+				}
 
 				// check if the cell is on the maximum grid
 				if (x + xadj < 0 || x + xadj >= maxGridSize || y + yadj < 0 || y + yadj >= maxGridSize) {
@@ -47102,22 +47129,77 @@ This file is part of LifeViewer
 		iconContext.imageSmoothingEnabled = false;
 
 		// draw on the display
-		this.context.drawImage(iconCanvas, 0, 0, width * this.camZoom, height * yZoom, dx, dy, width * this.camZoom, height * yZoom);
+		ctx.drawImage(iconCanvas, 0, 0, width * this.camZoom, height * yZoom, dx, dy, width * this.camZoom, height * yZoom);
+
+		// draw the grid lines if required
+		if (drawGridLines) {
+			// draw the standard grid lines
+			ctx.strokeStyle = this.getColourString(gridCol);
+			ctx.lineWidth = 1;
+			ctx.beginPath();
+
+			// draw grid line rows
+			for (y = 0; y < rowPos.length; y += 1) {
+				j = ((rowPos[y] + dy) | 0) + 0.5;
+				ctx.moveTo(0, j);
+				ctx.lineTo(this.displayWidth, j);
+			}
+
+			// draw grid line columns
+			for (x = 0; x < colPos.length; x += 1) {
+				i = ((colPos[x] + dx) | 0) + 0.5;
+				ctx.moveTo(i, 0);
+				ctx.lineTo(i, this.displayHeight);
+			}
+
+			// render lines
+			ctx.stroke();
+
+			// draw grid major line rows if needed
+			if (drawMajor) {
+				mx = leftX - 1;
+				my = bottomY - 3;
+
+				ctx.strokeStyle = this.getColourString(gridBoldCol);
+				ctx.beginPath();
+
+				// draw grid line rows
+				for (y = 0; y < rowPos.length; y += 1) {
+					if ((my % gridLineMajor) === 0) {
+						j = ((rowPos[y] + dy) | 0) + 0.5;
+						ctx.moveTo(0, j);
+						ctx.lineTo(this.displayWidth, j);
+					}
+					my += 1;
+				}
+
+				// draw grid line columns
+				for (x = 0; x < colPos.length; x += 1) {
+					if ((mx % gridLineMajor) === 0) {
+						i = ((colPos[x] + dx) | 0) + 0.5;
+						ctx.moveTo(i, 0);
+						ctx.lineTo(i, this.displayHeight);
+					}
+					mx += 1;
+				}
+
+				// render lines
+				ctx.stroke();
+			}
+		}
 
 		// update the image data if further rendering is required
-		if (drawingSnow || drawingStars || drawGridLines) {
+		if (drawingSnow || drawingStars) {
 			// update the image data array from the rendered image
 			this.imageData = this.context.getImageData(0, 0, this.context.canvas.width, this.context.canvas.height);
 			this.data32 = new Uint32Array(this.imageData.data.buffer);
 
-			// draw snow if enabled
+			// draw snow if enabled - TBD snow will stop on grid lines since it is drawn after when the icon renderer is used
 			if (drawingSnow) {
 				this.drawSnow();
 			}
-
-			this.drawGridLines();
 		} else {
-			// no need to draw the grid since it's already been rendered and there are no overlays (snow, stars, gridlines)
+			// no need to draw the grid since it's already been rendered and there are no overlays (snow or stars)
 			this.doDrawGrid = false;
 		}
 	};
@@ -47164,10 +47246,9 @@ This file is part of LifeViewer
 			/** @type {number} */ yg = this.height,
 			/** @type {number} */ xadj = 0,
 			/** @type {number} */ yadj = 0,
-			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid();
-
-		var	gridCols = [],
-			gridRows = [];
+			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid(),
+			/** @type {Array<number>} */ gridCols = [],
+			/** @type {Array<number>} */ gridRows = [];
 
 		// check for cell borders
 		if (this.cellBorders && !this.displayGrid && this.canDisplayGrid()) {
@@ -47460,10 +47541,9 @@ This file is part of LifeViewer
 			/** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
 			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128,
 			/** @const {number} */ aliveStart = this.aliveStart,
-			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid();
-
-		var	gridCols = [],
-			gridRows = [];
+			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid(),
+			/** @type {Array<number>} */ gridCols = [],
+			/** @type {Array<number>} */ gridRows = [];
 
 		// check for cell borders
 		if (this.cellBorders && !this.displayGrid && this.canDisplayGrid()) {
