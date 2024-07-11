@@ -1,3 +1,6 @@
+Build 1159
+- add icons to state list in Draw mode
+
 Build 1158
 - improve grid line positioning and draw performance when drawing icons
 

@@ -47060,6 +47060,7 @@ This file is part of LifeViewer
 		// draw each row of cells
 		j = 0;
 		iconContext.imageSmoothingEnabled = true;
+		iconContext.imageSmoothingQuality = "high";
 
 		for (y = bottomY; y < topY; y += 1) {
 			if ((y & heightMask) === y) {
@@ -47126,6 +47127,7 @@ This file is part of LifeViewer
 			}
 			j += 1;
 		}
+
 		iconContext.imageSmoothingEnabled = false;
 
 		// draw on the display

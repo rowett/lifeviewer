@@ -840,7 +840,15 @@ This file is part of LifeViewer
 		// decompose the font into size and family
 		/** @type {number} */ this.fontSize = parseInt(owner.defaultFont.substring(0, owner.defaultFont.indexOf("px")), 10);
 		/** @type {string} */ this.fontFamily = owner.defaultFont.substring(owner.defaultFont.indexOf("px") + 3);
+
+		// callback to draw custom icons
+		/** @type {function(View):void|null} */ this.drawIconCallback = null;
 	}
+
+	// set icon callback
+	MenuItem.prototype.setDrawIconCallback = function(/** @type {function(View):void} */ callback) {
+		this.drawIconCallback = callback;
+	};
 
 	// delete if shown
 	MenuItem.prototype.deleteIfShown = function(/** @type {boolean} */ del) {
@@ -1961,6 +1969,11 @@ This file is part of LifeViewer
 				this.context.globalAlpha = item.fgAlpha;
 				this.iconManager.draw(item.icon, item.x, item.y, this.locked || item.locked);
 			}
+		}
+
+		// draw custom icons if callback supplied
+		if (item.drawIconCallback !== null) {
+			item.drawIconCallback(this.caller);
 		}
 
 		// draw the border if non-zero

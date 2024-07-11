@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1158,
+		/** @const {number} */ versionBuild : 1159,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6263,6 +6263,39 @@ This file is part of LifeViewer
 					}
 				}
 			}
+		}
+	};
+
+	// draw state icons callback (when in Draw mode)
+	View.prototype.renderStateIcons = function(/** @type {View} */ me) {
+		var	/** @type {CanvasRenderingContext2D} */ ctx = me.mainContext,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ xScale = me.viewMenu.xScale,
+			/** @type {number} */ yScale = me.viewMenu.yScale,
+			/** @type {MenuItem} */ list = me.stateColsList,
+			/** @type {number} */ x = list.x,
+			/** @type {number} */ y = list.y,
+			/** @type {number} */ height = list.relHeight,
+			/** @type {number} */ width = list.relWidth,
+			/** @type {number} */ yPos = 0,
+			/** @type {HTMLCanvasElement} */ iconCanvas = me.engine.cellIconCanvas,
+			/** @type {number} */ iconSize = 0;
+
+		// check if icons are available
+		if (iconCanvas !== null && me.useIcons) {
+			ctx.imageSmoothingEnabled = true;
+			iconSize = iconCanvas.width;
+
+			// draw the icon for each displayed state
+			for (i = 0; i < me.maxDisplayStates; i += 1) {
+				// find the icon in the canvas
+				yPos = (i + me.startState - 1) * (iconSize + 1);
+				if (yPos >= 0 && yPos < iconCanvas.height) {
+					ctx.drawImage(iconCanvas, 0, yPos, iconSize, iconSize, (i * (width / me.maxDisplayStates) * xScale + x), y, height * xScale, height * yScale);
+				}
+			}
+
+			ctx.imageSmoothingEnabled = false;
 		}
 	};
 
@@ -18036,6 +18069,7 @@ This file is part of LifeViewer
 		this.stateColsList = this.viewMenu.addListItem(this.viewStateColsList, Menu.northEast, -280, 65, 280, 20, ["", "", "", "", "", "", ""], [false, false, false, false, false, false, false], Menu.multi);
 		this.stateColsList.toolTip = ["dead", "alive", "history", "mark 1", "mark off", "mark 2", "kill"];
 		this.stateColsList.bgAlpha = 1;
+		this.stateColsList.setDrawIconCallback(this.renderStateIcons);
 
 		// add spacer to left of states slider
 		this.statesSpacer = this.viewMenu.addButtonItem(null, Menu.northWest, 175, 45, 5, 40, "");
@@ -18265,7 +18299,7 @@ This file is part of LifeViewer
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;
-			this.mainContext.imageSmoothingQuality = "low";
+			this.mainContext.imageSmoothingQuality = "high";
 			this.mainContext.fillRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
 
 			// set the font alignment

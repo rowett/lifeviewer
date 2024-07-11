@@ -312,6 +312,7 @@ This file is part of LifeViewer
 						// toggle icons
 						if (!me.iconToggle.locked) {
 							me.iconToggle.current = me.viewIconList([!me.useIcons], true, me);
+							me.menuManager.notification.notify("Icons " + (me.useIcons ? "On" : "Off"), 15, 40, 15, true);
 						}
 						break;
 
