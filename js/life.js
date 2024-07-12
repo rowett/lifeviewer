@@ -45226,6 +45226,9 @@ This file is part of LifeViewer
 			}
 		}
 
+		if (result < 1) {
+			result = 1;
+		}
 		return result;
 	};
 

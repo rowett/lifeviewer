@@ -1,3 +1,6 @@
+Build 1160
+- fix rendering Generations rules with no history state and Layers
+
 Build 1159
 - add icons to state list in Draw mode
 
