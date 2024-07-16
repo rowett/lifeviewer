@@ -180,7 +180,7 @@ This file is part of LifeViewer
 					ctx.imageSmoothingEnabled = true;
 					ctx.translate(x, y - (height >> 1) - 1);
 					ctx.scale(height / iconSize, height / iconSize);
-					ctx.drawImage(view.engine.cellIconCanvas, 0, (iconSize + 1) * state, iconSize, iconSize, 0, 0, iconSize, iconSize);
+					ctx.drawImage(view.engine.cellIconCanvas31, 0, iconSize * state, iconSize, iconSize, 0, 0, iconSize, iconSize);
 					ctx.restore();
 				} else {
 					// draw the icon shadow
@@ -1748,23 +1748,16 @@ This file is part of LifeViewer
 				y = this.renderHelpLine(view, "Icons", "Size\tNumber\tColours\tGrayScale", ctx, x, y, height, helpLine);
 
 				// find the largest defined set
-				i = 0;
-				iconWidth = view.engine.ruleTableIcons[i].width;
-				iconHeight = view.engine.ruleTableIcons[i].height;
 				for (j = 0; j < view.engine.ruleTableIcons.length; j += 1) {
-					if (view.engine.ruleTableIcons[j].width > iconWidth) {
-						i = j;
-						iconWidth = view.engine.ruleTableIcons[j].width;
-						iconHeight = view.engine.ruleTableIcons[j].height;
-					}
+					iconWidth = view.engine.ruleTableIcons[j].width;
+					iconHeight = view.engine.ruleTableIcons[j].height;
+					itemName = iconWidth + "x" + iconWidth + "\t" + iconHeight / iconWidth + "\t" + view.engine.ruleTableIcons[j].numColours + "\t" + (view.engine.ruleTableIcons[j].greyScale ? "Yes" : "No");
+					y = this.renderHelpLine(view, " ", itemName, ctx, x, y, height, helpLine);
 				}
-
-				itemName = iconWidth + "x" + iconWidth + "\t" + iconHeight / iconWidth + "\t" + view.engine.ruleTableIcons[i].numColours + "\t" + (view.engine.ruleTableIcons[i].greyScale ? "Yes" : "No");
-				y = this.renderHelpLine(view, " ", itemName, ctx, x, y, height, helpLine);
 
 				// draw the Icons
 				for (j = 0; j < iconHeight / iconWidth; j += 1) {
-					this.renderIcon(view, j, view.engine.cellIconCanvas.width, ctx, x + view.tabs[0] * xScale, y, height, helpLine);
+					this.renderIcon(view, j, view.engine.cellIconCanvas31.width, ctx, x + view.tabs[0] * xScale, y, height, helpLine);
 					itemName = view.getStateName(j + 1);
 					y = this.renderHelpLine(view, "Icon " + String(j + 1), "      " + itemName, ctx, x, y, height, helpLine);
 				}

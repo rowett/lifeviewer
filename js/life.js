@@ -433,8 +433,15 @@ This file is part of LifeViewer
 		// whether snapshot save is required
 		/** @type {boolean} */ this.snapshotNeeded = false;
 
-		// canvas for cell icons
-		/** @type {HTMLCanvasElement} */ this.cellIconCanvas = null;
+		// canvas for cell icons at supported resolutions
+		/** @type {HTMLCanvasElement} */ this.cellIconCanvas31 = null;
+		/** @type {HTMLCanvasElement} */ this.cellIconCanvas15 = null;
+		/** @type {HTMLCanvasElement} */ this.cellIconCanvas7 = null;
+		/** @type {CanvasRenderingContext2D} */ this.cellIconContext31 = null;
+		/** @type {CanvasRenderingContext2D} */ this.cellIconContext15 = null;
+		/** @type {CanvasRenderingContext2D} */ this.cellIconContext7 = null;
+
+		/** @type {boolean} */ this.iconsAvailable = false;
 
 		// canvas to scale cell icons
 		/** @type {HTMLCanvasElement} */ this.scaleIconCanvas = null;
@@ -1432,17 +1439,50 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// create cell icon canvases at the required size
+	Life.prototype.createCellIconCanvases = function(/** @type {number} */ numIcons) {
+		// create 31x31 icon canvas
+		if (this.cellIconCanvas31 === null) {
+			this.cellIconCanvas31 = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+			this.cellIconCanvas31.width = 31;
+		}
+
+		// create 15x15 icon canvas
+		if (this.cellIconCanvas15 === null) {
+			this.cellIconCanvas15 = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+			this.cellIconCanvas15.width = 15;
+		}
+
+		// create 7x7 icon canvas
+		if (this.cellIconCanvas7 === null) {
+			this.cellIconCanvas7 = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+			this.cellIconCanvas7.width = 7;
+		}
+
+		// size the canvases to the number of icons
+		this.cellIconCanvas31.height = numIcons * 31;
+		this.cellIconCanvas15.height = numIcons * 15;
+		this.cellIconCanvas7.height = numIcons * 7;
+
+		// get the contexts
+		this.cellIconContext31 = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas31.getContext("2d", {"willReadFrequently": true}));
+		this.cellIconContext15 = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas15.getContext("2d", {"willReadFrequently": true}));
+		this.cellIconContext7 = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas7.getContext("2d", {"willReadFrequently": true}));
+	};
+
 	// create PCA Icons
 	Life.prototype.createPCAIcons = function(/** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ o = 0,
 			/** @type {number} */ base = 0,
-			/** @const {number} */ iconSize = 32,
+			/** @type {number} */ iconSize = 0,
 			/** @const {number} */ numIcons = 15,
 			/** @type {ImageData} */ data = null,
 			/** @type {Uint32Array} */ data32 = null,
+			/** @type {HTMLCanvasElement} */ cvs = null,
 			/** @type {CanvasRenderingContext2D} */ ctx = null,
 			/** @type {Uint32Array} */ pixelColours = this.pixelColours,
 			/** @type {number} */ historyStates = this.historyStates,
@@ -1451,93 +1491,145 @@ This file is part of LifeViewer
 			/** @type {number} */ sCol = pixelColours[4 + historyStates],
 			/** @type {number} */ wCol = pixelColours[8 + historyStates];
 
-		// create the cell icon canvas if it doesn't exist
-		if (this.cellIconCanvas === null) {
-			this.cellIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
-		}
-		this.cellIconCanvas.width = iconSize;
+		// create the cell icon canvases
+		this.createCellIconCanvases(numIcons);
 
-		// add an extra row between icons to prevent anti-aliasing using pixels from the next icon
-		this.cellIconCanvas.height = (iconSize + 1) * numIcons;
-
-		// get the context
-		ctx = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas.getContext("2d", {"willReadFrequently": true}));
-
-		// fill the canvas with the first history state
-		ctx.fillStyle = this.cellColourStrings[historyStates];
-		ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-		data = ctx.getImageData(0, 0, this.cellIconCanvas.width, this.cellIconCanvas.height);
-		data32 = new Uint32Array(data.data.buffer);
-
-		// create icon for each of the 16 states
-		for (i = 1; i <= numIcons; i += 1) {
-			// check for north
-			if ((i & 1) !== 0) {
-				o = 1;
-				for (y = 30; y >= 16; y -= 1) {
-					for (x = o; x < 31 - o; x += 1) {
-						data32[base + y * 32 + x] = nCol;
-					}
-					o += 1;
-				}
-			}
-
-			// check for east
-			if ((i & 2) !== 0) {
-				o = 1;
-				for (x = 0; x <= 14; x += 1) {
-					for (y = o; y < 31 - o; y += 1) {
-						data32[base + y * 32 + x] = eCol;
-					}
-					o += 1;
-				}
-			}
-
-			// check for south
-			if ((i & 4) !== 0) {
-				o = 1;
-				for (y = 0; y <= 14; y += 1) {
-					for (x = o; x < 31 - o; x += 1) {
-						data32[base + y * 32 + x] = sCol;
-					}
-					o += 1;
-				}
-			}
-
-			// check for west
-			if ((i & 8) !== 0) {
-				o = 1;
-				for (x = 30; x >= 16; x -= 1) {
-					for (y = o; y < 31 - o; y += 1) {
-						data32[base + y * 32 + x] = wCol;
-					}
-					o += 1;
-				}
-			}
-			base += (iconSize + 1) * iconSize;
+		// create the icons at each of the three sizes
+		if (pattern !== null) {
+			pattern.ruleTableIcons = [];
 		}
 
-		// write the image data back to the canvas
-		ctx.putImageData(data, 0, 0);
+		for (j = 0; j < 3; j += 1) {
+			switch (j) {
+				case 0:
+					cvs = this.cellIconCanvas31;
+					ctx = this.cellIconContext31;
+					iconSize = 31;
+					break;
+
+				case 1:
+					cvs = this.cellIconCanvas15;
+					ctx = this.cellIconContext15;
+					iconSize = 15;
+					break;
+
+				case 2:
+					cvs = this.cellIconCanvas7;
+					ctx = this.cellIconContext7;
+					iconSize = 7;
+					break;
+			}
+
+			// fill the canvas with the first history state
+			ctx.fillStyle = this.cellColourStrings[historyStates];
+			ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+			data = ctx.getImageData(0, 0, cvs.width, cvs.height);
+			data32 = new Uint32Array(data.data.buffer);
+
+			// create icon for each of the 16 states
+			base = 0;
+
+			for (i = 1; i <= numIcons; i += 1) {
+				// check for north
+				if ((i & 1) !== 0) {
+					o = 1;
+					for (y = iconSize - 1; y >= ((iconSize + 1) / 2); y -= 1) {
+						for (x = o; x < iconSize - o; x += 1) {
+							data32[base + y * iconSize + x] = nCol;
+						}
+						o += 1;
+					}
+				}
+
+				// check for east
+				if ((i & 2) !== 0) {
+					o = 1;
+					for (x = 0; x <= ((iconSize - 3) / 2); x += 1) {
+						for (y = o; y < iconSize - o; y += 1) {
+							data32[base + y * iconSize + x] = eCol;
+						}
+						o += 1;
+					}
+				}
+
+				// check for south
+				if ((i & 4) !== 0) {
+					o = 1;
+					for (y = 0; y <= ((iconSize - 3) / 2); y += 1) {
+						for (x = o; x < iconSize - o; x += 1) {
+							data32[base + y * iconSize + x] = sCol;
+						}
+						o += 1;
+					}
+				}
+
+				// check for west
+				if ((i & 8) !== 0) {
+					o = 1;
+					for (x = iconSize - 1; x >= ((iconSize + 1) / 2); x -= 1) {
+						for (y = o; y < iconSize - o; y += 1) {
+							data32[base + y * iconSize + x] = wCol;
+						}
+						o += 1;
+					}
+				}
+
+				// go to next icon
+				base += iconSize * iconSize;
+			}
+
+			// add entry for Help
+			if (pattern !== null) {
+				pattern.ruleTableIcons[pattern.ruleTableIcons.length] = {builtIn: PatternConstants.ruleTableIconNone, width: iconSize, height: iconSize * numIcons, numColours: 4, colours: [], iconData: [], greyScale: false};
+			}
+
+			// write the image data back to the canvas
+			ctx.putImageData(data, 0, 0);
+		}
 
 		// create the icon drawing canvas
 		if (this.iconCanvas === null) {
+			// create the icon canvas
 			this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+
+			// display width and height plus one cell in each direction
 			this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
 			this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
 		}
+
 		this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 
-		// create the rule table icon entry
-		if (pattern !== null) {
-			pattern.ruleTableIcons = [{builtIn: PatternConstants.ruleTableIconNone, width: iconSize - 1, height: (iconSize - 1) * numIcons, numColours: 4, colours: [], iconData: [], greyScale: false}];
+		// mark that icons are available
+		this.iconsAvailable = true;
+	};
+
+	// scale icon set
+	Life.prototype.scaleIconSet = function(/** @type {CanvasRenderingContext2D} */ dest, /** @type {CanvasRenderingContext2D} */ source) {
+		var	/** @type {number} */ destSize = dest.canvas.width,
+			/** @type {number} */ sourceSize = source.canvas.width,
+			/** @type {number} */ numIcons = source.canvas.height / sourceSize,
+			/** @type {number} */ scaledSize = 0,
+			/** @type {number} */ i = 0;
+
+		// check if the size is increasing or decreasing
+		if (sourceSize > destSize) {
+			scaledSize = (sourceSize - 3) / 2;
+		} else {
+			scaledSize = sourceSize * 2;
+		}
+
+		// copy each icon at scale
+		dest.imageSmoothingEnabled = false;
+		for (i = 0; i < numIcons; i += 1) {
+			dest.drawImage(source.canvas, 0, i * sourceSize, sourceSize, sourceSize, 0, i * destSize, scaledSize, scaledSize);
 		}
 	};
 
 	// process icons
 	Life.prototype.processIcons = function(/** @type {Array} */ icons) {
 		var	/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
 			/** @type {number} */ src = 0,
 			/** @type {number} */ dst = 0,
 			/** @type {number} */ x = 0,
@@ -1548,141 +1640,147 @@ This file is part of LifeViewer
 			/** @type {number} */ stateZeroCol = this.ruleTreeColours[0],
 			/** @type {number} */ iconSize = 0,
 			/** @type {number} */ numIcons = 0,
-			/** @type {number} */ mag = 0,
 			/** @type {Uint16Array} */ iconData = null,
 			/** @type {Uint32Array} */ iconColours = null,
 			/** @type {boolean} */ greyScale = false,
 			/** @type {ImageData} */ data = null,
 			/** @type {Uint32Array} */ data32 = null,
 			/** @type {CanvasRenderingContext2D} */ ctx = null,
-			/** @type {HTMLCanvasElement} */ tempCanvas = null,
-			/** @type {CanvasRenderingContext2D} */ tempCtx = null;
-
-		// clear previous Icon Image and Canvas
-		this.cellIconCanvas = null;
+			/** @type {boolean} */ size31 = false,
+			/** @type {boolean} */ size15 = false,
+			/** @type {boolean} */ size7 = false;
 
 		// get the icon definitions
 		this.ruleTableIcons = icons;
 
-		// find the largest icon size specified
-		x = 0;
-		y = icons[x].width;
-		for (i = 1; i < icons.length; i += 1) {
-			if (icons[i].width > y) {
-				x = i;
-				y = icons[i].width;
-			}
-		}
+		// if no icons are specified then disable icons
+		if (icons.length === 0) {
+			this.iconsAvailable = false;
+		} else {
+			// create the canvases
+			this.createCellIconCanvases(icons[0].height / icons[0].width);
 
-		// get the size and number of icons
-		iconSize = icons[x].width;
-		numIcons = icons[x].height / iconSize;
-		iconData = icons[x].iconData;
-		iconColours = icons[x].colours;
-		greyScale = icons[x].greyScale;
+			// process each set of icons
+			for (j = 0; j < icons.length; j += 1) {
+				// get the size and number of icons
+				iconSize = icons[j].width;
+				numIcons = icons[j].height / iconSize;
+				iconData = icons[j].iconData;
+				iconColours = icons[j].colours;
+				greyScale = icons[j].greyScale;
 
-		// process the largest icons
-		if (numIcons > 0) {
-			// create the cell icon canvas if it doesn't exist
-			if (this.cellIconCanvas === null) {
-				this.cellIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
-			}
+				// get the context for the correct icon size
+				switch (iconSize) {
+					case 31:
+						ctx = this.cellIconContext31;
+						size31 = true;
+						break;
 
-			// size the canvas one pixel wider than the icons
-			this.cellIconCanvas.width = iconSize + 1;
+					case 15:
+						ctx = this.cellIconContext15;
+						size15 = true;
+						break;
 
-			// size the canvas two pixels higher per icon so that anti-aliasing doesn't reach pixels from the next icon vertically
-			this.cellIconCanvas.height = (iconSize + 2) * numIcons;
+					case 7:
+						ctx = this.cellIconContext7;
+						size7 = true;
+						break;
 
-			// get the context
-			ctx = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas.getContext("2d"));
-			data = ctx.getImageData(0, 0, this.cellIconCanvas.width, this.cellIconCanvas.height);
-			data32 = new Uint32Array(data.data.buffer);
-
-			// write them to the canvas
-			src = 0;
-			dst = 0;
-			for (i = 0; i < numIcons; i += 1) {
-				// check if greyscale set
-				if (greyScale) {
-					// lookup the state colour
-					stateCol = this.ruleTreeColours[i + 1];
+					default:
+						// any other size is an error so disable icons
+						console.error("LifeViewer: illegal icon size found");
+						this.iconsAvailable = false;
+						return;
 				}
 
-				// process each pixel in the icon
-				for (y = 0; y < iconSize; y += 1) {
-					for (x = 0; x < iconSize; x += 1) {
-						// get the next source pixel colour number
-						col = iconData[src];
-						src += 1;
+				// get image data buffer
+				data = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+				data32 = new Uint32Array(data.data.buffer);
 
-						// lookup the rgb for this colour
-						rgb = iconColours[col];
+				// write them to the canvas
+				src = 0;
+				dst = 0;
+				for (i = 0; i < numIcons; i += 1) {
+					// check if greyscale set
+					if (greyScale) {
+						// lookup the state colour
+						stateCol = this.ruleTreeColours[i + 1];
+					}
 
-						// check if greyscale set
-						if (greyScale) {
-							if (rgb === 0) {
-								// black pixels are replaced by state 0 colour
-								rgb = stateZeroCol;
-							} else {
-								// other pixels control current state colour transparency
-								rgb = this.applyGreyScale(rgb, stateCol);
+					// process each pixel in the icon
+					for (y = 0; y < iconSize; y += 1) {
+						for (x = 0; x < iconSize; x += 1) {
+							// get the next source pixel colour number
+							col = iconData[src];
+							src += 1;
+
+							// lookup the rgb for this colour
+							rgb = iconColours[col];
+
+							// check if greyscale set
+							if (greyScale) {
+								if (rgb === 0) {
+									// black pixels are replaced by state 0 colour
+									rgb = stateZeroCol;
+								} else {
+									// other pixels control current state colour transparency
+									rgb = this.applyGreyScale(rgb, stateCol);
+								}
 							}
+
+							// write the rgb to the canvas
+							data32[dst] = (255 << 24) | ((rgb & 255) << 16) | (rgb & 0xff00) | (rgb >> 16);
+							dst += 1;
 						}
-
-						// write the rgb to the canvas
-						data32[dst] = (255 << 24) | ((rgb & 255) << 16) | (rgb & 0xff00) | (rgb >> 16);
-						dst += 1;
-					}
-
-					// skip right hand column in destination
-					data32[dst] = 0;
-					dst += 1;
-				}
-
-				// skip bottom two rows in destination
-				for (y = 0; y < 2; y += 1) {
-					for (x = 0; x < iconSize + 1; x += 1) {
-						data32[dst] = 0;
-						dst += 1;
 					}
 				}
-			}
 
-			// write the image data back to the canvas
-			ctx.putImageData(data, 0, 0);
-
-			// get the magnification factor to scale largest icons to 32x32
-			mag = 32 / (iconSize + 1);
-			if (mag > 1) {
-				// create the scaling icon canvas if it doesn't exist
-				if (this.scaleIconCanvas === null) {
-					this.scaleIconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
-				}
-
-				// set it to 32x32 icon size
-				this.scaleIconCanvas.width = (iconSize + 1) * mag;
-				this.scaleIconCanvas.height = (((iconSize + 1) * mag) + 1) * numIcons;
-				tempCtx = /** @type {!CanvasRenderingContext2D} */ (this.scaleIconCanvas.getContext("2d"));
-
-				// draw at scale onto the new canvas
-				tempCtx.imageSmoothingEnabled = false;
-				tempCtx.drawImage(ctx.canvas, 0, 0, ctx.canvas.width, ctx.canvas.height, 0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
-
-				// copy back to the original canvas
-				this.cellIconCanvas.width = this.scaleIconCanvas.width;
-				this.cellIconCanvas.height = this.scaleIconCanvas.height;
-				ctx.drawImage(this.scaleIconCanvas, 0, 0);
+				// write the image data back to the canvas
+				ctx.putImageData(data, 0, 0);
 			}
 
 			// create the icon drawing canvas
 			if (this.iconCanvas === null) {
 				this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+				this.iconCanvas.width = (this.displayWidth << 1) + ViewConstants.maxZoom;
+				this.iconCanvas.height = (this.displayHeight << 1) + ViewConstants.maxZoom;
+				this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 			}
-			this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
-			this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
 
-			this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
+			// at least one icon size has been created so check if any other sizes are missing
+			if (size31 === false || size15 === false || size7 === false) {
+				// check if size 31 is missing
+				if (size31 === false) {
+					// check if size 15 is also missing
+					if (size15 === false) {
+						// create size 15 from size 7 since it must exist
+						this.scaleIconSet(this.cellIconContext15, this.cellIconContext7);
+					}
+
+					// create size 31 from size 15
+					this.scaleIconSet(this.cellIconContext31, this.cellIconContext15);
+				}
+
+				// by now at least size 31 exists
+				if (size15 === false) {
+					// if size 7 exists then use it to create size 15
+					if (size7) {
+						// create size 15 from size 7
+						this.scaleIconSet(this.cellIconContext15, this.cellIconContext7);
+					} else {
+						// create size 15 from size 31
+						this.scaleIconSet(this.cellIconContext15, this.cellIconContext31);
+					}
+				}
+
+				// by now both sizes 31 and 15 exist
+				if (size7 === false) {
+					this.scaleIconSet(this.cellIconContext15, this.cellIconContext7);
+				}
+			}
+
+			// mark icons available
+			this.iconsAvailable = true;
 		}
 	};
 
@@ -3256,7 +3354,8 @@ This file is part of LifeViewer
 			/** @type {number} */ alpha = label.bgAlpha,
 			/** @type {string} */ fgCol = label.fgCol,
 			/** @type {string} */ bgCol = label.bgCol,
-			/** @type {CanvasRenderingContext2D} */ ctx = this.context;
+			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
+			/** @type {boolean} */ twoCols = false;
 
 		// scale the image to fit
 		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
@@ -3329,11 +3428,21 @@ This file is part of LifeViewer
 			}
 		}
 
-		// draw the legend box
+		// check if the legend fits in one column
 		bottomY = (this.displayHeight - (numCols + 2) * rowSize) / 2;
+		if (bottomY <= 40) {
+			bottomY = 40;
+			twoCols = true;
+		}
+
+		// draw the legend box
 		ctx.globalAlpha = alpha;
 		ctx.fillStyle = bgCol;
-		ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + boxSize + x + 3, (numCols + 2) * rowSize + 3);
+		if (twoCols) {
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + boxSize + x + 3) * 2, (numCols + 2) * rowSize + 3);
+		} else {
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + boxSize + x + 3, (numCols + 2) * rowSize + 3);
+		}
 		ctx.globalAlpha = 1;
 
 		// draw each legend entry
@@ -3366,6 +3475,11 @@ This file is part of LifeViewer
 		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
 			p = this.popSubPeriod[x];
 			if (p > 0) {
+				if ((bottomY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight) {
+					y = 0;
+					leftX += boxSize + boxSize + x + 3;
+				}
+
 				// draw colour
 				ctx.fillStyle = this.view.menuManager.bgCol;
 				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2 + (1 * displayScale), boxSize, boxSize);
@@ -9429,6 +9543,7 @@ This file is part of LifeViewer
 
 			// resize the icon drawing canvas if it exists
 			if (this.iconCanvas !== null) {
+				// icon canvas is display width plus one zoom cell
 				this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
 				this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
 
@@ -10864,7 +10979,7 @@ This file is part of LifeViewer
 			/** @type {number} */ gridLineRaw = this.gridLineRaw,
 			/** @type {number} */ gridLineBoldRaw = this.gridLineBoldRaw,
 			/** @type {Array<string>} */ colourStrings = this.cellColourStrings,
-			/** @type {boolean} */ needStrings = (this.isHex && !this.forceRectangles) || (this.isTriangular && !this.forceRectangles) || this.cellIconCanvas !== null,
+			/** @type {boolean} */ needStrings = (this.isHex && !this.forceRectangles) || (this.isTriangular && !this.forceRectangles) || this.iconsAvailable,
 			/** @type {number} */ alpha = 255,
 			/** @type {number} */ i = 0;
 
@@ -46951,7 +47066,7 @@ This file is part of LifeViewer
 			// check angle
 			if (this.camAngle === 0) {
 				// check for icons
-				if (this.camZoom >= 4 && this.cellIconCanvas !== null && this.view.useIcons) {
+				if (this.camZoom >= 8 && this.iconsAvailable && this.view.useIcons) {
 					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
 					// render with clipping and no rotation
@@ -46970,7 +47085,7 @@ This file is part of LifeViewer
 			// check angle
 			if (this.camAngle === 0) {
 				// check for icons
-				if (this.camZoom >= 4 && this.cellIconCanvas !== null && this.view.useIcons) {
+				if (this.camZoom >= 8 && this.iconsAvailable && this.view.useIcons) {
 					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
 					// render with no clipping and rotation
@@ -46993,6 +47108,7 @@ This file is part of LifeViewer
 			/** @type {CanvasRenderingContext2D} */ iconContext = this.iconContext,
 			/** @type {Array<string>} */ colourStrings = this.cellColourStrings,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
+			/** @type {HTMLCanvasElement} */ cellIconCanvas = null,
 			/** @type {Uint8Array} */ gridRow = null,
 			/** @type {number} */ width = rightX - leftX,
 			/** @type {number} */ height = topY - bottomY,
@@ -47006,9 +47122,8 @@ This file is part of LifeViewer
 			/** @type {number} */ iScale = 0,
 			/** @type {number} */ jScale = 0,
 			/** @const {number} */ scale = this.camZoom,
-			/** @const {number} */ scaleUp = Math.ceil(scale),
 			/** @type {number} */ state = 0,
-			/** @type {number} */ maxIcon = this.cellIconCanvas.height / this.cellIconCanvas.width,
+			/** @type {number} */ maxIcon = 0,
 			/** @type {number} */ maxGridSize = this.maxGridSize,
 			/** @const {number} */ widthMask = this.width - 1,
 			/** @const {number} */ heightMask = this.height - 1,
@@ -47025,6 +47140,8 @@ This file is part of LifeViewer
 			/** @type {number} */ gridLineMajor = this.gridLineMajor,
 			/** @type {number} */ gridCol = this.gridLineColour,
 			/** @type {number} */ gridBoldCol = this.gridLineBoldColour,
+			/** @type {number} */ iconSize = 0,
+			/** @type {number} */ cellSize = 0,
 			/** @type {number} */ mx = 0,
 			/** @type {number} */ my = 0;
 
@@ -47060,10 +47177,26 @@ This file is part of LifeViewer
 		// get the boundary cell colour
 		boundaryRGB = "rgb(" + (boundaryCol & 255) + "," + ((boundaryCol >> 8) & 255) + "," + ((boundaryCol >> 16) & 255) + ")";
 
+		// select the correct set of icons for the scale
+		if (scale < 16) {
+			cellIconCanvas = this.cellIconCanvas7;
+			iconSize = 7;
+		} else {
+			if (scale < 32) {
+				cellIconCanvas = this.cellIconCanvas15;
+				iconSize = 15;
+			} else {
+				cellIconCanvas = this.cellIconCanvas31;
+				iconSize = 31;
+			}
+		}
+		cellSize = iconSize + 1;
+
+		// compute number of available icons
+		maxIcon = cellIconCanvas.height / cellIconCanvas.width;
+
 		// draw each row of cells
 		j = 0;
-		iconContext.imageSmoothingEnabled = true;
-		iconContext.imageSmoothingQuality = "high";
 
 		for (y = bottomY; y < topY; y += 1) {
 			if ((y & heightMask) === y) {
@@ -47085,7 +47218,7 @@ This file is part of LifeViewer
 				if (x + xadj < 0 || x + xadj >= maxGridSize || y + yadj < 0 || y + yadj >= maxGridSize) {
 					// draw filled square in boundary colour
 					iconContext.fillStyle = boundaryRGB;
-					iconContext.fillRect(iScale, jScale, scaleUp, scaleUp);
+					iconContext.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
 				} else {
 					// check if the cell is on the current allocated grid
 					if (!(((x & widthMask) !== x) || ((y & heightMask) !== y))) {
@@ -47096,18 +47229,22 @@ This file is part of LifeViewer
 						if (this.boundedGridType !== -1 && state === this.boundedBorderColour) {
 							// draw filled square in bounded grid colour
 							iconContext.fillStyle = colourStrings[this.boundedBorderColour];
-							iconContext.fillRect(iScale, jScale, scaleUp, scaleUp);
+							iconContext.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
 						} else {
 							// check for PCA rule
 							if (this.isPCA) {
 								if (state <= this.historyStates) {
 									// draw filled square in state colour
 									iconContext.fillStyle = colourStrings[state];
-									iconContext.fillRect(iScale, jScale, scaleUp, scaleUp);
+									iconContext.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
 								} else {
+									// make right column and bottom row in just died colour (TBD could be fixed by adjusting icons sizes)
+									iconContext.fillStyle = colourStrings[this.historyStates];
+									iconContext.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
+
 									// draw icon
 									state -= this.historyStates;
-									iconContext.drawImage(this.cellIconCanvas, 0, (state - 1) * 33, 32, 32, iScale, jScale, scale, scale);
+									iconContext.drawImage(cellIconCanvas, 0, (state - 1) * iconSize, iconSize, iconSize, i * cellSize, j * cellSize, iconSize, iconSize);
 								}
 							} else {
 								// RuleLoader rule
@@ -47116,10 +47253,10 @@ This file is part of LifeViewer
 									if (state > maxIcon) {
 										// draw filled square in state colour
 										iconContext.fillStyle = colourStrings[state];
-										iconContext.fillRect(iScale, jScale, scaleUp, scaleUp);
+										iconContext.fillRect(i * cellSize, j * cellSize, cellSize, cellSize);
 									} else {
 										// draw icon
-										iconContext.drawImage(this.cellIconCanvas, 0, (state - 1) * 33, 32, 32, iScale, jScale, scale, scale);
+										iconContext.drawImage(cellIconCanvas, 0, (state - 1) * iconSize, iconSize, iconSize, i * cellSize, j * cellSize, iconSize, iconSize);
 									}
 								}
 							}
@@ -47131,10 +47268,11 @@ This file is part of LifeViewer
 			j += 1;
 		}
 
-		iconContext.imageSmoothingEnabled = false;
-
 		// draw on the display
-		ctx.drawImage(iconCanvas, 0, 0, width * this.camZoom, height * yZoom, dx, dy, width * this.camZoom, height * yZoom);
+		iconContext.imageSmoothingEnabled = true;
+		iconContext.imageSmoothingQuality = "high";
+		ctx.drawImage(iconCanvas, 0, 0, width * cellSize, height * cellSize, dx, dy, width * this.camZoom, height * yZoom);
+		iconContext.imageSmoothingEnabled = false;
 
 		// draw the grid lines if required
 		if (drawGridLines) {

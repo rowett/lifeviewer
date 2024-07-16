@@ -1,3 +1,9 @@
+Build 1162
+- improve PCA icon rendering
+
+Build 1161
+- improve RuleLoader icon rendering
+
 Build 1160
 - fix rendering Generations rules with no history state and Layers
 

@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1160,
+		/** @const {number} */ versionBuild : 1162,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6278,7 +6278,7 @@ This file is part of LifeViewer
 			/** @type {number} */ height = list.relHeight,
 			/** @type {number} */ width = list.relWidth,
 			/** @type {number} */ yPos = 0,
-			/** @type {HTMLCanvasElement} */ iconCanvas = me.engine.cellIconCanvas,
+			/** @type {HTMLCanvasElement} */ iconCanvas = me.engine.cellIconCanvas31,
 			/** @type {number} */ iconSize = 0;
 
 		// check if icons are available
@@ -6289,7 +6289,7 @@ This file is part of LifeViewer
 			// draw the icon for each displayed state
 			for (i = 0; i < me.maxDisplayStates; i += 1) {
 				// find the icon in the canvas
-				yPos = (i + me.startState - 1) * (iconSize + 1);
+				yPos = (i + me.startState - 1) * iconSize;
 				if (yPos >= 0 && yPos < iconCanvas.height) {
 					ctx.drawImage(iconCanvas, 0, yPos, iconSize, iconSize, (i * (width / me.maxDisplayStates) * xScale + x), y, height * xScale, height * yScale);
 				}
@@ -7616,7 +7616,7 @@ This file is part of LifeViewer
 		}
 
 		// lock use icons if icons not available
-		if (this.engine.cellIconCanvas === null) {
+		if (this.engine.cellIconCanvas31 === null) {
 			this.iconToggle.locked = true;
 		} else {
 			this.iconToggle.locked = false;
@@ -19462,8 +19462,8 @@ This file is part of LifeViewer
 				if (pattern.ruleTableIcons) {
 					me.engine.processIcons(pattern.ruleTableIcons);
 				} else {
-					// otherwise clear any previous icons
-					me.engine.cellIconCanvas = null;
+					// no icons available
+					me.engine.iconsAvailable = false;
 				}
 			}
 

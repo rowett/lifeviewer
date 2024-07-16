@@ -4971,7 +4971,7 @@ This file is part of LifeViewer
 						// use icons
 						case Keywords.useIconsWord:
 							// enable icons if present
-							if (view.engine.cellIconCanvas !== null) {
+							if (view.engine.iconsAvailable) {
 								view.useIcons = true;
 							}
 							itemValid = true;
