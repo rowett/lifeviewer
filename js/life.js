@@ -3355,7 +3355,9 @@ This file is part of LifeViewer
 			/** @type {string} */ fgCol = label.fgCol,
 			/** @type {string} */ bgCol = label.bgCol,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
-			/** @type {boolean} */ twoCols = false;
+			/** @type {boolean} */ twoCols = false,
+			/** @type {number} */ maxLabelWidth = 0,
+			/** @type {number} */ legendBorder = displayScale * 40;
 
 		// scale the image to fit
 		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
@@ -3416,32 +3418,34 @@ This file is part of LifeViewer
 				}
 			}
 		}
-		x = ctx.measureText(String(y)).width;
+		maxLabelWidth = ctx.measureText(String(y)).width;
 		if (this.cellPeriodState6) {
 			if (this.isExtended) {
 				y = ctx.measureText(LifeConstants.state3Label).width;
 			} else {
 				y = ctx.measureText(LifeConstants.state6Label).width;
 			}
-			if (y > x) {
-				x = y;
+			if (y > maxLabelWidth) {
+				maxLabelWidth = y;
 			}
 		}
+		maxLabelWidth *= window.devicePixelRatio;
 
 		// check if the legend fits in one column
 		bottomY = (this.displayHeight - (numCols + 2) * rowSize) / 2;
-		if (bottomY <= 40) {
-			bottomY = 40;
+		if (bottomY <= legendBorder) {
+			bottomY = legendBorder;
 			twoCols = true;
 		}
 
 		// draw the legend box
 		ctx.globalAlpha = alpha;
 		ctx.fillStyle = bgCol;
+
 		if (twoCols) {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + boxSize + x + 3) * 2, (numCols + 2) * rowSize + 3);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 10 * displayScale) * 2, this.displayHeight - legendBorder * 3 + rowSize);
 		} else {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + boxSize + x + 3, (numCols + 2) * rowSize + 3);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 10 * displayScale, (numCols + 2) * rowSize + 3 * displayScale);
 		}
 		ctx.globalAlpha = 1;
 
@@ -3475,9 +3479,9 @@ This file is part of LifeViewer
 		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
 			p = this.popSubPeriod[x];
 			if (p > 0) {
-				if ((bottomY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight) {
+				if ((bottomY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
 					y = 0;
-					leftX += boxSize + boxSize + x + 3;
+					leftX += boxSize + maxLabelWidth + 10 * displayScale;
 				}
 
 				// draw colour
@@ -18619,6 +18623,9 @@ This file is part of LifeViewer
 					// update bounding box
 					this.shrinkNeeded = true;
 					this.doShrink();
+
+					// notify user
+					this.view.menuManager.notification.notify("Cells deleted after hitting boundary", 15, 120, 15, true);
 				}
 			}
 		}

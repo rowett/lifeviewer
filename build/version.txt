@@ -1,3 +1,7 @@
+Build 1163
+- show notification when cells are deleted after hitting boundary
+- use two columns for Cell Period Map legend if required
+
 Build 1162
 - improve PCA icon rendering
 
