@@ -2896,7 +2896,8 @@ This file is part of LifeViewer
 			/** @type {number} */ inc = 0,
 			/** @type {number} */ minX = 0,
 			/** @type {number} */ maxX = 0,
-			/** @type {number} */ xPos = 0;
+			/** @type {number} */ xPos = 0,
+			/** @type {number} */ cellPeriodWidth = this.cellPeriodWidth;
 
 		// adjust the colours based on endian
 		if (!this.littleEndian) {
@@ -2904,12 +2905,39 @@ This file is part of LifeViewer
 			boundedCol = 0x808080ff;
 		}
 
+		// check for hex cells
+		if (0 && this.isHex) { // TBD
+			// calculate the bounding box once hexagonal offset has been applied
+			inc = -0.5;
+			offset = this.cellPeriodHeight >> 2;
+
+			minX = cellPeriodWidth;
+			maxX = -1;
+
+			for (y = 0; y < this.cellPeriodHeight; y += 1) {
+				for (x = 0; x < this.cellPeriodWidth; x += 1) {
+					p = this.cellPeriod[y * this.cellPeriodWidth + x];
+					if (p > 0) {
+						cx = x + offset;
+						if (cx < minX) {
+							minX = cx;
+						}
+						if (cx > maxX) {
+							maxX = cx;
+						}
+					}
+				}
+				offset += inc;
+			}
+			cellPeriodWidth = maxX - minX + 1;
+		}
+
 		// default to large cell size
 		this.cellPeriodCellSize = 8;
 		cellSize = this.cellPeriodCellSize;
 
 		// determine the image scale to select cell borders
-		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
+		x = width / ((cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
 		y = height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize);
 		if (x > y) {
 			s = y;
@@ -2981,7 +3009,7 @@ This file is part of LifeViewer
 		}
 
 		// resize the image and canvas to fix the period map with "cellSize" cells
-		rowWidth = cellSize * (this.cellPeriodWidth + cellBorderSize + cellBorderSize) + gridBorderSize;
+		rowWidth = cellSize * (cellPeriodWidth + cellBorderSize + cellBorderSize) + gridBorderSize;
 		colHeight = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize) + gridBorderSize;
 		this.cellPeriodCanvas.width = rowWidth;
 		this.cellPeriodCanvas.height = colHeight;
@@ -2994,35 +3022,13 @@ This file is part of LifeViewer
 		data = this.cellPeriodContext.getImageData(0, 0, this.cellPeriodCanvas.width, this.cellPeriodCanvas.height);
 		data32 = new Uint32Array(data.data.buffer);
 
-		// check for hex cells
-		if (this.isHex) {
-			// calculate the bounding box once hexagonal offset has been applied
-			inc = -0.5;
-			offset = this.cellPeriodHeight >> 2;
-
-			minX = this.cellPeriodWidth;
-			maxX = -1;
-
-			for (y = 0; y < this.cellPeriodHeight; y += 1) {
-				for (x = 0; x < this.cellPeriodWidth; x += 1) {
-					p = this.cellPeriod[y * this.cellPeriodWidth + x];
-					if (p > 0) {
-						cx = x + offset;
-						if (cx < minX) {
-							minX = cx;
-						}
-						if (cx > maxX) {
-							maxX = cx;
-						}
-					}
-				}
-				offset += inc;
-			}
-
+		// check for hex grid
+		if (0 && this.isHex) { // TBD
 			// set the offset for drawing using the minx and maxx to center the image
 			inc = -cellSize / 2;
 			offset = (this.cellPeriodHeight >> 2) * cellSize;
-			offset += (((this.cellPeriodWidth - maxX - minX)) >> 1) * cellSize;
+			offset -= minX * cellSize;
+			//offset += ((this.cellPeriodWidth - cellPeriodWidth) >> 1) * cellSize + cellSize;
 		}
 
 		// draw the cells
@@ -3075,12 +3081,12 @@ This file is part of LifeViewer
 			// draw the grid
 			for (y = -1; y <= this.cellPeriodHeight + 1; y += 1) {
 				row = ((y + cellBorderSize) * cellSize) * rowWidth;
-				for (x = 0; x < (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1; x += 1) {
+				for (x = 0; x < (cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1; x += 1) {
 					data32[row + x] = gridCol;
 				}
 			}
 
-			for (x = -1; x <= this.cellPeriodWidth + 1; x += 1) {
+			for (x = -1; x <= cellPeriodWidth + 1; x += 1) {
 				for (y = 0; y < (this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize; y += 1) {
 					if (((y / cellSize) & 1) === 0) {
 						offset = inc;
@@ -3443,9 +3449,9 @@ This file is part of LifeViewer
 		ctx.fillStyle = bgCol;
 
 		if (twoCols) {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 10 * displayScale) * 2, this.displayHeight - legendBorder * 3 + rowSize);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 5 * displayScale) * 2, this.displayHeight - legendBorder * 3 + rowSize);
 		} else {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 10 * displayScale, (numCols + 2) * rowSize + 3 * displayScale);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 4 * displayScale, (numCols + 2) * rowSize + 3 * displayScale);
 		}
 		ctx.globalAlpha = 1;
 
@@ -45061,6 +45067,7 @@ This file is part of LifeViewer
 			/** @type {number} */ topY = h,
 			/** @type {boolean} */ drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled),
 			/** @type {number} */ odd = (this.counter & 1),
+			/** @type {number} */ extend = Math.abs(w - h),
 
 			// compute single cell offset
 			/** @type {number} */ yOff = (((this.height / 2 - (this.yOff + this.originY)) * yZoomStep) + (h / 2)) % yZoomStep,
@@ -45098,11 +45105,11 @@ This file is part of LifeViewer
 			gridLineNum = -(w / 2 / xZoomStep) - (this.width / 2 - this.xOff - this.originX) | 0;
 			gridLineNum += xPat - 2;
 
-			// extend the number of lines to cope with 45 degrees rotation
-			startX = -xZoomStep * 22;
-			endX = w + xZoomStep + xZoomStep * 22;
-			startY = yOff - yZoomStep * 22;
-			endY = h + yZoomStep * 22;
+			// extend the number of lines to cope with rotation
+			startX = -xZoomStep * extend;
+			endX = w + xZoomStep + xZoomStep * extend;
+			startY = yOff - yZoomStep * extend;
+			endY = h + yZoomStep * extend;
 			leftX = -w / 1.5;
 			rightX = w + w / 1.5;
 			bottomY = -h / 1.5;
@@ -47307,8 +47314,12 @@ This file is part of LifeViewer
 
 			// draw grid major line rows if needed
 			if (drawMajor) {
-				mx = leftX - 1;
-				my = bottomY - 3;
+				// compute major grid line horizontal offset
+				my = -(this.displayHeight / 2 / this.getYZoom(this.camZoom)) - (this.height / 2 - this.yOff - this.originY) | 0;
+				my += ((this.view.patternHeight / 2) | 0) - 3;
+
+				mx = -(this.displayWidth / 2 / this.camZoom) - (this.width / 2 - this.xOff - this.originX) | 0;
+				mx += ((this.view.patternWidth / 2) | 0) - 3;
 
 				ctx.strokeStyle = this.getColourString(gridBoldCol);
 				ctx.beginPath();

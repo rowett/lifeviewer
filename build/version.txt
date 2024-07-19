@@ -1,3 +1,10 @@
+Build 1164
+- fixed some gridlines not being drawn when grid rotated
+- fixed major gridline position in Icon renderer
+- fixed Icon toggle not being greyed out after rule with icons loaded
+- narrowed the Cell Period Map legend slightly
+- temporarily disabled offset square Cell Period Map
+
 Build 1163
 - show notification when cells are deleted after hitting boundary
 - use two columns for Cell Period Map legend if required

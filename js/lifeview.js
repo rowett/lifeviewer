@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1163,
+		/** @const {number} */ versionBuild : 1164,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7616,11 +7616,7 @@ This file is part of LifeViewer
 		}
 
 		// lock use icons if icons not available
-		if (this.engine.cellIconCanvas31 === null) {
-			this.iconToggle.locked = true;
-		} else {
-			this.iconToggle.locked = false;
-		}
+		this.iconToggle.locked = !this.engine.iconsAvailable;
 
 		// lock nav toggle if window height is too short
 		shown = this.displayHeight < ViewConstants.minMenuHeight;

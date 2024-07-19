@@ -240,7 +240,7 @@ This file is part of LifeViewer
 					if (Supports.littleEndian) {
 						pixelColour = (0xff << 24) | (currentBlue << 16) | (currentGreen << 8) | currentRed;
 					} else {
-						pixelColour = (currentRed << 24) | (currentBlue << 16) | (currentGreen << 8) | 0xff;
+						pixelColour = (currentRed << 24) | (currentGreen << 16) | (currentBlue << 8) | 0xff;
 					}
 
 					// draw the star center
@@ -259,7 +259,7 @@ This file is part of LifeViewer
 				if (Supports.littleEndian) {
 					pixelColour = (0xff << 24) | (currentBlue << 16) | (currentGreen << 8) | currentRed;
 				} else {
-					pixelColour = (currentRed << 24) | (currentBlue << 16) | (currentGreen << 8) | 0xff;
+					pixelColour = (currentRed << 24) | (currentGreen << 16) | (currentBlue << 8) | 0xff;
 				}
 
 				// draw left halo
