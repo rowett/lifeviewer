@@ -2893,9 +2893,11 @@ This file is part of LifeViewer
 			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
 			/** @type {number} */ height = this.displayHeight - (displayScale * 90),
 			/** @type {number} */ offset = 0,
+			/** @type {number} */ vy = 0,
+			/** @type {number} */ vo = 0,
+			/** @type {number} */ sx = 0,
+			/** @type {number} */ ex = 0,
 			/** @type {number} */ inc = 0,
-			/** @type {number} */ minX = 0,
-			/** @type {number} */ maxX = 0,
 			/** @type {number} */ xPos = 0,
 			/** @type {number} */ cellPeriodWidth = this.cellPeriodWidth;
 
@@ -2906,30 +2908,8 @@ This file is part of LifeViewer
 		}
 
 		// check for hex cells
-		if (0 && this.isHex) { // TBD
-			// calculate the bounding box once hexagonal offset has been applied
-			inc = -0.5;
-			offset = this.cellPeriodHeight >> 2;
-
-			minX = cellPeriodWidth;
-			maxX = -1;
-
-			for (y = 0; y < this.cellPeriodHeight; y += 1) {
-				for (x = 0; x < this.cellPeriodWidth; x += 1) {
-					p = this.cellPeriod[y * this.cellPeriodWidth + x];
-					if (p > 0) {
-						cx = x + offset;
-						if (cx < minX) {
-							minX = cx;
-						}
-						if (cx > maxX) {
-							maxX = cx;
-						}
-					}
-				}
-				offset += inc;
-			}
-			cellPeriodWidth = maxX - minX + 1;
+		if (this.isHex) {
+			cellPeriodWidth += Math.ceil(this.cellPeriodHeight / 2);
 		}
 
 		// default to large cell size
@@ -3023,12 +3003,10 @@ This file is part of LifeViewer
 		data32 = new Uint32Array(data.data.buffer);
 
 		// check for hex grid
-		if (0 && this.isHex) { // TBD
-			// set the offset for drawing using the minx and maxx to center the image
+		if (this.isHex) {
+			// set the offset for drawing
 			inc = -cellSize / 2;
-			offset = (this.cellPeriodHeight >> 2) * cellSize;
-			offset -= minX * cellSize;
-			//offset += ((this.cellPeriodWidth - cellPeriodWidth) >> 1) * cellSize + cellSize;
+			offset = (this.cellPeriodHeight >> 1) * cellSize - inc;
 		}
 
 		// draw the cells
@@ -3078,22 +3056,48 @@ This file is part of LifeViewer
 
 		// draw the grid if required
 		if (drawGrid) {
+			// check for hex grid
+			if (this.isHex) {
+				// set the offset for drawing
+				offset = (this.cellPeriodHeight >> 1) * cellSize - inc + cellSize;
+			}
+
 			// draw the grid
 			for (y = -1; y <= this.cellPeriodHeight + 1; y += 1) {
+				offset += inc;
 				row = ((y + cellBorderSize) * cellSize) * rowWidth;
-				for (x = 0; x < (cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1; x += 1) {
-					data32[row + x] = gridCol;
+				for (x = offset; x < (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1 + offset; x += 1) {
+					if (x >= 0) {
+						data32[row + x] = gridCol;
+					}
+				}
+				if (this.isHex) {
+					for (cx = 0; cx < -inc; cx += 1) {
+						if (x + cx < rowWidth) {
+							data32[row + x + cx] = gridCol;
+						}
+					}
 				}
 			}
 
-			for (x = -1; x <= cellPeriodWidth + 1; x += 1) {
+			sx = -1;
+			ex = this.cellPeriodWidth + 1;
+			if (this.isHex) {
+				offset = (this.cellPeriodHeight >> 1) * cellSize - inc;
+				sx += 1;
+				ex += 1;
+			}
+
+			for (x = sx; x <= ex; x += 1) {
+				vy = 0;
+				vo = offset;
 				for (y = 0; y < (this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize; y += 1) {
-					if (((y / cellSize) & 1) === 0) {
-						offset = inc;
-					} else {
-						offset = 0;
+					if ((vy % cellSize) === 0) {
+						vo +=inc;
 					}
-					xPos = ((x + cellBorderSize) * cellSize) + offset;
+					vy += 1;
+
+					xPos = ((x + cellBorderSize) * cellSize) + vo;
 					if (xPos >= 0 && xPos < this.cellPeriodCanvas.width) {
 						data32[(y * rowWidth) + xPos] = gridCol;
 					}
@@ -3140,6 +3144,9 @@ This file is part of LifeViewer
 
 		// update the image
 		this.cellPeriodContext.putImageData(data, 0, 0);
+
+		// save the cell period size
+		this.cellPeriodWidth = cellPeriodWidth;
 
 		// create the table row values for page up and page down
 		view.setResultsPosition();
@@ -3424,7 +3431,7 @@ This file is part of LifeViewer
 				}
 			}
 		}
-		maxLabelWidth = ctx.measureText(String(y)).width;
+		maxLabelWidth = ctx.measureText(String(y) + " ").width;
 		if (this.cellPeriodState6) {
 			if (this.isExtended) {
 				y = ctx.measureText(LifeConstants.state3Label).width;
@@ -3435,7 +3442,6 @@ This file is part of LifeViewer
 				maxLabelWidth = y;
 			}
 		}
-		maxLabelWidth *= window.devicePixelRatio;
 
 		// check if the legend fits in one column
 		bottomY = (this.displayHeight - (numCols + 2) * rowSize) / 2;
@@ -3449,9 +3455,9 @@ This file is part of LifeViewer
 		ctx.fillStyle = bgCol;
 
 		if (twoCols) {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 5 * displayScale) * 2, this.displayHeight - legendBorder * 3 + rowSize);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 8 * displayScale) * 2, this.displayHeight - legendBorder * 3 + rowSize);
 		} else {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 4 * displayScale, (numCols + 2) * rowSize + 3 * displayScale);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, (numCols + 2) * rowSize + 3 * displayScale);
 		}
 		ctx.globalAlpha = 1;
 

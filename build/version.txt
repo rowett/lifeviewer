@@ -1,3 +1,7 @@
+Build 1165
+- fixed offset square Cell Period Map
+- fixed Cell Period Map legend width
+
 Build 1164
 - fixed some gridlines not being drawn when grid rotated
 - fixed major gridline position in Icon renderer
