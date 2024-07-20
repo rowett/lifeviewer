@@ -3434,9 +3434,9 @@ This file is part of LifeViewer
 		maxLabelWidth = ctx.measureText(String(y) + " ").width;
 		if (this.cellPeriodState6) {
 			if (this.isExtended) {
-				y = ctx.measureText(LifeConstants.state3Label).width;
+				y = ctx.measureText(LifeConstants.state3Label + " ").width;
 			} else {
-				y = ctx.measureText(LifeConstants.state6Label).width;
+				y = ctx.measureText(LifeConstants.state6Label + " ").width;
 			}
 			if (y > maxLabelWidth) {
 				maxLabelWidth = y;

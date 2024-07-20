@@ -1,3 +1,6 @@
+Build 1166
+- fixed Cell Period Map legend width for deathforcer cells
+
 Build 1165
 - fixed offset square Cell Period Map
 - fixed Cell Period Map legend width
