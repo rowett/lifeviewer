@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1166,
+		/** @const {number} */ versionBuild : 1167,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7386,7 +7386,7 @@ This file is part of LifeViewer
 		this.themeButton.locked = this.multiStateView || this.engine.isNone || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended;
 
 		// lock major button if hex or triangular grid
-		this.majorButton.locked = (this.engine.isHex && !this.engine.forceRectangles) || (this.engine.isTriangular && !this.engine.forceRectangles) || this.engine.gridLineMajor === 0;
+		this.majorButton.locked = this.engine.isHex || this.engine.isTriangular || this.engine.gridLineMajor === 0;
 
 		// lock hex cell button if not in hex mode
 		this.hexCellButton.locked = !(this.engine.isHex || this.engine.isTriangular);
@@ -20544,6 +20544,10 @@ This file is part of LifeViewer
 		}
 
 		// set the major gridlines UI control
+		if (me.engine.isHex || me.engine.isTriangular) {
+			me.engine.gridLineMajorEnabled = false;
+
+		}
 		if (me.engine.gridLineMajor === 0) {
 			me.majorButton.current = [false];
 			me.majorButton.locked = true;

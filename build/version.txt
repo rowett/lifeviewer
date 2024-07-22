@@ -1,3 +1,7 @@
+Build 1167
+- fixed offset square gridline position
+- disable major gridlines for hexagonal and triangular grids when using rectangular cells
+
 Build 1166
 - fixed Cell Period Map legend width for deathforcer cells
 

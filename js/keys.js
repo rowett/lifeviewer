@@ -795,10 +795,12 @@ This file is part of LifeViewer
 					// check for shift
 					if (shiftKey) {
 						// toggle major grid lines
-						me.majorButton.current = me.viewMajorToggle([!me.engine.gridLineMajorEnabled], true, me);
-						if (me.engine.gridLineMajor > 0) {
-							me.menuManager.notification.notify("Major Grid Lines " + (me.engine.gridLineMajorEnabled ? "On" : "Off"), 15, 40, 15, true);
-							me.clearHelpCache();
+						if (!me.majorButton.locked) {
+							me.majorButton.current = me.viewMajorToggle([!me.engine.gridLineMajorEnabled], true, me);
+							if (me.engine.gridLineMajor > 0) {
+								me.menuManager.notification.notify("Major Grid Lines " + (me.engine.gridLineMajorEnabled ? "On" : "Off"), 15, 40, 15, true);
+								me.clearHelpCache();
+							}
 						}
 					} else {
 						// toggle grid

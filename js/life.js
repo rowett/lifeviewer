@@ -198,11 +198,11 @@ This file is part of LifeViewer
 		// hex and triangle cell coordinate buffer size
 		/** @const {number} */ coordBufferSize : 4096,
 
-		// triangle line width
-		/** @const {number} */ triangleLineWidth : 1.6,
-
 		// hex cell bits for buffer (must be coordBufferSize * 16 bits big)
 		/** @const {number} */ coordBufferBits : 16,
+
+		// triangle line width
+		/** @const {number} */ triangleLineWidth : 1.6,
 
 		// remove pattern cell buffer (must be power of 2)
 		/** @const {number} */ removePatternBufferSize : 4096,
@@ -6731,6 +6731,9 @@ This file is part of LifeViewer
 			/** @type {number} */ xadj = 0,
 			/** @type {number} */ yadj = 0,
 			/** @type {number} */ maxGridSize = this.maxGridSize;
+
+		var cellTime = performance.now();
+		var gridTime = 0;
 
 		// switch buffers if required
 		if ((this.isSuper || this.isExtended || this.isRuleTree) && ((this.counter & 1) !== 0)) {
@@ -45143,7 +45146,7 @@ This file is part of LifeViewer
 
 						// draw staggered vertical line
 						for (y = startY; y < endY; y += yZoomStep) {
-							if ((vLineNum & 1) === 0) {
+							if ((vLineNum & 1) === (extend & 1)) {
 								this.drawLine(Math.round(x + xOff), Math.round(y), Math.round(x + xOff), Math.round(y + yZoomStep - 1), drawCol);
 							} else {
 								this.drawLine(Math.round(x + xOff + xZoomStep / 2), Math.round(y), Math.round(x + xOff + xZoomStep / 2), Math.round(y + yZoomStep - 1), drawCol);
