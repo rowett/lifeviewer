@@ -3,9 +3,7 @@ Investigate:
     "extended" Generations
     Deficient rules
     half-integer Wolfram rules
-    LtL Margolus rules
     user preferences
-    strict volatility (Identify)
     memory statistics in allocator with 0 size allocations
 
 Planned:
@@ -67,7 +65,7 @@ Planned:
 [STARTED]Rule Table rules
     [DONE]decode @TABLE
     [DONE]decode @ICONS
-    - render Icons
+    [DONE]render Icons
     [DONE]decode @TREE
     [DONE]decode @COLORS
     [DONE]load rules from repository
@@ -142,3 +140,4 @@ Complete:
 [DONE]grey out individual items in a UI list control
 [DONE]pause playback during drawing
 [DONE]bottom right menu items should be relative to middle column so they cluster on wide windows
+[DONE]strict volatility (Identify)
