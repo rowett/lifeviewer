@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1167,
+		/** @const {number} */ versionBuild : 1169,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -21131,7 +21131,7 @@ This file is part of LifeViewer
 		var	/** @type {string} */ result = replaceHTMLEntities(element.innerHTML);
 		
 		// remove HTML tags
-		result = result.replace(/<br *\/>/gi, "\n").replace(/<br>/gi, "\n").replace(/&nbsp;/gi, " ").replace(/<span class="posthilit">/gi, "").replace(/<\/span>/gi, "").trim();
+		result = result.replace(/<br *\/>/gi, "\n").replace(/<br>/gi, "\n").replace(/&nbsp;/gi, " ").replace(/<span class="posthilit">/gi, "").replace(/<\/span>/gi, "").replace(/<font><\/font>/gi, "").trim();
 
 		// remove space or tab at the beginning of lines
 		result = result.replace(/\n[ \t]+/g, "\n");

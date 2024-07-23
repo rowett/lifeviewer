@@ -3370,11 +3370,13 @@ This file is part of LifeViewer
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
 			/** @type {boolean} */ twoCols = false,
 			/** @type {number} */ maxLabelWidth = 0,
-			/** @type {number} */ legendBorder = displayScale * 40;
+			/** @type {number} */ legendBorder = displayScale * 40,
+			/** @type {number} */ yFactor = this.getYFactor();
 
 		// scale the image to fit
 		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
-		y = height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize);
+		y = (height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize)) * yFactor;
+
 		if (x > y) {
 			s = y;
 		} else {
@@ -3395,10 +3397,14 @@ This file is part of LifeViewer
 		leftX = ((this.displayWidth - x) / 2);
 		bottomY = ((this.displayHeight - y) / 2);
 		ctx.translate(this.displayWidth >> 1, this.displayHeight >> 1);
-		ctx.scale(s, s);
+		if (yFactor > 1) {
+			ctx.scale(s / yFactor, s);
+		} else {
+			ctx.scale(s, s * yFactor);
+		}
 
 		// use image smoothing for scales below 1 pixel per cell
-		if (s < 1) {
+		if (s < 1 || yFactor !== 1) {
 			ctx.imageSmoothingEnabled = true;
 		} else {
 			ctx.imageSmoothingEnabled = false;
@@ -6731,9 +6737,6 @@ This file is part of LifeViewer
 			/** @type {number} */ xadj = 0,
 			/** @type {number} */ yadj = 0,
 			/** @type {number} */ maxGridSize = this.maxGridSize;
-
-		var cellTime = performance.now();
-		var gridTime = 0;
 
 		// switch buffers if required
 		if ((this.isSuper || this.isExtended || this.isRuleTree) && ((this.counter & 1) !== 0)) {
@@ -47325,10 +47328,10 @@ This file is part of LifeViewer
 			if (drawMajor) {
 				// compute major grid line horizontal offset
 				my = -(this.displayHeight / 2 / this.getYZoom(this.camZoom)) - (this.height / 2 - this.yOff - this.originY) | 0;
-				my += ((this.view.patternHeight / 2) | 0) - 3;
+				my += ((this.view.patternHeight / 2) | 0) - 7;
 
 				mx = -(this.displayWidth / 2 / this.camZoom) - (this.width / 2 - this.xOff - this.originX) | 0;
-				mx += ((this.view.patternWidth / 2) | 0) - 3;
+				mx += ((this.view.patternWidth / 2) | 0) - 7;
 
 				ctx.strokeStyle = this.getColourString(gridBoldCol);
 				ctx.beginPath();

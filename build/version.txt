@@ -1,3 +1,9 @@
+Build 1169
+- triangular and hexagonal Cell Period Maps now have correct vertical scaling
+
+Build 1168
+- handle blank font definitions in HTML elements after Google translated
+
 Build 1167
 - fixed offset square gridline position
 - disable major gridlines for hexagonal and triangular grids when using rectangular cells
