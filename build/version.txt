@@ -1,3 +1,6 @@
+Build 1170
+- don't use user selectable paste buffer for Advance Outside
+
 Build 1169
 - triangular and hexagonal Cell Period Maps now have correct vertical scaling
 

@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1169,
+		/** @const {number} */ versionBuild : 1170,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1022,7 +1022,9 @@ This file is part of LifeViewer
 
 		// paste buffers
 		/** @type {Array} */ this.pasteBuffers = [];
-		for (i = 0; i < ViewConstants.numPasteBuffers; i += 1) {
+
+		// the final paste buffer is used for Advance Outside
+		for (i = 0; i <= ViewConstants.numPasteBuffers; i += 1) {
 			this.pasteBuffers[i] = null;
 		}
 
@@ -14182,6 +14184,7 @@ This file is part of LifeViewer
 		// save paste mode
 		var	/** @type {number} */ savedMode = /** @type {!number} */ (me.pasteModeList.current),
 			/** @type {boolean} */ savedSync = me.copySyncExternal,
+			/** @type {number} */ savedBuffer = me.currentPasteBuffer,
 			/** @type {BoundingBox} */ box = me.selectionBox,
 			/** @type {number} */ origX1 = box.leftX,
 			/** @type {number} */ origX2 = box.rightX,
@@ -14208,6 +14211,9 @@ This file is part of LifeViewer
 		// check for evolve outside
 		if (shift) {
 			if (me.isSelection) {
+				// select internal paste buffer
+				me.currentPasteBuffer = ViewConstants.numPasteBuffers;
+
 				// process cut but mark advance outside
 				me.copySyncExternal = false;
 				me.cutSelection(me, me.currentPasteBuffer, true, false);
@@ -14223,8 +14229,11 @@ This file is part of LifeViewer
 				me.pasteModeList.current = 1;  // UI COPY mode
 				me.copySyncExternal = false;
 				me.processPaste(me, true, true);
+
+				// restore paste options
 				me.copySyncExternal = savedSync;
-				this.pasteModeList.current = savedMode;
+				me.pasteModeList.current = savedMode;
+				me.currentPasteBuffer = savedBuffer;
 			}
 		} else {
 			// check if there is a selection
