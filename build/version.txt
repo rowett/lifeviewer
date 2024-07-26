@@ -1,3 +1,6 @@
+Build 1173
+- added emulation for odd numbered Wolfram codes
+
 Build 1172
 - fix Hex offset for Waypoints
 
