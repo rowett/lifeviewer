@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1171,
+		/** @const {number} */ versionBuild : 1172,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6530,9 +6530,6 @@ This file is part of LifeViewer
 					// set the camera position
 					me.engine.yOff = me.engine.height / 2 - currentWaypoint.y;
 					me.engine.xOff = me.engine.width / 2 - currentWaypoint.x;
-					if (me.engine.isHex) {
-						me.engine.xOff -= me.engine.yOff / 2;
-					}
 
 					// set zoom
 					me.engine.zoom = currentWaypoint.zoom;

@@ -5786,9 +5786,6 @@ This file is part of LifeViewer
 			}
 			if (currentWaypoint.xDefined) {
 				view.engine.xOff = view.engine.width / 2 - currentWaypoint.x;
-				if (view.engine.isHex) {
-					view.engine.xOff -= view.engine.yOff / 2;
-				}
 			}
 
 			// set zoom

@@ -1,3 +1,6 @@
+Build 1172
+- fix Hex offset for Waypoints
+
 Build 1171
 - enable Paste button when External Sync enabled
 
