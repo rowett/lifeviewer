@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1170,
+		/** @const {number} */ versionBuild : 1171,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7534,8 +7534,8 @@ This file is part of LifeViewer
 		shown = !this.isSelection || this.viewOnly;
 		this.cutButton.locked = shown;
 
-		// lock paste tools
-		shown = !this.canPaste || this.isPasting || this.pasteBuffers[this.currentPasteBuffer] === null || this.viewOnly;
+		// lock paste tools (unless external sync is on since the system clipboard contents are not known)
+		shown = ((!this.canPaste || this.pasteBuffers[this.currentPasteBuffer] === null) && !this.copySyncExternal) || this.isPasting || this.viewOnly;
 		this.pasteButton.locked = shown;
 
 		// drawing tools

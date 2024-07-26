@@ -1064,7 +1064,9 @@ This file is part of LifeViewer
 			// v for reset view
 			case 86:
 				if (ctrlKey) {
-					me.processPaste(me, shiftKey, false);
+					if (!me.pasteButton.locked) {
+						me.processPaste(me, shiftKey, false);
+					}
 				} else {
 					// check for shift key
 					if (shiftKey) {
