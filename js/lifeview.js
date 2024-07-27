@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1173,
+		/** @const {number} */ versionBuild : 1175,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -749,6 +749,9 @@ This file is part of LifeViewer
 	 */
 	function View(element) {
 		var	/** @type {number} */ i = 0;
+
+		// last rule name in change rule dialog
+		/** @type {string} */ this.lastRuleName = "";
 
 		// y coordinate direction
 		/** @type {boolean} */ this.yUp = false;
@@ -5340,7 +5343,7 @@ This file is part of LifeViewer
 			if (this.engine.boundedGridType !== -1) {
 				result += this.engine.HROT.xrange * 2;
 			}
-	
+
 			if (this.engine.HROT.type === this.manager.vonNeumannHROT) {
 				if (this.engine.boundedGridType !== -1) {
 					result += this.engine.boundedGridHeight / 2;
@@ -5955,36 +5958,36 @@ This file is part of LifeViewer
 	View.prototype.updateStepLabel = function(/** @type {number} */ stepsTaken) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ total = 0;
-	
+
 		// add the sample to the array
 		this.stepSamples[this.stepIndex] = stepsTaken;
 		this.stepIndex += 1;
 		if (this.stepIndex >= ViewConstants.numStepSamples) {
 			this.stepIndex = 0;
 		}
-	
+
 		// compute the average
 		for (i = 0; i < this.stepSamples.length; i += 1) {
 			total += this.stepSamples[i];
 		}
 		total /= this.stepSamples.length;
-	
+
 		// update the label
 		this.stepLabel.preText = String(Math.round(total));
 		this.stepLabel.deleted = false;
 	};
-	
+
 	// clear step samples
 	View.prototype.clearStepSamples = function() {
 		var	/** @type {number} */ i = 0;
-	
+
 		for (i = 0; i < this.stepSamples.length; i += 1) {
 			this.stepSamples[i] = 0;
 		}
 		this.stepIndex = 0;
 		this.stepLabel.deleted = true;
 	};
-	
+
 	// get cell distance from the center of the viewpoint
 	/** @returns {number} */
 	View.prototype.getDistFromCenter = function(/** @type {number} */ x, /** @type {number} */ y) {
@@ -7139,7 +7142,7 @@ This file is part of LifeViewer
 		// identify cell period display and save buttons
 		this.identifyStrictToggle.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
 		this.identifySaveCellMapButton.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
-		
+
 		// identify results
 		shown = shown || this.periodMapDisplayed === 2;
 		this.identifyBannerLabel.deleted = shown;
@@ -7942,7 +7945,7 @@ This file is part of LifeViewer
 					// remember the generation that life stopped
 					if (me.diedGeneration === -1) {
 						me.diedGeneration = me.engine.counter;
-	
+
 						// notify simulation stopped
 						if (me.genNotifications) {
 							// don't notify if there are pending pastes
@@ -10405,21 +10408,21 @@ This file is part of LifeViewer
 					me.pinchCurrentX2 = x2;
 					me.pinchCurrentY2 = y2;
 					break;
-	
+
 				case 1:
 					// first touch moved
 					me.pinchCurrentX1 = x1;
 					me.pinchCurrentY1 = y1;
 					me.updateZoomFromPinch();
 					break;
-	
+
 				case 2:
 					// second touch moved
 					me.pinchCurrentX2 = x1;
 					me.pinchCurrentY2 = y1;
 					me.updateZoomFromPinch();
 					break;
-	
+
 				default:
 					// ignore others
 					break;
@@ -11207,7 +11210,7 @@ This file is part of LifeViewer
 
 		// read the number of sequential ones
 		j = data.getValue(this.bitsFor(uniqueBlacks));
-		
+
 		i = 1;
 		while (j > 0) {
 			uniqueBlackValues[i] = uniqueBlackValues[i - 1] + 1;
@@ -11253,7 +11256,7 @@ This file is part of LifeViewer
 
 		// read the number of sequential ones
 		j = data.getValue(this.bitsFor(uniqueWhites));
-		
+
 		i = 1;
 		while (j > 0) {
 			uniqueWhiteValues[i] = uniqueWhiteValues[i - 1] + 1;
@@ -11604,10 +11607,22 @@ This file is part of LifeViewer
 	View.prototype.changeRule = function(/** @type {View} */ me) {
 		var	/** @type {string} */ patternText = "",
 			/** @type {number} */ index = -1,
-			result = window.prompt("Change rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
+			/** @type {string} */ ruleName = (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef,
+			/** @type {string|null} */ result = null;
+
+		// if the current rule name is blank (typically after an error) then use the last valid one
+		if (ruleName === "") {
+			ruleName = this.lastRuleName;
+		}
+
+		// prompt for the new rule name
+		result = window.prompt("Change rule", ruleName);
 
 		// check if the prompt was confirmed
 		if (result !== null) {
+			// save the current rule name as the last valid one
+			this.lastRuleName = ruleName;
+
 			// check if the rule is valid
 			result = me.ruleIsValid(result);
 
@@ -12426,7 +12441,7 @@ This file is part of LifeViewer
 			// check for live cell
 			if (this.engine.isPCA) {
 				lastState = 0;
-				
+
 				// N
 				if (this.randGen.random() <= fill) {
 					lastState |= 1;
@@ -12458,7 +12473,7 @@ This file is part of LifeViewer
 			for (x = 1; x < columns; x += 1) {
 				if (this.engine.isPCA) {
 					state = 0;
-					
+
 					// N
 					if (this.randGen.random() <= fill) {
 						state |= 1;
@@ -12601,7 +12616,7 @@ This file is part of LifeViewer
 	// new pattern
 	View.prototype.newPattern = function(/** @type {View} */ me) {
 		var	/** @type {string} */ patternText = "x = 1, y = 1, rule = ",
-			result = window.prompt("Create new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
+			/** @type {string|null} */ result = window.prompt("Create new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
 
 		// check if the prompt was confirmed
 		if (result !== null) {
@@ -14567,7 +14582,7 @@ This file is part of LifeViewer
 					bottomY = selBox.bottomY;
 					rightX = selBox.rightX;
 					topY = selBox.topY;
-	
+
 					// order selection
 					if (leftX > rightX) {
 						swap = rightX;
@@ -14581,7 +14596,7 @@ This file is part of LifeViewer
 					}
 					width = rightX - leftX + 1;
 					height = topY - bottomY + 1;
-	
+
 					// adjust in case specified is different than actual size
 					if (me.engine.boundedGridType !== -1) {
 						xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
@@ -14590,7 +14605,7 @@ This file is part of LifeViewer
 
 					// and then check top right cell with offset
 					me.cellOnGrid(rightX + xOff + dx, topY + yOff + dy);
-	
+
 					// update position in case grid grew
 					xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1);
 					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
@@ -14599,7 +14614,7 @@ This file is part of LifeViewer
 					bottomY = selBox.bottomY;
 					rightX = selBox.rightX;
 					topY = selBox.topY;
-	
+
 					// order selection
 					if (leftX > rightX) {
 						swap = rightX;
@@ -14620,7 +14635,7 @@ This file is part of LifeViewer
 						yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
 					}
 				}
-	
+
 				// add border for HROT rules
 				if (me.engine.isHROT) {
 					if (me.engine.boundedGridType === -1) {
@@ -14860,7 +14875,7 @@ This file is part of LifeViewer
 
 					// convert the state using the map and save it in the paste buffer
 					buffer[i] = map[state];
-					
+
 					// count number of non-zero cells for the clipboard tooltip
 					if (state > 0) {
 						count += 1;
@@ -14909,7 +14924,7 @@ This file is part of LifeViewer
 	View.prototype.readSystemClipboard = function(/** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
 		readSystemClipboard(this, shift, evolveStep);
 	};
-	
+
 	// process paste
 	View.prototype.completeProcessPaste = function(/** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
 		var	/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
@@ -15047,7 +15062,7 @@ This file is part of LifeViewer
 				if (me.randGen.random() * 100 <= me.randomDensity) {
 					state |= 2;
 				}
-				
+
 				// S
 				if (me.randGen.random() * 100 <= me.randomDensity) {
 					state |= 4;
@@ -15132,7 +15147,7 @@ This file is part of LifeViewer
 						if (me.randGen.random() * 100 <= me.randomDensity) {
 							state |= 2;
 						}
-						
+
 						// S
 						if (me.randGen.random() * 100 <= me.randomDensity) {
 							state |= 4;
@@ -16209,7 +16224,7 @@ This file is part of LifeViewer
 	// go to generation button pressed
 	View.prototype.goToGenPressed = function(/** @type {View} */ me) {
 		// prompt for generation
-		var	result = window.prompt("Enter generation", String(me.engine.counter)),
+		var	/** @type {string|null} */ result = window.prompt("Enter generation", String(me.engine.counter)),
 			/** @type {number} */ number = 0,
 			/** @type {boolean} */ timing = false;
 
@@ -16249,18 +16264,18 @@ This file is part of LifeViewer
 							me.menuManager.notification.notify("Going to generation " + number, 15, 10000, 15, false);
 						}
 						me.menuManager.notification.clear(true, false);
-	
+
 						// if the required generation is earlier then reset
 						if (number < me.engine.counter) {
 							me.engine.restoreSavedGrid(me, false);
 							me.setUndoGen(me.engine.counter);
 						}
-	
+
 						// setup timing if requested
 						if (timing) {
 							me.startFromTiming = performance.now();
 						}
-	
+
 						// calculate number of generations to move
 						me.startFromGens = number - me.engine.counter;
 					}
@@ -18936,6 +18951,9 @@ This file is part of LifeViewer
 			/** @type {number} */ displayWidth = this.displayWidth,
 			/** @type {number} */ displayHeight = this.displayHeight + 80;
 
+		// update the device pixel ratio
+		this.devicePixelRatio = (window.devicePixelRatio ? window.devicePixelRatio : 1);
+
 		// scale width and height
 		displayWidth *= this.devicePixelRatio;
 		displayHeight *= this.devicePixelRatio;
@@ -18993,6 +19011,7 @@ This file is part of LifeViewer
 		this.helpFontSize = (18 * scale) | 0;
 		this.helpFixedFont = this.helpFontSize + "px " + ViewConstants.fixedFontFamily;
 		this.helpVariableFont = this.helpFontSize + "px " + ViewConstants.variableFontFamily;
+		this.clearHelpCache();
 
 		// check if popup width has changed
 		if (this.displayWidth !== this.lastPopupWidth) {
@@ -19066,7 +19085,7 @@ This file is part of LifeViewer
 		// hide labels
 		this.xyLabel.deleted = true;
 		this.selSizeLabel.deleted = true;
-		
+
 		// clear rule table B0 flag
 		this.manager.ruleTableB0 = false;
 		this.engine.ruleTableB0 = false;
@@ -20046,7 +20065,7 @@ This file is part of LifeViewer
 			pattern.tooBig = true;
 			me.executable = false;
 		}
-		
+
 		// check bounded grid size (script command may have increased maximum allowed size)
 		if (pattern && (pattern.gridType !== -1)) {
 			borderSize = me.getSafeBorderSize();
@@ -21135,7 +21154,7 @@ This file is part of LifeViewer
 	function cleanPattern(element) {
 		// replace HTML entities
 		var	/** @type {string} */ result = replaceHTMLEntities(element.innerHTML);
-		
+
 		// remove HTML tags
 		result = result.replace(/<br *\/>/gi, "\n").replace(/<br>/gi, "\n").replace(/&nbsp;/gi, " ").replace(/<span class="posthilit">/gi, "").replace(/<\/span>/gi, "").replace(/<font><\/font>/gi, "").trim();
 
@@ -21164,8 +21183,8 @@ This file is part of LifeViewer
 
 			/** @type {string} */ cleanItem = "",
 			/** @type {View} */ viewer = null;
-			
-			
+
+
 		// find the View attached to this canvas
 		if (canvasItem) {
 			viewer = Controller.findViewerByCanvas(canvasItem.tabIndex);
@@ -21493,7 +21512,7 @@ This file is part of LifeViewer
 				if (Controller.patterns.length === 1) {
 					// hide the text
 					textItem.style.display = "none";
-					
+
 					// check if there was a canvas
 					if (canvasItem) {
 						// initalise viewer not in popup
@@ -21716,7 +21735,7 @@ This file is part of LifeViewer
 									textItem.style.height = DocConfig.patternSourceMaxHeight + "px";
 								}
 							}
-	
+
 							// initalise viewer not in popup
 							canvasItem.contentEditable = "false";
 							startView(cleanItem, canvasItem, textItem.offsetWidth, false, textItem);
@@ -21727,7 +21746,7 @@ This file is part of LifeViewer
 							}
 						}
 					}
-	
+
 					console.timeEnd("LifeViewer read embedded");
 
 				}
@@ -21791,7 +21810,7 @@ This file is part of LifeViewer
 				style.verticalAlign = "middle";
 				style.padding = "8px";
 			}
-			
+
 			// enable file drag and drop
 			canvasElement = document.getElementById("ViewerCanvas");
 			if (canvasElement) {

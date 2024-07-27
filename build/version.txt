@@ -1,3 +1,9 @@
+Build 1175
+- Change Rule dialog now remembers last valid rule
+
+Build 1174
+- clear Help cache when window resizes
+
 Build 1173
 - added emulation for odd numbered Wolfram codes
 
