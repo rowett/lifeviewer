@@ -1,3 +1,6 @@
+Build 1177
+- Wolfram 1D rules now use RuleTable emulation when needed
+
 Build 1176
 - fixed Open Pattern for Popup Viewer
 - first phase of Wolfram RuleTable emulation

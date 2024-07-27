@@ -336,6 +336,8 @@ This file is part of LifeViewer
 		// timing
 		/** @type {number} */ this.time = 0;
 
+		/** @type {boolean} */ this.wolframEmulation = false;
+
 		// whether attempting to load from repository
 		/** @type {boolean} */ this.loadingFromRepository = false;
 
@@ -1156,6 +1158,11 @@ This file is part of LifeViewer
 		// check for rule families
 		if ((this.isLTL !== source.isLTL) || (this.isHROT !== source.isHROT)) {
 			return "Alternate is different rule family";
+		}
+
+		// check for Wolfram emulation
+		if (this.manager.wolframEmulation) {
+			return "Alternate can not use Wolfram emulation";
 		}
 
 		// check for number of states
@@ -3163,6 +3170,9 @@ This file is part of LifeViewer
 
 		// now decode with the Table decoder
 		this.decodeTable(pattern, reader);
+
+		// mark using Wolfram emulation
+		this.wolframEmulation = true;
 	};
 
 	// decode Wolfram rule
@@ -3172,6 +3182,11 @@ This file is part of LifeViewer
 
 			// rule number
 			/** @type {number} */ number = 0,
+
+			// new number
+			/** @type {number} */ newNumber = 0,
+
+			/** @type {number} */ originalNumber = 0,
 
 			// digit value
 			/** @type {number} */ digit = 0,
@@ -3200,7 +3215,37 @@ This file is part of LifeViewer
 			} else {
 				// check for odd rules
 				if ((number & 1) !== 0) {
-					this.generateWolframRuleTable(pattern, number);
+					// check for B0
+					if ((number & 128) !== 0) {
+						// save original number
+						originalNumber = number;
+
+						// reverse bits
+						newNumber = 0;
+						for (i = 0; i < 8; i += 1) {
+							if (number & (1 << i)) {
+								newNumber |= (1 << (7 - i));
+							}
+						}
+
+						// negate bits
+						number = 0;
+						for (i = 0; i < 8; i += 1) {
+							if ((newNumber & (1 << i)) == 0) {
+								number |= (1 << i);
+							}
+						}
+
+						// build the map
+						this.createWolframMap(ruleArray, number);
+
+						// save the rule number
+						number = originalNumber;
+						pattern.wolframRule = number;
+					} else {
+						// use RuleTable to emulate
+						this.generateWolframRuleTable(pattern, number);
+					}
 				} else {
 					// build the map
 					this.createWolframMap(ruleArray, number);
@@ -5151,6 +5196,9 @@ This file is part of LifeViewer
 			/** @type {boolean} */ nestedAlternate = false,
 			/** @type {boolean} */ result = false;
 
+		// mark not using Wolfram RuleTable emulation
+		this.wolframEmulation = false;
+
 		// check if the rule is an alias
 		if (!ignoreAliases) {
 			alias = AliasManager.getRuleFromAlias(rule);
@@ -6344,8 +6392,8 @@ This file is part of LifeViewer
 			}
 		}
 
-		// if valid the create the rule
-		if (valid && pattern.wolframRule === -1 && pattern.isLTL === false && pattern.isHROT === false) {
+		// if valid then create the rule
+		if (valid && pattern.wolframRule === -1 && !this.wolframEmulation && pattern.isLTL === false && pattern.isHROT === false) {
 			// create the canonical name and the rule map
 			tempName = this.createRuleMap(pattern, String(birthPart), String(survivalPart), base64, ruleArray);
 			if (this.failureReason === "") {
@@ -10259,11 +10307,10 @@ This file is part of LifeViewer
 			}
 
 			// check if a pattern was loaded
-			if (this.failureReason !== "" && !this.tooBig && !this.illegalState && newPattern.ruleName !== "") {
+			if (this.failureReason !== "" && !this.tooBig && !this.illegalState && newPattern.ruleName !== "" && !this.wolframEmulation) {
 				// check for alternating rules
-				if (newPattern.ruleName.indexOf(this.altRuleSeparator) !== -1 && !(this.failureReason === "Only one alternate allowed" || this.failureReason === "Wolfram odd rule without S3 can not alternate")) {
+				if (newPattern.ruleName.indexOf(this.altRuleSeparator) !== -1 && this.failureReason !== "Only one alternate allowed") {
 					this.failureReason = "Alternating RuleLoader rules are not supported";
-
 				} else {
 					newPattern.originalFailure = this.failureReason;
 					newPattern.originalRuleName = newPattern.ruleName;
