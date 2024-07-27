@@ -1,3 +1,7 @@
+Build 1176
+- fixed Open Pattern for Popup Viewer
+- first phase of Wolfram RuleTable emulation
+
 Build 1175
 - Change Rule dialog now remembers last valid rule
 

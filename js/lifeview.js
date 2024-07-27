@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1175,
+		/** @const {number} */ versionBuild : 1176,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -2412,8 +2412,13 @@ This file is part of LifeViewer
 	// open last saved or original pattern
 	View.prototype.loadPattern = function(/** @type {View} */ me) {
 		var	/** @type {boolean} */ result = window.confirm("Open last saved pattern?");
+
 		if (result) {
-			updateMe(me.element);
+			if (me.isInPopup) {
+				updateViewer(me.element);
+			} else {
+				updateMe(me.element);
+			}
 		}
 	};
 
@@ -2431,7 +2436,6 @@ This file is part of LifeViewer
 		// return the chunk
 		return this.currentEdit[chunk];
 	};
-
 
 	// check if a cell is on the grid (and grow grid if needed)
 	/** @returns {Array} */
@@ -5472,7 +5476,6 @@ This file is part of LifeViewer
 		// clear the bg alpha to show the progress bar
 		me.genToggle.bgAlpha = 0;
 	};
-
 
 	// update progress bar for history computation
 	View.prototype.updateProgressBarHistory = function(/** @type {View} */ me, /** @type {number} */ targetGen) {
@@ -10369,7 +10372,6 @@ This file is part of LifeViewer
 			// get the current zoom
 			/** @type {number} */ currentZoom = ViewConstants.minZoom * Math.pow(ViewConstants.maxZoom / ViewConstants.minZoom, this.zoomItem.current[0]);
 
-
 		// adjust the zoom by the ratio of the distance between touches now and at start
 		currentZoom *= (currentDelta / startDelta);
 
@@ -13457,7 +13459,6 @@ This file is part of LifeViewer
 						}
 					}
 				}
-
 
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 					// update state 6 grid
@@ -21183,7 +21184,6 @@ This file is part of LifeViewer
 
 			/** @type {string} */ cleanItem = "",
 			/** @type {View} */ viewer = null;
-
 
 		// find the View attached to this canvas
 		if (canvasItem) {

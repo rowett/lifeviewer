@@ -3125,28 +3125,59 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// return Wolfram RuleTable transition
+	/** @returns {string} */
+	PatternManager.prototype.wolframTransition = function(/** @type {number} */ transition, /** @type {number} */ from, /** @type {number} */ to) {
+		var	/** @type {string} */ result = "",
+			/** @type {number} */ nw = ((transition & 4) >> 2) * from,
+			/** @type {number} */ n = ((transition & 2) >> 1) * from,
+			/** @type {number} */ ne = (transition & 1) * from;
+
+		result = "0" + n + ne + "00000" + nw + to + "\n";
+
+		return result;
+	};
+
+	// generate WolframRuleTable
+	PatternManager.prototype.generateWolframRuleTable = function(/** @type {Pattern} */ pattern, /** @type {number} */ number) {
+		// create RuleTable header
+		var	/** @type {string} */ ruleTable = "n_states:3\nneighborhood:Moore\nsymmetries:none\n",
+			/** @type {number} */ i = 0,
+			/** @type {Script} */ reader = null;
+
+		// add the transitions
+		for (i = 0; i < 8; i += 1) {
+			if ((number & (1 << i)) === 0) {
+				ruleTable += this.wolframTransition(i, 1, 2);
+			}
+		}
+
+		for (i = 7; i >= 0; i -= 1) {
+			if ((number & (1 << (7 - i))) !== 0) {
+				ruleTable += this.wolframTransition(i, 2, 1);
+			}
+		}
+
+		// tokenize the input
+		reader = new Script(ruleTable, true);
+
+		// now decode with the Table decoder
+		this.decodeTable(pattern, reader);
+	};
+
 	// decode Wolfram rule
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeWolfram = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Uint8Array} */ ruleArray, /** @type {boolean} */ altPart) {
+	PatternManager.prototype.decodeWolfram = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Uint8Array} */ ruleArray) {
 		var	/** @type {boolean} */ valid = true,
 
 			// rule number
 			/** @type {number} */ number = 0,
 
-			// original rule number
-			/** @type {number} */ origNumber = 0,
-
-			// new number for odd rules
-			/** @type {number} */ newNumber = 0,
-
 			// digit value
 			/** @type {number} */ digit = 0,
 
 			// counter
-			/** @type {number} */ i = 1,
-
-			// alternate rule array
-			/** @type {Uint8Array} */ ruleAltArray = this.ruleAltArray;
+			/** @type {number} */ i = 1;
 
 		// check rule number
 		while (i < rule.length && valid) {
@@ -3167,68 +3198,19 @@ This file is part of LifeViewer
 				this.failureReason = "Wolfram rule number must be from 0-255";
 				valid = false;
 			} else {
-				// save the number
-				origNumber = number;
-
 				// check for odd rules
 				if ((number & 1) !== 0) {
-					// check for S3
-					if ((number & 128) !== 0) {
-						// reverse bits
-						newNumber = 0;
-						for (i = 0; i < 8; i += 1) {
-							if (number & (1 << i)) {
-								newNumber |= (1 << (7 - i));
-							}
-						}
-
-						// negate bits
-						number = 0;
-						for (i = 0; i < 8; i += 1) {
-							if ((newNumber & (1 << i)) == 0) {
-								number |= (1 << i);
-							}
-						}
-					} else {
-						// rule without S3 requires alternating rules so check if this is already part of an alternating rule definition
-						if (altPart) {
-							this.failureReason = "Wolfram odd rule without S3 can not alternate";
-							valid = false;
-						} else {
-							// negate bits for even generations
-							newNumber = 0;
-							for (i = 0; i < 8; i += 1) {
-								if ((number & (1 << i)) == 0) {
-									newNumber |= (1 << i);
-								}
-							}
-							this.createWolframMap(ruleAltArray, newNumber);
-
-							// reverse bits for odd generations
-							newNumber = 0;
-							for (i = 0; i < 8; i += 1) {
-								if (number & (1 << i)) {
-									newNumber |= (1 << (7 - i));
-								}
-							}
-							number = newNumber;
-
-							// mark as alternating rule
-							this.altSpecified = true;
-						}
-					}
-				}
-
-				// build the map
-				if (valid) {
+					this.generateWolframRuleTable(pattern, number);
+				} else {
+					// build the map
 					this.createWolframMap(ruleArray, number);
 
 					// save the rule number
-					pattern.wolframRule = origNumber;
-
-					// save the canonical name
-					pattern.ruleName = "W" + origNumber;
+					pattern.wolframRule = number;
 				}
+
+				// save the canonical name
+				pattern.ruleName = "W" + number;
 			}
 		}
 
@@ -5187,7 +5169,7 @@ This file is part of LifeViewer
 		// check if the rule has an alternate
 		if (altIndex === -1) {
 			// single rule so decode
-			result = this.decodeRuleStringPart(pattern, rule, allocator, this.ruleArray, ignoreAliases, false);
+			result = this.decodeRuleStringPart(pattern, rule, allocator, this.ruleArray, ignoreAliases);
 			if (result) {
 				// check for triangular rule
 				if (pattern.isTriangular) {
@@ -5214,7 +5196,7 @@ This file is part of LifeViewer
 			// check there is only one separator
 			if ((rule.substring(altIndex + 1).indexOf(this.altRuleSeparator) === -1) && !nestedAlternate) {
 				// decode first rule
-				result = this.decodeRuleStringPart(pattern, rule.substring(0, altIndex), allocator, this.ruleAltArray, ignoreAliases, true);
+				result = this.decodeRuleStringPart(pattern, rule.substring(0, altIndex), allocator, this.ruleAltArray, ignoreAliases);
 				if (result) {
 					// save the first pattern details
 					firstPattern = new Pattern(pattern.name, this);
@@ -5222,7 +5204,7 @@ This file is part of LifeViewer
 
 					// if succeeded then decode alternate rule
 					pattern.resetSettings();
-					result = this.decodeRuleStringPart(pattern, rule.substring(altIndex + 1), allocator, this.ruleArray, ignoreAliases, true);
+					result = this.decodeRuleStringPart(pattern, rule.substring(altIndex + 1), allocator, this.ruleArray, ignoreAliases);
 					if (result) {
 						// check the two rules are from the same family
 						this.failureReason = pattern.isSameFamilyAs(firstPattern);
@@ -5453,7 +5435,7 @@ This file is part of LifeViewer
 
 	// decode rule string and return whether valid
 	/** @returns {boolean} */
-	PatternManager.prototype.decodeRuleStringPart = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Allocator} */ allocator, /** @type {Uint8Array} */ ruleArray, /** @type {boolean} */ ignoreAliases, /** @type {boolean} */ altPart) {
+	PatternManager.prototype.decodeRuleStringPart = function(/** @type {Pattern} */ pattern, /** @type {string} */ rule, /** @type {Allocator} */ allocator, /** @type {Uint8Array} */ ruleArray, /** @type {boolean} */ ignoreAliases) {
 		// whether the rule contains a slash
 		var	/** @type {number} */ slashIndex = -1,
 
@@ -5971,7 +5953,7 @@ This file is part of LifeViewer
 							// check for Wolfram rule
 							if (rule[0] === "w") {
 								// decode Wolframe rule
-								valid = this.decodeWolfram(pattern, rule, ruleArray, altPart);
+								valid = this.decodeWolfram(pattern, rule, ruleArray);
 							} else {
 								// check for triangular rules
 								triangularIndex = rule.lastIndexOf(this.triangularPostfix);
