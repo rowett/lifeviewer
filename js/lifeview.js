@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1178,
+		/** @const {number} */ versionBuild : 1179,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -14761,6 +14761,12 @@ This file is part of LifeViewer
 						for (i = 2; i < 256; i += 1) {
 							map[i] = 0;
 						}
+					} else {
+						// 2-state HROT
+						for (i = 0; i < 256; i+= 1) {
+							map[i] = 0;
+						}
+						map[64] = 1;
 					}
 				}
 			} else {
