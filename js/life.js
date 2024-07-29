@@ -3404,7 +3404,7 @@ This file is part of LifeViewer
 		}
 
 		// use image smoothing for scales below 1 pixel per cell
-		if (s < 1 || yFactor !== 1) {
+		if (s < 1 || s * yFactor <= 1) {
 			ctx.imageSmoothingEnabled = true;
 		} else {
 			ctx.imageSmoothingEnabled = false;

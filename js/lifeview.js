@@ -78,6 +78,9 @@ This file is part of LifeViewer
 		// y coordinate direction setting name
 		/** @const {string} */ ySettingName : "yDirection",
 
+		// Wolfram RuleTable emulation colours
+		/** @const {string} */ wolframEmulationColours : "0 0 0 0\n1 0 255 255\n2 0 192 192\n",
+
 		// control or command key text
 		/** @const {string} */ ctrlText : "Ctrl",
 		/** @const {string} */ cmdText : "Cmd",
@@ -327,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1177,
+		/** @const {number} */ versionBuild : 1178,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",

@@ -3171,6 +3171,10 @@ This file is part of LifeViewer
 		// now decode with the Table decoder
 		this.decodeTable(pattern, reader);
 
+		// create the colours
+		reader = new Script(ViewConstants.wolframEmulationColours, true);
+		this.decodeColours(pattern, reader);
+
 		// mark using Wolfram emulation
 		this.wolframEmulation = true;
 	};
@@ -8132,6 +8136,11 @@ This file is part of LifeViewer
 			this.failureReason = ruleType + " not valid with Margolus";
 		}
 
+		// check for Wolfram RuleTable emulation
+		if (this.wolframEmulation) {
+			this.failureReason = ruleType + " not valid with Wolfram emulation";
+		}
+
 		// if failure happened mark pattern as not executable and disable rule type
 		if (this.failureReason !== "") {
 			this.exectuable = false;
@@ -10307,7 +10316,7 @@ This file is part of LifeViewer
 			}
 
 			// check if a pattern was loaded
-			if (this.failureReason !== "" && !this.tooBig && !this.illegalState && newPattern.ruleName !== "" && !this.wolframEmulation) {
+			if (this.failureReason !== "" && !this.tooBig && !this.illegalState && newPattern.ruleName !== "") {
 				// check for alternating rules
 				if (newPattern.ruleName.indexOf(this.altRuleSeparator) !== -1 && this.failureReason !== "Only one alternate allowed") {
 					this.failureReason = "Alternating RuleLoader rules are not supported";
@@ -10347,7 +10356,7 @@ This file is part of LifeViewer
 					}
 
 					// if the rule was found embedded or in the cache then check pattern states
-					if (newPattern.ruleTreeStates !== -1 || newPattern.ruleTableOutput !== null) {
+					if ((newPattern.ruleTreeStates !== -1 || newPattern.ruleTableOutput !== null) && !this.wolframEmulation) {
 						// check for pattern states
 						if (newPattern.ruleTableOutput === null) {
 							states = newPattern.ruleTreeStates;

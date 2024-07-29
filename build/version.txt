@@ -1,3 +1,8 @@
+Build 1178
+- changed Wolfram RuleTable emulation colours
+- disable [R]Super/[R]History/[R]Investigator when using Wolfram RuleTable emulation
+- change image smoothing rule to make hexagonal and triangular Cell Period Maps less blurry
+
 Build 1177
 - Wolfram 1D rules now use RuleTable emulation when needed
 
