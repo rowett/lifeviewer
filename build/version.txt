@@ -1,5 +1,12 @@
+Build 1181
+- fixed hexagonal Cell Period Map with even number of rows
+
+Build 1180
+- fixed Paste regression
+
 Build 1179
 - fixed Paste in HROT/LtL 2-state patterns
+- new colours for Wolfram RuleTable emulation
 
 Build 1178
 - changed Wolfram RuleTable emulation colours

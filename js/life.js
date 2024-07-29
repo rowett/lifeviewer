@@ -2990,6 +2990,11 @@ This file is part of LifeViewer
 
 		// resize the image and canvas to fix the period map with "cellSize" cells
 		rowWidth = cellSize * (cellPeriodWidth + cellBorderSize + cellBorderSize) + gridBorderSize;
+		if (this.isHex) {
+			if ((this.cellPeriodHeight & 1) === 0) {
+				rowWidth += cellSize / 2;
+			}
+		}
 		colHeight = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize) + gridBorderSize;
 		this.cellPeriodCanvas.width = rowWidth;
 		this.cellPeriodCanvas.height = colHeight;
@@ -3007,6 +3012,9 @@ This file is part of LifeViewer
 			// set the offset for drawing
 			inc = -cellSize / 2;
 			offset = (this.cellPeriodHeight >> 1) * cellSize - inc;
+			if ((this.cellPeriodHeight & 1) === 0) {
+				offset += inc;
+			}
 		}
 
 		// draw the cells
@@ -3060,6 +3068,9 @@ This file is part of LifeViewer
 			if (this.isHex) {
 				// set the offset for drawing
 				offset = (this.cellPeriodHeight >> 1) * cellSize - inc + cellSize;
+				if ((this.cellPeriodHeight & 1) === 0) {
+					offset += inc;
+				}
 			}
 
 			// draw the grid
@@ -3086,6 +3097,9 @@ This file is part of LifeViewer
 				offset = (this.cellPeriodHeight >> 1) * cellSize - inc;
 				sx += 1;
 				ex += 1;
+				if ((this.cellPeriodHeight & 1) === 0) {
+					offset += inc;
+				}
 			}
 
 			for (x = sx; x <= ex; x += 1) {

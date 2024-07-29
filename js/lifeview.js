@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1179,
+		/** @const {number} */ versionBuild : 1181,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -14763,10 +14763,12 @@ This file is part of LifeViewer
 						}
 					} else {
 						// 2-state HROT
-						for (i = 0; i < 256; i+= 1) {
-							map[i] = 0;
+						if (pattern.isHROT) {
+							for (i = 0; i < 256; i+= 1) {
+								map[i] = 0;
+							}
+							map[64] = 1;
 						}
-						map[64] = 1;
 					}
 				}
 			} else {
