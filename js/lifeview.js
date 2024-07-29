@@ -79,7 +79,7 @@ This file is part of LifeViewer
 		/** @const {string} */ ySettingName : "yDirection",
 
 		// Wolfram RuleTable emulation colours
-		/** @const {string} */ wolframEmulationColours : "0 0 0 0\n1 0 255 255\n2 0 192 192\n",
+		/** @const {string} */ wolframEmulationColours : "0 0 0 0\n1 0 255 192\n2 0 192 255\n",
 
 		// control or command key text
 		/** @const {string} */ ctrlText : "Ctrl",
