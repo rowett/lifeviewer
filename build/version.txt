@@ -1,3 +1,9 @@
+Build 1183
+- fixed issue with Step Back and Paste
+
+Build 1182
+- fixed issue with line feeds when decoding RuleLoader rules
+
 Build 1181
 - fixed hexagonal Cell Period Map with even number of rows
 

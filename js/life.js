@@ -8710,7 +8710,6 @@ This file is part of LifeViewer
 		if (snapshot) {
 			// restore the snapshot
 			this.restoreSnapshot(snapshot, view);
-			view.pasteRLEList();
 		}
 
 		// play from the snapshot counter to the target
@@ -49129,6 +49128,10 @@ This file is part of LifeViewer
 						// if dead cell then use state 4
 						if (col < aliveStart) {
 							over = state4;
+						} else {
+							if (col === aliveStart) {
+								over = 1;
+							}
 						}
 						pixel = pixelColours[over] | 0;
 					} else {

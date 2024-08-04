@@ -319,7 +319,8 @@ This file is part of LifeViewer
 	/** @returns {string} */
 	Script.prototype.getNextTokenToEndOfLine = function() {
 		var	/** @type {string} */ result = "",
-			/** @type {number} */ index = -1;
+			/** @type {number} */ index = -1,
+			/** @type {number} */ index2 = -1;
 
 		// check if there are more tokens
 		if (this.current < this.starts.length) {
@@ -327,6 +328,11 @@ This file is part of LifeViewer
 			if (index === -1) {
 				result = this.source.substring(this.starts[this.current]);
 			} else {
+				// check for \r before the newline
+				index2 = this.source.indexOf("\r", this.starts[this.current]);
+				if (index2 < index) {
+					index = index2;
+				}
 				result = this.source.substring(this.starts[this.current], index);
 			}
 			this.skipToNextLine();
