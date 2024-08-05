@@ -330,7 +330,7 @@ This file is part of LifeViewer
 			} else {
 				// check for \r before the newline
 				index2 = this.source.indexOf("\r", this.starts[this.current]);
-				if (index2 < index) {
+				if (index2 !== -1 && (index2 < index)) {
 					index = index2;
 				}
 				result = this.source.substring(this.starts[this.current], index);

@@ -1,3 +1,7 @@
+Build 1184
+- fixed issue with RuleLoader decoding
+- fixed rendering issue with [R]History rules
+
 Build 1183
 - fixed issue with Step Back and Paste
 

@@ -49128,10 +49128,6 @@ This file is part of LifeViewer
 						// if dead cell then use state 4
 						if (col < aliveStart) {
 							over = state4;
-						} else {
-							if (col === aliveStart) {
-								over = 1;
-							}
 						}
 						pixel = pixelColours[over] | 0;
 					} else {
