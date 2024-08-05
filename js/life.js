@@ -8710,6 +8710,7 @@ This file is part of LifeViewer
 		if (snapshot) {
 			// restore the snapshot
 			this.restoreSnapshot(snapshot, view);
+			view.pasteEdits();
 		}
 
 		// play from the snapshot counter to the target

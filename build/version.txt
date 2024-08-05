@@ -1,3 +1,6 @@
+Build 1185
+- fixed Step Back issue
+
 Build 1184
 - fixed issue with RuleLoader decoding
 - fixed rendering issue with [R]History rules
