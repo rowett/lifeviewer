@@ -1,3 +1,6 @@
+Build 1186
+ - fixed issue with Evolve Selection and selection direction
+ 
 Build 1185
 - fixed Step Back issue
 

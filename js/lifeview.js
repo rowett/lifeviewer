@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1185,
+		/** @const {number} */ versionBuild : 1186,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -13624,8 +13624,8 @@ This file is part of LifeViewer
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0;
 
-		// check for empty population
-		if (this.engine.population > 0) {
+		// check for empty population or not marking undo
+		if (this.engine.population > 0 || !markUndo) {
 			// update the pattern extent
 			this.engine.shrinkNeeded = true;
 			this.engine.doShrink();
@@ -14254,6 +14254,18 @@ This file is part of LifeViewer
 		} else {
 			// check if there is a selection
 			if (me.isSelection) {
+				// order original selection
+				if (origX1 > origX2) {
+					swap = origX2;
+					origX2 = origX1;
+					origX1 = swap;
+				}
+				if (origY1 > origY2) {
+					swap = origY2;
+					origY2 = origY1;
+					origY1 = swap;
+				}
+
 				// select all cells without updating undo records
 				me.processSelectAll(false);
 				x1 = box.leftX;
