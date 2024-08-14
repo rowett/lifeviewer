@@ -2118,7 +2118,7 @@ This file is part of LifeViewer
 	};
 
 	// 2-state gaussian
-	HROT.prototype.nextGenerationGuassian2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+	HROT.prototype.nextGenerationGaussian2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -2187,6 +2187,9 @@ This file is part of LifeViewer
 						count += weight;
 					}
 					weight -= inc;
+				}
+				if (colourRow[x] >= aliveStart) {
+					count += 1;
 				}
 				countRow[x] = count;
 				x += 1;
@@ -3200,7 +3203,7 @@ This file is part of LifeViewer
 
 					case this.manager.gaussianHROT:
 						// gaussian
-						this.nextGenerationGuassian2(leftX, bottomY, rightX, topY, xrange, yrange);
+						this.nextGenerationGaussian2(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					default:
@@ -4154,7 +4157,7 @@ This file is part of LifeViewer
 	};
 
 	// n-state gaussian
-	HROT.prototype.nextGenerationGuassianN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+	HROT.prototype.nextGenerationGaussianN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -4223,6 +4226,9 @@ This file is part of LifeViewer
 						count += weight;
 					}
 					weight -= inc;
+				}
+				if (colourRow[x] === maxGenState) {
+					count += 1;
 				}
 				countRow[x] = count;
 				x += 1;
@@ -5344,7 +5350,7 @@ This file is part of LifeViewer
 
 					case this.manager.gaussianHROT:
 						// gaussian
-						this.nextGenerationGuassianN(leftX, bottomY, rightX, topY, xrange, yrange);
+						this.nextGenerationGaussianN(leftX, bottomY, rightX, topY, xrange, yrange);
 						break;
 
 					default:

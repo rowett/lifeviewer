@@ -1654,7 +1654,7 @@ This file is part of LifeViewer
 		this.ruleTableIcons = icons;
 
 		// if no icons are specified then disable icons
-		if (icons.length === 0) {
+		if (icons.length === 0 || this.isHex || this.isTriangular) {
 			this.iconsAvailable = false;
 		} else {
 			// create the canvases
@@ -3389,7 +3389,7 @@ This file is part of LifeViewer
 
 		// scale the image to fit
 		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
-		y = (height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize)) * yFactor;
+		y = height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize);
 
 		if (x > y) {
 			s = y;
@@ -11087,6 +11087,10 @@ This file is part of LifeViewer
 				} else {
 					pixelColours[0] = (redChannel[0] << 24) | (greenChannel[0] << 16) | (blueChannel[0] << 8) | alpha;
 					pixelColours[1] = ((redChannel[1] * brightness) << 24) | ((greenChannel[1] * brightness) << 16) | ((blueChannel[1] * brightness) << 8) | alpha;
+				}
+				if (needStrings) {
+					colourStrings[0] = "#" + (0x1000000 + ((redChannel[0] << 16) + (greenChannel[0] << 8) + blueChannel[0])).toString(16).substring(1);
+					colourStrings[1] = "#" + (0x1000000 + ((redChannel[1] << 16) + (greenChannel[1] << 8) + blueChannel[1])).toString(16).substring(1);
 				}
 			} else {
 				// create pixels from rgb and brightness

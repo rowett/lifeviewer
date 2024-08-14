@@ -1,3 +1,9 @@
+Build 1188
+- fixed Hexagon colours for 2-state RuleLoader rules
+
+Build 1187
+- fixed triangular Cell Period Map height
+
 Build 1186
  - fixed issue with Evolve Selection and selection direction
  
