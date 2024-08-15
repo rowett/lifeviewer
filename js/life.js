@@ -82,7 +82,7 @@ This file is part of LifeViewer
 		/** @const {Array<string>} */ modTypeName : ["Rot90CW", "Rot90CCW", "FlipX", "FlipY", "Rot180", "Flip" + String.fromCharCode(10189), "Flip" + String.fromCharCode(10187), "FlipOrth", "Rot90", "FlipOrthOrRot90", "FlipDiag", "FlipDiagOrRot90", "FlipXOrRot180", "FlipYOrRot180", "Flip" + String.fromCharCode(10189) + "OrRot180", "Flip" + String.fromCharCode(10187) + "OrRot180", "FlipOrthOrDiag"],
 
 		// maximum number of generations to check for oscillators
-		/** @const {number} */ maxOscillatorGens : 4194304,
+		/** @const {number} */ maxOscillatorGens : 134217728,
 
 		// maxmimum memory to compute strict volatility
 		/** @const {number} */ maxStrictMemory : 256 * 1024 * 1024,
@@ -2947,6 +2947,28 @@ This file is part of LifeViewer
 		}
 		this.cellPeriodNumCols = numCols;
 
+		// define custom colours for subperiods up to 20
+		periodCols[this.popSubPeriod.length - 2] = "rgb(028,146,205)";
+		periodCols[this.popSubPeriod.length - 3] = "rgb(010,184,123)";
+		periodCols[this.popSubPeriod.length - 4] = "rgb(232,096,117)";
+		periodCols[this.popSubPeriod.length - 5] = "rgb(248,242,144)";
+		periodCols[this.popSubPeriod.length - 6] = "rgb(186,065,023)";
+		periodCols[this.popSubPeriod.length - 7] = "rgb(217,030,155)";
+		periodCols[this.popSubPeriod.length - 8] = "rgb(190,240,233)";
+		periodCols[this.popSubPeriod.length - 9] = "rgb(066,140,040)";
+		periodCols[this.popSubPeriod.length - 10] = "rgb(111,016,068)";
+		periodCols[this.popSubPeriod.length - 11] = "rgb(118,173,244)";
+		periodCols[this.popSubPeriod.length - 12] = "rgb(045,089,099)";
+		periodCols[this.popSubPeriod.length - 13] = "rgb(217,183,144)";
+		periodCols[this.popSubPeriod.length - 14] = "rgb(128,255,128)";
+		periodCols[this.popSubPeriod.length - 15] = "rgb(144,144,255)";
+		periodCols[this.popSubPeriod.length - 16] = "rgb(192,192,000)";
+		periodCols[this.popSubPeriod.length - 17] = "rgb(128,255,255)";
+		periodCols[this.popSubPeriod.length - 18] = "rgb(255,192,255)";
+		periodCols[this.popSubPeriod.length - 19] = "rgb(255,192,192)";
+		periodCols[this.popSubPeriod.length - 20] = "rgb(255,255,000)";
+		periodCols[this.popSubPeriod.length - 21] = "rgb(255,128,000)";
+
 		// make colours for the subperiods excluding period 1 and oscillator period
 		y = 0;
 		for (x = 2; x < this.popSubPeriod.length - 1; x += 1) {
@@ -2961,7 +2983,6 @@ This file is part of LifeViewer
 		periodCols[0] = "black";
 		periodCols[1] = "rgb(168,168,168)";
 		periodCols[this.popSubPeriod.length - 1] = "rgb(255,255,255)";
-		periodCols[this.popSubPeriod.length - 2] = "rgb(028,146,205)";
 
 		// create a colour for state 6 cells
 		if (this.cellPeriodState6) {
