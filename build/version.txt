@@ -1,3 +1,6 @@
+Build 1190
+- fixed Copy as MAP issue
+
 Build 1189
 - fixed Fit Zoom for 2-state hexagonal RuleLoader rules
 - updated aliases

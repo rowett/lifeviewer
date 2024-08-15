@@ -32491,6 +32491,7 @@ This file is part of LifeViewer
 			}
 	
 			// add final digit
+			character <<= (6 - (i % 6));
 			result += base64chars[character];
 
 			break;
@@ -32546,6 +32547,7 @@ This file is part of LifeViewer
 			}
 	
 			// add final digit
+			character <<= (6 - (i % 6));
 			result += base64chars[character];
 
 			break;
@@ -32610,6 +32612,7 @@ This file is part of LifeViewer
 			}
 	
 			// add final digit
+			character <<= (6 - (i % 6));
 			result += base64chars[character];
 
 			break;
@@ -32658,6 +32661,7 @@ This file is part of LifeViewer
 			}
 	
 			// add final digit
+			character <<= (6 - (i % 6));
 			result += base64chars[character];
 
 			break;
@@ -32727,6 +32731,7 @@ This file is part of LifeViewer
 			}
 	
 			// add final digit
+			character <<= (6 - (i % 6));
 			result += base64chars[character];
 		} else {
 			// iterate over all 32 possible combinations
@@ -32749,6 +32754,7 @@ This file is part of LifeViewer
 			}
 	
 			// add final digit
+			character <<= (6 - (i % 6));
 			result += base64chars[character];
 		}
 
