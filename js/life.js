@@ -44230,7 +44230,7 @@ This file is part of LifeViewer
 		}
 
 		// set the alive state based on the rule
-		if (this.multiNumStates <= 2) {
+		if (this.multiNumStates <= 2 && !this.isRuleTree) {
 			aliveState = LifeConstants.aliveStart;
 		} else {
 			aliveState = this.historyStates + 1;

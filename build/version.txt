@@ -1,3 +1,7 @@
+Build 1189
+- fixed Fit Zoom for 2-state hexagonal RuleLoader rules
+- updated aliases
+
 Build 1188
 - fixed Hexagon colours for 2-state RuleLoader rules
 
