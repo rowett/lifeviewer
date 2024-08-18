@@ -664,18 +664,11 @@ This file is part of LifeViewer
 		// add weighted aliases
 		s.push("Weighted");
 		a.push(["Weighted", ""]);
-		a.push(["Ben's rule","R1,C2,S3,5,8,B4,6,8,NW323202323"]);
 		a.push(["Border", "R1,C2,S10-16,B1-8,NW010101010901010101"]);
-		a.push(["Bricks", "R1,C3,S10,12,14,16,B7,13,NW525202525"]);
 		a.push(["Bustle", "R1,C4,S2,4-5,7,B3,NW212101212"]);
 		a.push(["Career", "R1,C2,S2-3,B3,NW121101111"]);
 		a.push(["Cloud54", "R1,C2,S2-3,9-10,19,27,B3,10,27,NW010109010009010909"]);
 		a.push(["Cloud75", "R1,C2,S2-4,10-11,13,18,21-22,27,29-31,36-40,B3,10,27,NW010109010009010909"]);
-		a.push(["Conway", "R1,C2,S2-3,6-7,10-11,15,B3,7,11,15,NW515101515"]);
-		a.push(["Conway--", "R1,C2,S3,6-7,10-11,15,B3,7,11,15,NW515101515"]);
-		a.push(["Conway++", "R1,C2,S2-3,6-7,10-11,15,20,B3,7,11,15,NW515101515"]);
-		a.push(["Conway+-1", "R1,C2,S2-3,6-7,10,12,15,B3,7,11,15,NW515101515"]);
-		a.push(["Conway+-2", "R1,C2,S2-3,7,10-13,15,B3,7,11,15,NW515101515"]);
 		a.push(["CrossPorpoises", "R1,C2,S2-3,6-10,12-13,B5,NW141404140"]);
 		a.push(["Cyclish", "R1,C7,S2,B1-3,NW010101010"]);
 		a.push(["Cyclones", "R1,C5,S2,4-5,B2-5,NW110101011"]);
@@ -689,7 +682,6 @@ This file is part of LifeViewer
 		a.push(["Frost M", "R1,C25,S,B1,NW111101111"]);
 		a.push(["Frost N", "R1,C25,S,B1,NW010101010"]);
 		a.push(["Gnats", "R1,C2,S0-2,11,19,B11,19,NW090109010001090109"]);
-		a.push(["HexParity", "R1,C2,S0,2,4,6,B1,3,5,NW110101011H"]);
 		a.push(["Hextenders", "R1,C10,S1,3-5,B2-3,NW110101011H"]);
 		a.push(["HGlass", "R1,C2,S1-3,11,21,25,29-31,B1-3,11,21,25,29-31,NW000200080110000400"]);
 		a.push(["Hogs", "R1,C2,S2-4,6,B5-6,NW023302230H"]);
@@ -705,7 +697,6 @@ This file is part of LifeViewer
 		a.push(["Mosquito2", "R1,C2,S3-4,8-9,B3,6,9,18,NW995505599"]);
 		a.push(["Navaho1", "R1,C12,S8-9,11,B2,5,NW414575414"]);
 		a.push(["Nocturne", "R1,C4,S1,6,B2-4,NW110101011"]);
-		a.push(["Parity", "R1,C2,S1,3,5,B1,3,5,NW010111010"]);
 		a.push(["Pictures", "R1,C2,S1-3,B2-4,NW010101010"]);
 		a.push(["PicturesH", "R1,C9,S1-3,B2-4,NW010101010"]);
 		a.push(["Pinwheels", "R1,C7,S2,B2-3,NW110101011"]);
