@@ -480,7 +480,7 @@ This file is part of LifeViewer
 		a.push(["plife2", "B35j6i/S2-i3"]);
 		a.push(["PondLife", "B36i/S2-i35i"]);
 		a.push(["PortLife", "B34cz5y/S234y8"]);
-		a.push(["pre-X-rule", "B2cei3ci4jnr5ikn/S12-ck4einqy5er6aei8"]);
+		a.push(["pre-x-rule", "B2cei3ci4jnr5ikn/S12-ck4einqy5er6aei8"]);
 		a.push(["Prismatika Crystallios", "B2ae3r/S1e"]);
 		a.push(["PlasmaLife", "B34-air/S234-air"]);
 		a.push(["Puffers", "B3-nqr6/S235-nqr"]);
