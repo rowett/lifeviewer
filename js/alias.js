@@ -630,6 +630,11 @@ This file is part of LifeViewer
 		a.push(["Higher-Range Outer-Totalistic cross", ""]);
 		a.push(["Factorio", "R3,C2,S2,B3,N+"]);
 		
+		// add HROT hash aliases
+		s.push("HROT hash");
+		a.push(["Higher-Range Outer-Totalistic hash", ""]);
+		a.push(["Hash", "R2,C2,S4-6,B5-6,N#"]);
+		
 		// add HROT von Neumann aliases
 		s.push("HROT vN");
 		a.push(["Higher-Range Outer-Totalistic von Neumann", ""]);
@@ -680,6 +685,7 @@ This file is part of LifeViewer
 		a.push(["Career", "R1,C2,S2-3,B3,NW121101111"]);
 		a.push(["Cloud54", "R1,C2,S2-3,9-10,19,27,B3,10,27,NW010109010009010909"]);
 		a.push(["Cloud75", "R1,C2,S2-4,10-11,13,18,21-22,27,29-31,36-40,B3,10,27,NW010109010009010909"]);
+		a.push(["Coexistence", "R4,C0,S9,14,16-17,21,23-24,30-31,37-38,44-45,51-52,58-59,B3,10,17,21,24,31,38,45,52,59,NW100010001000000000000000000000777000100707001000777000000000000000000000100010001"]);
 		a.push(["CrossPorpoises", "R1,C2,S2-3,6-10,12-13,B5,NW141404140"]);
 		a.push(["Cyclish", "R1,C7,S2,B1-3,NW010101010"]);
 		a.push(["Cyclones", "R1,C5,S2,4-5,B2-5,NW110101011"]);
