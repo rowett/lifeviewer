@@ -130,6 +130,7 @@ This file is part of LifeViewer
 		a.push(["Cheerios", "B35678/S34567"]);
 		a.push(["Christmas Life", "B1/S012345678"]);
 		a.push(["Coagulations", "B378/S235678"]);
+		a.push(["Conway", "B3/S23"]);
 		a.push(["Conway's Game of Life", "B3/S23"]);
 		a.push(["Conway's Life", "B3/S23"]);
 		a.push(["Coral", "B3/S45678"]);
@@ -624,6 +625,11 @@ This file is part of LifeViewer
 		a.push(["Fire whirl", "R8,C6,M1,S46..91,B65..100,NM"]);
 		a.push(["ModernArt", "R10,C255,M1,S2..3,B3..3,NM"]);
 
+		// add HROT cross aliases
+		s.push("HROT cross");
+		a.push(["Higher-Range Outer-Totalistic cross", ""]);
+		a.push(["Factorio", "R3,C2,S2,B3,N+"]);
+		
 		// add HROT von Neumann aliases
 		s.push("HROT vN");
 		a.push(["Higher-Range Outer-Totalistic von Neumann", ""]);
@@ -661,6 +667,11 @@ This file is part of LifeViewer
 		a.push(["x-rule", "MAPBSB64CCTqARFBImEADAGBSCTgICTSIAAADCFCSTAAAANAMEUBCKEBchCE00YAE3IACSFACCIQQDIIF4UIIAGSA"]);
 		a.push(["water", "MAPABAbrwAA//8AQltdAAD+/8Aa/f8AAP//YgD//wAA//8AAP//QAD//wBA//8AAP/fAgD3+wKA//8AIPZ/AAD//w"]);
 
+		// add HROT custom aliases
+		s.push("HROT custom");
+		a.push(["Higher-Range Outer-Totalistic custom", ""]);
+		a.push(["Marine", "R2,C2,S4,6-9,B6-8,N@03ddef"]);
+		
 		// add weighted aliases
 		s.push("Weighted");
 		a.push(["Weighted", ""]);
