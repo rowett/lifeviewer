@@ -713,7 +713,7 @@ This file is part of LifeViewer
 		a.push(["Mosquito", "R1,C2,S3-4,8-9,B2-3,9,NW995505599"]);
 		a.push(["Mosquito2", "R1,C2,S3-4,8-9,B3,6,9,18,NW995505599"]);
 		a.push(["Navaho1", "R1,C12,S8-9,11,B2,5,NW414575414"]);
-		a.push(["Nocturne", "R1,C4,S1,6,B2-4,NW110101011"]);
+		a.push(["Nocturne", "R1,C4,S1,6,B2-4,NW110101011H"]);
 		a.push(["Pictures", "R1,C2,S1-3,B2-4,NW010101010"]);
 		a.push(["PicturesH", "R1,C9,S1-3,B2-4,NW010101010"]);
 		a.push(["Pinwheels", "R1,C7,S2,B2-3,NW110101011"]);
