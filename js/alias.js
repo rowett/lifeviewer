@@ -466,7 +466,7 @@ This file is part of LifeViewer
 		a.push(["olife", "B2in3/S2-in3"]);
 		a.push(["Omosso", "B2k3acijr4ijqy6i7c/S2aek3ijnqr4it5n"]);
 		a.push(["Orthogonable", "B2e3aiknr4q/S1c2-in3aijry4a"]);
-		a.push(["Particles", "B2ce3i/S1c2cek"]);
+		a.push(["Particles (testitemqlstudop)", "B2ce3i/S1c2cek"]);
 		a.push(["Patchworks", "B2-an3aiy/S2-in3cijky4-nqrz5k"]);
 		a.push(["Pedestrian Goats", "B2in38/S123a"]);
 		a.push(["Pentadecathlife", "B34e5y6cn8/S234c5e"]);
