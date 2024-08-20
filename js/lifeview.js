@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1190,
+		/** @const {number} */ versionBuild : 1191,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -14000,6 +14000,27 @@ This file is part of LifeViewer
 		}
 	};
 
+	// reverse a CoordCA neighbourhood string (for trianguluar rules)
+	/** @returns {string} */
+	View.prototype.reverseCoordCA = function(/** @type {string} */ rule) {
+		var	/** @type {string} */ result = "",
+			/** @type {string} */ hexDigits = this.manager.hexCharacters,
+			/** @type {number} */ digit = 0,
+			/** @type {number} */ newDigit = 0,
+			/** @type {number} */ i = 0;
+
+		// process each character in reverse
+		for (i = rule.length - 1; i >= 0; i -= 1) {
+			digit = hexDigits.indexOf(rule[i]);
+
+			// reverse bits in character
+			newDigit = ((digit & 1) << 3) | ((digit & 2) << 1) | ((digit & 4) >> 1) | ((digit & 8) >> 3);
+			result += hexDigits[newDigit];
+		}
+
+		return result;
+	};
+
 	// create CoordCA neighbourhood from selection and copy to clipboard
 	View.prototype.copyCoordCA = function(/** @type {View} */ me) {
 		var	/** @type {BoundingBox} */ selBox = me.selectionBox,
@@ -14084,6 +14105,10 @@ This file is part of LifeViewer
 					output += "H";
 				} else {
 					if (me.engine.isTriangular) {
+						// check if neighbourhood needs to be inverted
+						if (((x1 + xOff + y1 + yOff) & 1) === 0) {
+							output = this.reverseCoordCA(output);
+						}
 						output += "L";
 					}
 				}

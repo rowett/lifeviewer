@@ -1,3 +1,6 @@
+Build 1191
+- fixed Copy Nhood for 2-state triangular rules
+
 Build 1190
 - fixed Copy as MAP issue
 
