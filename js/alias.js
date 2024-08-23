@@ -130,6 +130,7 @@ This file is part of LifeViewer
 		a.push(["Cheerios", "B35678/S34567"]);
 		a.push(["Christmas Life", "B1/S012345678"]);
 		a.push(["Coagulations", "B378/S235678"]);
+		a.push(["Conway", "B3/S23"]);
 		a.push(["Conway's Game of Life", "B3/S23"]);
 		a.push(["Conway's Life", "B3/S23"]);
 		a.push(["Coral", "B3/S45678"]);
@@ -465,7 +466,7 @@ This file is part of LifeViewer
 		a.push(["olife", "B2in3/S2-in3"]);
 		a.push(["Omosso", "B2k3acijr4ijqy6i7c/S2aek3ijnqr4it5n"]);
 		a.push(["Orthogonable", "B2e3aiknr4q/S1c2-in3aijry4a"]);
-		a.push(["Particles", "B2ce3i/S1c2cek"]);
+		a.push(["Particles (testitemqlstudop)", "B2ce3i/S1c2cek"]);
 		a.push(["Patchworks", "B2-an3aiy/S2-in3cijky4-nqrz5k"]);
 		a.push(["Pedestrian Goats", "B2in38/S123a"]);
 		a.push(["Pentadecathlife", "B34e5y6cn8/S234c5e"]);
@@ -480,7 +481,7 @@ This file is part of LifeViewer
 		a.push(["plife2", "B35j6i/S2-i3"]);
 		a.push(["PondLife", "B36i/S2-i35i"]);
 		a.push(["PortLife", "B34cz5y/S234y8"]);
-		a.push(["pre-X-rule", "B2cei3ci4jnr5ikn/S12-ck4einqy5er6aei8"]);
+		a.push(["pre-x-rule", "B2cei3ci4jnr5ikn/S12-ck4einqy5er6aei8"]);
 		a.push(["Prismatika Crystallios", "B2ae3r/S1e"]);
 		a.push(["PlasmaLife", "B34-air/S234-air"]);
 		a.push(["Puffers", "B3-nqr6/S235-nqr"]);
@@ -624,6 +625,16 @@ This file is part of LifeViewer
 		a.push(["Fire whirl", "R8,C6,M1,S46..91,B65..100,NM"]);
 		a.push(["ModernArt", "R10,C255,M1,S2..3,B3..3,NM"]);
 
+		// add HROT cross aliases
+		s.push("HROT cross");
+		a.push(["Higher-Range Outer-Totalistic cross", ""]);
+		a.push(["Factorio", "R3,C2,S2,B3,N+"]);
+		
+		// add HROT hash aliases
+		s.push("HROT hash");
+		a.push(["Higher-Range Outer-Totalistic hash", ""]);
+		a.push(["Hash", "R2,C2,S4-6,B5-6,N#"]);
+		
 		// add HROT von Neumann aliases
 		s.push("HROT vN");
 		a.push(["Higher-Range Outer-Totalistic von Neumann", ""]);
@@ -661,21 +672,20 @@ This file is part of LifeViewer
 		a.push(["x-rule", "MAPBSB64CCTqARFBImEADAGBSCTgICTSIAAADCFCSTAAAANAMEUBCKEBchCE00YAE3IACSFACCIQQDIIF4UIIAGSA"]);
 		a.push(["water", "MAPABAbrwAA//8AQltdAAD+/8Aa/f8AAP//YgD//wAA//8AAP//QAD//wBA//8AAP/fAgD3+wKA//8AIPZ/AAD//w"]);
 
+		// add HROT custom aliases
+		s.push("HROT custom");
+		a.push(["Higher-Range Outer-Totalistic custom", ""]);
+		a.push(["Marine", "R2,C2,S4,6-9,B6-8,N@03ddef"]);
+		
 		// add weighted aliases
 		s.push("Weighted");
 		a.push(["Weighted", ""]);
-		a.push(["Ben's rule","R1,C2,S3,5,8,B4,6,8,NW323202323"]);
 		a.push(["Border", "R1,C2,S10-16,B1-8,NW010101010901010101"]);
-		a.push(["Bricks", "R1,C3,S10,12,14,16,B7,13,NW525202525"]);
 		a.push(["Bustle", "R1,C4,S2,4-5,7,B3,NW212101212"]);
 		a.push(["Career", "R1,C2,S2-3,B3,NW121101111"]);
 		a.push(["Cloud54", "R1,C2,S2-3,9-10,19,27,B3,10,27,NW010109010009010909"]);
 		a.push(["Cloud75", "R1,C2,S2-4,10-11,13,18,21-22,27,29-31,36-40,B3,10,27,NW010109010009010909"]);
-		a.push(["Conway", "R1,C2,S2-3,6-7,10-11,15,B3,7,11,15,NW515101515"]);
-		a.push(["Conway--", "R1,C2,S3,6-7,10-11,15,B3,7,11,15,NW515101515"]);
-		a.push(["Conway++", "R1,C2,S2-3,6-7,10-11,15,20,B3,7,11,15,NW515101515"]);
-		a.push(["Conway+-1", "R1,C2,S2-3,6-7,10,12,15,B3,7,11,15,NW515101515"]);
-		a.push(["Conway+-2", "R1,C2,S2-3,7,10-13,15,B3,7,11,15,NW515101515"]);
+		a.push(["Coexistence", "R4,C0,S9,14,16-17,21,23-24,30-31,37-38,44-45,51-52,58-59,B3,10,17,21,24,31,38,45,52,59,NW100010001000000000000000000000777000100707001000777000000000000000000000100010001"]);
 		a.push(["CrossPorpoises", "R1,C2,S2-3,6-10,12-13,B5,NW141404140"]);
 		a.push(["Cyclish", "R1,C7,S2,B1-3,NW010101010"]);
 		a.push(["Cyclones", "R1,C5,S2,4-5,B2-5,NW110101011"]);
@@ -689,7 +699,6 @@ This file is part of LifeViewer
 		a.push(["Frost M", "R1,C25,S,B1,NW111101111"]);
 		a.push(["Frost N", "R1,C25,S,B1,NW010101010"]);
 		a.push(["Gnats", "R1,C2,S0-2,11,19,B11,19,NW090109010001090109"]);
-		a.push(["HexParity", "R1,C2,S0,2,4,6,B1,3,5,NW110101011H"]);
 		a.push(["Hextenders", "R1,C10,S1,3-5,B2-3,NW110101011H"]);
 		a.push(["HGlass", "R1,C2,S1-3,11,21,25,29-31,B1-3,11,21,25,29-31,NW000200080110000400"]);
 		a.push(["Hogs", "R1,C2,S2-4,6,B5-6,NW023302230H"]);
@@ -704,8 +713,7 @@ This file is part of LifeViewer
 		a.push(["Mosquito", "R1,C2,S3-4,8-9,B2-3,9,NW995505599"]);
 		a.push(["Mosquito2", "R1,C2,S3-4,8-9,B3,6,9,18,NW995505599"]);
 		a.push(["Navaho1", "R1,C12,S8-9,11,B2,5,NW414575414"]);
-		a.push(["Nocturne", "R1,C4,S1,6,B2-4,NW110101011"]);
-		a.push(["Parity", "R1,C2,S1,3,5,B1,3,5,NW010111010"]);
+		a.push(["Nocturne", "R1,C4,S1,6,B2-4,NW110101011H"]);
 		a.push(["Pictures", "R1,C2,S1-3,B2-4,NW010101010"]);
 		a.push(["PicturesH", "R1,C9,S1-3,B2-4,NW010101010"]);
 		a.push(["Pinwheels", "R1,C7,S2,B2-3,NW110101011"]);
