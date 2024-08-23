@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1191,
+		/** @const {number} */ versionBuild : 1192,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -2567,6 +2567,10 @@ This file is part of LifeViewer
 			y = checkGridResult[2];
 			xOff = (this.engine.width >> 1) - (this.patternWidth >> 1);
 			yOff = (this.engine.height >> 1) - (this.patternHeight >> 1);
+			leftX = Math.round((this.engine.width - this.engine.boundedGridWidth) / 2) + boxOffset;
+			bottomY = Math.round((this.engine.height - this.engine.boundedGridHeight) / 2) + boxOffset;
+			rightX = leftX + this.engine.boundedGridWidth - 1;
+			topY = bottomY + this.engine.boundedGridHeight - 1;
 		} else {
 			// cell is not on grid so exit
 			return 0;
