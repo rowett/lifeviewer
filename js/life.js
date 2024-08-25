@@ -492,6 +492,7 @@ This file is part of LifeViewer
 		/** @type {Int32Array} */ this.cellPeriod = null;
 		/** @type {number} */ this.cellPeriodWidth = 0;
 		/** @type {number} */ this.cellPeriodHeight = 0;
+		/** @type {number} */ this.origCellPeriodWidth = 0;
 
 		// oscillator population subperiod
 		/** @type {Uint32Array} */ this.popSubPeriod = null;
@@ -2899,7 +2900,7 @@ This file is part of LifeViewer
 			/** @type {number} */ ex = 0,
 			/** @type {number} */ inc = 0,
 			/** @type {number} */ xPos = 0,
-			/** @type {number} */ cellPeriodWidth = this.cellPeriodWidth;
+			/** @type {number} */ cellPeriodWidth = this.origCellPeriodWidth;
 
 		// adjust the colours based on endian
 		if (!this.littleEndian) {
@@ -3019,8 +3020,8 @@ This file is part of LifeViewer
 
 		// draw the cells
 		for (y = 0; y < this.cellPeriodHeight; y += 1) {
-			for (x = 0; x < this.cellPeriodWidth; x += 1) {
-				p = this.cellPeriod[y * this.cellPeriodWidth + x];
+			for (x = 0; x < this.origCellPeriodWidth; x += 1) {
+				p = this.cellPeriod[y * this.origCellPeriodWidth + x];
 				pixCol = this.cellPeriodRGB[p];
 				for (cy = 0; cy < cellSize; cy += 1) {
 					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth + ((x + cellBorderSize) * cellSize) + offset;
@@ -3039,13 +3040,13 @@ This file is part of LifeViewer
 			for (cy = 0; cy < cellSize; cy += 1) {
 				// draw top row
 				row = cy * rowWidth;
-				for (x = 0; x < (this.cellPeriodWidth + 2) * cellSize; x += 1) {
+				for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
 					data32[row + x] = boundedCol;
 				}
 
 				// draw bottom row
 				row += (this.cellPeriodHeight + 1) * cellSize * rowWidth;
-				for (x = 0; x < (this.cellPeriodWidth + 2) * cellSize; x += 1) {
+				for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
 					data32[row + x] = boundedCol;
 				}
 			}
@@ -3053,7 +3054,7 @@ This file is part of LifeViewer
 			for (y = 0; y < this.cellPeriodHeight; y += 1) {
 				for (cy = 0; cy < cellSize; cy += 1) {
 					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth;
-					row2 = row + cellSize * (this.cellPeriodWidth + 1);
+					row2 = row + cellSize * (this.origCellPeriodWidth + 1);
 					for (cx = 0; cx < cellSize; cx += 1) {
 						data32[row + cx] = boundedCol;
 						data32[row2 + cx] = boundedCol;
@@ -3077,7 +3078,7 @@ This file is part of LifeViewer
 			for (y = -1; y <= this.cellPeriodHeight + 1; y += 1) {
 				offset += inc;
 				row = ((y + cellBorderSize) * cellSize) * rowWidth;
-				for (x = offset; x < (this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1 + offset; x += 1) {
+				for (x = offset; x < (this.origCellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1 + offset; x += 1) {
 					if (x >= 0) {
 						data32[row + x] = gridCol;
 					}
@@ -3092,7 +3093,7 @@ This file is part of LifeViewer
 			}
 
 			sx = -1;
-			ex = this.cellPeriodWidth + 1;
+			ex = this.origCellPeriodWidth + 1;
 			if (this.isHex) {
 				offset = (this.cellPeriodHeight >> 1) * cellSize - inc;
 				sx += 1;
@@ -4995,6 +4996,7 @@ This file is part of LifeViewer
 			this.popTotal = popTotal;
 			this.cellPeriod = cellPeriod;
 			this.cellPeriodWidth = boxWidth;
+			this.origCellPeriodWidth = boxWidth;
 			this.cellPeriodHeight = boxHeight;
 
 			// create the cell period map

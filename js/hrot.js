@@ -5392,7 +5392,7 @@ This file is part of LifeViewer
 
 	// update the life grid using HROT
 	HROT.prototype.nextGenerationHROT = function(/** @type {number} */ counter) {
-		// whether to use the alternte rule
+		// whether to use the alternate rule
 		var	/** @type {boolean} */ useAlternate = false;
 
 		// use alternate rule if specified and odd generation

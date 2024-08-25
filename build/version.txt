@@ -1,3 +1,6 @@
+Build 1193
+- fixed Cell Period Map rendering for Hex patterns on window resize
+
 Build 1192
 - fixed drawing outside Bounded Grid when grid grows
 - updated aliases
