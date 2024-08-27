@@ -6396,6 +6396,12 @@ This file is part of LifeViewer
 			}
 		}
 
+		// check for unsupported B0 HROT neighbourhoods
+		if (valid && pattern.hasHROTB0() && (pattern.neighborhoodHROT === this.weightedHROT || pattern.neighborhoodHROT === this.gaussianHROT)) {
+			this.failureReason = "B0 currently not supported";
+			valid = false;
+		}
+
 		// if valid then create the rule
 		if (valid && pattern.wolframRule === -1 && !this.wolframEmulation && pattern.isLTL === false && pattern.isHROT === false) {
 			// create the canonical name and the rule map

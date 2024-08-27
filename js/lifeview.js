@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1193,
+		/** @const {number} */ versionBuild : 1195,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -19527,20 +19527,6 @@ This file is part of LifeViewer
 				me.engine.isRuleTree = true;
 			}
 
-			// decode PCA icons
-			if (pattern.isPCA) {
-				me.engine.createPCAIcons(pattern);
-				me.engine.ruleTableIcons = pattern.ruleTableIcons;
-			} else {
-				// process icons if loaded
-				if (pattern.ruleTableIcons) {
-					me.engine.processIcons(pattern.ruleTableIcons);
-				} else {
-					// no icons available
-					me.engine.iconsAvailable = false;
-				}
-			}
-
 			// check if the rule is HROT
 			me.engine.isHROT = pattern.isHROT;
 			if (pattern.isHROT) {
@@ -19593,6 +19579,20 @@ This file is part of LifeViewer
 
 			// check if the rule is Wolfram
 			me.engine.wolframRule = pattern.wolframRule;
+
+			// decode icons (this must happen after the neighbourhood is read above since icons are not available on hex and triangular grids)
+			if (pattern.isPCA) {
+				me.engine.createPCAIcons(pattern);
+				me.engine.ruleTableIcons = pattern.ruleTableIcons;
+			} else {
+				// process icons if loaded
+				if (pattern.ruleTableIcons) {
+					me.engine.processIcons(pattern.ruleTableIcons);
+				} else {
+					// no icons available
+					me.engine.iconsAvailable = false;
+				}
+			}
 
 			// read the bounded grid details
 			me.engine.boundedGridType = pattern.gridType;

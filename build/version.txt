@@ -1,3 +1,9 @@
+Build 1195
+- fixed Icons not being consistently disabled for Hex and Triangular grids
+
+Build 1194
+- disable B0 support for HROT weighted and gaussian rules
+
 Build 1193
 - fixed Cell Period Map rendering for Hex patterns on window resize
 
