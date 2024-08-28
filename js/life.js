@@ -3001,7 +3001,7 @@ This file is part of LifeViewer
 		this.cellPeriodCanvas.height = colHeight;
 
 		// clear the canvas
-		this.cellPeriodContext.fillStyle = "black";
+		this.cellPeriodContext.fillStyle = "rgba(0,0,0,0)"; //"black";
 		this.cellPeriodContext.fillRect(0, 0, this.cellPeriodCanvas.width, this.cellPeriodCanvas.height);
 
 		// get the pixel data
@@ -3035,32 +3035,51 @@ This file is part of LifeViewer
 
 		// draw the bounded grid if required
 		if (this.boundedGridType !== -1) {
-			// draw the bounded grid cells
-			y = 0;
+			// use bounded grid colour
+			pixCol = boundedCol;
+		} else  {
+			// draw border of black cells
+			pixCol = 0xff000000;
+		}
+
+		// check for hex grid
+		if (this.isHex) {
+			// set the offset for drawing
+			inc = -cellSize / 2;
+			offset = (this.cellPeriodHeight >> 1) * cellSize - inc;
+			if ((this.cellPeriodHeight & 1) === 0) {
+				offset += inc;
+			}
+		}
+
+		// draw the bounded grid or border cells
+		y = 0;
+		offset -= inc;
+		for (cy = 0; cy < cellSize; cy += 1) {
+			// draw top row
+			row = cy * rowWidth + offset;
+			for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
+				data32[row + x] = pixCol;
+			}
+
+			// draw bottom row
+			row += (this.cellPeriodHeight + 1) * cellSize * rowWidth - offset;
+			for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
+				data32[row + x] = pixCol;
+			}
+		}
+		offset += inc;
+
+		for (y = 0; y < this.cellPeriodHeight; y += 1) {
 			for (cy = 0; cy < cellSize; cy += 1) {
-				// draw top row
-				row = cy * rowWidth;
-				for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
-					data32[row + x] = boundedCol;
-				}
-
-				// draw bottom row
-				row += (this.cellPeriodHeight + 1) * cellSize * rowWidth;
-				for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
-					data32[row + x] = boundedCol;
+				row = ((y + cellBorderSize) * cellSize + cy) * rowWidth + offset;
+				row2 = row + cellSize * (this.origCellPeriodWidth + 1);
+				for (cx = 0; cx < cellSize; cx += 1) {
+					data32[row + cx] = pixCol;
+					data32[row2 + cx] = pixCol;
 				}
 			}
-
-			for (y = 0; y < this.cellPeriodHeight; y += 1) {
-				for (cy = 0; cy < cellSize; cy += 1) {
-					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth;
-					row2 = row + cellSize * (this.origCellPeriodWidth + 1);
-					for (cx = 0; cx < cellSize; cx += 1) {
-						data32[row + cx] = boundedCol;
-						data32[row2 + cx] = boundedCol;
-					}
-				}
-			}
+			offset += inc;
 		}
 
 		// draw the grid if required

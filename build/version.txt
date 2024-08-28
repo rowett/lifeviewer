@@ -1,3 +1,6 @@
+Build 1196
+- improved hexagonal Cell Period Maps
+
 Build 1195
 - fixed Icons not being consistently disabled for Hex and Triangular grids
 
