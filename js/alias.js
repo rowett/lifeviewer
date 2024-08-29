@@ -583,6 +583,32 @@ This file is part of LifeViewer
 		a.push(["Sliders", "012-e3-ae4acnqyz5acer6acn78/3j4-eikq5c/3"]);
 		a.push(["tGeneC1WC0", "2-i34q/2c34w5c/4"]);
 
+		// add non-isotropic von Neumann aliases
+		s.push("NINT vN");
+		a.push(["Non-Isotropic von Neumann", ""]);
+		a.push(["HybridViewW110", "MAPPzz//A"]);
+
+		// add non-isotropic Moore aliases
+		s.push("NINT M");
+		a.push(["Non-Isotropic Moore", ""]);
+		a.push(["2CellSlug", "MAPBTDe/yAA9/8AAP//AAD//yAA/78AAP//AID//wAA//8AAP//AAD/2wAA//8AgP//AAD//4AA//+AAH//AAD//w"]);
+		a.push(["BLAHTWOCELLGUN", "MAPAMB/vwAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
+		a.push(["cloverleafsim", "MAPAAD//zAwPz8AAP//MDA/PwAA//8AAP//AAD//wAA//8AAD8/AAD//wAAPz8AAP//wMD//wAA///AwP//AAD//w"]);
+		a.push(["FoxLife", "MAPARYXfhZofugWaH7oaIFoxBZofuhogOiAaIFoxIAAgAAWaH7oaIFoxGiA6ICAAIAAaIFoxIAAgACAAIAAAAAAAA"]);
+		a.push(["MaxPeriod_2x2k2", "MAPADC9vyIA/f8AAH//AAD//wCA//+AAP//AID/fwAA//8AAH//AAB//wAA//8AAP//AAD//4AA//8AAP//AAD//w"]);
+		a.push(["MovingStrings", "MAPARH+/wMT//8BEf7/AxP//wER/v8DE///AREAAAMTAAABEf7/AxP//wER/v8DE///AREAAAMTAAABEQAAAxMAAA"]);
+		a.push(["MuzikThing", "MAPACD//wAA3/8AgH//AAD//wCAf/8AAP//AAD//wAA//8AAH//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//w"]);
+		a.push(["MyEntry", "MAPIAD/7wgA/f8AAP//AAD//wAA//8AAP//AAD/fwAA//8AAP//AAD//wAA//8AAP//AAD//4AA//8AAP//AAD//w"]);
+		a.push(["randomnn", "MAPA1Az8wMAqgAAUADAAAAAAAAAgMAAAIAAgICAwAAAgAAAAAAAiACqAAAAAAAAAAAAAACAAIgAgACAgIAAAACAAA"]);
+		a.push(["OLife", "MAPABD/vgIB//8AAP//AAD//wAA/78AAN3/AJB/vwAAf/8AAP//AABd/wAA//8AAP//AAD//4IA//8AAP//AIB//w"]);
+		a.push(["Rhufo", "MAPARH//wMA//8AAP9/AAD//wAA//8AAP9/AAD//wAA//8AAP//AAB//wAA//8AAP//AAD//wAA//8AAH9/AAB//w"]);
+		a.push(["Rhufo2", "MAPARH//wMA//8AAH9/AAD//wAAX/8AAP9/AAB/7wAA//8AAH//AAB//wAA//8AAP//AAB//wAA/f8AAH8/AAB3/w"]);
+		a.push(["SemiFelineLife", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaICatGiA6ICAAIAAaICatIAAgACAAIAAAAAAAA"]);
+		a.push(["Simple_Weird_Ships", "MAPABHs/wMA//8AAP//AAD//wAA/38AAP//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
+		a.push(["Socrates", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAg00IAmSocrateg"]);
+		a.push(["x-rule", "MAPBSB64CCTqARFBImEADAGBSCTgICTSIAAADCFCSTAAAANAMEUBCKEBchCE00YAE3IACSFACCIQQDIIF4UIIAGSA"]);
+		a.push(["water", "MAPABAbrwAA//8AQltdAAD+/8Aa/f8AAP//YgD//wAA//8AAP//QAD//wBA//8AAP/fAgD3+wKA//8AIPZ/AAD//w"]);
+
 		// add LtL 2-state aliases
 		s.push("LtL M");
 		a.push(["Larger than Life Moore", ""]);
@@ -650,27 +676,6 @@ This file is part of LifeViewer
 		a.push(["Replicator R2", "R2,C2,S1,3,5,7,9,11,13,15,17,19,21,23,B1,3,5,7,9,11,13,15,17,19,21,23"]);
 		a.push(["Replicator R3", "R3,C2,S1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47"]);
 		a.push(["Replicator R4", "R4,C2,S1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,B1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79"]);
-
-		// add non-isotropic aliases
-		s.push("MAP NINT");
-		a.push(["MAP Non-Isotropic", ""]);
-		a.push(["2CellSlug", "MAPBTDe/yAA9/8AAP//AAD//yAA/78AAP//AID//wAA//8AAP//AAD/2wAA//8AgP//AAD//4AA//+AAH//AAD//w"]);
-		a.push(["BLAHTWOCELLGUN", "MAPAMB/vwAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
-		a.push(["cloverleafsim", "MAPAAD//zAwPz8AAP//MDA/PwAA//8AAP//AAD//wAA//8AAD8/AAD//wAAPz8AAP//wMD//wAA///AwP//AAD//w"]);
-		a.push(["FoxLife", "MAPARYXfhZofugWaH7oaIFoxBZofuhogOiAaIFoxIAAgAAWaH7oaIFoxGiA6ICAAIAAaIFoxIAAgACAAIAAAAAAAA"]);
-		a.push(["MaxPeriod_2x2k2", "MAPADC9vyIA/f8AAH//AAD//wCA//+AAP//AID/fwAA//8AAH//AAB//wAA//8AAP//AAD//4AA//8AAP//AAD//w"]);
-		a.push(["MovingStrings", "MAPARH+/wMT//8BEf7/AxP//wER/v8DE///AREAAAMTAAABEf7/AxP//wER/v8DE///AREAAAMTAAABEQAAAxMAAA"]);
-		a.push(["MuzikThing", "MAPACD//wAA3/8AgH//AAD//wCAf/8AAP//AAD//wAA//8AAH//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//w"]);
-		a.push(["MyEntry", "MAPIAD/7wgA/f8AAP//AAD//wAA//8AAP//AAD/fwAA//8AAP//AAD//wAA//8AAP//AAD//4AA//8AAP//AAD//w"]);
-		a.push(["randomnn", "MAPA1Az8wMAqgAAUADAAAAAAAAAgMAAAIAAgICAwAAAgAAAAAAAiACqAAAAAAAAAAAAAACAAIgAgACAgIAAAACAAA"]);
-		a.push(["OLife", "MAPABD/vgIB//8AAP//AAD//wAA/78AAN3/AJB/vwAAf/8AAP//AABd/wAA//8AAP//AAD//4IA//8AAP//AIB//w"]);
-		a.push(["Rhufo", "MAPARH//wMA//8AAP9/AAD//wAA//8AAP9/AAD//wAA//8AAP//AAB//wAA//8AAP//AAD//wAA//8AAH9/AAB//w"]);
-		a.push(["Rhufo2", "MAPARH//wMA//8AAH9/AAD//wAAX/8AAP9/AAB/7wAA//8AAH//AAB//wAA//8AAP//AAB//wAA/f8AAH8/AAB3/w"]);
-		a.push(["SemiFelineLife", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaICatGiA6ICAAIAAaICatIAAgACAAIAAAAAAAA"]);
-		a.push(["Simple_Weird_Ships", "MAPABHs/wMA//8AAP//AAD//wAA/38AAP//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
-		a.push(["Socrates", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAg00IAmSocrateg"]);
-		a.push(["x-rule", "MAPBSB64CCTqARFBImEADAGBSCTgICTSIAAADCFCSTAAAANAMEUBCKEBchCE00YAE3IACSFACCIQQDIIF4UIIAGSA"]);
-		a.push(["water", "MAPABAbrwAA//8AQltdAAD+/8Aa/f8AAP//YgD//wAA//8AAP//QAD//wBA//8AAP/fAgD3+wKA//8AIPZ/AAD//w"]);
 
 		// add HROT custom aliases
 		s.push("HROT custom");
