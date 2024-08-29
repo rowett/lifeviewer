@@ -1,3 +1,6 @@
+Build 1197
+- when window height is too small for menus and Thumbnail defined replace greyed out Settings button with Shrink button
+
 Build 1196
 - improved hexagonal Cell Period Maps
 

@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1195,
+		/** @const {number} */ versionBuild : 1197,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7633,6 +7633,17 @@ This file is part of LifeViewer
 		// lock nav toggle if window height is too short
 		shown = this.displayHeight < ViewConstants.minMenuHeight;
 		this.navToggle.locked = shown;
+
+		// replace nav toggle with shrink button if window height too short for nav button and thumbnail mode enabled
+		if (shown && this.thumbnailEverOn) {
+			this.navToggle.deleted = true;
+			this.shrinkButton.setPosition(this.navToggle.position, this.navToggle.relX, this.navToggle.relY);
+			this.shrinkButton.enabled = true;
+		} else {
+			this.navToggle.deleted = false;
+			this.shrinkButton.setPosition(Menu.southEast, -40, -90);
+			this.shrinkButton.enabled = this.navToggle.current[0];
+		}
 	};
 
 	// update infobar
