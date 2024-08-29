@@ -325,6 +325,7 @@ This file is part of LifeViewer
 		a.push(["Beaecsizae", "B34ce/S12-a3"]);
 		a.push(["Ben's rule", "B2-ak3einqy4e/S1c2ak3inqy4e"]);
 		a.push(["Best Friends", "B2ce3aiy/S12aei3r"]);
+		a.push(["Bigship", "B2ei3einqy4ny5ajkr/S23ajkr4jnry5inqy"]);
 		a.push(["Bgunlife", "B34eny5e/S23-a4iy5e6c"]);
 		a.push(["Billiard", "B36-e/S12345"]);
 		a.push(["Blasts", "B2e3airy4kt5jr6c8/S02ace3eiknr4-aj5-cei6-a78"]);
@@ -370,6 +371,7 @@ This file is part of LifeViewer
 		a.push(["Dry15Life", "B34r7/S23-q4et"]);
 		a.push(["DryGoats", "B2in37/S123a"]);
 		a.push(["Dustclouds01", "B2ce3-ai/S01"]);
+		a.push(["Dustclouds03", "B2ce3-ai/S03"]);
 		a.push(["EasyHighLife", "B36-i/S23"]);
 		a.push(["Eatsplosion", "B2n3-ekqy4c5e/S2-cn3-eky4aij5e"]);
 		a.push(["Eatsplosion IV", "B2n3-q4aqz6n8/S2-in3-q4iz7c8"]);
@@ -586,7 +588,14 @@ This file is part of LifeViewer
 		// add non-isotropic von Neumann aliases
 		s.push("NINT vN");
 		a.push(["Non-Isotropic von Neumann", ""]);
+		a.push(["1d110", "MAPLy0PDw"]);
+		a.push(["AllShips", "MAPAAD//w"]);
 		a.push(["HybridViewW110", "MAPPzz//A"]);
+
+		// add non-isotropic hexagonal aliases
+		s.push("NINT Hex");
+		a.push(["Non-Isotropic hexagonal", ""]);
+		a.push(["pentagonhood", "MAPBARISEhIgIBISICAgIAAAA"]);
 
 		// add non-isotropic Moore aliases
 		s.push("NINT M");
@@ -596,6 +605,7 @@ This file is part of LifeViewer
 		a.push(["cloverleafsim", "MAPAAD//zAwPz8AAP//MDA/PwAA//8AAP//AAD//wAA//8AAD8/AAD//wAAPz8AAP//wMD//wAA///AwP//AAD//w"]);
 		a.push(["FoxLife", "MAPARYXfhZofugWaH7oaIFoxBZofuhogOiAaIFoxIAAgAAWaH7oaIFoxGiA6ICAAIAAaIFoxIAAgACAAIAAAAAAAA"]);
 		a.push(["MaxPeriod_2x2k2", "MAPADC9vyIA/f8AAH//AAD//wCA//+AAP//AID/fwAA//8AAH//AAB//wAA//8AAP//AAD//4AA//8AAP//AAD//w"]);
+		a.push(["movingdiagonal", "MAPAAAAAAAAAAD//wAA//8AAAAAAAAAAAAA//8AAP//AAAAAAAAAAAAAP//AAD//wAAAAAAAAAAAAD//wAA//8AAA"]);
 		a.push(["MovingStrings", "MAPARH+/wMT//8BEf7/AxP//wER/v8DE///AREAAAMTAAABEf7/AxP//wER/v8DE///AREAAAMTAAABEQAAAxMAAA"]);
 		a.push(["MuzikThing", "MAPACD//wAA3/8AgH//AAD//wCAf/8AAP//AAD//wAA//8AAH//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//w"]);
 		a.push(["MyEntry", "MAPIAD/7wgA/f8AAP//AAD//wAA//8AAP//AAD/fwAA//8AAP//AAD//wAA//8AAP//AAD//4AA//8AAP//AAD//w"]);
@@ -603,6 +613,8 @@ This file is part of LifeViewer
 		a.push(["OLife", "MAPABD/vgIB//8AAP//AAD//wAA/78AAN3/AJB/vwAAf/8AAP//AABd/wAA//8AAP//AAD//4IA//8AAP//AIB//w"]);
 		a.push(["Rhufo", "MAPARH//wMA//8AAP9/AAD//wAA//8AAP9/AAD//wAA//8AAP//AAB//wAA//8AAP//AAD//wAA//8AAH9/AAB//w"]);
 		a.push(["Rhufo2", "MAPARH//wMA//8AAH9/AAD//wAAX/8AAP9/AAB/7wAA//8AAH//AAB//wAA//8AAP//AAB//wAA/f8AAH8/AAB3/w"]);
+		a.push(["rules0", "MAPCkA/3wAI939CUM/bABH//4Agft4JAPX+IgH/3QAQ9u8AAP//AID/fwAA//8AAP//BQD9/wAA/98AAP//AAD//w"]);
+		a.push(["rules6", "MAPAgl/+0Ug/fVAIv/9AADdPwDi9/uAQft5qIDtlQgA/b8gAP//AAD//wAQv/8AAP7+AhD/+gAA/f8EAv//AID//w"]);
 		a.push(["SemiFelineLife", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaICatGiA6ICAAIAAaICatIAAgACAAIAAAAAAAA"]);
 		a.push(["Simple_Weird_Ships", "MAPABHs/wMA//8AAP//AAD//wAA/38AAP//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
 		a.push(["Socrates", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAg00IAmSocrateg"]);
