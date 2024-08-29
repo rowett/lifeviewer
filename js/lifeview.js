@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1197,
+		/** @const {number} */ versionBuild : 1198,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -19413,8 +19413,8 @@ This file is part of LifeViewer
 		}
 
 		// check for failed RuleTable
-		if (me.manager.ruleTableB0 && pattern && (pattern.gridType === -1 || (pattern.gridType !== -1 && (pattern.gridWidth === 0 || pattern.gridHeight === 0)))) {
-			if (me.engine.ruleTableOutput === null) {
+		if (pattern && (me.manager.ruleTableB0 && pattern && (pattern.gridType === -1 || (pattern.gridType !== -1 && (pattern.gridWidth === 0 || pattern.gridHeight === 0))))) {
+			if (pattern.ruleTableOutput === null) {
 				me.manager.failureReason = "@TREE B0 only valid with finite grid";
 			} else {
 				me.manager.failureReason = "@TABLE B0 only valid with finite grid";

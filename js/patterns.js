@@ -10104,10 +10104,17 @@ This file is part of LifeViewer
 			/** @type {number} */ ruleIndex = pattern.afterTitle.indexOf(this.ruleTableRuleName),
 			/** @type {number} */ nextIndex = -1,
 			/** @type {string} */ ruleName = pattern.ruleName,
+			/** @type {number} */ boundedPrefix = ruleName.indexOf(this.boundedGridPrefix),
 			/** @type {string} */ ruleString = "";
 
 		// keep any error message
 		pattern.originalFailure = this.failureReason;
+
+		// process and then remove any bounded grid prefix
+		if (boundedPrefix !== -1) {
+			this.decodeBoundedGrid(pattern, ruleName.substring(boundedPrefix + 1));
+			ruleName = ruleName.substring(0, boundedPrefix);
+		}
 
 		// check if there is a rule definition in the comments
 		while (ruleIndex !== -1 && !result) {
