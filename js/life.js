@@ -32586,13 +32586,13 @@ This file is part of LifeViewer
 
 			// iterate over all 128 possible combinations
 			for (i = 0; i < 128; i += 1) {
-				nw = (i & 64) >> 6;
-				n = (i & 32) >> 5;
+				s = (i & 64) >> 6;
+				se = (i & 32) >> 5;
 				w = (i & 16) >> 4;
 				c = (i & 8) >> 3;
 				e = (i & 4) >> 2;
-				s = (i & 2) >> 1;
-				se = (i & 1);
+				nw = (i & 2) >> 1;
+				n = (i & 1);
 	
 				// lookup the result
 				state = c;

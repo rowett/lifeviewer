@@ -1,3 +1,6 @@
+Build 1199
+- fixed CopyAsMAP for hexagonal rules
+
 Build 1198
 - fixed issue with decoding embedded RuleLoader rules with Bounded Grids
 
