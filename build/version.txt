@@ -1,5 +1,8 @@
+Build 1200
+- fixed KILLGLIDERS history cells for HROT 2-state patterns
+
 Build 1199
-- fixed CopyAsMAP for hexagonal rules
+- fixed Copy As MAP for hexagonal rules
 
 Build 1198
 - fixed issue with decoding embedded RuleLoader rules with Bounded Grids

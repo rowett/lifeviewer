@@ -2037,7 +2037,6 @@ This file is part of LifeViewer
 			while (x <= rightX + xrange) {
 				k = (x + y) & 1;
 				if (k === 0) {
-					width = yrange + 1;
 					l = yrange;
 					for (j = -yrange; j < 0; j += 1) {
 						colourRow = colourGrid[y + j];
@@ -2048,11 +2047,9 @@ This file is part of LifeViewer
 						if (colourRow[x + l] >= aliveStart) {
 							count += 1;
 						}
-						width += 1;
 					}
 
 					// j === 0 case
-					width -= 1;
 					colourRow = colourGrid[y];
 					if (colourRow[x - l - 1] >= aliveStart) {
 						count -= 1;
@@ -2063,7 +2060,6 @@ This file is part of LifeViewer
 					l += 1;
 
 					for (j = 1; j <= yrange; j += 1) {
-						width -= 1;
 						l -= 1;
 						colourRow = colourGrid[y + j];
 						if (colourRow[x - l - 1] >= aliveStart) {
@@ -2074,7 +2070,6 @@ This file is part of LifeViewer
 						}
 					}
 				} else {
-					width = yrange;
 					l = yrange + 1;
 					for (j = -yrange; j < 0; j += 1) {
 						colourRow = colourGrid[y + j];
@@ -2084,7 +2079,6 @@ This file is part of LifeViewer
 						if (colourRow[x - l] >= aliveStart) {
 							count -= 1;
 						}
-						width += 1;
 						l += 1;
 					}
 
@@ -2097,10 +2091,8 @@ This file is part of LifeViewer
 					if (colourRow[x + l] >= aliveStart) {
 						count += 1;
 					}
-					width += 1;
 
 					for (j = 1; j <= yrange; j += 1) {
-						width -= 1;
 						l -= 1;
 						colourRow = colourGrid[y + j];
 						if (colourRow[x + l] >= aliveStart) {
@@ -4076,7 +4068,6 @@ This file is part of LifeViewer
 			while (x <= rightX + xrange) {
 				k = (x + y) & 1;
 				if (k === 0) {
-					width = yrange + 1;
 					l = yrange;
 					for (j = -yrange; j < 0; j += 1) {
 						colourRow = colourGrid[y + j];
@@ -4087,11 +4078,9 @@ This file is part of LifeViewer
 						if (colourRow[x + l] === maxGenState) {
 							count += 1;
 						}
-						width += 1;
 					}
 
 					// j === 0 case
-					width -= 1;
 					colourRow = colourGrid[y];
 					if (colourRow[x - l - 1] === maxGenState) {
 						count -= 1;
@@ -4102,7 +4091,6 @@ This file is part of LifeViewer
 					l += 1;
 
 					for (j = 1; j <= yrange; j += 1) {
-						width -= 1;
 						l -= 1;
 						colourRow = colourGrid[y + j];
 						if (colourRow[x - l - 1] === maxGenState) {
@@ -4113,7 +4101,6 @@ This file is part of LifeViewer
 						}
 					}
 				} else {
-					width = yrange;
 					l = yrange + 1;
 					for (j = -yrange; j < 0; j += 1) {
 						colourRow = colourGrid[y + j];
@@ -4123,7 +4110,6 @@ This file is part of LifeViewer
 						if (colourRow[x - l] === maxGenState) {
 							count -= 1;
 						}
-						width += 1;
 						l += 1;
 					}
 
@@ -4136,10 +4122,8 @@ This file is part of LifeViewer
 					if (colourRow[x + l] === maxGenState) {
 						count += 1;
 					}
-					width += 1;
 
 					for (j = 1; j <= yrange; j += 1) {
-						width -= 1;
 						l -= 1;
 						colourRow = colourGrid[y + j];
 						if (colourRow[x + l] === maxGenState) {

@@ -14740,7 +14740,13 @@ This file is part of LifeViewer
 		var	/** @type {number} */ xc = 0,
 			/** @type {number} */ yc = 0,
 			/** @type {number} */ state = 0,
+			/** @type {number} */ deadCell = 0,
 			/** @type {Array<number>} */ gliderRow = null;
+
+		// select the correct history colour for HROT rules
+		if (this.isHROT) {
+			deadCell = this.view.maxHistoryStates;
+		}
 
 		// check if the glider is near bounding box edge
 		if (!this.nearEdge(x, y, orientation, edge)) {
@@ -14764,7 +14770,7 @@ This file is part of LifeViewer
 					// all other rule types
 					for (xc = 0; xc < gliderRow.length; xc += 1) {
 						if (gliderRow[xc] === 1) {
-							this.setState(x + xc, y + yc, 0, false);
+							this.setState(x + xc, y + yc, deadCell, false);
 							this.deaths += 1;
 						}
 					}
