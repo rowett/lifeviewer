@@ -2996,6 +2996,7 @@ This file is part of LifeViewer
 				rowWidth += cellSize / 2;
 			}
 		}
+		rowWidth |= 0;
 		colHeight = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize) + gridBorderSize;
 		this.cellPeriodCanvas.width = rowWidth;
 		this.cellPeriodCanvas.height = colHeight;
@@ -3139,15 +3140,23 @@ This file is part of LifeViewer
 			}
 		} else {
 			// draw a border
+			if (this.isHex) {
+				offset = colHeight >> 1;
+				inc = -0.5;
+			}
+			ex = 0;
+
 			row = rowWidth * (colHeight - 1);
-			for (x = 0; x < rowWidth; x += 1) {
-				data32[x] = gridCol;
+			for (x = 0; x < rowWidth - offset; x += 1) {
+				data32[x + offset] = gridCol;
 				data32[x + row] = gridCol;
 			}
 
 			for (y = 0; y < colHeight; y += 1) {
-				data32[y * rowWidth] = gridCol;
-				data32[y * rowWidth + rowWidth - 1] = gridCol;
+				data32[y * rowWidth + (offset | 0)] = gridCol;
+				data32[y * rowWidth + rowWidth - 1 + (ex | 0)] = gridCol;
+				offset += inc;
+				ex += inc;
 			}
 		}
 
