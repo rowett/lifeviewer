@@ -15377,7 +15377,7 @@ This file is part of LifeViewer
 			/** @type {number} */ bottomY = box.bottomY,
 			/** @type {number} */ topY = box.topY,
 			/** @type {BoundingBox} */ safeBox = new BoundingBox(0, 0, 0, 0),
-			/** @const {number} */ safeBorder = 64,
+			/** @const {number} */ safeBorder = 16,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ topRow = colourGrid[topY],
 			/** @type {Uint8Array} */ bottomRow = colourGrid[bottomY],

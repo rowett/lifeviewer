@@ -1,3 +1,6 @@
+Build 1202
+- fixed KILLGLIDERS safe border size
+
 Build 1201
 - made hexagonal Cell Period Map bounding rectangle a rhobmus
 
