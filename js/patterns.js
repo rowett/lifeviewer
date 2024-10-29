@@ -97,6 +97,26 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// check if all requests are completed
+	RuleTreeCache.checkRequestsCompleted = function() {
+		var	/** @type {number} */ i = 0,
+			/** @type {boolean} */ complete = true;
+
+		// check for any requests that are not complete
+		for (i = 0; i < this.requests.length; i += 1) {
+			if (this.requests[i].name !== "") {
+				complete = false;
+			}
+		}
+
+		// if complete then check for overview mode
+		if (complete && Controller.overview && Controller.viewers.length > 0) {
+			if (Controller.viewers[0][1]) {
+				Controller.viewers[0][1].initOverview();
+			}
+		}
+	};
+
 	// remove a request from the cache
 	RuleTreeCache.removeRequest = function(/** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = 0,
@@ -132,6 +152,9 @@ This file is part of LifeViewer
 				i += 1;
 			}
 		}
+
+		// check if all requests have now been processed
+		this.checkRequestsCompleted();
 	};
 
 	// process a failed request 
@@ -152,6 +175,8 @@ This file is part of LifeViewer
 			request = this.requests[i];
 			if (request.name === name) {
 				found = true;
+
+				// remove the request
 				request.name = "";
 
 				// call the fail callback on requesters
@@ -165,6 +190,9 @@ This file is part of LifeViewer
 				i += 1;
 			}
 		}
+
+		// check if all requests have now been processed
+		this.checkRequestsCompleted();
 	};
 
 	// add a new rule to the cache

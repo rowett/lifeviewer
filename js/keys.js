@@ -24,6 +24,46 @@ This file is part of LifeViewer
 
 	// process keys in go to generation mode
 	/** @returns {boolean} */
+	KeyProcessor.processKeyOverview = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
+		// flag event processed
+		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ ctrlKey = event.ctrlKey,
+			/** @type {boolean} */ altKey = event.altKey,
+			/** @type {boolean} */ metaKey = event.metaKey;
+
+		// check for control, meta or alt
+		if (ctrlKey || metaKey || altKey) {
+			// clear key code so it is not handled here
+			keyCode = -1;
+		}
+
+		// determine if the key can be processed
+		switch (keyCode) {
+		// t for timing display
+		case 84:
+			// toggle fps
+			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			break;
+
+		// Esc to close Overview and return to current pattern
+		case 27:
+			Controller.overview = false;
+			me.menuManager.activeMenu(me.viewMenu);
+			break;
+
+		// ignore other keys
+		default:
+			// flag not handled
+			processed = false;
+			break;
+		}
+
+		// return whether key processed
+		return processed;
+	};
+
+	// process keys in go to generation mode
+	/** @returns {boolean} */
 	KeyProcessor.processKeyGoTo = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true,
@@ -1355,6 +1395,11 @@ This file is part of LifeViewer
 				}
 				break;
 
+			// ; for BW screenshot
+			case 186:
+				me.saveBWImagePressed(me);
+				break;
+
 			// = for faster
 			case 187:
 			case 107: // num +
@@ -2006,8 +2051,11 @@ This file is part of LifeViewer
 					} else {
 						// check if multiverse mode is on
 						if (DocConfig.multi) {
-							me.universe = 0;
-							me.startViewer(Controller.patterns[me.universe].pattern, false);
+							// switch to multiverse menu
+							me.multiversePressed(me);
+							//me.universe = 0;
+							//me.startViewer(Controller.patterns[me.universe].pattern, false);
+							//Controller.viewers[0][1].menuManager.notification.notify("Select Pattern", 15, 120, 15, true);
 						} else {
 							me.identifyHomePressed(me);
 						}
@@ -2029,8 +2077,8 @@ This file is part of LifeViewer
 					} else {
 						// check if multiverse mode is on
 						if (DocConfig.multi) {
-							me.universe = Controller.patterns.length - 1;
-							me.startViewer(Controller.patterns[me.universe].pattern, false);
+							//me.universe = Controller.patterns.length - 1;
+							//me.startViewer(Controller.patterns[me.universe].pattern, false);
 						} else {
 							me.identifyEndPressed(me);
 						}

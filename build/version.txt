@@ -1,3 +1,12 @@
+Build 1205
+- fixed size 7 icons not being created
+
+Build 1204
+- improvements to Multiverse prototype
+
+Build 1203
+- prototype of new Multiverse mode
+
 Build 1202
 - fixed KILLGLIDERS safe border size
 

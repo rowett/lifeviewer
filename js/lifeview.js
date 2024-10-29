@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1202,
+		/** @const {number} */ versionBuild : 1205,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -525,6 +525,9 @@ This file is part of LifeViewer
 
 		// list of patterns in multiverse mode
 		/** @type {Array} */ patterns : [],
+
+		// whether in multiverse mode
+		/** @type {boolean} */ overview : false,
 
 		// last copied text
 		/** @type {string} */ clipText : ""
@@ -738,12 +741,14 @@ This file is part of LifeViewer
 	/**
 	 * @constructor
 	 */
-	function PatternInfo(/** @type {string} */ name, /** @type {string} */ pattern, /** @type {string} */ rule, /** @type {number} */ width, /** @type {number} */ height) {
+	function PatternInfo(/** @type {string} */ name, /** @type {string} */ pattern, /** @type {string} */ rule, /** @type {number} */ width, /** @type {number} */ height, /** @type {string} */ originator, /** @type {Array<Uint8Array>} */ map) {
 		/** @type {string} */ this.name = name;
 		/** @type {string} */ this.pattern = pattern;
 		/** @type {string} */ this.rule = rule;
 		/** @type {number} */ this.width = width;
 		/** @type {number} */ this.height = height;
+		/** @type {string} */ this.originator = originator;
+		/** @type {Array<Uint8Array>} */ this.map = map;
 	}
 
 	// View object
@@ -752,6 +757,16 @@ This file is part of LifeViewer
 	 */
 	function View(element) {
 		var	/** @type {number} */ i = 0;
+
+		// whether overview initialized
+		/** @type {boolean} */ this.overviewInitialized = false;
+
+		// overview image
+		/** @type {HTMLCanvasElement} */ this.overviewCanvas = null;
+		/** @type {CanvasRenderingContext2D} */ this.overviewContext = null;
+
+		// overview menu
+		/** @type {MenuList} */ this.overviewMenu = null;
 
 		// last rule name in change rule dialog
 		/** @type {string} */ this.lastRuleName = "";
@@ -814,6 +829,9 @@ This file is part of LifeViewer
 
 		// refresh rate
 		/** @type {number} */ this.refreshRate = 60;
+
+		// flag if frame rate measured
+		/** @type {boolean} */ this.frameRateMeasured = false;
 
 		// steps to measure frame rate
 		/** @type {number} */ this.measureFrameRate = ViewConstants.measurementSteps;
@@ -6821,6 +6839,11 @@ This file is part of LifeViewer
 
 	// render the world
 	View.prototype.renderWorld = function(/** @type {View} */ me, /** @type {boolean} */ tooSlow, /** @type {number} */ deltaTime, /** @type {boolean} */ manualStepping) {
+		var	/** @type {number} */ saveTheme = me.engine.colourTheme,
+			/** @type {boolean} */ saveMajor = me.engine.gridLineMajorEnabled,
+			/** @type {boolean} */ saveDisplayGrid = me.engine.displayGrid,
+			/** @type {number} */ saveZoom = me.engine.zoom;
+
 		// check for autofit
 		if (me.autoFit && me.generationOn) {
 			me.fitZoomDisplay(false, false, ViewConstants.fitZoomPattern);
@@ -6859,11 +6882,52 @@ This file is part of LifeViewer
 				me.engine.drawPopGraph(me.popGraphLines, 1, true, me.thumbnail, me);
 			}
 
+			if (me.screenShotScheduled === 3) {
+				// draw grid in black and white with grid lines
+				me.engine.setTheme(6, 0, me);
+				me.engine.colourChange = 1;
+				me.engine.displayGrid = true;
+				me.engine.gridLineMajorEnabled = false;
+				me.engine.createPixelColours(1);
+
+				// ensure integer zoom
+				me.engine.zoom = me.engine.zoom | 0;
+
+				me.engine.renderGrid(false, false);
+				me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
+
+				// check if hexagons or triangles should be drawn
+				if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
+					me.engine.drawHexagons();
+				} else {
+					if (!me.engine.forceRectangles && me.engine.isTriangular && me.engine.zoom >= 4) {
+						me.engine.drawTriangles();
+					}
+				}
+			}
+
 			// capture screen shot
 			me.captureScreenShot(me);
 
-			// check for grid capture
-			if (me.screenShotScheduled === 2) {
+			// restore saved them if black and white capture happened
+			if (me.screenShotScheduled === 3) {
+				me.engine.setTheme(saveTheme, 0, me);
+				me.engine.colourChange = 1;
+				me.engine.displayGrid = saveDisplayGrid;
+				me.engine.gridLineMajorEnabled = saveMajor;
+				me.engine.createPixelColours(1);
+
+				me.engine.zoom = saveZoom;
+				me.engine.renderGrid(me.drawingSnow, me.starsOn);
+
+				// draw stars if switched on
+				if (me.starsOn) {
+					me.drawStars();
+				}
+			}
+
+			// check for grid capture or black and white capture
+			if (me.screenShotScheduled >= 2) {
 				// restore grid (disable tilt if selection displayed)
 				me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
@@ -8199,7 +8263,7 @@ This file is part of LifeViewer
 	};
 
 	// measure frame rate
-	View.prototype.viewAnimateMeasure = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
+	View.prototype.viewAnimateMeasure = function(/** @type {View} */ me) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ pixelColour = 0;
 
@@ -8279,23 +8343,193 @@ This file is part of LifeViewer
 		me.engine.drawGrid(false);
 	};
 
+	// initialize overview
+	View.prototype.initOverview = function() {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ px = 0,
+			/** @type {number} */ py = 0,
+			/** @type {number} */ size = 0,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ height = 0,
+			/** @type {number} */ maxWidth = 0,
+			/** @type {number} */ maxHeight = 0,
+			/** @type {number} */ patWidth = 0,
+			/** @type {number} */ patHeight = 0,
+			/** @type {number} */ patScale = 1,
+			/** @type {number} */ divider = 1,
+			/** @type {number} */ xOff = 0,
+			/** @type {number} */ yOff = 0,
+			/** @type {number} */ xSize = 0,
+			/** @type {number} */ ySize = 0,
+			/** @type {Array<PatternInfo>} */ patterns = Controller.patterns,
+			/** @type {Array<Uint8Array>} */ map = null,
+			/** @type {Uint8Array} */ mapRow = null,
+			/** @type {MenuItem} */ menuItem = null,
+			/** @const {number} */ maxImageSize = 4096,
+			/** @type {string} */ patName = "";
+
+		// find the largest pattern
+		for (i = 0; i < patterns.length; i += 1) {
+			width = patterns[i].width;
+			height = patterns[i].height;
+
+			if (width > maxWidth) {
+				maxWidth = width;
+			}
+
+			if (height > maxHeight) {
+				maxHeight = height;
+			}
+		}
+
+		// find the nearest power of two square that's bigger than any pattern
+		i = 0;
+		while (((1 << i) <= maxWidth) || ((1 << i) <= maxHeight)) {
+			i += 1;
+		}
+		size = 1 << i;
+
+		// now create a grid of patterns
+		width = Math.ceil(Math.sqrt(patterns.length));
+		height = width;
+
+		// ensure the image is not too big
+		while (width * size / divider > maxImageSize || height * size / divider > maxImageSize) {
+			divider += 1;
+		}
+
+		// create the overview image
+		this.overviewCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+		this.overviewCanvas.width = width * size / divider;
+		this.overviewCanvas.height = height * size / divider;
+		this.overviewContext = /** @type {!CanvasRenderingContext2D} */ (this.overviewCanvas.getContext("2d"));
+		this.overviewContext.fillStyle = "black";
+		this.overviewContext.fillRect(0, 0, this.overviewCanvas.width, this.overviewCanvas.height);
+
+		// create the overview menu
+		this.overviewMenu = this.menuManager.createMenu(this.viewAnimateOverview, this.viewStart, this);
+		this.overviewMenu.bgAlpha = 0.2;
+
+		// determine button size
+		xSize = this.displayWidth / width;
+		ySize = this.displayHeight / height;
+
+		for (y = 0; y < height; y += 1) {
+			for (x = 0; x < width; x += 1) {
+				i = y * height + x;
+				if (i < patterns.length) {
+					// remove trailing .rle from pattern name if present
+					patName = patterns[i].name;
+					if (patName.endsWith(".rle")) {
+						patName = patName.substring(0, patName.length - 4);
+					}
+
+					// create the button for the pattern
+					menuItem = this.overviewMenu.addButtonItem(this.overviewPressed, Menu.northWest, x * xSize, y * ySize, xSize, ySize, patName);
+					
+					// set the universe ID in the button
+					menuItem.lower = i;
+
+					// draw the pattern onto the image
+					this.overviewContext.fillStyle = "rgb(32,255,255)";
+					map = patterns[i].map;
+					patHeight = map.length;
+					patWidth = map[0].length;
+
+					// scale the pattern
+					patScale = 1;
+					while (patHeight * patScale < size && patWidth * patScale < size) {
+						patScale += 1;
+					}
+					patScale -= 1;
+					if (patScale > 1) {
+						patScale -= 1;
+					}
+					xOff = (size - patWidth * patScale) >> 1;
+					yOff = (size - patHeight * patScale) >> 1;
+
+					var pixelSize = Math.ceil(patScale / divider);
+					for (py = 0; py < patHeight; py += 1) {
+						mapRow = map[py];
+						for (px = 0; px < patWidth; px += 1) {
+							if (mapRow[px] > 0) {
+								//if (patScale <= 2) {
+									this.overviewContext.fillRect(Math.ceil((x * size + px * patScale + xOff) / divider), Math.ceil((y * size + py * patScale + yOff) / divider), pixelSize, pixelSize);
+								//} else {
+									//this.overviewContext.fillRect((x * size + px * patScale + xOff) / divider + (patScale / divider) * 0.1, (y * size + py * patScale + yOff) / divider + (patScale / divider) * 0.1, (patScale / divider) * 0.8, (patScale / divider) * 0.8);
+								//}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// set the overview menu as active
+		this.menuManager.activeMenu(this.overviewMenu);
+
+		// clear the canvas
+		this.mainContext.fillStyle = "blue";
+		this.mainContext.fillRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
+
+		// mark initialization complete
+		this.overviewInitialized = true;
+	};
+
+	// update overview
+	View.prototype.viewAnimateOverview = function(/** @type {number} */ unused, /** @type {View} */ me) {
+		var	/** @type {number} */ overviewWidth = 0,
+			/** @type {number} */ overviewHeight = 0,
+			/** @type {number} */ xScale = 0,
+			/** @type {number} */ yScale = 0,
+			/** @type {number} */ scale = 0;
+
+		// scale the image to the window
+		overviewWidth = me.overviewCanvas.width;
+		overviewHeight = me.overviewCanvas.height;
+		xScale = me.displayWidth / overviewWidth;
+		yScale = me.displayHeight / overviewHeight;
+		scale = xScale;
+		if (yScale > scale) {
+			scale = yScale;
+		}
+
+		// draw the overview
+		me.mainContext.fillStyle = "black";
+		me.mainContext.fillRect(0, 0, me.mainCanvas.width, me.mainCanvas.height);
+		me.mainContext.save();
+		me.mainContext.translate(me.displayWidth / 2, me.displayHeight / 2);
+		me.mainContext.scale(scale, scale);
+		me.mainContext.imageSmoothingEnabled = true;
+		me.mainContext.imageSmoothingQuality = "high";
+		me.mainContext.drawImage(me.overviewCanvas, -(overviewWidth / 2), -(overviewHeight / 2));
+		me.mainContext.restore();
+	};
+
 	// update view mode dispatcher
 	View.prototype.viewAnimate = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
 		var	/** @type {number} */ startTime = performance.now();
 
 		// check view mode
 		if (me.measureFrameRate > 0) {
-			me.viewAnimateMeasure(timeSinceLastUpdate, me);
+			// measure frame rate at startup
+			me.viewAnimateMeasure(me);
 		} else {
 			if (me.computeHistory) {
+				// computing history
 				me.viewAnimateHistory(me);
 			} else {
 				if (me.identify) {
+					// identifying pattern
 					me.viewAnimateIdentify(me);
 				} else {
 					if (me.startFrom !== -1) {
+						// starting from a specified generation
 						me.viewAnimateStartFrom(me);
 					} else {
+						// normal
 						me.viewAnimateNormal(timeSinceLastUpdate, me);
 
 						// check if initializing Fast Lookup
@@ -8332,7 +8566,12 @@ This file is part of LifeViewer
 		me.diedGeneration = -1;
 
 		// reset frame rate measurement
-		me.measureFrameRate = ViewConstants.measurementSteps;
+		if (me.frameRateMeasured) {
+			me.measureFrameRate = 0;
+		} else {
+			me.measureFrameRate = ViewConstants.measurementSteps;
+			me.frameRateMeasured = true;
+		}
 	};
 
 	// toggle stars display
@@ -9094,6 +9333,26 @@ This file is part of LifeViewer
 		// set the play icon and tooltip
 		this.playList.icon[ViewConstants.modePlay] = this.iconManager.icon(iconName);
 		this.playList.toolTip[ViewConstants.modePlay] = toolTip;
+	};
+
+	// overview button pressed
+	View.prototype.overviewPressed = function(/** @type {View} */ me) {
+		// get the universe number
+		var	/** @type {number} */ i = /** @type {!number} */ (me.menuManager.currentMenu.menuItems[me.menuManager.currentMenu.activeItem].lower);
+
+		// switch to the standard menu
+		me.menuManager.activeMenu(me.viewMenu);
+		Controller.overview = false;
+
+		// set the pattern
+		me.universe = i;
+		me.startViewer(Controller.patterns[me.universe].pattern, false);
+	};
+
+	// multiverse button pressed
+	View.prototype.multiversePressed = function(/** @type {View} */ me) {
+		Controller.overview = true;
+		me.menuManager.activeMenu(me.overviewMenu);
 	};
 
 	// done button pressed
@@ -16285,6 +16544,11 @@ This file is part of LifeViewer
 		me.screenShotScheduled = 2;
 	};
 
+	// save a black and white screenshot
+	View.prototype.saveBWImagePressed = function(/** @type {View} */ me) {
+		me.screenShotScheduled = 3;
+	};
+
 	// go to generation button pressed
 	View.prototype.goToGenPressed = function(/** @type {View} */ me) {
 		// prompt for generation
@@ -17187,8 +17451,13 @@ This file is part of LifeViewer
 				if (me.startFrom !== -1) {
 					processed = KeyProcessor.processKeyGoTo(me, keyCode, event);
 				} else {
-					// process the key
-					processed = KeyProcessor.processKey(me, keyCode, event);
+					// check for overview
+					if (Controller.overview) {
+						processed = KeyProcessor.processKeyOverview(me, keyCode, event);
+					} else {
+						// process the key
+						processed = KeyProcessor.processKey(me, keyCode, event);
+					}
 				}
 			}
 		}
@@ -17865,12 +18134,16 @@ This file is part of LifeViewer
 		this.copySyncToggle.toolTip = ["sync cut and copy with external clipboard [" + this.altKeyText + " S]"];
 
 		// previous universe button
-		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -100, 120, 40, "Prev");
-		this.prevUniverseButton.toolTip = "go to previous universe [Page Up]";
+		this.prevUniverseButton = this.viewMenu.addButtonItem(this.prevUniversePressed, Menu.south, -135, -150, 120, 40, "Prev");
+		this.prevUniverseButton.toolTip = "go to previous pattern [Page Up]";
 
 		// next universe button
-		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.south, 135, -100, 120, 40, "Next");
-		this.nextUniverseButton.toolTip = "go to next universe [Page Down]";
+		this.nextUniverseButton = this.viewMenu.addButtonItem(this.nextUniversePressed, Menu.south, 135, -150, 120, 40, "Next");
+		this.nextUniverseButton.toolTip = "go to next pattern [Page Down]";
+
+		// multiverse button
+		this.multiverseButton = this.viewMenu.addButtonItem(this.multiversePressed, Menu.south, 0, -150, 120, 40, "Patterns");
+		this.multiverseButton.toolTip = "show all patterns [Home]";
 
 		// esc button
 		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -85, 40, 40, "X");
@@ -18324,7 +18597,7 @@ This file is part of LifeViewer
 			this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.integerZoomButton, this.centerPatternButton, this.hexCellButton, this.bordersButton,
 			this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.clearDrawingStateButton, this.timingDetailButton, this.infoBarButton, this.starsButton,
 			this.resetAllButton, this.stopAllButton, this.stopOthersButton, this.snapToNearest45Button, this.historyFitButton, this.majorButton, this.prevUniverseButton,
-			this.nextUniverseButton, this.actionsButton, this.saveViewButton, this.restoreViewButton, this.lastIdentifyResultsButton], []);
+			this.nextUniverseButton, this.multiverseButton, this.actionsButton, this.saveViewButton, this.restoreViewButton, this.lastIdentifyResultsButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -20907,13 +21180,16 @@ This file is part of LifeViewer
 			if (name === "") {
 				name = "Universe " + (me.universe + 1);
 			}
-			me.menuManager.notification.notify(name, 15, 120, 15, true);
+			if (!Controller.overview) {
+				me.menuManager.notification.notify(name, 15, 120, 15, true);
+			}
 			me.prevUniverseButton.deleted = false;
 			me.nextUniverseButton.deleted = false;
+			me.multiverseButton.deleted = false;
 		} else {
 			me.prevUniverseButton.deleted = true;
 			me.nextUniverseButton.deleted = true;
-
+			me.multiverseButton.deleted = true;
 		}
 
 		// save initial undo state
@@ -21557,6 +21833,20 @@ This file is part of LifeViewer
 		}
 	}
 
+	// copy state map
+	/** @returns {Array<Uint8Array>} */
+	function copyStateMap(/** @type {Array<Uint8Array>} */ source) {
+		var	/** @type {number} */ i = 0,
+			/** @type {Array<Uint8Array>} */ result = Array.matrix(Type.Uint8, source.length , source[0].length, 0, Controller.allocator, "OverviewMap");
+
+		// copy the contents
+		for (i = 0; i < source.whole.length; i += 1) {
+			result.whole[i] = source.whole[i];
+		}
+
+		return result;
+	}
+
 	// complete isPattern check
 	function completeIsPattern(/** @type {Pattern} */ pattern, /** @type {Array} */ args) {
 		// unpack arguments
@@ -21569,7 +21859,7 @@ This file is part of LifeViewer
 			// check for multiverse mode
 			if (DocConfig.multi) {
 				// add details to Controller
-				Controller.patterns[Controller.patterns.length] = new PatternInfo(pattern.name, patternString, pattern.ruleName + pattern.boundedGridDef, pattern.width, pattern.height);
+				Controller.patterns[Controller.patterns.length] = new PatternInfo(pattern.name, patternString, pattern.ruleName + pattern.boundedGridDef, pattern.width, pattern.height, pattern.originator, copyStateMap(pattern.multiStateMap));
 
 				// check if this is the first viewer
 				if (Controller.patterns.length === 1) {
@@ -21900,6 +22190,14 @@ This file is part of LifeViewer
 		}
 
 		console.timeEnd("LifeViewer page scan");
+
+		if (DocConfig.multi) {
+			// switch to overview mode
+			Controller.overview = true;
+
+			// launch overview when pending rule downloads are complete
+			RuleTreeCache.checkRequestsCompleted();
+		}
 	}
 
 	/*  TBD WASM

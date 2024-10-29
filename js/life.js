@@ -1774,9 +1774,9 @@ This file is part of LifeViewer
 					}
 				}
 
-				// by now both sizes 31 and 15 exist
+				// by now both sizes 31 and 15 exist so create size 7 from size 15
 				if (size7 === false) {
-					this.scaleIconSet(this.cellIconContext15, this.cellIconContext7);
+					this.scaleIconSet(this.cellIconContext7, this.cellIconContext15);
 				}
 			}
 

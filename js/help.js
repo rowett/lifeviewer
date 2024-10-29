@@ -936,6 +936,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "S", "toggle stars", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "O", "save screenshot", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift O", "save population graph screenshot", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, ";", "save black and white screenshot", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift U", "toggle UI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.altKeyText + " U", "toggle autohide UI during playback", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates === -1) {
