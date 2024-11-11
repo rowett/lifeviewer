@@ -1,3 +1,6 @@
+Build 1206
+- improved handling of different monitor refresh rates
+
 Build 1205
 - fixed size 7 icons not being created
 

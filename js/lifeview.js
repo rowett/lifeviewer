@@ -103,12 +103,6 @@ This file is part of LifeViewer
 		// key for localstorage setting of done flag (for chrome bug)
 		/** @const {string} */ doneKey : "workaround",
 
-		// number of frames for frame rate measurement
-		/** @const {number} */ measurementSteps : 18,
-
-		// number of frames to average
-		/** @const {number} */ measureStart : 10,
-
 		// maximum start from generation
 		/** @const {number} */ maxStartFromGeneration : 4194304,
 
@@ -330,7 +324,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1205,
+		/** @const {number} */ versionBuild : 1206,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -392,8 +386,12 @@ This file is part of LifeViewer
 		/** @const {number} */ minAnnotationZoom : 1 / 2048,
 		/** @const {number} */ maxAnnotationZoom : 2048,
 
+		// default refresh rate
+		/** @const {number} */ defaultRefreshRate : 60,
+
 		// minimum and maximum generation speed
 		/** @const {number} */ minGenSpeed : 1,
+		/** @const {number} */ maxGenSpeed : 60,  // default refresh rate
 
 		// minimum and maximum steps
 		/** @const {number} */ minStepSpeed : 1,
@@ -530,7 +528,60 @@ This file is part of LifeViewer
 		/** @type {boolean} */ overview : false,
 
 		// last copied text
-		/** @type {string} */ clipText : ""
+		/** @type {string} */ clipText : "",
+
+		// frame rate measurement
+		/** @type {number} */ firstFrame : 0,
+		/** @type {number} */ frameTime : 0,
+		/** @const {number} */ frameCount : 12,
+		/** @type {number} */ currentFrame : 0,
+		/** @type {number} */ refreshRate : 60
+	};
+
+	// frame rate calculation function
+	Controller.frameRateMeasure = function() {
+		var	/** @type {number} */ i = 0;
+
+		if (Controller.currentFrame === 0) {
+			Controller.firstFrame = performance.now();
+		}
+
+		if (Controller.currentFrame === Controller.frameCount) {
+			// measure the time taken over the frame count
+			Controller.lastFrame = performance.now();
+
+			// save the frame time (ms)
+			Controller.frameTime = (performance.now() - Controller.firstFrame) / Controller.frameCount;
+
+			// compute the monitor refresh rate from the frame time
+			i = (1000 / Controller.frameTime) | 0;
+
+			// snap to known monitor refresh rates with a tolerance
+			if (i <= 40) {
+				i = 30;
+			} else if (i <= 70) {
+				i = 60;
+			} else if (i <= 100) {
+				i = 75;
+			} else if (i <= 130) {
+				i = 120;
+			} else if (i <= 155) {
+				i = 144;
+			} else if (i <= 175) {
+				i = 165;
+			} else if (i <= 260) {
+				i = 240;
+			}
+			Controller.refreshRate = i;
+			console.log("LifeViewer refresh rate", i + "Hz");
+
+			// start main application
+			setTimeout(startAllViewers, 0);
+		} else {
+			requestAnimationFrame(Controller.frameRateMeasure);
+		}
+
+		Controller.currentFrame += 1;
 	};
 
 	// return standalone viewer
@@ -828,17 +879,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.standardStep = true;
 
 		// refresh rate
-		/** @type {number} */ this.refreshRate = 60;
-
-		// flag if frame rate measured
-		/** @type {boolean} */ this.frameRateMeasured = false;
-
-		// steps to measure frame rate
-		/** @type {number} */ this.measureFrameRate = ViewConstants.measurementSteps;
-
-		// first and last time for frame rate measurement
-		/** @type {number} */ this.firstFrame = 0;
-		/** @type {number} */ this.lastFrame = 0;
+		/** @type {number} */ this.refreshRate = Controller.refreshRate;
 
 		// identify cell period map displayed
 		/** @type {number} */ this.periodMapDisplayed = 0;
@@ -1739,6 +1780,9 @@ This file is part of LifeViewer
 
 		// theme selections
 		/** @type {Array} */ this.themeSelections = [];
+
+		// first control ID for theme selection buttons used as an offset to get the actual theme number
+		/** @type {number} */ this.themeSelectionFirstID = 0;
 
 		// theme labels
 		/** @type {MenuItem} */ this.themeDefaultLabel = null;
@@ -8262,87 +8306,6 @@ This file is part of LifeViewer
 		me.menuManager.setAutoUpdate(true);
 	};
 
-	// measure frame rate
-	View.prototype.viewAnimateMeasure = function(/** @type {View} */ me) {
-		var	/** @type {number} */ i = 0,
-			/** @type {number} */ pixelColour = 0;
-
-		// set the black pixel colour
-		if (me.engine.littleEndian) {
-			pixelColour = 0xff000000;
-		} else {
-			pixelColour = 0x000000ff;
-		}
-
-		// hide the progress bar
-		this.progressBar.deleted = true;
-
-		// check if this is the first measurement frame
-		if (me.measureFrameRate === ViewConstants.measurementSteps) {
-			// lock the menu
-			me.viewMenu.locked = true;
-
-			// hide coordinate and selection size labels
-			me.xyLabel.enabled = false;
-			me.selSizeLabel.enabled = false;
-
-			// udpate menu manager
-			me.updateUIForHelp(false);
-			me.menuManager.setAutoUpdate(true);
-
-			// clear the canvas
-			if (me.engine.data32) {
-				me.engine.data32.fill(pixelColour);
-				me.engine.doDrawGrid = true;
-			}
-		}
-
-		// if at first measure step then get timestamp
-		if (me.measureFrameRate === ViewConstants.measureStart) {
-			me.firstFrame = performance.now();
-		}
-
-		// decrease number of remaining frames
-		me.measureFrameRate -= 1;
-
-		// check if measurement has finished
-		if (me.measureFrameRate === 0) {
-			// get the timestamp
-			me.lastFrame = performance.now();
-
-			// save the measured refresh rate
-			me.refreshRate = Math.round(1000 / ((me.lastFrame - me.firstFrame) / (ViewConstants.measureStart - 1)));
-
-			// floor to 60Hz and handle measurement error
-			if (me.refreshRate <= 62) {
-				me.refreshRate = 60;
-			}
-
-			// update in the menu manager
-			me.menuManager.refreshRate = me.refreshRate;
-
-			// set the playback speed but don't override any script settings
-			if (me.standardStep) {
-				me.gensPerStep = 1;
-			}
-			if (me.standardGPS) {
-				me.genSpeed = me.refreshRate;
-			}
-
-			if (me.gensPerStep === 1 && me.genSpeed === 60) {
-				me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
-			} else {
-				me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
-			}
-
-			// unlock menu
-			me.viewMenu.locked = false;
-		}
-
-		// clear the grid (disable Tilt)
-		me.engine.drawGrid(false);
-	};
-
 	// initialize overview
 	View.prototype.initOverview = function() {
 		var	/** @type {number} */ i = 0,
@@ -8512,30 +8475,24 @@ This file is part of LifeViewer
 	View.prototype.viewAnimate = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
 		var	/** @type {number} */ startTime = performance.now();
 
-		// check view mode
-		if (me.measureFrameRate > 0) {
-			// measure frame rate at startup
-			me.viewAnimateMeasure(me);
+		if (me.computeHistory) {
+			// computing history
+			me.viewAnimateHistory(me);
 		} else {
-			if (me.computeHistory) {
-				// computing history
-				me.viewAnimateHistory(me);
+			if (me.identify) {
+				// identifying pattern
+				me.viewAnimateIdentify(me);
 			} else {
-				if (me.identify) {
-					// identifying pattern
-					me.viewAnimateIdentify(me);
+				if (me.startFrom !== -1) {
+					// starting from a specified generation
+					me.viewAnimateStartFrom(me);
 				} else {
-					if (me.startFrom !== -1) {
-						// starting from a specified generation
-						me.viewAnimateStartFrom(me);
-					} else {
-						// normal
-						me.viewAnimateNormal(timeSinceLastUpdate, me);
+					// normal
+					me.viewAnimateNormal(timeSinceLastUpdate, me);
 
-						// check if initializing Fast Lookup
-						if (me.engine.isRuleTree && me.engine.ruleLoaderStep !== -1) {
-							me.viewAnimateInitLookup(me, startTime);
-						}
+					// check if initializing Fast Lookup
+					if (me.engine.isRuleTree && me.engine.ruleLoaderStep !== -1) {
+						me.viewAnimateInitLookup(me, startTime);
 					}
 				}
 			}
@@ -8564,14 +8521,6 @@ This file is part of LifeViewer
 
 		// reset died generation
 		me.diedGeneration = -1;
-
-		// reset frame rate measurement
-		if (me.frameRateMeasured) {
-			me.measureFrameRate = 0;
-		} else {
-			me.measureFrameRate = ViewConstants.measurementSteps;
-			me.frameRateMeasured = true;
-		}
 	};
 
 	// toggle stars display
@@ -8833,11 +8782,11 @@ This file is part of LifeViewer
 			}
 
 			// clear theme selection buttons apart from this one
-			for (i = 0; i <= this.engine.numThemes; i += 1) {
+			for (i = 0; i <= me.engine.numThemes; i += 1) {
 				if (newTheme !== ViewConstants.themeOrder[i]) {
-					this.themeSelections[i].current = [false];
+					me.themeSelections[i].current = [false];
 				} else {
-					this.themeSelections[i].current = [true];
+					me.themeSelections[i].current = [true];
 				}
 			}
 
@@ -8859,11 +8808,11 @@ This file is part of LifeViewer
 			/** @type {number} */ deadZone = ViewConstants.deadZoneSpeed;
 
 		// ensure gen speed is not greater than the refresh rate
-		if (this.genSpeed > this.refreshRate) {
-			this.genSpeed = this.refreshRate;
+		if (this.genSpeed > ViewConstants.defaultRefreshRate) {
+			this.genSpeed = ViewConstants.defaultRefreshRate;
 		}
 
-		perSPart = Math.sqrt((this.genSpeed - ViewConstants.minGenSpeed) / (this.refreshRate - ViewConstants.minGenSpeed));
+		perSPart = Math.sqrt((this.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.defaultRefreshRate - ViewConstants.minGenSpeed));
 		stepPart = (this.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
 
 		if (stepPart === 0) {
@@ -8880,14 +8829,14 @@ This file is part of LifeViewer
 		var	/** @type {number} */ deadZone = ViewConstants.deadZoneSpeed;
 
 		// ensure gen speed is not greater than refresh rate
-		if (this.genSpeed > this.refreshRate) {
-			this.genSpeed = this.refreshRate;
+		if (this.genSpeed > ViewConstants.defaultRefreshRate) {
+			this.genSpeed = ViewConstants.defaultRefreshRate;
 		}
 
 		// compute the generations per step and step
 		if (indexValue <= (1 - deadZone)) {
 			indexValue /= (1 - deadZone);
-			this.genSpeed = Math.round(ViewConstants.minGenSpeed + (indexValue * indexValue * (this.refreshRate - ViewConstants.minGenSpeed)));
+			this.genSpeed = Math.round(ViewConstants.minGenSpeed + (indexValue * indexValue * (ViewConstants.defaultRefreshRate - ViewConstants.minGenSpeed)));
 			this.gensPerStep = 1;
 		} else {
 			if (indexValue < 1 + deadZone) {
@@ -8896,7 +8845,7 @@ This file is part of LifeViewer
 				indexValue -= 1 + deadZone;
 				indexValue /= (1 - deadZone);
 			}
-			this.genSpeed = this.refreshRate;
+			this.genSpeed = ViewConstants.defaultRefreshRate;
 			this.gensPerStep = Math.round(ViewConstants.minStepSpeed + (indexValue * (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed)));
 		}
 	};
@@ -8914,12 +8863,12 @@ This file is part of LifeViewer
 		}
 
 		// ensure gen speed is not greater than frame rate
-		if (me.genSpeed > me.refreshRate) {
-			me.genSpeed = me.refreshRate;
+		if (me.genSpeed > ViewConstants.defaultRefreshRate) {
+			me.genSpeed = ViewConstants.defaultRefreshRate;
 		}
 
 		// compute the label
-		if (Math.round(me.genSpeed) < me.refreshRate) {
+		if (Math.round(me.genSpeed) < ViewConstants.defaultRefreshRate) {
 			label = String(Math.round(me.genSpeed)) + "/s";
 		} else {
 			label = String(Math.round(me.gensPerStep)) + "x";
@@ -9338,7 +9287,7 @@ This file is part of LifeViewer
 	// overview button pressed
 	View.prototype.overviewPressed = function(/** @type {View} */ me) {
 		// get the universe number
-		var	/** @type {number} */ i = /** @type {!number} */ (me.menuManager.currentMenu.menuItems[me.menuManager.currentMenu.activeItem].lower);
+		var	/** @type {number} */ i = /** @type {!number} */ (me.menuManager.activeItem().lower);
 
 		// switch to the standard menu
 		me.menuManager.activeMenu(me.viewMenu);
@@ -13378,132 +13327,32 @@ This file is part of LifeViewer
 
 	// theme selection toggle
 	/** @returns {Array<boolean>} */
-	View.prototype.setThemeFromCallback = function(/** @type {number} */ theme, /** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change) {
+	View.prototype.toggleTheme = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		var	/** @type {number} */ theme = 0,
+			/** @type {MenuItem} */ item = me.menuManager.activeItem();
+
 		if (change) {
 			if (newValue[0]) {
+				// get the theme number from the control ID minus the first theme selection control ID
+				theme = item.id - me.themeSelectionFirstID;
+
 				// change quickly
-				this.setNewTheme(ViewConstants.themeOrder[theme], 1, this);
+				me.setNewTheme(ViewConstants.themeOrder[theme], 1, me);
 
 				// close settings menu
-				if (this.navToggle.current[0]) {
-					this.navToggle.current = this.toggleSettings([false], true, this);
+				if (me.navToggle.current[0]) {
+					me.navToggle.current = me.toggleSettings([false], true, me);
 				}
 			} else {
 				// close settings menu
-				if (this.navToggle.current[0]) {
-					this.navToggle.current = this.toggleSettings([false], true, this);
+				if (me.navToggle.current[0]) {
+					me.navToggle.current = me.toggleSettings([false], true, me);
 				}
 				newValue[0] = true;
 			}
 		}
 
 		return newValue;
-	};
-
-	// theme selection toggles
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme0 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(0, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme1 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(1, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme2 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(2, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme3 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(3, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme4 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(4, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme5 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(5, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme6 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(6, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme7 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(7, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme8 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(8, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme9 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(9, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme10 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(10, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme11 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(11, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme12 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(12, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme13 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(13, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme14 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(14, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme15 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(15, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme16 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(16, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme17 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(17, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme18 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(18, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme19 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(19, newValue, change);
-	};
-
-	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme20 = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		return me.setThemeFromCallback(20, newValue, change);
 	};
 
 	// identify close button
@@ -17688,7 +17537,6 @@ This file is part of LifeViewer
 		// View menu
 
 		// create the view menu
-		this.measureFrameRate = 10;
 		this.viewMenu = this.menuManager.createMenu(this.viewAnimate, this.viewStart, this);
 
 		// add callback for background drag
@@ -18347,33 +18195,13 @@ This file is part of LifeViewer
 			} else {
 				y += 60;
 			}
-			this.themeSelections[i] = this.viewMenu.addListItem(null, Menu.north, x * 140 - 210, y, 120, 40, [this.themeName(j)], [false], Menu.multi);
+			this.themeSelections[i] = this.viewMenu.addListItem(this.toggleTheme, Menu.north, x * 140 - 210, y, 120, 40, [this.themeName(j)], [false], Menu.multi);
 			this.themeSelections[i].toolTip = ["select " + this.themeName(j) + " theme"];
 			this.themeSelections[i].setFont("20px Arial");
 		}
 
-		// set callbacks
-		this.themeSelections[0].callback = this.toggleTheme0;
-		this.themeSelections[1].callback = this.toggleTheme1;
-		this.themeSelections[2].callback = this.toggleTheme2;
-		this.themeSelections[3].callback = this.toggleTheme3;
-		this.themeSelections[4].callback = this.toggleTheme4;
-		this.themeSelections[5].callback = this.toggleTheme5;
-		this.themeSelections[6].callback = this.toggleTheme6;
-		this.themeSelections[7].callback = this.toggleTheme7;
-		this.themeSelections[8].callback = this.toggleTheme8;
-		this.themeSelections[9].callback = this.toggleTheme9;
-		this.themeSelections[10].callback = this.toggleTheme10;
-		this.themeSelections[11].callback = this.toggleTheme11;
-		this.themeSelections[12].callback = this.toggleTheme12;
-		this.themeSelections[13].callback = this.toggleTheme13;
-		this.themeSelections[14].callback = this.toggleTheme14;
-		this.themeSelections[15].callback = this.toggleTheme15;
-		this.themeSelections[16].callback = this.toggleTheme16;
-		this.themeSelections[17].callback = this.toggleTheme17;
-		this.themeSelections[18].callback = this.toggleTheme18;
-		this.themeSelections[19].callback = this.toggleTheme19;
-		this.themeSelections[20].callback = this.toggleTheme20;
+		// save the first theme selection button ID so the ID can be used to get the Theme number
+		this.themeSelectionFirstID = this.themeSelections[0].id;
 
 		// add the theme category labels
 		this.themeDefaultLabel = this.viewMenu.addLabelItem(Menu.north, -210, 60, 120, 40, "Default");
@@ -22198,7 +22026,13 @@ This file is part of LifeViewer
 			// launch overview when pending rule downloads are complete
 			RuleTreeCache.checkRequestsCompleted();
 		}
-	}
+	};
+
+	// boot LifeViewer
+	function bootLifeViewer() {
+		// measure monitor frame rate
+		requestAnimationFrame(Controller.frameRateMeasure);
+	};
 
 	/*  TBD WASM
 	// load webassembly from base64 string
@@ -22223,7 +22057,7 @@ This file is part of LifeViewer
 	*/
 
 	// register event to start viewers when document is loaded
-	registerEvent(window, "load", startAllViewers, false);
+	registerEvent(window, "load", bootLifeViewer, false);
 	registerEvent(window, "resize", resizeWindow, false);
 
 	/*jshint -W069 */

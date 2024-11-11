@@ -1411,13 +1411,13 @@ This file is part of LifeViewer
 					// do not change if view only mode
 					if (!me.viewOnly) {
 						// increase generation speed
-						if (me.genSpeed < me.refreshRate) {
+						if (me.genSpeed < ViewConstants.defaultRefreshRate) {
 							if (shiftKey) {
-								me.genSpeed = me.refreshRate;
+								me.genSpeed = ViewConstants.defaultRefreshRate;
 							} else {
 								me.genSpeed += 1;
-								if (me.genSpeed > me.refreshRate) {
-									me.genSpeed = me.refreshRate;
+								if (me.genSpeed > ViewConstants.defaultRefreshRate) {
+									me.genSpeed = ViewConstants.defaultRefreshRate;
 								}
 							}
 						} else {

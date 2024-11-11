@@ -1139,7 +1139,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.loopWord + " <1..>|" + Keywords.offWord, "loop at generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stopWord + " <1..>|" + Keywords.offWord, "stop at generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.startFromWord + " <1..>", "play to generation on load", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.gpsWord + " <" + ViewConstants.minGenSpeed + ".." + view.refreshRate + ">", "set steps per second", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.gpsWord + " <" + ViewConstants.minGenSpeed + ".." + ViewConstants.maxGenSpeed + ">", "set steps per second", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.stepWord + " <" + ViewConstants.minStepSpeed + ".." + ViewConstants.maxStepSpeed + ">", "set generations per step", ctx, x, y, height, helpLine);
 		if ((view.engine.isMargolus || view.engine.isPCA) && view.engine.margolusReverseLookup1) {
 			y = this.renderHelpLine(view, Keywords.reverseStartWord, "set initial playback to Reverse", ctx, x, y, height, helpLine);
@@ -1513,7 +1513,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "Scale", view.viewMenu.xScale.toFixed(2), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Pixel Ratio", view.devicePixelRatio.toFixed(2), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Window Zoom", view.windowZoom.toFixed(2), ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Refresh", view.refreshRate + "Hz (" + ((view.lastFrame - view.firstFrame) / (ViewConstants.measureStart - 1)).toFixed(1) + "ms)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Refresh", Controller.refreshRate + "Hz (" + Controller.frameTime.toFixed(1) + "ms)", ctx, x, y, height, helpLine);
 		if (DocConfig.limitWidth) {
 			y = this.renderHelpLine(view, "Limit Width", view.maxCodeWidth, ctx, x, y, height, helpLine);
 		}

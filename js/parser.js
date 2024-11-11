@@ -4654,9 +4654,20 @@ This file is part of LifeViewer
 									}
 
 									// set gps in waypoint
-									if (numberValue > view.refreshRate) {
-										numberValue = view.refreshRate;
+									if (numberValue > ViewConstants.defaultRefreshRate) {
+										// set step
+										x = (numberValue / ViewConstants.defaultRefreshRate) | 0;
+										if (x >= 2) {
+											if (x >= ViewConstants.maxStepSpeed) {
+												x = ViewConstants.maxStepSpeed;
+											}
+											currentWaypoint.step = x;
+											currentWaypoint.stepDefined = true;
+										}
+
+										numberValue = ViewConstants.defaultRefreshRate;
 									}
+
 									currentWaypoint.gps = numberValue;
 									currentWaypoint.gpsDefined = true;
 									view.initialGps = false;

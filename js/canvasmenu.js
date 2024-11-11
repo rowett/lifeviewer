@@ -2386,7 +2386,7 @@ This file is part of LifeViewer
 		/** @type {number} */ this.windowZoom = 1;
 
 		// refresh rate
-		/** @type {number} */ this.refreshRate = 60;
+		/** @type {number} */ this.refreshRate = Controller.refreshRate;
 
 		// whether event processed
 		/** @type {boolean} */ this.processedEvent = true;
@@ -3982,6 +3982,23 @@ This file is part of LifeViewer
 		if (me.updateCount < me.defaultUpdateCount) {
 			me.updateCount = me.defaultUpdateCount;
 		}
+	};
+
+	// get active menu item
+	/** @returns {MenuItem} */
+	MenuManager.prototype.activeItem = function() {
+		var	/** @type {MenuItem} */ result = null;
+
+		// check if there is a current menu
+		if (this.currentMenu) {
+			// check if the current menu has an active item
+			if (this.currentMenu.activeItem != -1) {
+				// return the active item
+				result = this.currentMenu.menuItems[this.currentMenu.activeItem];
+			}
+		}
+
+		return result;
 	};
 
 	// set auto update mode
