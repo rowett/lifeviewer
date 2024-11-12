@@ -1,3 +1,6 @@
+Build 1207
+- fixed HistoryFit with hexagonal grid
+
 Build 1206
 - improved handling of different monitor refresh rates
 

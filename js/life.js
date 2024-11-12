@@ -44261,6 +44261,7 @@ This file is part of LifeViewer
 			/** @type {number} */ minX = 0,
 			/** @type {number} */ maxX = 0,
 			/** @type {number} */ count = 0,
+			/** @type {number} */ targetState = 0,
 			/** @type {number} */ aliveState = LifeConstants.aliveStart;
 
 		// check for PCA, RuleTree Super or Extended rules
@@ -44374,11 +44375,15 @@ This file is part of LifeViewer
 				}
 
 				// find the pattern on the grid
+				targetState = aliveState;
+				if (historyFit) {
+					targetState = 1;
+				}
 				for (y = bottomY; y <= topY; y += 1) {
 					colourRow = colourGrid[y];
 					for (x = leftX; x <= rightX; x += 1) {
 						state = colourRow[x];
-						if (state >= aliveState) {
+						if (state >= targetState) {
 							count += 1;
 							hexX = x - y / 2;
 							if (hexX < minX) {
