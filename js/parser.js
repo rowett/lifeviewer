@@ -4491,6 +4491,11 @@ This file is part of LifeViewer
 
 									// set x in waypoint
 									currentWaypoint.x = -numberValue;
+
+									// adjust for hex grid if required
+									if (view.engine.isHex) {
+										currentWaypoint.x += 63.25;
+									}
 									currentWaypoint.xDefined = true;
 									view.initialX = false;
 									suppressErrors.x = false;

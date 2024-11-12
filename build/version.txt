@@ -1,3 +1,6 @@
+Build 1208
+- fixed X script command for hexagonal grid
+
 Build 1207
 - fixed HistoryFit with hexagonal grid
 

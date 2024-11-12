@@ -324,7 +324,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1207,
+		/** @const {number} */ versionBuild : 1208,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7761,6 +7761,12 @@ This file is part of LifeViewer
 			/** @type {number} */ yVal = -((this.engine.height / 2 - this.engine.yOff - this.engine.originY) | 0),
 			/** @type {string} */ xValStr = String(xVal),
 			/** @type {string} */ yValStr = String(yVal);
+
+		// adjust for hex grid if required
+		if (this.engine.isHex) {
+			xVal += 63;
+			xValStr = String(xVal);
+		}
 
 		// determine whether to display the infobar
 		this.infoBarLabelXLeft.deleted = !this.infoBarEnabled;
