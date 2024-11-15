@@ -353,7 +353,9 @@ This file is part of LifeViewer
 		/** @const {number} */ ruleTableIconHexagons : 2,
 		/** @const {number} */ ruleTableIconTriangles : 3,
 
-		/** @const {Array<string>} */ ruleTableIconNames : ["circles", "diamonds", "hexagons", "triangles"]
+		/** @const {Array<string>} */ ruleTableIconNames : ["circles", "diamonds", "hexagons", "triangles"],
+
+		/** @const {number} */ invalidSize : -999999
 	};
 
 	// pattern manager
@@ -648,8 +650,8 @@ This file is part of LifeViewer
 		/** @const {number} */ this.alignedCheckerHROT = 17;
 
 		// specified width and height from RLE pattern
-		/** @type {number} */ this.specifiedWidth = -999999;
-		/** @type {number} */ this.specifiedHeight = -999999;
+		/** @type {number} */ this.specifiedWidth = PatternConstants.invalidSize;
+		/** @type {number} */ this.specifiedHeight = PatternConstants.invalidSize;
 
 		// triangular neighbourhoods
 		/** @const {number} */ this.triangularAll = 0;
@@ -7665,6 +7667,9 @@ This file is part of LifeViewer
 			// check for = sign
 			if (index < length && source[index] === "=") {
 				index += 1;
+			} else {
+				// missing =
+				return [result, index];
 			}
 
 			// skip spaces
@@ -7682,6 +7687,7 @@ This file is part of LifeViewer
 				index += 1;
 				isMinus = true;
 			}
+
 			// decode digits
 			if (index < length) {
 				sourceCode = source[index].charCodeAt(0);
@@ -8354,6 +8360,12 @@ This file is part of LifeViewer
 					// decode rule (size is ignored and computed from the read pattern)
 					index += this.decodeRule(pattern, source.substring(index), true, allocator);
 					sawRule = true;
+
+					if (this.specifiedWidth === PatternConstants.invalidSize || this.specifiedHeight === PatternConstants.invalidSize) {
+						this.failureReason = "RLE header needs: x = N, y = N";
+						pattern.invalid = true;
+						this.executable = false;
+					}
 				} else {
 					// check if already decoded
 					if (decoded) {

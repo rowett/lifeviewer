@@ -1,3 +1,6 @@
+Build 1211
+- enforce RLE header format
+
 Build 1210
 - added option to force 60Hz refresh rate (hotkey Shift-E)
 	- typically only needed for slow computers where refresh rate detection doesn't work
