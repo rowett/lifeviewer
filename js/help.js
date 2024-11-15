@@ -947,6 +947,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "E", "toggle cell period table", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F8", "toggle cell state display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F9", "toggle y coordinate direction", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift E", "toggle force 60Hz", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// pattern controls
@@ -1513,7 +1514,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "Scale", view.viewMenu.xScale.toFixed(2), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Pixel Ratio", view.devicePixelRatio.toFixed(2), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Window Zoom", view.windowZoom.toFixed(2), ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Refresh", Controller.refreshRate + "Hz (" + Controller.frameTime.toFixed(1) + "ms)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Refresh", Controller.refreshRate + "Hz (" + Controller.frameTime.toFixed(1) + "ms)" + (view.force60Hz ? " [Forced]" : ""), ctx, x, y, height, helpLine);
 		if (DocConfig.limitWidth) {
 			y = this.renderHelpLine(view, "Limit Width", view.maxCodeWidth, ctx, x, y, height, helpLine);
 		}

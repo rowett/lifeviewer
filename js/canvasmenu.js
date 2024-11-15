@@ -1258,7 +1258,7 @@ This file is part of LifeViewer
 			case Menu.range:
 				if (currentItem.callback) {
 					// read the current range value
-					currentItem.current = currentItem.callback(currentItem.current, false, this.caller);
+					currentItem.current = currentItem.callback(currentItem.current, false, this.caller, currentItem.id);
 				}
 				break;
 
@@ -1266,7 +1266,7 @@ This file is part of LifeViewer
 			case Menu.list:
 				if (currentItem.callback) {
 					// initialise default item
-					currentItem.current = currentItem.callback(currentItem.current, false, this.caller);
+					currentItem.current = currentItem.callback(currentItem.current, false, this.caller, currentItem.id);
 				}
 				break;
 
@@ -1317,7 +1317,7 @@ This file is part of LifeViewer
 	};
 
 	// add button item
-	MenuList.prototype.addButtonItem = function(/** @type {function(View):void|null} */ callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {string} */ caption) {
+	MenuList.prototype.addButtonItem = function(/** @type {function(View,number):void|null} */ callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {string} */ caption) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, 0, 0, 0, Menu.button, this.defaultOrientation, true, caption, "", -1, null, this);
 
@@ -2133,7 +2133,7 @@ This file is part of LifeViewer
 
 				// execute callback
 				if (item.callback) {
-					item.current = item.callback(item.current, true, item.caller);
+					item.current = item.callback(item.current, true, item.caller, item.id);
 				}
 				break;
 
@@ -2150,7 +2150,7 @@ This file is part of LifeViewer
 			case Menu.button:
 				// execute callback
 				if (item.callback) {
-					item.callback(item.caller);
+					item.callback(item.caller, item.id);
 				}
 				break;
 
@@ -2168,7 +2168,7 @@ This file is part of LifeViewer
 				if (item.upper === Menu.single) {
 					if (!item.itemLocked[w]) {
 						if (item.callback) {
-							item.current = item.callback(w, true, item.caller);
+							item.current = item.callback(w, true, item.caller, item.id);
 						} else {
 							item.current = w;
 						}
@@ -2179,7 +2179,7 @@ This file is part of LifeViewer
 						item.current[w] = !item.current[w];
 
 						if (item.callback) {
-							item.callback(item.current, true, item.caller);
+							item.callback(item.current, true, item.caller, item.id);
 						}
 					}
 				}
@@ -3982,23 +3982,6 @@ This file is part of LifeViewer
 		if (me.updateCount < me.defaultUpdateCount) {
 			me.updateCount = me.defaultUpdateCount;
 		}
-	};
-
-	// get active menu item
-	/** @returns {MenuItem} */
-	MenuManager.prototype.activeItem = function() {
-		var	/** @type {MenuItem} */ result = null;
-
-		// check if there is a current menu
-		if (this.currentMenu) {
-			// check if the current menu has an active item
-			if (this.currentMenu.activeItem != -1) {
-				// return the active item
-				result = this.currentMenu.menuItems[this.currentMenu.activeItem];
-			}
-		}
-
-		return result;
 	};
 
 	// set auto update mode

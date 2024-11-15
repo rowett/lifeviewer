@@ -72,11 +72,17 @@ This file is part of LifeViewer
 
 	// ViewConstants singleton
 	ViewConstants = {
+		// force 60Hz refresh rate
+		/** @const {number} */ forceRate : 60,
+
 		// settings prefix
 		/** @const {string} */ settingsPrefix : "LV",
 
 		// y coordinate direction setting name
 		/** @const {string} */ ySettingName : "yDirection",
+
+		// force 60Hz setting name
+		/** @const {string} */ forceSettingName : "force60Hz",
 
 		// Wolfram RuleTable emulation colours
 		/** @const {string} */ wolframEmulationColours : "0 0 0 0\n1 0 255 192\n2 0 192 255\n",
@@ -324,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1208,
+		/** @const {number} */ versionBuild : 1210,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -535,7 +541,8 @@ This file is part of LifeViewer
 		/** @type {number} */ frameTime : 0,
 		/** @const {number} */ frameCount : 12,
 		/** @type {number} */ currentFrame : 0,
-		/** @type {number} */ refreshRate : 60
+		/** @type {number} */ refreshRate : 60,
+		/** @type {number} */ measuredRefreshRate : 60
 	};
 
 	// frame rate calculation function
@@ -572,7 +579,12 @@ This file is part of LifeViewer
 			} else if (i <= 260) {
 				i = 240;
 			}
+
+			// save refresh rate
 			Controller.refreshRate = i;
+
+			// save again as measure rate since force 60Hz can override and we need the original
+			Controller.measuredRefreshRate = i;
 			console.log("LifeViewer refresh rate", i + "Hz");
 
 			// start main application
@@ -1375,6 +1387,9 @@ This file is part of LifeViewer
 		// whether to display generation as relative or absolute
 		/** @type {boolean} */ this.genRelative = false;
 
+		// whether to force 60Hz refresh rate (for slow computers where auto-detect is too slow to be correct)
+		/** @type {boolean} */ this.force60Hz = false;
+
 		// generation offset from CXRLE Gen command
 		/** @type {number} */ this.genOffset = 0;
 		/** @type {boolean} */ this.genDefined = false;
@@ -1813,6 +1828,9 @@ This file is part of LifeViewer
 
 		// relative generation toggle
 		/** @type {MenuItem} */ this.relativeToggle = null;
+
+		// force 60Hz toggle
+		/** @type {MenuItem} */ this.forceToggle = null;
 
 		// quality rendering toggle
 		/** @type {MenuItem} */ this.qualityToggle = null;
@@ -6503,7 +6521,7 @@ This file is part of LifeViewer
 			// check if actual interval (in ms) is greater than frame budget
 			if (timeSinceLastUpdate > frameTargetTime) {
 				// flag machine too slow
-				if (timeSinceLastUpdate - 0.3 > frameTargetTime) {
+				if (timeSinceLastUpdate * 0.8 > frameTargetTime) {
 					tooSlow = true;
 				}
 
@@ -7412,9 +7430,7 @@ This file is part of LifeViewer
 		this.timingDetailButton.deleted = shown;
 		this.relativeToggle.deleted = shown;
 		this.relativeToggle.locked = !this.genDefined;
-		this.stopAllButton.deleted = shown;
-		this.stopOthersButton.deleted = shown;
-		this.resetAllButton.deleted = shown;
+		this.forceToggle.deleted = shown;
 		this.infoBarButton.deleted = shown;
 		this.fastLookupButton.deleted = shown;
 		this.fastLookupButton.locked = !this.engine.isRuleTree || (this.engine.isRuleTree && !this.engine.ruleLoaderLookupAvailable());
@@ -7442,6 +7458,9 @@ This file is part of LifeViewer
 		this.saveViewButton.deleted = shown;
 		this.restoreViewButton.deleted = shown;
 		this.fitSelectionButton.deleted = shown;
+		this.stopAllButton.deleted = shown;
+		this.stopOthersButton.deleted = shown;
+		this.resetAllButton.deleted = shown;
 
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
@@ -8595,6 +8614,28 @@ This file is part of LifeViewer
 		return [me.stateNumberDisplayed];
 	};
 
+	// toggle force 60Hz
+	/** @returns {Array<boolean>} */
+	View.prototype.viewForceToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		// check if changing
+		if (change) {
+			me.force60Hz = newValue[0];
+			me.saveBooleanSetting(ViewConstants.forceSettingName, me.force60Hz);
+
+			if (me.force60Hz) {
+				Controller.refreshRate = ViewConstants.forceRate;
+			} else {
+				Controller.refreshRate = Controller.measuredRefreshRate;
+			}
+			me.refreshRate = Controller.refreshRate;
+			me.menuManager.refreshRate = Controller.refreshRate;
+
+			me.menuManager.notification.notify(String(Controller.refreshRate) + "Hz", 15, 300, 15, false);
+		}
+
+		return [me.force60Hz];
+	};
+
 	// toggle y direction
 	/** @returns {Array<boolean>} */
 	View.prototype.viewYDirectionToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
@@ -9291,9 +9332,9 @@ This file is part of LifeViewer
 	};
 
 	// overview button pressed
-	View.prototype.overviewPressed = function(/** @type {View} */ me) {
+	View.prototype.overviewPressed = function(/** @type {View} */ me, /** @type {number} */ id) {
 		// get the universe number
-		var	/** @type {number} */ i = /** @type {!number} */ (me.menuManager.activeItem().lower);
+		var	/** @type {number} */ i = /** @type {!number} */ (me.menuManager.currentMenu.menuItems[id].lower);
 
 		// switch to the standard menu
 		me.menuManager.activeMenu(me.viewMenu);
@@ -13333,14 +13374,13 @@ This file is part of LifeViewer
 
 	// theme selection toggle
 	/** @returns {Array<boolean>} */
-	View.prototype.toggleTheme = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	/** @type {number} */ theme = 0,
-			/** @type {MenuItem} */ item = me.menuManager.activeItem();
+	View.prototype.toggleTheme = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me, /** @type {number} */ id) {
+		var	/** @type {number} */ theme = 0;
 
 		if (change) {
 			if (newValue[0]) {
 				// get the theme number from the control ID minus the first theme selection control ID
-				theme = item.id - me.themeSelectionFirstID;
+				theme = id - me.themeSelectionFirstID;
 
 				// change quickly
 				me.setNewTheme(ViewConstants.themeOrder[theme], 1, me);
@@ -18114,71 +18154,75 @@ This file is part of LifeViewer
 		this.actionsButton.toolTip = "general actions";
 
 		// fit selection button
-		this.fitSelectionButton = this.viewMenu.addButtonItem(this.fitSelectionPressed, Menu.middle, -100, -50, 180, 40, "Fit Selection");
+		this.fitSelectionButton = this.viewMenu.addButtonItem(this.fitSelectionPressed, Menu.middle, -100, -100, 180, 40, "Fit Selection");
 		this.fitSelectionButton.toolTip = "fit selection to display [" + this.controlKeyText + " F]";
 
 		// center pattern button
-		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, -50, 180, 40, "Center Pattern");
+		this.centerPatternButton = this.viewMenu.addButtonItem(this.centerPatternPressed, Menu.middle, 100, -100, 180, 40, "Center Pattern");
 		this.centerPatternButton.toolTip = "center pattern [" + this.controlKeyText + " M]";
 
 		// clear drawing state cells button
-		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, -100, 0, 180, 40, "Clear Drawing");
+		this.clearDrawingStateButton = this.viewMenu.addButtonItem(this.clearDrawingCellsPressed, Menu.middle, -100, -50, 180, 40, "Clear Drawing");
 		this.clearDrawingStateButton.toolTip = "clear drawing state cells [" + this.controlKeyText + " " + this.altKeyText + " K]";
 
 		// snap angle to nearest 45 degrees
-		this.snapToNearest45Button = this.viewMenu.addButtonItem(this.snapToNearest45Pressed, Menu.middle, 100, 0, 180, 40, "Snap Angle");
+		this.snapToNearest45Button = this.viewMenu.addButtonItem(this.snapToNearest45Pressed, Menu.middle, 100, -50, 180, 40, "Snap Angle");
 		this.snapToNearest45Button.toolTip = "snap angle to nearest 45 degrees [" + this.altKeyText + " /]";
 
 		// save view
-		this.saveViewButton = this.viewMenu.addButtonItem(this.saveViewPressed, Menu.middle, -100, 50, 180, 40, "Save View");
+		this.saveViewButton = this.viewMenu.addButtonItem(this.saveViewPressed, Menu.middle, -100, 0, 180, 40, "Save View");
 		this.saveViewButton.toolTip = "save current view [Shift V]";
 
 		// restore view
-		this.restoreViewButton = this.viewMenu.addButtonItem(this.restoreViewPressed, Menu.middle, 100, 50, 180, 40, "Restore View");
+		this.restoreViewButton = this.viewMenu.addButtonItem(this.restoreViewPressed, Menu.middle, 100, 0, 180, 40, "Restore View");
 		this.restoreViewButton.toolTip = "restore saved view [V]";
+
+		// stop all viewers button
+		this.stopAllButton = this.viewMenu.addButtonItem(this.stopAllPressed, Menu.middle, -100, 50, 180, 40, "Stop All");
+		this.stopAllButton.toolTip = "stop all Viewers [Shift Z]";
+
+		// stop other viewers button
+		this.stopOthersButton = this.viewMenu.addButtonItem(this.stopOthersPressed, Menu.middle, 100, 50, 180, 40, "Stop Others");
+		this.stopOthersButton.toolTip = "stop other Viewers [Z]";
+
+		// reset all viewers button
+		this.resetAllButton = this.viewMenu.addButtonItem(this.resetAllPressed, Menu.middle, -100, 100, 180, 40, "Reset All");
+		this.resetAllButton.toolTip = "reset all Viewers [Shift R]";
 
 		// add the advanced button
 		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 100, 25, 150, 40, "Advanced");
 		this.infoButton.toolTip = "advanced settings and actions";
 
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display [T]"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -100, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -75, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details [Shift T]"];
 
 		// relative toggle button
-		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -50, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
+		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -25, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
 		this.relativeToggle.toolTip = ["toggle absolute/relative generation display [Shift G]"];
 
-		// reset all viewers button
-		this.resetAllButton = this.viewMenu.addButtonItem(this.resetAllPressed, Menu.middle, 100, -50, 180, 40, "Reset All");
-		this.resetAllButton.toolTip = "reset all Viewers [Shift R]";
-
-		// stop all viewers button
-		this.stopAllButton = this.viewMenu.addButtonItem(this.stopAllPressed, Menu.middle, -100, 0, 180, 40, "Stop All");
-		this.stopAllButton.toolTip = "stop all Viewers [Shift Z]";
-
-		// stop other viewers button
-		this.stopOthersButton = this.viewMenu.addButtonItem(this.stopOthersPressed, Menu.middle, 100, 0, 180, 40, "Stop Others");
-		this.stopOthersButton.toolTip = "stop other Viewers [Z]";
+		// force 60Hz button
+		this.forceToggle = this.viewMenu.addListItem(this.viewForceToggle, Menu.middle, 100, -25, 180, 40, ["Force 60Hz"], [this.force60Hz], Menu.multi);
+		this.forceToggle.toolTip = ["force 60Hz refresh rate (for slow computers) [Shift E]"];
 
 		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 50, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 25, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
 
 		// fast lookup toggle button
-		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 50, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
+		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 25, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
 		this.fastLookupButton.toolTip = ["toggle fast lookup [F7]"];
 
 		// state number toggle button
-		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 100, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
+		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 75, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
 		this.stateNumberButton.toolTip = ["toggle state number display [F8]"];
 
 		// y coordinate direction button
-		this.yDirectionButton = this.viewMenu.addListItem(this.viewYDirectionToggle, Menu.middle, 100, 100, 180, 40, ["Y Direction"], [this.yUp], Menu.multi);
+		this.yDirectionButton = this.viewMenu.addListItem(this.viewYDirectionToggle, Menu.middle, 100, 75, 180, 40, ["Y Direction"], [this.yUp], Menu.multi);
 		this.yDirectionButton.toolTip = ["toggle y coordinate direction [F9]"];
 
 		// add the back button
@@ -19247,6 +19291,12 @@ This file is part of LifeViewer
 
 		// read settings
 		this.yUp = this.loadBooleanSetting(ViewConstants.ySettingName);
+		this.force60Hz = this.loadBooleanSetting(ViewConstants.forceSettingName);
+		if (this.force60Hz) {
+			Controller.refreshRate = ViewConstants.forceRate;
+			this.refreshRate = Controller.refreshRate;
+			this.menuManager.refreshRate = Controller.refreshRate;
+		}
 
 		// reset playback speed
 		this.genSpeed = 60;
@@ -20720,6 +20770,9 @@ This file is part of LifeViewer
 
 		// set the relative generation display UI control
 		me.relativeToggle.current = [me.genRelative];
+
+		// set the force 60Hz control
+		me.forceToggle.current = [me.force60Hz];
 
 		// set the quality rendering display UI control
 		me.qualityToggle.current = [me.engine.pretty];
