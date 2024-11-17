@@ -7742,21 +7742,21 @@ This file is part of LifeViewer
 		// check for x
 		result = this.decodeNameValue("x", index, source, length);
 		index = result[1];
-		if (result[0]) {
+		if (result[0] !== null) {
 			this.specifiedWidth = result[0];
 		}
 
 		// check for y
 		result = this.decodeNameValue("y", index, source, length);
 		index = result[1];
-		if (result[0]) {
+		if (result[0] !== null) {
 			this.specifiedHeight = result[0];
 		}
 
 		// check for h
 		result = this.decodeNameValue("h", index, source, length);
 		index = result[1];
-		if (result[0]) {
+		if (result[0] !== null) {
 			this.posX = result[0];
 			this.posDefined = true;
 		}
@@ -7764,7 +7764,7 @@ This file is part of LifeViewer
 		// check for v
 		result = this.decodeNameValue("v", index, source, length);
 		index = result[1];
-		if (result[0]) {
+		if (result[0] !== null) {
 			this.posY = result[0];
 		}
 	};
