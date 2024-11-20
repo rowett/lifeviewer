@@ -32,10 +32,10 @@ This file is part of LifeViewer
 		/** @const {number} */ modeAny : 3,
 
 		// cell period table State 6 label for [R]History and [R]Super
-		/** @const {string} */ state6Label : "St.6",
+		/** @const {string} */ state6Label : "Off DF",
 
 		// cell period table State 3 label for [R]Extended
-		/** @const {string} */ state3Label : "St.3",
+		/** @const {string} */ state3Label : "Off DF",
 
 		// number of snowflakes
 		/** @const {number} */ flakes : 50000,
@@ -82,7 +82,7 @@ This file is part of LifeViewer
 		/** @const {Array<string>} */ modTypeName : ["Rot90CW", "Rot90CCW", "FlipX", "FlipY", "Rot180", "Flip" + String.fromCharCode(10189), "Flip" + String.fromCharCode(10187), "FlipOrth", "Rot90", "FlipOrthOrRot90", "FlipDiag", "FlipDiagOrRot90", "FlipXOrRot180", "FlipYOrRot180", "Flip" + String.fromCharCode(10189) + "OrRot180", "Flip" + String.fromCharCode(10187) + "OrRot180", "FlipOrthOrDiag"],
 
 		// maximum number of generations to check for oscillators
-		/** @const {number} */ maxOscillatorGens : 4194304,
+		/** @const {number} */ maxOscillatorGens : 16777216,
 
 		// maxmimum memory to compute strict volatility
 		/** @const {number} */ maxStrictMemory : 256 * 1024 * 1024,
@@ -2961,7 +2961,7 @@ This file is part of LifeViewer
 		// set colours for period 1 and oscillator period
 		periodCols[0] = "black";
 		periodCols[1] = "rgb(168,168,168)";
-		periodCols[this.popSubPeriod.length - 1] = "rgb(238,238,238)";
+		periodCols[this.popSubPeriod.length - 1] = "rgb(255,255,255)";
 
 		// create a colour for state 6 cells
 		if (this.cellPeriodState6) {
