@@ -157,7 +157,7 @@ This file is part of LifeViewer
 		this.checkRequestsCompleted();
 	};
 
-	// process a failed request 
+	// process a failed request
 	RuleTreeCache.requestFailed = function(/** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
@@ -3265,7 +3265,7 @@ This file is part of LifeViewer
 						// negate bits
 						number = 0;
 						for (i = 0; i < 8; i += 1) {
-							if ((newNumber & (1 << i)) == 0) {
+							if ((newNumber & (1 << i)) === 0) {
 								number |= (1 << i);
 							}
 						}
@@ -7038,7 +7038,7 @@ This file is part of LifeViewer
 				// mark position found
 				this.posDefined = true;
 
-				// save the x position 
+				// save the x position
 				if (negX) {
 					this.posX = -posX;
 				} else {
@@ -7466,7 +7466,7 @@ This file is part of LifeViewer
 
 		// one twist must be specified
 		if (!horizontalTwist && !verticalTwist) {
-			verticalTwist = true;	
+			verticalTwist = true;
 		}
 
 		// if shifts are set then set them to 1
@@ -7642,7 +7642,7 @@ This file is part of LifeViewer
 		return valid;
 	};
 
-	// decode a single name=value 
+	// decode a single name=value
 	/** @returns {Array} */
 	PatternManager.prototype.decodeNameValue = function(/** @type {string} */ name, /** @type {number} */ index, /** @type {string} */ source, /** @type {number} */ length) {
 		var	/** @type {number} */ value = 0,
@@ -7655,7 +7655,7 @@ This file is part of LifeViewer
 			result = null,
 			/** @type {boolean} */ isMinus = false;
 
-		// check for name 
+		// check for name
 		if (source[index] === name) {
 			index += 1;
 
@@ -8202,7 +8202,7 @@ This file is part of LifeViewer
 			// end of pattern ! index
 			/** @type {number} */ endPatIndex = -1,
 
-			// end of line index 
+			// end of line index
 			/** @type {number} */ endLineIndex = -1,
 
 			// whether to add to title

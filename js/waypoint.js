@@ -553,7 +553,7 @@ This file is part of LifeViewer
 		/** @type {number} */ this.minZoom = minZoom;
 
 		// maximum zoom
-		/** @type {number} */ this.maxZoom = maxZoom; 
+		/** @type {number} */ this.maxZoom = maxZoom;
 
 		// colour
 		/** @type {string} */ this.colour = colour;
@@ -1811,27 +1811,27 @@ This file is part of LifeViewer
 									// get the next line
 									line = message.substring(0, index);
 									message = message.substring(index + 2);
-	
+
 									// measure text line width
 									xPos = context.measureText(line).width >> 1;
-	
+
 									// draw shadow
 									if (current.shadow) {
 										context.fillStyle = shadowColour;
 										context.fillText(line, -xPos + shadowOffset, y + shadowOffset);
 									}
-	
+
 									// draw message
 									context.fillStyle = current.colour;
 									context.fillText(line, -xPos, y);
-	
+
 									// compute y coordinate for next text line
 									y += currentSize;
-	
+
 									// check for more lines
 									index = message.indexOf("\\n");
 								}
-	
+
 								// measure final text line width
 								xPos = context.measureText(message).width >> 1;
 
@@ -1840,7 +1840,7 @@ This file is part of LifeViewer
 									context.fillStyle = shadowColour;
 									context.fillText(message, -xPos + shadowOffset, y + shadowOffset);
 								}
-	
+
 								// draw message
 								context.fillStyle = current.colour;
 								context.fillText(message, -xPos, y);
@@ -1889,7 +1889,7 @@ This file is part of LifeViewer
 											context.fillText(line, maxXPos - xPos + shadowOffset, y + shadowOffset);
 										}
 									}
-	
+
 									// draw message
 									context.fillStyle = current.colour;
 									if (currentAlign === ViewConstants.labelLeft) {
@@ -1897,10 +1897,10 @@ This file is part of LifeViewer
 									} else {
 										context.fillText(line, maxXPos - xPos, y);
 									}
-	
+
 									// compute y coordinate for next text line
 									y += currentSize;
-	
+
 									// check for more lines
 									index = message.indexOf("\\n");
 								}
@@ -1918,7 +1918,7 @@ This file is part of LifeViewer
 										context.fillText(message, maxXPos - xPos + shadowOffset, y + shadowOffset);
 									}
 								}
-	
+
 								// draw message
 								context.fillStyle = current.colour;
 								if (currentAlign === ViewConstants.labelLeft) {

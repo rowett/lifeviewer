@@ -532,15 +532,15 @@ This file is part of LifeViewer
 		if (Math.abs(red - dRed) < 64) {
 			dRed = (dRed + 64) & 255;
 		}
-		
+
 		if (Math.abs(green - dGreen) < 64) {
 			dGreen = (dGreen + 64) & 255;
 		}
-		
+
 		if (Math.abs(blue - dBlue) < 64) {
 			dBlue = (dBlue + 64) & 255;
 		}
-		
+
 		return (dBlue << 16) | (dGreen << 8) | dRed;
 	};
 
@@ -3655,7 +3655,7 @@ This file is part of LifeViewer
 											this.decodeRGB(view, scriptReader, scriptErrors, colNum, nextToken, badColour, peekToken);
 											view.customTheme = true;
 										}
-	
+
 										// illegal colour element
 										if (colNum < 0) {
 											if (this.isStateName(peekToken, view)) {

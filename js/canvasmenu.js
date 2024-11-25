@@ -1293,7 +1293,7 @@ This file is part of LifeViewer
 	};
 
 	// add range item
-	MenuList.prototype.addRangeItem = function(/** @type {function(Array,boolean,View):Array} */ callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {number|Array<string>} */ lower, /** @type {number} */ upper, /** @type {number|Array<boolean>} */ current, /** @type {boolean} */ valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type{number} */ fixed) {
+	MenuList.prototype.addRangeItem = function(/** @type {function(Array,boolean,View):Array} */ callback, /** @type {number} */ position, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ width, /** @type {number} */ height, /** @type {number|Array<string>} */ lower, /** @type {number} */ upper, /** @type {number|Array<boolean>} */ current, /** @type {boolean} */ valueDisplay, /** @type {string} */ preText, /** @type {string} */ postText, /** @type {number} */ fixed) {
 		// create the item
 		this.menuItems[this.numMenuItems] = new MenuItem(this.numMenuItems, callback, this.caller, position, x, y, width, height, lower, upper, current, Menu.range, this.defaultOrientation, valueDisplay, preText, postText, fixed, null, this);
 
@@ -1918,7 +1918,7 @@ This file is part of LifeViewer
 				} else {
 					// vertical marker
 					markerPos *= (item.height - 3);
-					markerPos = (markerPos + 1) | 0; 
+					markerPos = (markerPos + 1) | 0;
 
 					// draw top part
 					markerY = markerPos - highlightSize;
@@ -3500,7 +3500,7 @@ This file is part of LifeViewer
 				// touch being processed so check if pinch in progress
 				if (me.currentTouchId1 === -1) {
 					// single touch in progress so stop it
-					me.performUp(me, me.touchId2X, this.touchId2Y); 
+					me.performUp(me, me.touchId2X, this.touchId2Y);
 
 					// start the pinch
 					thisChange = changes[0];
@@ -3513,7 +3513,7 @@ This file is part of LifeViewer
 				} else {
 					if (me.currentTouchId2 === -1) {
 						// single touch in progress so stop it
-						me.performUp(me, this.touchId1X, this.touchId1Y); 
+						me.performUp(me, this.touchId1X, this.touchId1Y);
 
 						// start the pinch
 						thisChange = changes[0];
@@ -3532,7 +3532,7 @@ This file is part of LifeViewer
 			// process each change record
 			for (i = 0; i < numChanges; i += 1) {
 				thisChange = changes[i];
-				
+
 				// check if the change relates to one of the current touches in progress
 				if (thisChange.identifier === me.currentTouchId1) {
 					// matches the first touch so check if single or pinch is in progress
@@ -3608,7 +3608,7 @@ This file is part of LifeViewer
 			// process each change record
 			for (i = 0; i < numChanges; i += 1) {
 				thisChange = changes[i];
-				
+
 				// check if the change relates to one of the current touches in progress
 				if (thisChange.identifier === me.currentTouchId1) {
 					// matches the first touch so check if single or pinch is in progress

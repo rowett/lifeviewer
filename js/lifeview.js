@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1211,
+		/** @const {number} */ versionBuild : 1212,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -564,9 +564,7 @@ This file is part of LifeViewer
 			i = (1000 / Controller.frameTime) | 0;
 
 			// snap to known monitor refresh rates with a tolerance
-			if (i <= 40) {
-				i = 30;
-			} else if (i <= 70) {
+			if (i <= 70) {
 				i = 60;
 			} else if (i <= 100) {
 				i = 75;
@@ -962,13 +960,13 @@ This file is part of LifeViewer
 		// last oscillator bounding box
 		/** @type {string} */ this.lastIdentifyBox = "";
 
-		// last oscillator generation 
+		// last oscillator generation
 		/** @type {string} */ this.lastIdentifyGen = "";
 
 		// last oscillator population (min, avg, max)
 		/** @type {string} */ this.lastIdentifyCells = "";
 
-		// last oscillator slope 
+		// last oscillator slope
 		/** @type {string} */ this.lastIdentifySlope = "";
 
 		// last oscillator volatility
@@ -1400,7 +1398,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.posDefined = false;
 
 		// failure reason
-		/** @type{string} */ this.failureReason = "";
+		/** @type {string} */ this.failureReason = "";
 
 		// x offset
 		/** @type {number} */ this.xOffset = 0;
@@ -1507,7 +1505,7 @@ This file is part of LifeViewer
 		this.titleElement = null;
 
 		// window title string
-		/** @type{string} */ this.windowTitle = "";
+		/** @type {string} */ this.windowTitle = "";
 
 		// flag if performance warning is enabled
 		/** @type {boolean} */ this.perfWarning = true;
@@ -1543,7 +1541,7 @@ This file is part of LifeViewer
 		/** @type {WaypointManager} */ this.waypointManager = new WaypointManager();
 
 		// last waypoint message
-		/** @type{string} */ this.lastWaypointMessage = "";
+		/** @type {string} */ this.lastWaypointMessage = "";
 
 		// last waypoint theme
 		/** @type {number} */ this.lastWaypointTheme = -1;
@@ -1576,8 +1574,8 @@ This file is part of LifeViewer
 		/** @type {number} */ this.requestedPopupHeight = -1;
 
 		// pattern name and originator
-		/** @type{string} */ this.patternName = "";
-		/** @type{string} */ this.patternOriginator = "";
+		/** @type {string} */ this.patternName = "";
+		/** @type {string} */ this.patternOriginator = "";
 
 		// pattern width and height
 		/** @type {number} */ this.patternWidth = 0;
@@ -1593,16 +1591,16 @@ This file is part of LifeViewer
 		/** @type {Uint32Array} */ this.patternStateCount = null;
 
 		// pattern format
-		/** @type{string} */ this.patternFormat = "";
+		/** @type {string} */ this.patternFormat = "";
 
 		// pattern rule name
-		/** @type{string} */ this.patternRuleName = "";
+		/** @type {string} */ this.patternRuleName = "";
 
 		// pattern alias name
-		/** @type{string} */ this.patternAliasName = "";
+		/** @type {string} */ this.patternAliasName = "";
 
 		// pattern bounded grid definition
-		/** @type{string} */ this.patternBoundedGridDef = "";
+		/** @type {string} */ this.patternBoundedGridDef = "";
 
 		// whether using custom theme
 		/** @type {boolean} */ this.customTheme = false;
@@ -3672,7 +3670,7 @@ This file is part of LifeViewer
 					if (next < 0 || next > 9) {
 						result = -1;
 					} else {
-						result = result * 10 + next; 
+						result = result * 10 + next;
 						i += 1;
 					}
 				}
@@ -4081,7 +4079,7 @@ This file is part of LifeViewer
 						}
 					}
 				}
-				item.cells = cells.slice();			
+				item.cells = cells.slice();
 
 				// allocate an array for the rle
 				item.width = zoomBox.rightX - zoomBox.leftX + 1;
@@ -6321,7 +6319,7 @@ This file is part of LifeViewer
 			} else {
 				yPos = this.selectionBox.bottomY - this.selectionBox.topY + 1;
 			}
-			this.selSizeLabel.preText = xPos + " x " + yPos; 
+			this.selSizeLabel.preText = xPos + " x " + yPos;
 		} else {
 			this.selSizeLabel.enabled = false;
 		}
@@ -6673,7 +6671,7 @@ This file is part of LifeViewer
 				//me.starsOn = currentWaypoint.stars;
 
 				// set grid TBD
-				//me.engine.displayGrid = currentWaypoint.grid; 
+				//me.engine.displayGrid = currentWaypoint.grid;
 
 				// if waypoints not ended then work out whether to step to next generation
 				if (currentWaypoint.targetGen > me.engine.counter) {
@@ -8416,7 +8414,7 @@ This file is part of LifeViewer
 
 					// create the button for the pattern
 					menuItem = this.overviewMenu.addButtonItem(this.overviewPressed, Menu.northWest, x * xSize, y * ySize, xSize, ySize, patName);
-					
+
 					// set the universe ID in the button
 					menuItem.lower = i;
 
@@ -8847,7 +8845,7 @@ This file is part of LifeViewer
 	};
 
 	// convert playback speed to range index
-	/** @returns {number} */ 
+	/** @returns {number} */
 	View.prototype.speedIndex = function() {
 		var	/** @type {number} */ perSPart = 0,
 			/** @type {number} */ stepPart = 0,
@@ -9445,7 +9443,7 @@ This file is part of LifeViewer
 		me.autoShrinkSelection(me);
 	};
 
-	// display cells as icons 
+	// display cells as icons
 	/** @returns {Array<boolean>} */
 	View.prototype.viewIconList = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
@@ -9964,7 +9962,7 @@ This file is part of LifeViewer
 			for (y = bottomY; y <= topY; y += 1) {
 				for (x = leftX; x <= rightX; x += 1) {
 					state = this.engine.getState(x, y, false);
-					if (this.engine.multiNumStates > 2 && !(this.engine.isSuper || this.engine.isExtended || this.engine.isPCA || this.engine.isRuleTree) && state > 0) { // TBD 
+					if (this.engine.multiNumStates > 2 && !(this.engine.isSuper || this.engine.isExtended || this.engine.isPCA || this.engine.isRuleTree) && state > 0) { // TBD
 						state = this.engine.multiNumStates - state;
 					}
 					if (state === replace) {
@@ -12526,7 +12524,7 @@ This file is part of LifeViewer
 
 		// check for swap rules
 		if (this.randomSwap) {
-			// populate the rule array 
+			// populate the rule array
 			entries = new Uint8Array(16);
 			aliveCounts = new Uint8Array(16);
 			for (i = 0; i < 16; i += 1) {
@@ -14088,7 +14086,7 @@ This file is part of LifeViewer
 			/** @type {Array<number>} */ cells = [];
 
 		if (me.isSelection) {
-			// order selection 
+			// order selection
 			if (x1 > x2) {
 				swap = x1;
 				x1 = x2;
@@ -14213,7 +14211,7 @@ This file is part of LifeViewer
 			/** @type {string} */ output = "";
 
 		if (me.isSelection) {
-			// order selection 
+			// order selection
 			if (x1 > x2) {
 				swap = x1;
 				x1 = x2;
@@ -14324,7 +14322,7 @@ This file is part of LifeViewer
 			/** @type {Uint8Array} */ buffer = null;
 
 		if (me.isSelection) {
-			// order selection 
+			// order selection
 			if (x1 > x2) {
 				swap = x1;
 				x1 = x2;
@@ -17190,7 +17188,7 @@ This file is part of LifeViewer
 		if (me.engine.counter !== 0) {
 			// add T and the generation
 			string += Keywords.tWord + " " + me.engine.counter + " ";
-		} 
+		}
 
 		// camera position
 		string += Keywords.xWord + " " + xValStr + " " + Keywords.yWord + " " + yValStr + " ";
@@ -17261,7 +17259,7 @@ This file is part of LifeViewer
 				string += " " + Keywords.scriptEndWord + "\n" + commentPrefix + Keywords.scriptStartWord + " ";
 			}
 			// add theme
-			string += Keywords.themeWord + " " + theme.name + " "; 
+			string += Keywords.themeWord + " " + theme.name + " ";
 
 			// add HISTORYSTATES if not default
 			if (me.historyStates !== me.maxHistoryStates) {
@@ -17905,15 +17903,15 @@ This file is part of LifeViewer
 
 		// rainbow button
 		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 100, 0, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
-		this.rainbowButton.toolTip = ["toggle rainbow mode [" + this.altKeyText + " W]"]; 
+		this.rainbowButton.toolTip = ["toggle rainbow mode [" + this.altKeyText + " W]"];
 
 		// autogrid toggle button
 		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 50, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
-		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan [" + this.controlKeyText + " G]"]; 
+		this.autoGridButton.toolTip = ["automatically turn on gridlines for Draw and Select and off for Pan [" + this.controlKeyText + " G]"];
 
 		// alt grid toggle button
 		this.altGridButton = this.viewMenu.addListItem(this.viewAltGridToggle, Menu.middle, 100, 50, 180, 40, ["Alt GridLines"], [this.engine.altGrid], Menu.multi);
-		this.altGridButton.toolTip = ["toggle alternating gridlines [" + this.altKeyText + " D]"]; 
+		this.altGridButton.toolTip = ["toggle alternating gridlines [" + this.altKeyText + " D]"];
 
 		// integer zoom button
 		this.integerZoomButton = this.viewMenu.addButtonItem(this.integerZoomPressed, Menu.middle, -100, 100, 180, 40, "Integer Zoom");
@@ -17945,7 +17943,7 @@ This file is part of LifeViewer
 
 		// autohide toggle button
 		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 100, 50, 180, 40, ["AutoHide UI"], [this.hideGUI], Menu.multi);
-		this.autoHideButton.toolTip = ["toggle hide UI on playback [" + this.altKeyText + " U]"]; 
+		this.autoHideButton.toolTip = ["toggle hide UI on playback [" + this.altKeyText + " U]"];
 
 		// rule button
 		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -100, 180, 40, "Change Rule");
@@ -18817,7 +18815,7 @@ This file is part of LifeViewer
 		// do not display infobar
 		this.infoBarEnabled = false;
 
-		// reset custom colours 
+		// reset custom colours
 		this.customColours = null;
 		this.customTextColour = null;
 		this.customErrorColour = null;
@@ -19556,7 +19554,7 @@ This file is part of LifeViewer
 
 		// check for illegal states in RuleTable
 		if (pattern && (pattern.ruleTableOutput !== null || pattern.ruleTreeStates !== -1)) {
-			if (pattern.ruleTableOutput == null) {
+			if (pattern.ruleTableOutput === null) {
 				if (pattern.maxStateRead >= pattern.ruleTreeStates) {
 					me.manager.failureReason = "Illegal state in pattern for @TREE";
 					pattern = null;
@@ -20569,7 +20567,7 @@ This file is part of LifeViewer
 		}
 
 		// create the pixel colours from the palette at full brightness
-		me.engine.createPixelColours(1);	
+		me.engine.createPixelColours(1);
 
 		// set bounded grid border cell
 		me.engine.setBoundedGridBorderCell();
@@ -21981,7 +21979,7 @@ This file is part of LifeViewer
 							startView(cleanItem, canvasItem, textItem.offsetWidth, false, textItem);
 						} else {
 							// hide the canvas item
-							if (DocConfig.hide && canvasItem) { 
+							if (DocConfig.hide && canvasItem) {
 								canvasItem.style.display = "none";
 							}
 						}

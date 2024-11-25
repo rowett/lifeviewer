@@ -28,9 +28,9 @@ This file is part of LifeViewer
 		/** @type {number} */ this.numStars = numStars;
 
 		// list of stars
-		/** type {Float32Array} */ this.x = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.x")); 
-		/** type {Float32Array} */ this.y = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.y")); 
-		/** type {Float32Array} */ this.z = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.z")); 
+		/**@type {Float32Array} */ this.x = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.x"));
+		/**@type {Float32Array} */ this.y = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.y"));
+		/**@type {Float32Array} */ this.z = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.z"));
 
 		// star colour
 		/** @type {Colour} */ this.starColour = new Colour(255, 255, 255);
@@ -76,9 +76,9 @@ This file is part of LifeViewer
 			/** @type {number} */ radius2 = (maxX * maxX) + (maxY * maxY);
 
 		// allocate the stars
-		this.x = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.x")); 
-		this.y = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.y")); 
-		this.z = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.z")); 
+		this.x = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.x"));
+		this.y = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.y"));
+		this.z = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.z"));
 
 		// create random stars
 		for (i = 0; i < numStars; i += 1) {

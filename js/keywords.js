@@ -200,7 +200,7 @@ This file is part of LifeViewer
 		// polygon generation range and fade
 		/** @const {string} */ polyTWord : "POLYT",
 
-		// polygon angle and fixed 
+		// polygon angle and fixed
 		/** @const {string} */ polyAngleWord : "POLYANGLE",
 
 		// polygon zoom range
@@ -227,7 +227,7 @@ This file is part of LifeViewer
 		// arrow generation range and fade
 		/** @const {string} */ arrowTWord : "ARROWT",
 
-		// arrow angle and fixed 
+		// arrow angle and fixed
 		/** @const {string} */ arrowAngleWord : "ARROWANGLE",
 
 		// arrow zoom range
@@ -254,7 +254,7 @@ This file is part of LifeViewer
 		// label generation range and fade
 		/** @const {string} */ labelTWord : "LABELT",
 
-		// label angle and fixed 
+		// label angle and fixed
 		/** @const {string} */ labelAngleWord : "LABELANGLE",
 
 		// label zoom range
@@ -490,16 +490,16 @@ This file is part of LifeViewer
 		// reverse start
 		/** @const {string} */ reverseStartWord : "REVERSESTART",
 
-		// suppress escaping gliders 
+		// suppress escaping gliders
 		/** @const {string} */ killGlidersWord : "KILLGLIDERS",
 
 		// enable RuleLoader fast lookup
 		/** @const {string} */ fastLookupWord : "FASTLOOKUP",
 
-		// recipe 
+		// recipe
 		/** @const {string} */ recipeWord : "RECIPE",
 
-		// rle 
+		// rle
 		/** @const {string} */ rleWord : "RLE",
 
 		// paste

@@ -1130,7 +1130,7 @@ This file is part of LifeViewer
 				break;
 
 			// ] for zoom in
-			case 221: 
+			case 221:
 				// check for controls locked
 				if (!(me.controlsLocked || me.zoomItem.locked)) {
 					// check for shift key
@@ -1145,7 +1145,7 @@ This file is part of LifeViewer
 				break;
 
 			// [ for zoom out
-			case 219: 
+			case 219:
 				// check for controls locked
 				if (!(me.controlsLocked || me.zoomItem.locked)) {
 					// check for shift key
@@ -1196,7 +1196,7 @@ This file is part of LifeViewer
 						if (shiftKey) {
 							// set zoom to nearest integer
 							me.changeZoom(me, me.engine.zoom * me.engine.originZ, true);
-	
+
 							// display notification
 							me.menuManager.notification.notify("Integer Zoom", 15, 40, 15, true);
 						} else {

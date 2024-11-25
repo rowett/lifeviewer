@@ -244,7 +244,7 @@ This file is part of LifeViewer
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
 
-			// grid buffer 
+			// grid buffer
 			/** @type {Array<Uint32Array>} */ buffer = this.gridBuffer,
 
 			// row index

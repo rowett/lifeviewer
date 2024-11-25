@@ -1,3 +1,6 @@
+Build 1212
+- enforce 60Hz as minimum monitor refresh rate
+
 Build 1211
 - enforce RLE header format
 
@@ -79,7 +82,7 @@ Build 1187
 
 Build 1186
  - fixed issue with Evolve Selection and selection direction
- 
+
 Build 1185
 - fixed Step Back issue
 
@@ -234,7 +237,7 @@ Build 1142
 
 Build 1141
 - fixed fps overlapping box at fps >= 100
-- fixed Advance Outside clearing issue 
+- fixed Advance Outside clearing issue
 
 Build 1140
 - fix disappearing notifications that are being cleared from restarting disappear phase
@@ -3233,7 +3236,7 @@ Build 415
 Build 414
 - Margolus enhancements
 	- made gridline colours more distinct
-	- Step Forward and Step Back controls are reversed during reverse playback 
+	- Step Forward and Step Back controls are reversed during reverse playback
 	- Step Back for Margolus patterns now respects generations-per-step setting
 	- hotkeys Tab and Shift+Tab step forward and back generations-per-step setting
 	- hotkeys Space and "b" step forward and back one generation
@@ -3514,7 +3517,7 @@ Build 370
 Build 369
 - performance improvement for cell history and longevity
 - performance improvement when ZOOM < 1
-- THEMEs without history (Mono, Inverse, Golly, MCell, Caterer and Life32) and PASTE commands now have improved performance at STEP sizes > 1 
+- THEMEs without history (Mono, Inverse, Golly, MCell, Caterer and Life32) and PASTE commands now have improved performance at STEP sizes > 1
 
 Build 368
 - Advance Outside now works in a single step with Undo/Redo
@@ -5369,7 +5372,7 @@ Build 130
 - missing custom colours now use the corresponding state colour from the rule's set (or default set if no rule set exists)
 - missing colour errors now display the RGB value substituted
 - the information display shows the set name as "(default)", the rule set name (e.g. "LifeHistory"), "(custom)" where all states are custom or "LifeHistory (custom*)"
-- in the latter mode the custom entries are marked with a * 
+- in the latter mode the custom entries are marked with a *
 - added hotkey V to reset camera view
 - help and error visibility is retained across thumbnail toggle
 - slightly reduced notification font size

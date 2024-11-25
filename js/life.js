@@ -2290,7 +2290,7 @@ This file is part of LifeViewer
 									state = ((state & 4) << 1) | ((state & 8) >> 1) | ((state & 1) << 1) | ((state & 2) >> 1);
 									break;
 								}
-	
+
 								// update the hash value
 								hash = (hash * factor) ^ y;
 								hash = (hash * factor) ^ x;
@@ -2393,7 +2393,7 @@ This file is part of LifeViewer
 				if (trans === LifeConstants.modFlipX && modFactor !== 2) {
 					trans = -1;
 				}
-			}	
+			}
 
 			// if FlipY then check for FlipX
 			if (trans === -1 && (modMatch & (1 << LifeConstants.modFlipY))) {
@@ -2428,7 +2428,7 @@ This file is part of LifeViewer
 				if (trans === LifeConstants.modFlipY && modFactor !== 2) {
 					trans = -1;
 				}
-			}	
+			}
 
 			// if this is Rot90 then check if it also true for Rot270
 			if (trans === -1 && (modMatch & (1 << LifeConstants.modRot90))) {
@@ -2577,7 +2577,7 @@ This file is part of LifeViewer
 
 	// check mod hashes
 	/** @returns {number} */
-	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ deltaX, /** @type{number} */ deltaY) {
+	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ trans = 0,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree && !this.isLifeHistory),
 			/** @type {number} */ hash = 0,
@@ -3181,7 +3181,7 @@ This file is part of LifeViewer
 				}
 				this.cellPeriodRGB[x] = (red << 16) | (green << 8) | blue;
 			}
-			
+
 			x += 1;
 		}
 
@@ -3346,7 +3346,7 @@ This file is part of LifeViewer
 						x = this.drawRightString(String(i), fieldWidth, x, y, offset);
 						x = this.drawRightString(String(value), fieldWidth, x, y, offset);
 						x = this.drawRightString((Math.floor(10000 * value / this.popTotal) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
-	
+
 						if (i > 1) {
 							this.drawRightString((Math.floor(10000 * value / this.popRotor) / 100).toFixed(2) + "%", fieldWidth, x, y, offset);
 						}
@@ -4559,7 +4559,7 @@ This file is part of LifeViewer
 								// check if the cell's evolution is identical in each subperiod run
 								off1 = (cx >> 4) + j;
 								off2 = off1 + tMult;
-	
+
 								while (off1 < off2) {
 									v1 = frames[off1];
 									v2 = frames[off1 + mult];
@@ -4569,7 +4569,7 @@ This file is part of LifeViewer
 									}
 									off1 += bitFrameInBytes;
 								}
-	
+
 								// if evolution is identical then update the subperiod for the cell
 								if (off1 === off2) {
 									// save the subperiod, this also prevents it from being checked again at higher subperiods
@@ -4771,11 +4771,11 @@ This file is part of LifeViewer
 
 				// allocate memory for per-cell alive count
 				cellCounts = new Uint32Array(boxWidth * boxHeight);
-	
+
 				// get the frame data width most significant bit number
 				frameTypeMSB = (frames.BYTES_PER_ELEMENT * 8) - 1;
 				bitStart = 1 << frameTypeMSB;
-	
+
 				// mark computing strict volatility
 				computeStrict = true;
 			}
@@ -4870,7 +4870,7 @@ This file is part of LifeViewer
 						hash2 = this.getHash(extent);
 						width2 = (extent.rightX - extent.leftX + 1);
 						height2 = (extent.topY - extent.bottomY + 1);
-	
+
 						//console.log(p, "gen", this.counter, "hash2", hash2);
 
 					}
@@ -4932,7 +4932,7 @@ This file is part of LifeViewer
 									} else {
 										modChecks[modChecks.length] = new ModCheck(p + 1, modMatch);
 									}
-	
+
 									//console.log(p, "gen", this.counter, "type", modMatch, "check at", p + (this.isMargolus && hash0 === hash1 ? 2 : 1), "delta", deltaX, deltaY);
 									//for (cx = 0; cx <= LifeConstants.modRot90FlipY; cx += 1) { if ((modMatch & (1 << cx)) !== 0) { console.log(LifeConstants.modTypeName[cx]); } }
 
@@ -5330,7 +5330,7 @@ This file is part of LifeViewer
 					current = this.boxList[(i << 1) + 1];
 					currentLeft = current >> 16;
 					currentBottom = current & 65535;
-	
+
 					// update bounding box
 					if (currentLeft < minX) {
 						minX = currentLeft;
@@ -11056,7 +11056,7 @@ This file is part of LifeViewer
 				if (needStrings) {
 					colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 				}
-	
+
 				if (this.isSuper || this.isExtended || this.isHROT || this.isPCA) {
 					for (i = 1; i <= this.multiNumStates + this.historyStates; i += 1) {
 						pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
@@ -11098,7 +11098,7 @@ This file is part of LifeViewer
 						if (needStrings) {
 							colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
 						}
-	
+
 						for (i = this.historyStates + 1; i <= this.multiNumStates + this.historyStates; i += 1) {
 							pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
 							if (needStrings) {
@@ -11722,7 +11722,7 @@ This file is part of LifeViewer
 		case PatternConstants.ruleTableVN:
 			bitsNeeded = 5 * i;
 			break;
-		
+
 		case PatternConstants.ruleTableHex:
 			bitsNeeded = 7 * i;
 			break;
@@ -11804,7 +11804,7 @@ This file is part of LifeViewer
 					}
 				}
 				break;
-			
+
 			case PatternConstants.ruleTableMoore:
 				// Moore
 				// create the bit shifts
@@ -12254,50 +12254,50 @@ This file is part of LifeViewer
 			if (this.ruleTableOutput === null) {
 				// check @TREE
 				states = this.ruleTreeStates;
-	
+
 				// compute how many bits needed for states
 				i = 0;
 				while ((1 << i) < states) {
 					i += 1;
 				}
-	
+
 				bitsNeeded = (this.ruleTreeNeighbours + 1) * i;
 			} else {
 				// check @TABLE
 				states = this.multiNumStates;
-	
+
 				// compute how many bits needed for states
 				i = 0;
 				while ((1 << i) < states) {
 					i += 1;
 				}
-	
+
 				// check neighbourhood
 				switch (this.ruleTableNeighbourhood) {
 				case PatternConstants.ruleTableVN:
 					bitsNeeded = 5 * i;
 					break;
-	
+
 				case PatternConstants.ruleTableMoore:
 					bitsNeeded = 9 * i;
 					break;
-	
+
 				case PatternConstants.ruleTableHex:
 					bitsNeeded = 7 * i;
 					break;
-	
+
 					/*
 				case PatternConstants.ruleTableOneD:
 					bitsNeeded = 3 * i;
 					break;
 					*/
-	
+
 				default:
 					bitsNeeded = LifeConstants.maxRuleTreeLookupBits + 1;
 					break;
 				}
 			}
-	
+
 			// check lookup is small enough for lookup table
 			if (bitsNeeded <= LifeConstants.maxRuleTreeLookupBits) {
 				result = true;
@@ -12443,7 +12443,7 @@ This file is part of LifeViewer
 			// create lookup array
 			this.margolusLookup1 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, LifeConstants.hashPCA, "Life.PCALookup1"));
 			if (altSpecified) {
-				this.margolusLookup2 = /** @type{!Uint16Array} */ (this.allocator.allocate(Type.Uint16, LifeConstants.hashPCA, "Life.PCALookup2"));
+				this.margolusLookup2 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, LifeConstants.hashPCA, "Life.PCALookup2"));
 				this.createPCAIndex(this.margolusLookup2, ruleArray, false);
 				this.createPCAIndex(this.margolusLookup1, ruleAltArray, false);
 
@@ -12808,8 +12808,8 @@ This file is part of LifeViewer
 				}
 				if (h > topY) {
 					topY = h;
-				}	
-			}	
+				}
+			}
 		}
 
 		// update bounding box
@@ -13906,7 +13906,7 @@ This file is part of LifeViewer
 					for (w = 0; w < width; w += 1) {
 						input = colourGridRow[w];
 						rowAlive |= input;
-	
+
 						if (input) {
 							if (w < newLeftX) {
 								newLeftX = w;
@@ -14515,7 +14515,7 @@ This file is part of LifeViewer
 				}
 			}
 		}
-		
+
 		// now reset the tile map
 		this.tileGrid.whole.fill(0);
 		this.nextTileGrid.whole.fill(0);
@@ -15099,11 +15099,11 @@ This file is part of LifeViewer
 					i = y + 1;
 					j = x + 1;
 					while (i >= bottomY && !result) {
-	
+
 						//this.overlayGrid[i][j] = mark;
 						//this.overlayGrid[i][j + 1] = mark;
 						//this.overlayGrid[i][j + 2] = mark;
-	
+
 						if (colourGrid[i][j] >= aliveStart || colourGrid[i][j + 1] >= aliveStart || colourGrid[i][j + 2] >= aliveStart) {
 							result = true;
 						}
@@ -15118,7 +15118,7 @@ This file is part of LifeViewer
 						//this.overlayGrid[i][j] = mark;
 						//this.overlayGrid[i - 1][j] = mark;
 						//this.overlayGrid[i - 2][j] = mark;
-	
+
 						if (colourGrid[i][j] >= aliveStart || colourGrid[i - 1][j] >= aliveStart || colourGrid[i - 2][j] >= aliveStart) {
 							result = true;
 						}
@@ -15134,11 +15134,11 @@ This file is part of LifeViewer
 					i = y + 5;
 					j = x + 1;
 					while (i <= topY && !result) {
-	
+
 						//this.overlayGrid[i][j] = mark;
 						//this.overlayGrid[i][j + 1] = mark;
 						//this.overlayGrid[i][j + 2] = mark;
-	
+
 						if (colourGrid[i][j] >= aliveStart || colourGrid[i][j + 1] >= aliveStart || colourGrid[i][j + 2] >= aliveStart) {
 							result = true;
 						}
@@ -15153,7 +15153,7 @@ This file is part of LifeViewer
 						//this.overlayGrid[i][j] = mark;
 						//this.overlayGrid[i + 1][j] = mark;
 						//this.overlayGrid[i + 2][j] = mark;
-	
+
 						if (colourGrid[i][j] >= aliveStart || colourGrid[i + 1][j] >= aliveStart || colourGrid[i + 2][j] >= aliveStart) {
 							result = true;
 						}
@@ -15170,11 +15170,11 @@ This file is part of LifeViewer
 					i = y + 5;
 					j = x + 5;
 					while (i <= topY && !result) {
-	
+
 						//this.overlayGrid[i][j] = mark;
 						//this.overlayGrid[i][j - 1] = mark;
 						//this.overlayGrid[i][j - 2] = mark;
-	
+
 						if (colourGrid[i][j] >= aliveStart || colourGrid[i][j - 1] >= aliveStart || colourGrid[i][j - 2] >= aliveStart) {
 							result = true;
 						}
@@ -15189,7 +15189,7 @@ This file is part of LifeViewer
 						//this.overlayGrid[i][j] = mark;
 						//this.overlayGrid[i + 1][j] = mark;
 						//this.overlayGrid[i + 2][j] = mark;
-	
+
 						if (colourGrid[i][j] >= aliveStart || colourGrid[i + 1][j] >= aliveStart || colourGrid[i + 2][j] >= aliveStart) {
 							result = true;
 						}
@@ -15206,11 +15206,11 @@ This file is part of LifeViewer
 					i = y + 1;
 					j = x + 5;
 					while (i >= bottomY && !result) {
-	
+
 						//this.overlayGrid[i][j] = mark;
 						//this.overlayGrid[i][j - 1] = mark;
 						//this.overlayGrid[i][j - 2] = mark;
-	
+
 						if (colourGrid[i][j] >= aliveStart || colourGrid[i][j - 1] >= aliveStart || colourGrid[i][j - 2] >= aliveStart) {
 							result = true;
 						}
@@ -15225,7 +15225,7 @@ This file is part of LifeViewer
 						//this.overlayGrid[i][j] = mark;
 						//this.overlayGrid[i - 1][j] = mark;
 						//this.overlayGrid[i - 2][j] = mark;
-	
+
 						if (colourGrid[i][j] >= aliveStart || colourGrid[i - 1][j] >= aliveStart || colourGrid[i - 2][j] >= aliveStart) {
 							result = true;
 						}
@@ -15263,7 +15263,7 @@ This file is part of LifeViewer
 					x = current.xc;
 					y = current.yc;
 					orientation = current.orientation;
-	
+
 					// check if target was another edge glider
 					j = 0;
 					found = false;
@@ -15272,11 +15272,11 @@ This file is part of LifeViewer
 						if (j !== i) {
 							// get the other glider
 							target = this.potentialClears[j];
-	
+
 							// get the middle of the other glider
 							otherX = target.x + 3;
 							otherY = target.y + 3;
-	
+
 							// check if the other glider contains the hit location
 							if (x >= otherX - 1 && x <= otherX + 1 && y >= otherY -1 && y <= otherY + 1 && target.orientation === orientation && current.offset === 0) {
 								// delete glider
@@ -15600,20 +15600,20 @@ This file is part of LifeViewer
 				// set the top and bottom row of the bounded grid in the tile map
 				for (x = leftX; x <= rightX; x += 1) {
 					value = 1 << (~x & 15);
-	
+
 					// bottom row
 					this.tileGrid[bottomY][x >> 4] |= value;
 					this.nextTileGrid[bottomY][x >> 4] |= value;
 					this.colourTileGrid[bottomY][x >> 4] |= value;
 					this.colourTileHistoryGrid[bottomY][x >> 4] |= value;
-	
+
 					// top row
 					this.tileGrid[topY][x >> 4] |= value;
 					this.nextTileGrid[topY][x >> 4] |= value;
 					this.colourTileGrid[topY][x >> 4] |= value;
 					this.colourTileHistoryGrid[topY][x >> 4] |= value;
 				}
-	
+
 				// set left and right column of the bounded grid in the tile map
 				for (y = bottomY; y <= topY; y += 1) {
 					// left column
@@ -15622,7 +15622,7 @@ This file is part of LifeViewer
 					this.nextTileGrid[y][leftX >> 4] |= value;
 					this.colourTileGrid[y][leftX >> 4] |= value;
 					this.colourTileHistoryGrid[y][leftX >> 4] |= value;
-	
+
 					// right column
 					value = 1 << (~rightX & 15);
 					this.tileGrid[y][rightX >> 4] |= value;
@@ -18924,7 +18924,7 @@ This file is part of LifeViewer
 				}
 			}
 
-			// draw 
+			// draw
 			// save context
 			ctx.save();
 
@@ -25178,7 +25178,7 @@ This file is part of LifeViewer
 							x = leftX >> 2;
 							for (y = bottomY; y < topY; y += 1) {
 								gridRow32 = grid32[y];
-	
+
 								// clear 16 cells
 								gridRow32[x] = 0;
 								gridRow32[x + 1] = 0;
@@ -32482,7 +32482,7 @@ This file is part of LifeViewer
 				sw = (i & 4) >> 2;
 				s = (i & 2) >> 1;
 				se = (i & 1);
-	
+
 				// lookup the result
 				state = c;
 				lutc = lut0[c];
@@ -32517,7 +32517,7 @@ This file is part of LifeViewer
 						}
 					}
 				}
-	
+
 				// update the character
 				character = (character << 1) | (state & 1);
 				if ((i % 6) === 5) {
@@ -32525,7 +32525,7 @@ This file is part of LifeViewer
 					character = 0;
 				}
 			}
-	
+
 			// add final digit
 			character <<= (6 - (i % 6));
 			result += base64chars[character];
@@ -32548,7 +32548,7 @@ This file is part of LifeViewer
 				c = (i & 4) >> 2;
 				e = (i & 2) >> 1;
 				s = (i & 1);
-	
+
 				// lookup the result
 				state = c;
 				lutc = lut0[c];
@@ -32573,7 +32573,7 @@ This file is part of LifeViewer
 						}
 					}
 				}
-	
+
 				// update the character
 				character = (character << 1) | (state & 1);
 				if ((i % 6) === 5) {
@@ -32581,7 +32581,7 @@ This file is part of LifeViewer
 					character = 0;
 				}
 			}
-	
+
 			// add final digit
 			character <<= (6 - (i % 6));
 			result += base64chars[character];
@@ -32608,7 +32608,7 @@ This file is part of LifeViewer
 				e = (i & 4) >> 2;
 				nw = (i & 2) >> 1;
 				n = (i & 1);
-	
+
 				// lookup the result
 				state = c;
 				lutc = lut0[c];
@@ -32638,7 +32638,7 @@ This file is part of LifeViewer
 						}
 					}
 				}
-	
+
 				// update the character
 				character = (character << 1) | (state & 1);
 				if ((i % 6) === 5) {
@@ -32646,7 +32646,7 @@ This file is part of LifeViewer
 					character = 0;
 				}
 			}
-	
+
 			// add final digit
 			character <<= (6 - (i % 6));
 			result += base64chars[character];
@@ -32667,7 +32667,7 @@ This file is part of LifeViewer
 				w = (i & 4) >> 2;
 				c = (i & 2) >> 1;
 				e = (i & 1);
-	
+
 				// lookup the result
 				state = c;
 				lutc = lut0[c];
@@ -32687,7 +32687,7 @@ This file is part of LifeViewer
 						break;
 					}
 				}
-	
+
 				// update the character
 				character = (character << 1) | (state & 1);
 				if ((i % 6) === 5) {
@@ -32695,7 +32695,7 @@ This file is part of LifeViewer
 					character = 0;
 				}
 			}
-	
+
 			// add final digit
 			character <<= (6 - (i % 6));
 			result += base64chars[character];
@@ -32754,10 +32754,10 @@ This file is part of LifeViewer
 				sw = (i & 4) >> 2;
 				s = (i & 2) >> 1;
 				se = (i & 1);
-	
+
 				// lookup the result
 				state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
-	
+
 				// update the character
 				character = (character << 1) | (state & 1);
 				if ((i % 6) === 5) {
@@ -32765,7 +32765,7 @@ This file is part of LifeViewer
 					character = 0;
 				}
 			}
-	
+
 			// add final digit
 			character <<= (6 - (i % 6));
 			result += base64chars[character];
@@ -32777,10 +32777,10 @@ This file is part of LifeViewer
 				c = (i & 4) >> 2;
 				e = (i & 2) >> 1;
 				s = (i & 1);
-	
+
 				// lookup the result
 				state = b[a[a[a[a[base + n] + w] + e] + s] + c];
-	
+
 				// update the character
 				character = (character << 1) | (state & 1);
 				if ((i % 6) === 5) {
@@ -32788,7 +32788,7 @@ This file is part of LifeViewer
 					character = 0;
 				}
 			}
-	
+
 			// add final digit
 			character <<= (6 - (i % 6));
 			result += base64chars[character];
@@ -45407,7 +45407,7 @@ This file is part of LifeViewer
 	/** @returns {number} */
 	Life.prototype.getTransparentTarget = function(/** @type {number} */ layerTarget, /** @type {number} */i) {
 		var	/** @type {number} */ result = 1;
-		
+
 		// compute the transparent target
 		if (this.multiNumStates > 2) {
 			if (this.isSuper || this.isExtended || this.isRuleTree) {
@@ -46356,7 +46356,7 @@ This file is part of LifeViewer
 				} else {
 					data32.fill(offMaxGrid, idx, idx + this.displayWidth + 1);
 					idx += this.displayWidth;
-				} 
+				}
 			}
 
 			// update column position
@@ -47603,7 +47603,7 @@ This file is part of LifeViewer
 			// draw NxN cells
 			j = sZWidth;
 			intWidth2 = width * intZoom2;
-			
+
 			// compute major gridlines row and column start
 			if (drawMajor) {
 				// for Margolus alternate major/minor grid lines for odd/even generations

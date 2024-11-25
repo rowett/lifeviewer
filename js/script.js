@@ -286,7 +286,7 @@ This file is part of LifeViewer
 	// check whether next token is newline
 	/** @returns {boolean} */
 	Script.prototype.nextIsNewline = function() {
-		var	/** @type {boolean} */ result = false; 
+		var	/** @type {boolean} */ result = false;
 
 		// check if there are more tokens
 		if (this.current < this.starts.length) {
@@ -421,7 +421,7 @@ This file is part of LifeViewer
 				if (atLineStart) {
 					if (!(current === 0 || this.source.charCodeAt(this.starts[current - 1]) === 10)) {
 						found = false;
-					} 
+					}
 				}
 
 				if (found) {

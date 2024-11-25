@@ -667,12 +667,12 @@ This file is part of LifeViewer
 		s.push("HROT cross");
 		a.push(["Higher-Range Outer-Totalistic cross", ""]);
 		a.push(["Factorio", "R3,C2,S2,B3,N+"]);
-		
+
 		// add HROT hash aliases
 		s.push("HROT hash");
 		a.push(["Higher-Range Outer-Totalistic hash", ""]);
 		a.push(["Hash", "R2,C2,S4-6,B5-6,N#"]);
-		
+
 		// add HROT von Neumann aliases
 		s.push("HROT vN");
 		a.push(["Higher-Range Outer-Totalistic von Neumann", ""]);
@@ -693,7 +693,7 @@ This file is part of LifeViewer
 		s.push("HROT custom");
 		a.push(["Higher-Range Outer-Totalistic custom", ""]);
 		a.push(["Marine", "R2,C2,S4,6-9,B6-8,N@03ddef"]);
-		
+
 		// add weighted aliases
 		s.push("Weighted");
 		a.push(["Weighted", ""]);

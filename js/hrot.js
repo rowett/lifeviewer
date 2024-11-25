@@ -611,7 +611,7 @@ This file is part of LifeViewer
 								aliveIndex = 128;
 							} else {
 								// cell dies
-								deaths += 1; 
+								deaths += 1;
 							}
 						}
 					}
@@ -1018,7 +1018,7 @@ This file is part of LifeViewer
 	};
 
 	// weighted generations neighbourhood optimized range 1 version
-	HROT.prototype.nextGenerationWeightedGenerations = function(/** @type{number} */ bottomY, /** @type{number} */ topY, /** @type{number} */ leftX, /** @type{number} */ rightX, /** @type{number} */ range) {
+	HROT.prototype.nextGenerationWeightedGenerations = function(/** @type {number} */ bottomY, /** @type {number} */ topY, /** @type {number} */ leftX, /** @type {number} */ rightX, /** @type {number} */ range) {
 		var	/** @type {number} */ y,
 			/** @type {number} */ x,
 			/** @type {number} */ xm1,
@@ -1135,7 +1135,7 @@ This file is part of LifeViewer
 	};
 
 	// weighted neighbourhood optimized range 1 version
-	HROT.prototype.nextGenerationWeighted2R1 = function(/** @type{number} */ bottomY, /** @type{number} */ topY, /** @type{number} */ leftX, /** @type{number} */ rightX, /** @type{number} */ range) {
+	HROT.prototype.nextGenerationWeighted2R1 = function(/** @type {number} */ bottomY, /** @type {number} */ topY, /** @type {number} */ leftX, /** @type {number} */ rightX, /** @type {number} */ range) {
 		var	/** @type {number} */ y,
 			/** @type {number} */ x,
 			/** @type {number} */ xm1,
@@ -1262,7 +1262,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// 2-state asterisk
@@ -1311,7 +1311,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// 2-state tripod
@@ -1353,7 +1353,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// 2-state weighted
@@ -1582,7 +1582,7 @@ This file is part of LifeViewer
 				countRow[x] = count + rowCount + rowCount2;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// 2-state checkerboard or aligned checkerboard
@@ -1821,7 +1821,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// 2-state star
@@ -1874,7 +1874,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// 2-state cross
@@ -1938,7 +1938,7 @@ This file is part of LifeViewer
 				countRow[x] = count + rowCount;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// 2-state triangular
@@ -2243,7 +2243,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// update the life grid region using HROT for 2 state patterns
@@ -2767,7 +2767,7 @@ This file is part of LifeViewer
 					// non-deterministic version
 					for (x = leftX + 1; x <= rightX; x += 1) {
 						state = colourRow[x];
-						count = countRowYpr[xpr] + 
+						count = countRowYpr[xpr] +
 							countRowYmrp1[xmrp1] -
 							countRowYpr[xmrp1] -
 							countRowYmrp1[xpr];
@@ -2824,7 +2824,7 @@ This file is part of LifeViewer
 					// deterministic version
 					for (x = leftX + 1; x <= rightX; x += 1) {
 						state = colourRow[x];
-						count = countRowYpr[xpr] + 
+						count = countRowYpr[xpr] +
 							countRowYmrp1[xmrp1] -
 							countRowYpr[xmrp1] -
 							countRowYmrp1[xpr];
@@ -3293,7 +3293,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// n-state asterisk
@@ -3342,7 +3342,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// n-state tripod
@@ -3384,7 +3384,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// n-state weighted
@@ -3613,7 +3613,7 @@ This file is part of LifeViewer
 				countRow[x] = count + rowCount + rowCount2;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// n-state checkerboard or aligned checkerboard
@@ -3852,7 +3852,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// n-state star
@@ -3905,7 +3905,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// n-state cross
@@ -3969,7 +3969,7 @@ This file is part of LifeViewer
 				countRow[x] = count + rowCount;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// n-state triangular
@@ -4274,7 +4274,7 @@ This file is part of LifeViewer
 				countRow[x] = count;
 				x += 1;
 			}
-		}	
+		}
 	};
 
 	// update the life grid region using HROT for >2 state patterns

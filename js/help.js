@@ -642,7 +642,7 @@ This file is part of LifeViewer
 		// reset sections
 		view.helpSections = [];
 
-		// annotations 
+		// annotations
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
 
@@ -1707,7 +1707,7 @@ This file is part of LifeViewer
 				for (i = 0; i < value; i += 1) {
 					itemName = " ";
 					for (j = 0; j < value; j+= 1) {
-						if (i == (value >> 1) && j == (value >> 1)) {
+						if (i === (value >> 1) && j === (value >> 1)) {
 							itemName += "0";
 						} else {
 							itemName += view.engine.HROT.neighbourhood[value - 1 - i][value - 1 - j] ? "1" : "0";
@@ -1803,7 +1803,7 @@ This file is part of LifeViewer
 					y = this.renderHelpLine(view, "Mod", view.lastIdentifyMod, ctx, x, y, height, helpLine);
 					y = this.renderHelpLine(view, "Slope", view.lastIdentifySlope, ctx, x, y, height, helpLine);
 					y = this.renderHelpLine(view, "Speed", view.lastIdentifySpeed, ctx, x, y, height, helpLine);
-				}	
+				}
 			}
 			if (view.lastIdentifyType !== "Still Life" && view.engine.boundedGridType === -1) {
 				y = this.renderHelpLine(view, "Heat", view.lastIdentifyHeat, ctx, x, y, height, helpLine);
@@ -2152,7 +2152,7 @@ This file is part of LifeViewer
 						}
 					} else {
 						// draw the alive state
-						j = view.engine.multiNumStates + view.historyStates - 1; 
+						j = view.engine.multiNumStates + view.historyStates - 1;
 						this.renderColourBox(view, view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						y = this.renderHelpLine(view, "Alive", this.rgbString(view.engine.redChannel[j], view.engine.greenChannel[j], view.engine.blueChannel[j]), ctx, x, y, height, helpLine);
 
@@ -2179,7 +2179,7 @@ This file is part of LifeViewer
 					}
 				} else {
 					// normal theme
-					if (view.engine.colourTheme == 12 && view.engine.isHROT) {
+					if (view.engine.colourTheme === 12 && view.engine.isHROT) {
 						theme = view.engine.themes[11];
 						this.renderColourBox(view, theme.aliveRange.startColour.red, theme.aliveRange.startColour.green, theme.aliveRange.startColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						y = this.renderHelpLine(view, "Alive", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
@@ -2560,7 +2560,7 @@ This file is part of LifeViewer
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
 			/** @type {number} */ k = 0,
-			/** @type {string} */ itemName = "", 
+			/** @type {string} */ itemName = "",
 
 			// get the current theme
 			/** @type {Theme} */ theme = view.engine.themes[view.engine.colourTheme],
@@ -2770,7 +2770,7 @@ This file is part of LifeViewer
 						// dying colour
 						this.renderColourBox(view, theme.dyingRangeGen.endColour.red, theme.dyingRangeGen.endColour.green, theme.dyingRangeGen.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						y = this.renderHelpLine(view, "DYING", this.rgbObjectString(theme.dyingRangeGen.endColour), ctx, x, y, height, helpLine);
-	
+
 						// dying ramp if different than dying
 						if (view.engine.multiNumStates > 3) {
 							if (!(theme.dyingRangeGen.startColour.red === theme.dyingRangeGen.endColour.red && theme.dyingRangeGen.startColour.green === theme.dyingRangeGen.endColour.green && theme.dyingRangeGen.startColour.blue === theme.dyingRangeGen.endColour.blue)) {
@@ -2974,7 +2974,7 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, "Allocations", allocs + "\t" + (totalBytes >> 10) + "M", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Frees", frees + "\t" + (totalFreedBytes >> 10) + "M", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-		} 
+		}
 
 		// display current LifeViewer data
 		view.helpSections[sectionNum] = [view.lineNo, "Current"];
@@ -3011,7 +3011,7 @@ This file is part of LifeViewer
 		ctx.globalAlpha = 1;
 
 		// draw shadow
-		ctx.fillStyle = view.menuManager.bgCol; 
+		ctx.fillStyle = view.menuManager.bgCol;
 		this.shadowX = 2;
 		Help.renderHelpText(view, ctx, 6 * xScale, 14 * yScale, lineHeight, view.displayHelp | 0);
 
