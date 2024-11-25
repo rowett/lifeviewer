@@ -1354,6 +1354,7 @@ This file is part of LifeViewer
 				break;
 
 			// - for slower
+			case 173: // firefox
 			case 189:
 			case 109: // num -
 				// check for ctrl -
@@ -1401,6 +1402,7 @@ This file is part of LifeViewer
 				break;
 
 			// = for faster
+			case 61: // firefox
 			case 187:
 			case 107: // num +
 				// check for ctrl +

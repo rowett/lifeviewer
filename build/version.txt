@@ -1,3 +1,6 @@
+Build 1213
+- support + and = keys on Firefox
+
 Build 1212
 - enforce 60Hz as minimum monitor refresh rate
 
