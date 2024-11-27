@@ -1,3 +1,9 @@
+Build 1216
+- further performance improvement when drawing cells as Icons
+
+Build 1215
+- fix Icon borders
+
 Build 1214
 - performance improvement when drawing cells as Icons
 
