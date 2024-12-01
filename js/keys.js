@@ -772,12 +772,24 @@ This file is part of LifeViewer
 
 			// e for show cell period table
 			case 69:
-				// show cell period table
-				if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
-					if (me.periodMapDisplayed === 1) {
-						me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
+				// check for shift key
+				if (shiftKey) {
+					me.defaultSpeedToggle.current = me.viewDefaultSpeedToggle([!me.defaultSpeedSet], true, me);
+					me.menuManager.notification.notify("Using " + (me.defaultSpeedSet ? "saved" : "standard") + " default speed", 15, 80, 15, true);
+				} else {
+					// check for ctrl key
+					if (ctrlKey) {
+						me.saveDefaultSpeedPressed(me);
+						me.menuManager.notification.notify("Default speed saved as " + me.genSpeed * me.gensPerStep + "gps", 15, 120, 15, true);
 					} else {
-						me.identifyStrictToggle.current = me.toggleCellPeriodMap(1, true, me);
+						// show cell period table
+						if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
+							if (me.periodMapDisplayed === 1) {
+								me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
+							} else {
+								me.identifyStrictToggle.current = me.toggleCellPeriodMap(1, true, me);
+							}
+						}
 					}
 				}
 				break;

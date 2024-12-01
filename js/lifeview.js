@@ -72,17 +72,17 @@ This file is part of LifeViewer
 
 	// ViewConstants singleton
 	ViewConstants = {
-		// force 60Hz refresh rate
-		/** @const {number} */ forceRate : 60,
-
 		// settings prefix
 		/** @const {string} */ settingsPrefix : "LV",
 
 		// y coordinate direction setting name
 		/** @const {string} */ ySettingName : "yDirection",
 
-		// force 60Hz setting name
-		/** @const {string} */ forceSettingName : "force60Hz",
+		// default speed setting name
+		/** @const {string} */ defaultSpeedSettingName : "defaultSpeed",
+
+		// default speed value setting name
+		/** @type {string} */ defaultSpeedValueSettingName : "defaultSpeedValue",
 
 		// Wolfram RuleTable emulation colours
 		/** @const {string} */ wolframEmulationColours : "0 0 0 0\n1 0 255 192\n2 0 192 255\n",
@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1216,
+		/** @const {number} */ versionBuild : 1217,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1385,8 +1385,8 @@ This file is part of LifeViewer
 		// whether to display generation as relative or absolute
 		/** @type {boolean} */ this.genRelative = false;
 
-		// whether to force 60Hz refresh rate (for slow computers where auto-detect is too slow to be correct)
-		/** @type {boolean} */ this.force60Hz = false;
+		// whether a default speed is specified
+		/** @type {boolean} */ this.defaultSpeedSet = false;
 
 		// generation offset from CXRLE Gen command
 		/** @type {number} */ this.genOffset = 0;
@@ -1827,8 +1827,11 @@ This file is part of LifeViewer
 		// relative generation toggle
 		/** @type {MenuItem} */ this.relativeToggle = null;
 
-		// force 60Hz toggle
-		/** @type {MenuItem} */ this.forceToggle = null;
+		// default speed button
+		/** @type {MenuItem} */ this.defaultSpeedToggle = null;
+
+		// save default speed button
+		/** @type {MenuItem} */ this.saveDefaultSpeedButton = null;
 
 		// quality rendering toggle
 		/** @type {MenuItem} */ this.qualityToggle = null;
@@ -2288,7 +2291,7 @@ This file is part of LifeViewer
 		/** @type {CanvasRenderingContext2D} */ this.mainContext = null;
 
 		// generation speed
-		/** @type {number} */ this.genSpeed = 60;
+		/** @type {number} */ this.genSpeed = ViewConstants.defaultRefreshRate;
 
 		// menu manager
 		/** @type {MenuManager} */ this.menuManager = null;
@@ -2310,7 +2313,7 @@ This file is part of LifeViewer
 		/** @type {number} */ this.defaultY = 0;
 		/** @type {number} */ this.defaultZoom = 1;
 		/** @type {number} */ this.defaultTheme = 1;
-		/** @type {number} */ this.defaultGPS = 60;
+		/** @type {number} */ this.defaultGPS = ViewConstants.defaultRefreshRate;
 		/** @type {number} */ this.defaultStep = 1;
 		/** @type {number} */ this.defaultLayers = 1;
 		/** @type {number} */ this.defaultDepth = 0.1;
@@ -2388,7 +2391,27 @@ This file is part of LifeViewer
 		}
 
 		return result;
-	}
+	};
+
+	// save integer setting
+	View.prototype.saveIntegerSetting = function(/** @type {string} */ name, /** @type {number} */ value) {
+		var	/** @type {string} */ strValue = String(value);
+
+		localStorage.setItem(ViewConstants.settingsPrefix + name, strValue);
+	};
+
+	// load boolean setting
+	/** @returns {number} */
+	View.prototype.loadIntegerSetting = function(/** @type {string} */ name) {
+		var	/** @type {number} */ result = 0,
+			/** @type {string} */ setting = localStorage.getItem(ViewConstants.settingsPrefix + name);
+
+		if (setting !== null) {
+			result = Number(setting);
+		}
+
+		return result;
+	};
 
 	// check if a string is a Theme state name
 	/** @returns {boolean} */
@@ -7428,7 +7451,6 @@ This file is part of LifeViewer
 		this.timingDetailButton.deleted = shown;
 		this.relativeToggle.deleted = shown;
 		this.relativeToggle.locked = !this.genDefined;
-		this.forceToggle.deleted = shown;
 		this.infoBarButton.deleted = shown;
 		this.fastLookupButton.deleted = shown;
 		this.fastLookupButton.locked = !this.engine.isRuleTree || (this.engine.isRuleTree && !this.engine.ruleLoaderLookupAvailable());
@@ -7468,6 +7490,8 @@ This file is part of LifeViewer
 		this.showLagToggle.deleted = shown;
 		this.killButton.deleted = shown;
 		this.autoHideButton.deleted = shown;
+		this.defaultSpeedToggle.deleted = shown;
+		this.saveDefaultSpeedButton.deleted = shown;
 
 		// lock buttons depending on rule
 		shown = this.engine.isNone || !this.executable;
@@ -8612,26 +8636,44 @@ This file is part of LifeViewer
 		return [me.stateNumberDisplayed];
 	};
 
-	// toggle force 60Hz
+	// toggle default speed
 	/** @returns {Array<boolean>} */
-	View.prototype.viewForceToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	View.prototype.viewDefaultSpeedToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		var	/** @type {number} */ speed = 0;
+
 		// check if changing
 		if (change) {
-			me.force60Hz = newValue[0];
-			me.saveBooleanSetting(ViewConstants.forceSettingName, me.force60Hz);
-
-			if (me.force60Hz) {
-				Controller.refreshRate = ViewConstants.forceRate;
+			me.defaultSpeedSet = newValue[0];
+			me.saveBooleanSetting(ViewConstants.defaultSpeedSettingName, me.defaultSpeedSet);
+			if (me.defaultSpeedSet) {
+				// read the speed from the setting
+				speed = me.loadIntegerSetting(ViewConstants.defaultSpeedValueSettingName)
 			} else {
-				Controller.refreshRate = Controller.measuredRefreshRate;
+				// use the default
+				speed = ViewConstants.defaultRefreshRate;
 			}
-			me.refreshRate = Controller.refreshRate;
-			me.menuManager.refreshRate = Controller.refreshRate;
 
-			me.menuManager.notification.notify(String(Controller.refreshRate) + "Hz", 15, 300, 15, false);
+			// set the new default speed
+			me.setDefaultSpeed(speed);
+
+			// update the UI control
+			if (me.gensPerStep === 1 && me.genSpeed === ViewConstants.defaultRefreshRate) {
+				me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
+			} else {
+				me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
+			}
 		}
 
-		return [me.force60Hz];
+		return [me.defaultSpeedSet];
+	};
+
+	// save default speed
+	View.prototype.saveDefaultSpeedPressed = function(/** @type {View} */ me) {
+		// save the new speed
+		me.saveIntegerSetting(ViewConstants.defaultSpeedValueSettingName, me.gensPerStep * me.genSpeed);
+
+		// enable use save default speed setting
+		me.defaultSpeedToggle.current = me.viewDefaultSpeedToggle([true], true, me);
 	};
 
 	// toggle y direction
@@ -9010,8 +9052,7 @@ This file is part of LifeViewer
 			// reset gps and step
 			me.genSpeed = me.defaultGPS;
 			me.gensPerStep = me.defaultStep;
-			//me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
-			if (me.gensPerStep === 1) {
+			if (me.gensPerStep === 1 && me.genSpeed === ViewConstants.defaultRefreshRate) {
 				me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
 			} else {
 				me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);
@@ -17922,28 +17963,36 @@ This file is part of LifeViewer
 		this.qualityToggle.toolTip = ["toggle anti-aliased cell display [" + this.controlKeyText + " Q]"];
 
 		// go to generation button
-		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, -100, -50, 180, 40, "Go To Gen");
+		this.goToGenButton = this.viewMenu.addButtonItem(this.goToGenPressed, Menu.middle, -100, -75, 180, 40, "Go To Gen");
 		this.goToGenButton.toolTip = "go to specified generation [Shift N]";
 
 		// historyfit toggle button
-		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, 100, -50, 180, 40, ["AutoFit History"], [this.historyFit], Menu.multi);
+		this.historyFitButton = this.viewMenu.addListItem(this.viewHistoryFitToggle, Menu.middle, 100, -75, 180, 40, ["AutoFit History"], [this.historyFit], Menu.multi);
 		this.historyFitButton.toolTip = ["toggle AutoFit History [Shift H]"];
 
 		// add the throttle toggle button
-		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, -100, 0, 180, 40, ["Throttle"], [this.canBailOut], Menu.multi);
+		this.throttleToggle = this.viewMenu.addListItem(this.toggleThrottle, Menu.middle, -100, -25, 180, 40, ["Throttle"], [this.canBailOut], Menu.multi);
 		this.throttleToggle.toolTip = ["toggle playback throttling [" + this.altKeyText + " T]"];
 
 		// add the show lag toggle button
-		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, 100, 0, 180, 40, ["Perf. Warning"], [this.perfWarning], Menu.multi);
+		this.showLagToggle = this.viewMenu.addListItem(this.toggleShowLag, Menu.middle, 100, -25, 180, 40, ["Perf. Warning"], [this.perfWarning], Menu.multi);
 		this.showLagToggle.toolTip = ["toggle performance warning display [Shift W]"];
 
 		// kill gliders toggle button
-		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, -100, 50, 180, 40, ["Kill Gliders"], [this.engine.clearGliders], Menu.multi);
+		this.killButton = this.viewMenu.addListItem(this.viewKillToggle, Menu.middle, -100, 25, 180, 40, ["Kill Gliders"], [this.engine.clearGliders], Menu.multi);
 		this.killButton.toolTip = ["toggle kill escaping gliders [" + this.controlKeyText + " L]"];
 
 		// autohide toggle button
-		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 100, 50, 180, 40, ["AutoHide UI"], [this.hideGUI], Menu.multi);
+		this.autoHideButton = this.viewMenu.addListItem(this.viewAutoHideToggle, Menu.middle, 100, 25, 180, 40, ["AutoHide UI"], [this.hideGUI], Menu.multi);
 		this.autoHideButton.toolTip = ["toggle hide UI on playback [" + this.altKeyText + " U]"];
+
+		// default speed toggle button
+		this.defaultSpeedToggle = this.viewMenu.addListItem(this.viewDefaultSpeedToggle, Menu.middle, 100, 75, 180, 40, ["Use Saved"], [this.defaultSpeedSet], Menu.multi);
+		this.defaultSpeedToggle.toolTip = ["toggle use saved default playback speed [Shift E]"];
+
+		// save default speed button
+		this.saveDefaultSpeedButton = this.viewMenu.addButtonItem(this.saveDefaultSpeedPressed, Menu.middle, -100, 75, 180, 40, "Save Speed");
+		this.saveDefaultSpeedButton.toolTip = "save default playback speed [" + this.controlKeyText + " E]";
 
 		// rule button
 		this.ruleButton = this.viewMenu.addButtonItem(this.rulePressed, Menu.middle, -100, -100, 180, 40, "Change Rule");
@@ -18203,9 +18252,9 @@ This file is part of LifeViewer
 		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -25, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
 		this.relativeToggle.toolTip = ["toggle absolute/relative generation display [Shift G]"];
 
-		// force 60Hz button
-		this.forceToggle = this.viewMenu.addListItem(this.viewForceToggle, Menu.middle, 100, -25, 180, 40, ["Force 60Hz"], [this.force60Hz], Menu.multi);
-		this.forceToggle.toolTip = ["force 60Hz refresh rate (for slow computers) [Shift E]"];
+		// y coordinate direction button
+		this.yDirectionButton = this.viewMenu.addListItem(this.viewYDirectionToggle, Menu.middle, 100, -25, 180, 40, ["Y Direction"], [this.yUp], Menu.multi);
+		this.yDirectionButton.toolTip = ["toggle y coordinate direction [F9]"];
 
 		// infobar toggle button
 		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 25, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
@@ -18218,10 +18267,6 @@ This file is part of LifeViewer
 		// state number toggle button
 		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 75, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
 		this.stateNumberButton.toolTip = ["toggle state number display [F8]"];
-
-		// y coordinate direction button
-		this.yDirectionButton = this.viewMenu.addListItem(this.viewYDirectionToggle, Menu.middle, 100, 75, 180, 40, ["Y Direction"], [this.yUp], Menu.multi);
-		this.yDirectionButton.toolTip = ["toggle y coordinate direction [F9]"];
 
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
@@ -19280,26 +19325,56 @@ This file is part of LifeViewer
 		this.engine.ruleTableDups = 0;
 	};
 
+	// set default speed from value in generations per second
+	View.prototype.setDefaultSpeed = function(/** @type {number} */ speed) {
+		if (speed < ViewConstants.minGenSpeed) {
+			speed = ViewConstants.minGenSpeed;
+		}
+		if (speed > ViewConstants.defaultRefreshRate) {
+			this.genSpeed = ViewConstants.defaultRefreshRate;
+			this.gensPerStep = (speed / ViewConstants.defaultRefreshRate) | 0;
+			if (this.gensPerStep > ViewConstants.maxStepSpeed) {
+				this.gensPerStep = ViewConstants.maxStepSpeed;
+			}
+		} else {
+			this.genSpeed = speed;
+			this.gensPerStep = 1;
+		}
+		this.defaultGPS = this.genSpeed;
+		this.defaultStep = this.gensPerStep;
+	};
+
 	// start the viewer from a supplied pattern string
 	View.prototype.startViewer = function(/** @type {string} */ patternString, /** @type {boolean} */ ignoreThumbnail) {
 		var	/** @type {number} */ savedW = 0,
 			/** @type {number} */ savedH = 0,
 			/** @type {Pattern} */ pattern = null,
-			/** @type {Pattern} */ temp = null;
+			/** @type {Pattern} */ temp = null,
+			/** @type {number} */ speed = 0;
 
 		// read settings
 		this.yUp = this.loadBooleanSetting(ViewConstants.ySettingName);
-		this.force60Hz = this.loadBooleanSetting(ViewConstants.forceSettingName);
-		if (this.force60Hz) {
-			Controller.refreshRate = ViewConstants.forceRate;
-			this.refreshRate = Controller.refreshRate;
-			this.menuManager.refreshRate = Controller.refreshRate;
-		}
+		this.defaultSpeedSet = this.loadBooleanSetting(ViewConstants.defaultSpeedSettingName);
+		this.defaultSpeedToggle.current = [this.defaultSpeedSet];
 
 		// reset playback speed
-		this.genSpeed = 60;
+		this.genSpeed = ViewConstants.defaultRefreshRate;
 		this.gensPerStep = 1;
-		this.speedRange.current = this.viewSpeedRange([1, 1], true, this);
+		this.defaultGPS = this.genSpeed;
+		this.defaultStep = this.gensPerStep;
+
+		// check if default playback speed has been overridden
+		if (this.defaultSpeedSet) {
+			speed = this.loadIntegerSetting(ViewConstants.defaultSpeedValueSettingName)
+			this.setDefaultSpeed(speed);
+		}
+
+		// update the UI control
+		if (this.gensPerStep === 1 && this.genSpeed === ViewConstants.defaultRefreshRate) {
+			this.speedRange.current = this.viewSpeedRange([1, 1], true, this);
+		} else {
+			this.speedRange.current = this.viewSpeedRange([this.speedIndex(), 1], true, this);
+		}
 
 		// hide labels
 		this.xyLabel.deleted = true;
@@ -19874,11 +19949,13 @@ This file is part of LifeViewer
 		me.customGridMajorColour = -1;
 		me.customGridColour = -1;
 
-		// set the default generation speed
-		me.genSpeed = 60;
+		// set the default generation speed if it hasn't been read from local settings
+		if (!me.defaultSpeedSet) {
+			me.genSpeed = ViewConstants.defaultRefreshRate;
 
-		// set the default generations per step
-		me.gensPerStep = 1;
+			// set the default generations per step
+			me.gensPerStep = 1;
+		}
 
 		// set the default layers
 		me.engine.layers = 1;
@@ -20769,9 +20846,6 @@ This file is part of LifeViewer
 		// set the relative generation display UI control
 		me.relativeToggle.current = [me.genRelative];
 
-		// set the force 60Hz control
-		me.forceToggle.current = [me.force60Hz];
-
 		// set the quality rendering display UI control
 		me.qualityToggle.current = [me.engine.pretty];
 
@@ -20868,7 +20942,7 @@ This file is part of LifeViewer
 		// set the generation speed and step
 		me.defaultGPS = me.genSpeed;
 		me.defaultStep = me.gensPerStep;
-		if (me.gensPerStep === 1 && me.genSpeed === 60) {
+		if (me.gensPerStep === 1 && me.genSpeed === ViewConstants.defaultRefreshRate) {
 			me.speedRange.current = me.viewSpeedRange([1, 1], true, me);
 		} else {
 			me.speedRange.current = me.viewSpeedRange([me.speedIndex(), 1], true, me);

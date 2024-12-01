@@ -1,3 +1,12 @@
+Build 1217
+- you can now set the default playback speed
+	- the default playback speed is 60 generations per second and displays as 1X in the UI
+	- Settings>Playback>Save Speed (hotkey Ctrl-E) makes the default playback speed the current playback speed
+		- this will be remembered for the current browser on the current device
+		- setting this will also automatically switch on Use Saved
+	- Settings>Playback>Use Saved (Shift-E) allows you to toggle whether to use the saved playback speed or the default playback speed
+	- if a pattern contains a script command that sets the speed ([[ GPS ]] or [[ STEP ]]) then this takes priority until Save Speed or Use Saved are used
+
 Build 1216
 - further performance improvement when drawing cells as Icons
 

@@ -85,7 +85,7 @@ This file is part of LifeViewer
 		/** @type {number} */ this.theme = 0;
 
 		// gps
-		/** @type {number} */ this.gps = 60;
+		/** @type {number} */ this.gps = ViewConstants.defaultRefreshRate;
 
 		// step size
 		/** @type {number} */ this.step = 1;
