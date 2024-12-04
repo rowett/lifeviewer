@@ -47282,7 +47282,7 @@ This file is part of LifeViewer
 			/** @const {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid(),
 			/** @type {Array<number>} */ rowPos = [],
 			/** @type {Array<number>} */ colPos = [],
-			/** @const {boolean} */ drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled),
+			/** @type {boolean} */ drawMajor = (this.gridLineMajor > 0 && this.gridLineMajorEnabled),
 			/** @const {number} */ gridLineMajor = this.gridLineMajor,
 			/** @const {number} */ gridCol = this.gridLineColour,
 			/** @const {number} */ gridBoldCol = this.gridLineBoldColour,
@@ -47593,7 +47593,12 @@ This file is part of LifeViewer
 		// draw the grid lines if required
 		if (drawGridLines) {
 			// draw the standard grid lines
-			ctx.strokeStyle = this.getColourString(gridCol);
+			if (this.cellBorders && !this.displayGrid) {
+				ctx.strokeStyle = this.getColourString(this.pixelColours[0]);
+				drawMajor = false;
+			} else {
+				ctx.strokeStyle = this.getColourString(gridCol);
+			}
 			ctx.lineWidth = 1;
 			ctx.beginPath();
 

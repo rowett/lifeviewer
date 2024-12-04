@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1217,
+		/** @const {number} */ versionBuild : 1218,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -541,24 +541,27 @@ This file is part of LifeViewer
 		/** @type {number} */ frameTime : 0,
 		/** @const {number} */ frameCount : 12,
 		/** @type {number} */ currentFrame : 0,
-		/** @type {number} */ refreshRate : 60,
-		/** @type {number} */ measuredRefreshRate : 60
+		/** @type {number} */ refreshRate : 60
 	};
 
 	// frame rate calculation function
 	Controller.frameRateMeasure = function() {
-		var	/** @type {number} */ i = 0;
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ time = 0,
+			/** @type {number} */ now = performance.now();
 
-		if (Controller.currentFrame === 0) {
-			Controller.firstFrame = performance.now();
+		// skip the first frame since measurements show the performance is often unreliable
+		if (Controller.currentFrame <= 1) {
+			Controller.firstFrame = now;
 		}
 
-		if (Controller.currentFrame === Controller.frameCount) {
+		// check if the target number of frames have been read (account for the skipped frame)
+		if (Controller.currentFrame === Controller.frameCount + 1) {
 			// measure the time taken over the frame count
-			Controller.lastFrame = performance.now();
+			Controller.lastFrame = now;
 
 			// save the frame time (ms)
-			Controller.frameTime = (performance.now() - Controller.firstFrame) / Controller.frameCount;
+			Controller.frameTime = (now - Controller.firstFrame) / Controller.frameCount;
 
 			// compute the monitor refresh rate from the frame time
 			i = (1000 / Controller.frameTime) | 0;
@@ -580,9 +583,6 @@ This file is part of LifeViewer
 
 			// save refresh rate
 			Controller.refreshRate = i;
-
-			// save again as measure rate since force 60Hz can override and we need the original
-			Controller.measuredRefreshRate = i;
 			console.log("LifeViewer refresh rate", i + "Hz");
 
 			// start main application

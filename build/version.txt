@@ -1,3 +1,7 @@
+Build 1218
+- drawing cells as Icons now supports cell borders
+- improved refresh rate detection
+
 Build 1217
 - you can now set the default playback speed
 	- the default playback speed is 60 generations per second and displays as 1X in the UI
