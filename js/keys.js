@@ -855,10 +855,16 @@ This file is part of LifeViewer
 							}
 						}
 					} else {
-						// toggle grid
-						me.engine.displayGrid = !me.engine.displayGrid;
-						me.gridToggle.current = me.toggleGrid([me.engine.displayGrid], true, me);
-						me.menuManager.notification.notify("Grid Lines " + (me.engine.displayGrid ? "On" : "Off"), 15, 40, 15, true);
+						// check for selection or paste
+						if (me.isSelection || me.isPasting) {
+							// flip selection horizontally
+							me.flipXPressed(me);
+						} else {
+							// toggle grid
+							me.engine.displayGrid = !me.engine.displayGrid;
+							me.gridToggle.current = me.toggleGrid([me.engine.displayGrid], true, me);
+							me.menuManager.notification.notify("Grid Lines " + (me.engine.displayGrid ? "On" : "Off"), 15, 40, 15, true);
+						}
 					}
 				}
 				break;
@@ -883,10 +889,16 @@ This file is part of LifeViewer
 								me.linesToggle.current = me.toggleLines([me.popGraphLines], true, me);
 								me.menuManager.notification.notify("Graph " + (me.popGraphLines ? "Lines" : "Points"), 15, 40, 15, true);
 							} else {
-								// toggle population graph
-								me.popGraph = !me.popGraph;
-								me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
-								me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
+								// check for selection or paste
+								if (me.isSelection || me.isPasting) {
+									// flip selection vertically
+									me.flipYPressed(me);
+								} else {
+									// toggle population graph
+									me.popGraph = !me.popGraph;
+									me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
+									me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
+								}
 							}
 						}
 					}

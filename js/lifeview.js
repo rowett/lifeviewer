@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1218,
+		/** @const {number} */ versionBuild : 1219,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -15120,8 +15120,8 @@ This file is part of LifeViewer
 			this.createConversionMap(map, pattern);
 
 			// create the copy buffer
-			width = pattern.width;
-			height = pattern.height;
+			width = this.manager.specifiedWidth;
+			height = this.manager.specifiedHeight;
 			buffer = /** @type {!Uint8Array} */ (this.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + this.currentPasteBuffer));
 
 			// read the states from the pattern
