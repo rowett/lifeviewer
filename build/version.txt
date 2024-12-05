@@ -1,3 +1,6 @@
+Build 1220
+- prevent PopUp Viewer close box being translated
+
 Build 1219
 - keep original selection size on Paste when using external clipboard
 - while there is a Selection or Paste active hotkeys X and Y will flip it (Golly hotkey compatibility)

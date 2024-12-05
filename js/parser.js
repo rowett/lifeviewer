@@ -1171,7 +1171,7 @@ This file is part of LifeViewer
 	// parse script commands
 	ScriptParser.parseScript = function(/** @type {View} */ view, /** @type {string} */ scriptString, /** @type {number} */ numStates) {
 		// create a script from the string
-		var	scriptReader = new Script(scriptString, false),
+		var	/** @type {Script} */ scriptReader = new Script(scriptString, false),
 
 			// reading tokens
 			/** @type {boolean} */ readingTokens = false,

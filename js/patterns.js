@@ -10121,7 +10121,7 @@ This file is part of LifeViewer
 
 	// add a Super postfix to the rule name in the supplied pattern
 	PatternManager.prototype.addSuperPostfix = function(/** @type {Pattern} */ pattern) {
-		var 	/** @type {number} */ superIndex = 0;
+		var	/** @type {number} */ superIndex = 0;
 
 		// check if the pattern already contains a Super postfix
 		superIndex = pattern.ruleName.toLowerCase().lastIndexOf(this.superPostfix);

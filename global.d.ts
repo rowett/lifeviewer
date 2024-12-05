@@ -17,7 +17,6 @@ interface ArrayConstructor {
     addRow;
     copy;
     matrixView;
-    matrixViewWithOffset;
 }
 
 // box.js

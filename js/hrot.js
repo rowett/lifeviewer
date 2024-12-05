@@ -3857,7 +3857,7 @@ This file is part of LifeViewer
 
 	// n-state star
 	HROT.prototype.nextGenerationStarN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		var	counts = this.counts,
+		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
 			/** @type {number} */ i,

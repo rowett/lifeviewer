@@ -432,23 +432,3 @@ This file is part of LifeViewer
 		// return typed view of matrix
 		return mat;
 	};
-
-	// create an offset view of the source matrix
-	/** @returns {Array} */
-	Array.matrixViewWithOffset = function(/** @type {Array} */ source, /** @type {number} */ offset, /** @type {string} */ name) {
-		var	/** @type {number} */ y = 0,
-			/** @type {number} */ h = source.length,
-			/** @type {Array} */ mat = [],
-			/** @type {Allocator} */ allocator = source.allocator,
-			/** @type {number} */ type = source.dataType,
-			/** @type {number} */ elements = source[0].length;
-
-		// iterate over the source array
-		for (y = 0; y < h; y += 1) {
-			// create a view of the source array at the offset
-			mat[y] = allocator.typedView(source.whole, type, elements - offset, (y * elements) + offset, name);
-		}
-
-		// return typed view of matrix at offset
-		return mat;
-	};

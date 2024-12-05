@@ -9725,9 +9725,6 @@ This file is part of LifeViewer
 	Life.prototype.createOverlay = function() {
 		this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid");
 		this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid");
-		this.smallOverlayGrid4 = Array.matrixViewWithOffset(this.smallOverlayGrid, 1, "Life.smallOverlayGrid4");
-		this.smallOverlayGrid8 = Array.matrixViewWithOffset(this.smallOverlayGrid, 3, "Life.smallOverlayGrid8");
-		this.smallOverlayGrid16 = Array.matrixViewWithOffset(this.smallOverlayGrid, 7, "Life.smallOverlayGrid16");
 		this.overlayGrid16 = Array.matrixView(Type.Uint16, this.overlayGrid, "Life.overlayGrid16");
 		this.overlayGrid32 = Array.matrixView(Type.Uint32, this.overlayGrid, "Life.overlayGrid32");
 	};
@@ -47716,7 +47713,9 @@ This file is part of LifeViewer
 			/** @type {number} */ yadj = 0,
 			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid(),
 			/** @type {Array<number>} */ gridCols = [],
-			/** @type {Array<number>} */ gridRows = [];
+			/** @type {Array<number>} */ gridRows = [],
+			/** @type {number} */ xOff = 0,
+			/** @type {number} */ yOff = 0;
 
 		// check for cell borders
 		if (this.cellBorders && !this.displayGrid && this.canDisplayGrid()) {
@@ -47929,7 +47928,7 @@ This file is part of LifeViewer
 			// draw vertical grid lines
 			if (drawGridLines) {
 				i = 0;
-				var xOff = (((this.width / 2 - (this.xOff + this.originX)) * this.camZoom) + (this.displayWidth / 2)) % this.camZoom;
+				xOff = (((this.width / 2 - (this.xOff + this.originX)) * this.camZoom) + (this.displayWidth / 2)) % this.camZoom;
 				x = -this.camZoom + xOff;
 				for (j = leftX; j <= rightX; j += 1) {
 					this.drawVLine(x | 0, 0, this.displayHeight - 1, gridCols[i]);
@@ -47939,7 +47938,7 @@ This file is part of LifeViewer
 
 				// draw horizontal grid lines
 				i = 0;
-				var yOff = (((this.height / 2 - (this.yOff + this.originY)) * this.camZoom) + (this.displayHeight / 2)) % this.camZoom;
+				yOff = (((this.height / 2 - (this.yOff + this.originY)) * this.camZoom) + (this.displayHeight / 2)) % this.camZoom;
 				y = -this.camZoom + yOff;
 				for (j = bottomY; j <= topY; j += 1) {
 					this.drawHLine(0, this.displayWidth - 1, y | 0, gridRows[i]);
@@ -48011,7 +48010,9 @@ This file is part of LifeViewer
 			/** @const {number} */ aliveStart = this.aliveStart,
 			/** @type {boolean} */ drawGridLines = (this.displayGrid || this.cellBorders) && this.canDisplayGrid(),
 			/** @type {Array<number>} */ gridCols = [],
-			/** @type {Array<number>} */ gridRows = [];
+			/** @type {Array<number>} */ gridRows = [],
+			/** @type {number} */ xOff = 0,
+			/** @type {number} */ yOff = 0;
 
 		// check for cell borders
 		if (this.cellBorders && !this.displayGrid && this.canDisplayGrid()) {
@@ -48274,7 +48275,7 @@ This file is part of LifeViewer
 			// draw vertical grid lines
 			if (drawGridLines) {
 				i = 0;
-				var xOff = (((this.width / 2 - (this.xOff + this.originX)) * this.camZoom) + (this.displayWidth / 2)) % this.camZoom;
+				xOff = (((this.width / 2 - (this.xOff + this.originX)) * this.camZoom) + (this.displayWidth / 2)) % this.camZoom;
 				x = -this.camZoom + xOff;
 				for (j = leftX; j <= rightX; j += 1) {
 					this.drawVLine(x | 0, 0, this.displayHeight - 1, gridCols[i]);
@@ -48284,7 +48285,7 @@ This file is part of LifeViewer
 
 				// draw horizontal grid lines
 				i = 0;
-				var yOff = (((this.height / 2 - (this.yOff + this.originY)) * this.camZoom) + (this.displayHeight / 2)) % this.camZoom;
+				yOff = (((this.height / 2 - (this.yOff + this.originY)) * this.camZoom) + (this.displayHeight / 2)) % this.camZoom;
 				y = -this.camZoom + yOff;
 				for (j = bottomY; j <= topY; j += 1) {
 					this.drawHLine(0, this.displayWidth - 1, y | 0, gridRows[i]);

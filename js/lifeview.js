@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1219,
+		/** @const {number} */ versionBuild : 1220,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -679,7 +679,7 @@ This file is part of LifeViewer
 
 	// reset all viewers
 	Controller.resetAllViewers = function() {
-		var	currentViewer = null,
+		var	/** @type {View} */ currentViewer = null,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ result = 0;
 
@@ -705,7 +705,7 @@ This file is part of LifeViewer
 	// stop all viewers
 	/** @returns {number} */
 	Controller.stopAllViewers = function() {
-		var	currentViewer = null,
+		var	/** @type {View} */ currentViewer = null,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ result = 0;
 
@@ -731,7 +731,7 @@ This file is part of LifeViewer
 	// stop all viewers except for the specified one
 	/** @returns {number} */
 	Controller.stopOtherViewers = function(/** @type {View} */ thisOne) {
-		var	currentViewer = null,
+		var	/** @type {View} */ currentViewer = null,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ result = 0;
 
@@ -4655,7 +4655,7 @@ This file is part of LifeViewer
 	// download screenshot
 	View.prototype.captureScreenShot = function(/** @type {View} */ me) {
 		// create a link
-		var	link = document.createElement("a");
+		var	/** @type {HTMLAnchorElement} */ link = /** @type {!HTMLAnchorElement} */ (document.createElement("a"));
 
 		// hide the element
 		me.hideElement(link);
@@ -4678,7 +4678,7 @@ This file is part of LifeViewer
 		if (me.lastIdentifyType !== "Oscillator") {
 			me.menuManager.notification.notify("No Cell Map", 15, 300, 15, true);
 		} else {
-			var	link = document.createElement("a");
+			var	/** @type {HTMLAnchorElement} */ link = /** @type {!HTMLAnchorElement} */ (document.createElement("a"));
 
 			me.hideElement(link);
 
@@ -5009,7 +5009,7 @@ This file is part of LifeViewer
 	// opacity range
 	/** @returns {Array} */
 	View.prototype.viewOpacityRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result = newValue[0];
+		var	/** @type {number} */ result = newValue[0];
 
 		// check if changing
 		if (change) {
@@ -5064,7 +5064,7 @@ This file is part of LifeViewer
 	// states range
 	/** @returns {Array} */
 	View.prototype.viewStatesRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result = newValue;
+		var	/** @type {Array} */ result = newValue;
 
 		// check if changing
 		if (change) {
@@ -5085,7 +5085,7 @@ This file is part of LifeViewer
 	// zoom range
 	/** @returns {Array} */
 	View.prototype.viewZoomRange = function(/** @type {Array} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
-		var	result = newValue[0],
+		var	/** @type {number} */ result = newValue[0],
 			/** @type {number} */ displayValue = 0;
 
 		// check if changing
@@ -21204,7 +21204,7 @@ This file is part of LifeViewer
 
 		// turn theme on if pattern error
 		if (!pattern) {
-			var savedNone = me.engine.isNone;
+			var /** @type {boolean} */ savedNone = me.engine.isNone;
 			me.engine.isNone = false;
 			me.engine.colourChange = 1;
 			me.engine.createColours();
@@ -21618,6 +21618,7 @@ This file is part of LifeViewer
 			anchorItem.style.cssFloat = "right";
 			anchorItem.style.height = itemHeight + "px";
 			anchorItem.style.fontSize = itemFontSize + "px";
+			anchorItem.className = "notranslate";
 
 			// add a hidden anchor to center the text
 			hiddenItem = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
