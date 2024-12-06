@@ -1,3 +1,6 @@
+Build 1221
+- gracefully handle Change Rule errors
+
 Build 1220
 - prevent PopUp Viewer close box being translated
 

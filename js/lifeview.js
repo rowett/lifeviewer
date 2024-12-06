@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1220,
+		/** @const {number} */ versionBuild : 1221,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -11857,7 +11857,7 @@ This file is part of LifeViewer
 
 	// check if a rule is valid and returns the rule string (or "" for invalid)
 	/** @returns {string} */
-	View.prototype.ruleIsValid = function(/** @type {string} */ ruleName) {
+	View.prototype.ruleIsValid = function(/** @type {string} */ ruleName,  /** @type {null|function(Pattern,Array,View):void} */ succeedCallback, /** @type {null|function(Pattern,Array,View):void} */ failCallback) {
 		var	/** @type {string} */ result = "",
 			/** @type {string} */ patternText = "x = 1, y = 1, rule = ",
 			/** @type {number} */ textPos = -1,
@@ -11902,7 +11902,7 @@ This file is part of LifeViewer
 		// attempt to build a pattern from the string
 		try {
 			// create a pattern
-			pattern = this.manager.create("", patternText, this.engine.allocator, null, null, [], this);
+			pattern = this.manager.create("", patternText, this.engine.allocator, succeedCallback, failCallback, [], this);
 		}
 		catch(err) {
 			pattern = null;
@@ -11917,11 +11917,51 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// complete rule change after invalid rule found
+	View.prototype.changeRuleFailed = function(/** @type {Pattern} */ pattern, /** @type {Array} */ args, /** @type {View} */ me) {
+		var	/** @type {number} */ i = pattern.originalFailure.indexOf("\n");
+
+		me.menuManager.notification.notify(pattern.ruleName, 15, 300, 15, true);
+		if (i === -1) {
+			me.menuManager.notification.notify(pattern.originalFailure, 15, 300, 15, false);
+		} else {
+			me.menuManager.notification.notify(pattern.originalFailure.substring(0, i), 15, 300, 15, false);
+		}
+		me.menuManager.setAutoUpdate(true);
+	};
+
+	// complete rule change after valid rule found
+	View.prototype.changeRuleSuccess = function(/** @type {Pattern} */ pattern, /** @type {Array} */ args, /** @type {View} */ me) {
+		var	/** @type {string} */ patternText = "",
+			/** @type {number} */ index = 0,
+			/** @type {string} */ ruleName = args[0];
+
+		// check for bounded grid
+		index = ruleName.indexOf(":");
+		if (index !== -1) {
+			me.patternRuleName = ruleName.substring(0, index);
+			me.patternBoundedGridDef = ruleName.substring(index);
+		} else {
+			me.patternRuleName = ruleName;
+			me.patternBoundedGridDef = "";
+		}
+
+		me.patternAliasName = "";
+		patternText = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
+
+		// restore previous size
+		if (me.isInPopup) {
+			me.displayWidth = me.origDisplayWidth;
+			me.displayHeight = me.origDisplayHeight;
+		}
+
+		// start viewer
+		me.startViewer(patternText, false);
+	};
+
 	// change rule
 	View.prototype.changeRule = function(/** @type {View} */ me) {
-		var	/** @type {string} */ patternText = "",
-			/** @type {number} */ index = -1,
-			/** @type {string} */ ruleName = (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef,
+		var	/** @type {string} */ ruleName = (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef,
 			/** @type {string|null} */ result = null;
 
 		// if the current rule name is blank (typically after an error) then use the last valid one
@@ -11938,32 +11978,14 @@ This file is part of LifeViewer
 			this.lastRuleName = ruleName;
 
 			// check if the rule is valid
-			result = me.ruleIsValid(result);
+			result = me.ruleIsValid(result, me.changeRuleSuccess, me.changeRuleFailed);
 
-			if (result !== "") {
-				// check for bounded grid
-				index = result.indexOf(":");
-				if (index !== -1) {
-					me.patternRuleName = result.substring(0, index);
-					me.patternBoundedGridDef = result.substring(index);
+			if (!me.manager.loadingFromRepository) {
+				if (result !== "") {
+					me.changeRuleSuccess(null, [result], me);
 				} else {
-					me.patternRuleName = result;
-					me.patternBoundedGridDef = "";
+					me.changeRuleFailed(null, [result], me);
 				}
-
-				me.patternAliasName = "";
-				patternText = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
-
-				// restore previous size
-				if (me.isInPopup) {
-					me.displayWidth = me.origDisplayWidth;
-					me.displayHeight = me.origDisplayHeight;
-				}
-
-				// start viewer
-				me.startViewer(patternText, false);
-			} else {
-				me.menuManager.notification.notify("Invalid rule", 15, 180, 15, true);
 			}
 		}
 	};
@@ -12934,7 +12956,7 @@ This file is part of LifeViewer
 
 		// check if the prompt was confirmed
 		if (result !== null) {
-			result = me.ruleIsValid(result);
+			result = me.ruleIsValid(result, null, null);
 
 			if (result !== "") {
 				// add an empty pattern
