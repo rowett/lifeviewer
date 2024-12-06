@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1221,
+		/** @const {number} */ versionBuild : 1222,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -818,6 +818,9 @@ This file is part of LifeViewer
 	 */
 	function View(element) {
 		var	/** @type {number} */ i = 0;
+
+		// last go to generation input
+		/** @type {string} */ this.lastGoto = "";
 
 		// whether overview initialized
 		/** @type {boolean} */ this.overviewInitialized = false;
@@ -16508,13 +16511,18 @@ This file is part of LifeViewer
 	// go to generation button pressed
 	View.prototype.goToGenPressed = function(/** @type {View} */ me) {
 		// prompt for generation
-		var	/** @type {string|null} */ result = window.prompt("Enter generation", String(me.engine.counter)),
+		var	/** @type {string} */ lastInput = me.lastGoto === "" ? String(me.engine.counter) : me.lastGoto,
+			/** @type {string|null} */ result = window.prompt("Enter generation", String(lastInput)),
 			/** @type {number} */ number = 0,
+			/** @type {string} */ input = "",
 			/** @type {boolean} */ timing = false;
 
 		// check one was entered
 		me.startFromTiming = -1;
 		if (result !== null) {
+			// save original result
+			input = result;
+
 			// check for timing mode
 			if ((result.substring(result.length - 1)).toLowerCase() === "b") {
 				result = result.substring(0, result.length - 1);
@@ -16535,6 +16543,9 @@ This file is part of LifeViewer
 			}
 
 			if (number >= 0 && number <= ViewConstants.maxStartFromGeneration) {
+				// save the input for next time since it is valid
+				me.lastGoto = input;
+
 				if (number !== me.engine.counter) {
 					// check for zero population
 					if (me.lifeEnded()) {
