@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1222,
+		/** @const {number} */ versionBuild : 1223,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -8023,7 +8023,7 @@ This file is part of LifeViewer
 						// calculate benchmark results
 						genTime = (performance.now() - me.startFromTiming) / 1000;
 						gps = (me.startFromGens / genTime) | 0;
-						me.menuManager.notification.notify("Calculated " + me.startFromGens + " gens in " + genTime.toFixed(1) + "s = " + gps + "gps", 15, 1200, 15, false);
+						me.menuManager.notification.notify(me.startFromGens + " gens in " + genTime.toFixed(1) + "s = " + gps + "gps", 15, 1200, 15, false);
 
 						// save benchmark info
 						me.lastBenchmarkTime = genTime;
@@ -12959,24 +12959,43 @@ This file is part of LifeViewer
 
 		// check if the prompt was confirmed
 		if (result !== null) {
-			result = me.ruleIsValid(result, null, null);
+			result = me.ruleIsValid(result, me.newPatternSuccess, me.newPatternFailed);
 
-			if (result !== "") {
-				// add an empty pattern
-				patternText += result + "\nb!";
-
-				// restore previous size
-				if (me.isInPopup) {
-					me.displayWidth = me.origDisplayWidth;
-					me.displayHeight = me.origDisplayHeight;
+			if (!me.manager.loadingFromRepository) {
+				if (result !== "") {
+					me.newPatternSuccess(null, [result], me);
+				} else {
+					me.newPatternFailed(null, [result], me);
 				}
-
-				// start viewer
-				me.startViewer(patternText, false);
-			} else {
-				me.menuManager.notification.notify("Invalid rule", 15, 180, 15, true);
 			}
 		}
+	};
+
+	// complete new pattern after invalid rule found
+	View.prototype.newPatternFailed = function(/** @type {Pattern} */ pattern, /** @type {Array} */ args, /** @type {View} */ me) {
+		var	/** @type {number} */ i = pattern.originalFailure.indexOf("\n");
+
+		me.menuManager.notification.notify(pattern.ruleName, 15, 300, 15, true);
+		if (i === -1) {
+			me.menuManager.notification.notify(pattern.originalFailure, 15, 300, 15, false);
+		} else {
+			me.menuManager.notification.notify(pattern.originalFailure.substring(0, i), 15, 300, 15, false);
+		}
+		me.menuManager.setAutoUpdate(true);
+	}
+
+	// complete new pattern after valid rule found
+	View.prototype.newPatternSuccess = function(/** @type {Pattern} */ pattern, /** @type {Array} */ args, /** @type {View} */ me) {
+		var	/** @type {string} */ patternText = "x = 1, y = 1, rule = " + args[0] + "\nb!";
+
+		// restore previous size
+		if (me.isInPopup) {
+			me.displayWidth = me.origDisplayWidth;
+			me.displayHeight = me.origDisplayHeight;
+		}
+
+		// start viewer
+		me.startViewer(patternText, false);
 	};
 
 	// update grid icon based on hex or square mode

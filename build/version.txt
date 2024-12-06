@@ -1,3 +1,6 @@
+Build 1223
+- gracefully handle New Pattern errors
+
 Build 1222
 - Go To Gen now remembers last valid input
 
