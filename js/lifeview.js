@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1223,
+		/** @const {number} */ versionBuild : 1224,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6397,7 +6397,7 @@ This file is part of LifeViewer
 			/** @type {number} */ height = list.relHeight,
 			/** @type {number} */ width = list.relWidth,
 			/** @type {number} */ yPos = 0,
-			/** @type {OffscreenCanvas} */ iconCanvas = me.engine.cellIconCanvas31,
+			/** @type {HTMLCanvasElement} */ iconCanvas = me.engine.cellIconCanvas31,
 			/** @type {number} */ iconSize = 0;
 
 		// check if icons are available

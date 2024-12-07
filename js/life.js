@@ -434,12 +434,12 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.snapshotNeeded = false;
 
 		// canvas for cell icons at supported resolutions
-		/** @type {OffscreenCanvas} */ this.cellIconCanvas31 = null;
-		/** @type {OffscreenCanvas} */ this.cellIconCanvas15 = null;
-		/** @type {OffscreenCanvas} */ this.cellIconCanvas7 = null;
-		/** @type {OffscreenCanvasRenderingContext2D} */ this.cellIconContext31 = null;
-		/** @type {OffscreenCanvasRenderingContext2D} */ this.cellIconContext15 = null;
-		/** @type {OffscreenCanvasRenderingContext2D} */ this.cellIconContext7 = null;
+		/** @type {HTMLCanvasElement} */ this.cellIconCanvas31 = null;
+		/** @type {HTMLCanvasElement} */ this.cellIconCanvas15 = null;
+		/** @type {HTMLCanvasElement} */ this.cellIconCanvas7 = null;
+		/** @type {CanvasRenderingContext2D} */ this.cellIconContext31 = null;
+		/** @type {CanvasRenderingContext2D} */ this.cellIconContext15 = null;
+		/** @type {CanvasRenderingContext2D} */ this.cellIconContext7 = null;
 		/** @type {ImageData} */ this.cellIconImageData31 = null;
 		/** @type {ImageData} */ this.cellIconImageData15 = null;
 		/** @type {ImageData} */ this.cellIconImageData7 = null;
@@ -536,8 +536,8 @@ This file is part of LifeViewer
 		/** @type {Uint32Array} */ this.sData32 = null;
 
 		// icon canvas
-		/** @type {OffscreenCanvas} */ this.iconCanvas = null;
-		/** @type {OffscreenCanvasRenderingContext2D} */ this.iconContext = null;
+		/** @type {HTMLCanvasElement} */ this.iconCanvas = null;
+		/** @type {CanvasRenderingContext2D} */ this.iconContext = null;
 		/** @type {ImageData} */ this.iconImageData = null;
 
 		// snow flakes (x, y, dy)
@@ -1448,31 +1448,29 @@ This file is part of LifeViewer
 	Life.prototype.createCellIconCanvases = function(/** @type {number} */ numIcons) {
 		// create 31x31 icon canvas
 		if (this.cellIconCanvas31 === null) {
-			this.cellIconCanvas31 = new OffscreenCanvas(31, numIcons * 31);
-		} else {
-			this.cellIconCanvas31.width = 31;
-			this.cellIconCanvas31.height = numIcons * 31;
+			this.cellIconCanvas31 = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 		}
+		this.cellIconCanvas31.width = 31;
+		this.cellIconCanvas31.height = numIcons * 31;
 
 		// create 15x15 icon canvas
 		if (this.cellIconCanvas15 === null) {
-			this.cellIconCanvas15 = new OffscreenCanvas(15, numIcons * 15);
-		} else {
-			this.cellIconCanvas15.width = 15;
-			this.cellIconCanvas15.height = numIcons * 15;
+			this.cellIconCanvas15 = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 		}
+		this.cellIconCanvas15.width = 15;
+		this.cellIconCanvas15.height = numIcons * 15;
+
 		// create 7x7 icon canvas
 		if (this.cellIconCanvas7 === null) {
-			this.cellIconCanvas7 = new OffscreenCanvas(7, numIcons * 7);
-		} else {
-			this.cellIconCanvas7.width = 7;
-			this.cellIconCanvas7.height = numIcons * 7;
+			this.cellIconCanvas7 = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
 		}
+		this.cellIconCanvas7.width = 7;
+		this.cellIconCanvas7.height = numIcons * 7;
 
 		// get the contexts
-		this.cellIconContext31 = /** @type {!OffscreenCanvasRenderingContext2D} */ (this.cellIconCanvas31.getContext("2d", {"willReadFrequently": true, "alpha": false}));
-		this.cellIconContext15 = /** @type {!OffscreenCanvasRenderingContext2D} */ (this.cellIconCanvas15.getContext("2d", {"willReadFrequently": true, "alpha": false}));
-		this.cellIconContext7 = /** @type {!OffscreenCanvasRenderingContext2D} */ (this.cellIconCanvas7.getContext("2d", {"willReadFrequently": true, "alpha": false}));
+		this.cellIconContext31 = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas31.getContext("2d", {"willReadFrequently": true, "alpha": false}));
+		this.cellIconContext15 = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas15.getContext("2d", {"willReadFrequently": true, "alpha": false}));
+		this.cellIconContext7 = /** @type {!CanvasRenderingContext2D} */ (this.cellIconCanvas7.getContext("2d", {"willReadFrequently": true, "alpha": false}));
 
 		// clear the image data
 		this.cellIconImageData = null;
@@ -1490,8 +1488,8 @@ This file is part of LifeViewer
 			/** @const {number} */ numIcons = 15,
 			/** @type {ImageData} */ data = null,
 			/** @type {Uint32Array} */ data32 = null,
-			/** @type {OffscreenCanvas} */ cvs = null,
-			/** @type {OffscreenCanvasRenderingContext2D} */ ctx = null,
+			/** @type {HTMLCanvasElement} */ cvs = null,
+			/** @type {CanvasRenderingContext2D} */ ctx = null,
 			/** @type {Uint32Array} */ pixelColours = this.pixelColours,
 			/** @type {number} */ historyStates = this.historyStates,
 			/** @type {number} */ nCol = pixelColours[1 + historyStates],
@@ -1612,8 +1610,11 @@ This file is part of LifeViewer
 		// create the icon drawing canvas
 		if (this.iconCanvas === null) {
 			// create the icon canvas to be the display width and height plus one cell in each direction
-			this.iconCanvas = new OffscreenCanvas(this.displayWidth + ViewConstants.maxZoom, this.displayHeight + ViewConstants.maxZoom);
-			this.iconContext = /** @type {!OffscreenCanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
+			this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+			this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
+			this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
+
+			this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 			this.iconImageData = this.iconContext.createImageData(this.iconCanvas.width, this.iconCanvas.height);
 		}
 
@@ -1623,7 +1624,7 @@ This file is part of LifeViewer
 
 	// scale icon set and return image data
 	/** @returns {ImageData} */
-	Life.prototype.scaleIconSet = function(/** @type {OffscreenCanvasRenderingContext2D} */ dest, /** @type {OffscreenCanvasRenderingContext2D} */ source) {
+	Life.prototype.scaleIconSet = function(/** @type {CanvasRenderingContext2D} */ dest, /** @type {CanvasRenderingContext2D} */ source) {
 		var	/** @type {number} */ destSize = dest.canvas.width,
 			/** @type {number} */ sourceSize = source.canvas.width,
 			/** @type {number} */ numIcons = source.canvas.height / sourceSize,
@@ -1686,7 +1687,7 @@ This file is part of LifeViewer
 			/** @type {boolean} */ greyScale = false,
 			/** @type {ImageData} */ data = null,
 			/** @type {Uint32Array} */ data32 = null,
-			/** @type {OffscreenCanvasRenderingContext2D} */ ctx = null,
+			/** @type {CanvasRenderingContext2D} */ ctx = null,
 			/** @type {boolean} */ size31 = false,
 			/** @type {boolean} */ size15 = false,
 			/** @type {boolean} */ size7 = false;
@@ -1795,8 +1796,11 @@ This file is part of LifeViewer
 
 			// create the icon drawing canvas
 			if (this.iconCanvas === null) {
-				this.iconCanvas = new OffscreenCanvas(this.displayWidth + ViewConstants.maxZoom, this.displayHeight + ViewConstants.maxZoom);
-				this.iconContext = /** @type {!OffscreenCanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
+				this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+				this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
+				this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
+
+				this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 				this.iconImageData = this.iconContext.createImageData(this.iconCanvas.width, this.iconCanvas.height);
 			}
 
@@ -9665,7 +9669,7 @@ This file is part of LifeViewer
 				this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
 				this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
 
-				this.iconContext = /** @type {!OffscreenCanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
+				this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 				this.iconImageData = this.iconContext.createImageData(this.iconCanvas.width, this.iconCanvas.height);
 			}
 		}
@@ -47245,12 +47249,12 @@ This file is part of LifeViewer
 
 	// render the grid using icons
 	Life.prototype.renderGridProjectionIcons = function(/** @type {Array<Uint8Array>} */ grid, /** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {boolean} */ drawingSnow, /** @type {boolean} */ drawingStars) {
-		var	/** @const {OffscreenCanvas} */ iconCanvas = this.iconCanvas,
-			/** @const {OffscreenCanvasRenderingContext2D} */ iconContext = this.iconContext,
+		var	/** @const {HTMLCanvasElement} */ iconCanvas = this.iconCanvas,
+			/** @const {CanvasRenderingContext2D} */ iconContext = this.iconContext,
 			/** @const {ImageData} */ iconImageData = this.iconImageData,
 			/** @const {Uint32Array} */ iconImageData32 = new Uint32Array(iconImageData.data.buffer),
 			/** @const {CanvasRenderingContext2D} */ ctx = this.context,
-			/** @type {OffscreenCanvas} */ cellIconCanvas = null,
+			/** @type {HTMLCanvasElement} */ cellIconCanvas = null,
 			/** @type {ImageData} */ cellIconImageData = null,
 			/** @type {Uint32Array} */ cellIconImageData32 = null,
 			/** @type {Uint8Array} */ gridRow = null,

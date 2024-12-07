@@ -1,3 +1,6 @@
+Build 1224
+- fix Icon handling for compatibility with older browser version
+
 Build 1223
 - gracefully handle New Pattern errors
 
