@@ -614,7 +614,7 @@ This file is part of LifeViewer
 			if (view.engine.isSuper || view.engine.isExtended) {
 				// set as custom colour 0
 				if (!view.customColours) {
-					view.customColours = /** @type {!Int32Array} */ (view.engine.allocator.allocate(Type.Int32, 256, "View.customColours"));
+					view.customColours = /** @type {!Int32Array} */ (view.engine.allocator.allocate(Type.Int32, 256, "View.customColours", false));
 					view.customColours.fill(-1);
 				}
 				if (view.customColours[0] === -1) {
@@ -1431,7 +1431,7 @@ This file is part of LifeViewer
 		// look for a start script token
 		if (scriptReader.findToken(Keywords.scriptStartWord, -1) !== -1) {
 			// reset custom colours
-			view.customColours = /** @type {!Int32Array} */ (view.engine.allocator.allocate(Type.Int32, 256, "View.customColours"));
+			view.customColours = /** @type {!Int32Array} */ (view.engine.allocator.allocate(Type.Int32, 256, "View.customColours", false));
 			view.customColours.fill(-1);
 
 			nextToken = scriptReader.getNextToken();
@@ -3827,6 +3827,7 @@ This file is part of LifeViewer
 								// check it is in range
 								if (numberValue >= 0 && numberValue <= ViewConstants.maxStartFromGeneration) {
 									view.startFrom = numberValue;
+									view.startFromGens = numberValue;
 									itemValid = true;
 								}
 							}

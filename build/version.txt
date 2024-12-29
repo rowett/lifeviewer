@@ -1,3 +1,9 @@
+Build 1225
+- fixed progress bar during [[ STARTFROM ]]
+- fixed boundary not always displaying during rotation
+- fixed RuleLoader rule name check being case-insensitive
+- improved short range HROT/LtL von Neumann performance
+
 Build 1224
 - fix Icon handling for compatibility with older browser version
 

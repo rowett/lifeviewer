@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1224,
+		/** @const {number} */ versionBuild : 1225,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -516,7 +516,8 @@ This file is part of LifeViewer
 	// Controller singleton
 	Controller = {
 		// allocator
-		/** @type {Allocator} */ allocator : new Allocator(),
+		///** @type {Allocator} */ allocator : new Allocator(),
+		/** @type {Allocator} */ allocator : null,
 
 		// list of Canvas items and View pairs
 		/** @type {Array} */ viewers : [],
@@ -541,13 +542,25 @@ This file is part of LifeViewer
 		/** @type {number} */ frameTime : 0,
 		/** @const {number} */ frameCount : 12,
 		/** @type {number} */ currentFrame : 0,
-		/** @type {number} */ refreshRate : 60
+		/** @type {number} */ refreshRate : 60,
+
+		// WASM feature selection
+		/** @type {boolean} */ useWASM: true,
+		/** @type {boolean} */ wasmTiming : true,
+		/** @type {number} */ wasmTimingReps : 1,
+		/** @type {boolean} */ wasmEnableGetHash : true,
+		/** @type {boolean} */ wasmEnableRenderGrid: true,
+		/** @type {boolean} */ wasmEnableConvertToPens : true,
+		/** @type {boolean} */ wasmEnableCreateSmallGrids : true,
+		/** @type {boolean} */ wasmEnableUpdateCellCounts : true,
+		/** @type {boolean} */ wasmEnableUpdateOccupancyStrict : true,
+		/** @type {boolean} */ wasmEnableHROTCounts : true,
+		/** @type {boolean} */ wasmEnableNextGenerationHROTMoore : true
 	};
 
 	// frame rate calculation function
 	Controller.frameRateMeasure = function() {
 		var	/** @type {number} */ i = 0,
-			/** @type {number} */ time = 0,
 			/** @type {number} */ now = performance.now();
 
 		// skip the first frame since measurements show the performance is often unreliable
@@ -583,7 +596,7 @@ This file is part of LifeViewer
 
 			// save refresh rate
 			Controller.refreshRate = i;
-			console.log("LifeViewer refresh rate", i + "Hz");
+			console.log("refresh rate", i + "Hz");
 
 			// start main application
 			setTimeout(startAllViewers, 0);
@@ -818,6 +831,9 @@ This file is part of LifeViewer
 	 */
 	function View(element) {
 		var	/** @type {number} */ i = 0;
+
+		// whether WASM enabled for this viewer
+		/** @type {boolean} */ this.wasmEnabled = true;
 
 		// last go to generation input
 		/** @type {string} */ this.lastGoto = "";
@@ -2537,7 +2553,7 @@ This file is part of LifeViewer
 
 		// check if a new buffer is needed
 		if (chunk === this.currentEdit.length) {
-			this.currentEdit[chunk] = /** @type {!Int32Array} */ (this.engine.allocator.allocate(Type.Int32, chunkSize, "View.currentEdit" + chunk));
+			this.currentEdit[chunk] = /** @type {!Int32Array} */ (this.engine.allocator.allocate(Type.Int32, chunkSize, "View.currentEdit" + chunk, false));
 		}
 
 		// return the chunk
@@ -3155,7 +3171,7 @@ This file is part of LifeViewer
 
 			// allocate memory for redo and undo cells and populate
 			if (this.currentEditIndex > 0) {
-				editCells = /** @type {!Int32Array} */ (this.engine.allocator.allocate(Type.Int32, this.currentEditIndex, "View.editCells" + this.editNum));
+				editCells = /** @type {!Int32Array} */ (this.engine.allocator.allocate(Type.Int32, this.currentEditIndex, "View.editCells" + this.editNum, false));
 				i = 0;
 				j = 0;
 				while (i < finalChunk) {
@@ -4000,7 +4016,7 @@ This file is part of LifeViewer
 			}
 
 			// allocate an array for the rle
-			stateMap = Array.matrix(Type.Uint8, topY - bottomY + 1, rightX - leftX + 1, 0, this.engine.allocator, "View.rle" + this.pasteList.length);
+			stateMap = Array.matrix(Type.Uint8, topY - bottomY + 1, rightX - leftX + 1, 0, this.engine.allocator, "View.rle" + this.pasteList.length, false);
 
 			// populate the array from the cell list
 			i = 0;
@@ -4112,7 +4128,7 @@ This file is part of LifeViewer
 				item.height = zoomBox.topY - zoomBox.bottomY + 1;
 				item.bottomY = minY;
 				item.leftX = minX;
-				item.map = Array.matrix(Type.Uint8, item.height, item.width, 0, this.engine.allocator, "View.rle" + j);
+				item.map = Array.matrix(Type.Uint8, item.height, item.width, 0, this.engine.allocator, "View.rle" + j, false);
 
 				// populate the array from the cell list
 				i = 0;
@@ -7909,7 +7925,7 @@ This file is part of LifeViewer
 		// save elapsed time
 		if (counter >= this.elapsedTimes.length) {
 			// grow buffer
-			buffer = /** @type {!Float32Array} */ (this.engine.allocator.allocate(Type.Float32, this.elapsedTimes.length + ViewConstants.numElapsedTimes, "View.elapsedTimes"));
+			buffer = /** @type {!Float32Array} */ (this.engine.allocator.allocate(Type.Float32, this.elapsedTimes.length + ViewConstants.numElapsedTimes, "View.elapsedTimes", false));
 
 			// copy buffer
 			buffer.set(this.elapsedTimes);
@@ -14014,7 +14030,7 @@ This file is part of LifeViewer
 			}
 
 			// allocate the buffer
-			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number));
+			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number, false));
 
 			// copy selection to buffer and clear set cells
 			i = 0;
@@ -14435,7 +14451,7 @@ This file is part of LifeViewer
 			}
 
 			// allocate the buffer
-			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number));
+			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number, false));
 
 			// copy selection to buffer
 			i = 0;
@@ -15166,7 +15182,7 @@ This file is part of LifeViewer
 			// create the copy buffer
 			width = this.manager.specifiedWidth;
 			height = this.manager.specifiedHeight;
-			buffer = /** @type {!Uint8Array} */ (this.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + this.currentPasteBuffer));
+			buffer = /** @type {!Uint8Array} */ (this.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + this.currentPasteBuffer, false));
 
 			// read the states from the pattern
 			for (y = 0; y < height; y += 1) {
@@ -15588,7 +15604,7 @@ This file is part of LifeViewer
 			}
 
 			// allocate the row
-			row = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, (x2 - x1 + 1), "View.flipRow"));
+			row = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, (x2 - x1 + 1), "View.flipRow", false));
 
 			// flip each row
 			for (y = y1; y <= y2; y += 1) {
@@ -15702,7 +15718,7 @@ This file is part of LifeViewer
 			}
 
 			// allocate the row
-			column = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, (y2 - y1 + 1), "View.flipColumn"));
+			column = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, (y2 - y1 + 1), "View.flipColumn", false));
 
 			// flip each column
 			for (x = x1; x <= x2; x += 1) {
@@ -15749,7 +15765,7 @@ This file is part of LifeViewer
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ value = 0,
-			/** @type {Uint8Array} */ newBuffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, w * h, "View.pasteBuffer"));
+			/** @type {Uint8Array} */ newBuffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, w * h, "View.pasteBuffer", false));
 
 		// rotate cells into new buffer
 		for (y = 0; y < h; y += 1) {
@@ -15908,7 +15924,7 @@ This file is part of LifeViewer
 				//box.topY = saveTopY;
 			//} else {
 				//// allocate the cells
-				//cells = /** @type {!Int16Array} */ (me.engine.allocator.allocate(Type.Int16, 3 * w * h, "View.rotateCells"));
+				//cells = /** @type {!Int16Array} */ (me.engine.allocator.allocate(Type.Int16, 3 * w * h, "View.rotateCells", false));
 
 				//// read each cell in the selection and rotate coordinates
 				//cx = w >> 1;
@@ -16129,7 +16145,7 @@ This file is part of LifeViewer
 				}
 
 				// allocate the cells
-				cells = /** @type {!Int16Array} */ (me.engine.allocator.allocate(Type.Int16, 3 * (x2 - x1 + 1) * (y2 - y1 + 1), "View.rotateCells"));
+				cells = /** @type {!Int16Array} */ (me.engine.allocator.allocate(Type.Int16, 3 * (x2 - x1 + 1) * (y2 - y1 + 1), "View.rotateCells", false));
 
 				// read each cell in the selection and rotate coordinates
 				for (y = y1; y <= y2; y += 1) {
@@ -18642,7 +18658,7 @@ This file is part of LifeViewer
 			this.engine.initEngine(this.mainContext, this.displayWidth, this.displayHeight);
 
 			// create the elapsed times buffer
-			this.elapsedTimes = /** @type {!Float32Array} */ (this.engine.allocator.allocate(Type.Float32, ViewConstants.numElapsedTimes, "View.elapsedTimes"));
+			this.elapsedTimes = /** @type {!Float32Array} */ (this.engine.allocator.allocate(Type.Float32, ViewConstants.numElapsedTimes, "View.elapsedTimes", false));
 
 			// create the starfield
 			this.starField = new Stars(ViewConstants.numStars, this.engine.allocator);
@@ -19403,6 +19419,9 @@ This file is part of LifeViewer
 			/** @type {Pattern} */ pattern = null,
 			/** @type {Pattern} */ temp = null,
 			/** @type {number} */ speed = 0;
+
+		// reset timings
+		this.menuManager.timingManager.reset();
 
 		// read settings
 		this.yUp = this.loadBooleanSetting(ViewConstants.ySettingName);
@@ -20666,7 +20685,7 @@ This file is part of LifeViewer
 		if (me.engine.isRuleTree || me.engine.isNone) {
 			if (me.customThemeValue[ViewConstants.customThemeBackground] !== -1) {
 				if (me.customColours === null) {
-					me.customColours = /** @type {!Int32Array} */ (me.engine.allocator.allocate(Type.Int32, 256, "View.customColours"));
+					me.customColours = /** @type {!Int32Array} */ (me.engine.allocator.allocate(Type.Int32, 256, "View.customColours", false));
 					me.customColours.fill(-1);
 					me.customColours[0] = me.customThemeValue[ViewConstants.customThemeBackground];
 					me.customThemeValue[ViewConstants.customThemeBackground] = -1;
@@ -20688,6 +20707,9 @@ This file is part of LifeViewer
 		// copy custom colours to engine
 		me.engine.customColours = me.customColours;
 
+		// set bounded grid border cell
+		me.engine.setBoundedGridBorderCell();
+
 		// create the colour palette
 		if (me.engine.isNone || (!me.executable && me.engine.multiNumStates > 2)) {
 			me.engine.createMultiStateColours(me.colourList, me.customColours);
@@ -20697,9 +20719,6 @@ This file is part of LifeViewer
 
 		// create the pixel colours from the palette at full brightness
 		me.engine.createPixelColours(1);
-
-		// set bounded grid border cell
-		me.engine.setBoundedGridBorderCell();
 
 		// set the cell borders control
 		me.bordersButton.current = [me.engine.cellBorders];
@@ -21849,7 +21868,7 @@ This file is part of LifeViewer
 	/** @returns {Array<Uint8Array>} */
 	function copyStateMap(/** @type {Array<Uint8Array>} */ source) {
 		var	/** @type {number} */ i = 0,
-			/** @type {Array<Uint8Array>} */ result = Array.matrix(Type.Uint8, source.length , source[0].length, 0, Controller.allocator, "OverviewMap");
+			/** @type {Array<Uint8Array>} */ result = Array.matrix(Type.Uint8, source.length , source[0].length, 0, Controller.allocator, "OverviewMap", false);
 
 		// copy the contents
 		for (i = 0; i < source.whole.length; i += 1) {
@@ -22051,10 +22070,11 @@ This file is part of LifeViewer
 			/** @type {Element} */ canvasElement = null,
 
 			// temporary allocator and pattern manager
-			/** @type {Allocator} */ allocator = new Allocator(),
+			///** @type {Allocator} */ allocator = new Allocator(),
+			/** @type {Allocator} */ allocator = WASM.allocator,
 			/** @type {PatternManager} */ manager = new PatternManager();
 
-		console.time("LifeViewer page scan");
+		console.time("page scan");
 
 		// read settings
 		readSettingsFromMeta();
@@ -22082,7 +22102,7 @@ This file is part of LifeViewer
 				// check if typedArrays and Canvas are supported
 				if (Supports.typedArrays && textItem) {
 
-					console.time("LifeViewer read embedded");
+					console.time("read embedded");
 
 					// remove any html tags from the text item and trim
 					cleanItem = cleanPattern(textItem);
@@ -22112,7 +22132,7 @@ This file is part of LifeViewer
 						}
 					}
 
-					console.timeEnd("LifeViewer read embedded");
+					console.timeEnd("read embedded");
 
 				}
 			} else {
@@ -22126,7 +22146,7 @@ This file is part of LifeViewer
 							textItem = rleItem.getElementsByTagName(DocConfig.patternSourceName)[0];
 							if (textItem) {
 
-								console.time("LifeViewer read popup");
+								console.time("read popup");
 
 								// remove any html tags from the text item and trim
 								cleanItem = cleanPattern(textItem);
@@ -22137,7 +22157,7 @@ This file is part of LifeViewer
 								// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
 								isPattern(cleanItem, allocator, manager, rleItem, textItem, null);
 
-								console.timeEnd("LifeViewer read popup");
+								console.timeEnd("read popup");
 							}
 						}
 					}
@@ -22201,7 +22221,7 @@ This file is part of LifeViewer
 			build.innerHTML = String(ViewConstants.versionBuild);
 		}
 
-		console.timeEnd("LifeViewer page scan");
+		console.timeEnd("page scan");
 
 		if (DocConfig.multi) {
 			// switch to overview mode
@@ -22210,6 +22230,8 @@ This file is part of LifeViewer
 			// launch overview when pending rule downloads are complete
 			RuleTreeCache.checkRequestsCompleted();
 		}
+
+		console.groupEnd();
 	};
 
 	// boot LifeViewer
@@ -22218,27 +22240,47 @@ This file is part of LifeViewer
 		requestAnimationFrame(Controller.frameRateMeasure);
 	};
 
-	/*  TBD WASM
-	// load webassembly from base64 string
-	var wasmBase64 = "AGFzbQEAAAABBgFgAX8BfwMCAQAHDAEIcG9wY291bnQAAAoHAQUAIABpCw==";
-	var wasmString = atob(wasmBase64);
-	var wasmBuffer = new  Uint8Array(wasmString.length);
-	for (var i = 0; i < wasmString.length; i += 1) {
-		wasmBuffer[i] = wasmString.charCodeAt(i);
+	console.group("LifeViewer");
+
+	// check if WASM is included in this build
+	if (wasmBase64.length > 0) {
+		// load webassembly from base64 string
+		var wasmString = atob(wasmBase64);
+		var wasmBuffer = new  Uint8Array(wasmString.length);
+		for (var i = 0; i < wasmString.length; i += 1) {
+			wasmBuffer[i] = wasmString.charCodeAt(i);
+		}
+
+		var startTime = performance.now();
+
+		WebAssembly.instantiate(wasmBuffer).then(result => {
+			var	/** @type {number} */ count = 0,
+				/** @type {string} */ i = "";
+	
+			// get a reference to each function
+			for (i in result.instance.exports) {
+				if (typeof result.instance.exports[i] === "function") {
+					if (!i.startsWith("_") && !i.startsWith("emscripten")) {
+						WASM[i] = result.instance.exports[i];
+						count += 1;
+					}
+				}
+			}
+	
+			// get the heap
+			WASM.memory = result.instance.exports.memory;
+	
+			// output stats
+			console.log("WASM instantiated: "+ count + " functions (" + wasmBuffer.length + " bytes), " + (WASM.memory.buffer.byteLength >> 20) + "Mb heap, time " + (performance.now() - startTime).toFixed(1) + "ms")
+		});
+	} else {
+		Controller.useWASM = false;
+		Controller.wasmTiming = false;
 	}
 
-	// web assembly interface that functions will be called through
-	var WASM = {};
-
-	// instantiate the WebAssembly functions
-	var importObj = {
-		module: {}
-	};
-
-	WebAssembly.instantiate(wasmBuffer, importObj).then(result => {
-		WASM.popCount = result.instance.exports.popcount;
-	});
-	*/
+	// create the allocator to manage the WASM heap
+	WASM.allocator = new Allocator();
+	Controller.allocator = WASM.allocator;
 
 	// register event to start viewers when document is loaded
 	registerEvent(window, "load", bootLifeViewer, false);

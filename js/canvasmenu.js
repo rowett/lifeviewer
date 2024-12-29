@@ -2374,6 +2374,146 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// timing item
+	/**
+	 * @constructor
+	 */
+	function TimingItem(/** @type {TimingManager} */ manager) {
+		/** @type {Array<number>} */ this.jsTimes = [];
+		/** @type {Array<number>} */ this.wasmTimes = [];
+		/** @type {number} */ this.jsIndex = 0;
+		/** @type {number} */ this.wasmIndex = 0;
+		/** @type {TimingManager} */ this.manager = manager;
+		/** @type {number} */ this.lastJSUpdate = 0;
+		/** @type {number} */ this.lastWASMUpdate = 0;
+	};
+
+	// add JS time
+	TimingItem.prototype.addJSTime = function(/** @type {number} */ time, /** @type {number} */ updateTime) {
+		this.jsTimes[this.jsIndex] = time;
+		this.lastJSUpdate = updateTime;
+
+		this.jsIndex += 1;
+		if (this.jsIndex >= this.manager.readings) {
+			this.jsIndex = 0;
+		}
+	};
+
+	// add WASM time
+	TimingItem.prototype.addWASMTime = function(/** @type {number} */ time, /** @type {number} */ updateTime) {
+		this.wasmTimes[this.wasmIndex] = time;
+		this.lastWASMUpdate = updateTime;
+
+		this.wasmIndex += 1;
+		if (this.wasmIndex >= this.manager.readings) {
+			this.wasmIndex = 0;
+		}
+	};
+
+	// get average time
+	/** @returns {number} */
+	TimingItem.prototype.getAverageTime = function(/** @type {Array<number>} */ samples) {
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ numSamples = samples.length,
+			/** @type {number} */ i = 0;
+
+		// average the samples
+		if (numSamples > 0) {
+			for (i = 0; i < numSamples; i += 1) {
+				result += samples[i];
+			}
+			result /= numSamples;
+		}
+
+		return result;
+	};
+
+	// get average JS time
+	/** @returns {number} */
+	TimingItem.prototype.getJSTime = function() {
+		return this.getAverageTime(this.jsTimes);
+	};
+
+	// get average WASM time
+	/** @returns {number} */
+	TimingItem.prototype.getWASMTime = function() {
+		return this.getAverageTime(this.wasmTimes);
+	};
+
+	// timing manager
+	/**
+	 * @constructor
+	 */
+	function TimingManager() {
+		/** @type {Object} */ this.items = {};
+		/** @const {number} */ this.readings = 10;
+		/** @type {number} */ this.updateCounter = 0;
+	};
+
+	// add JS time
+	TimingManager.prototype.addJSTime = function(/** @type {string} */ funcName, /** @type {number} */ time) {
+		if (this.items[funcName] === undefined) {
+			this.items[funcName] = new TimingItem(this);
+		}
+
+		this.items[funcName].addJSTime(time, this.updateCounter);
+		this.updateCounter += 1;
+	};
+
+	// add WASM time
+	TimingManager.prototype.addWASMTime = function(/** @type {string} */ funcName, /** @type {number} */ time) {
+		if (this.items[funcName] === undefined) {
+			this.items[funcName] = new TimingItem(this);
+		}
+
+		this.items[funcName].addWASMTime(time, this.updateCounter);
+		this.updateCounter += 1;
+	};
+
+	// get JS time
+	/** @returns {number} */
+	TimingManager.prototype.getJSTime = function(/** @type {string} */ funcName) {
+		var	/** @type {number} */ result = 0;
+
+		if (this.items[funcName]) {
+			result = this.items[funcName].getJSTime();
+		}
+
+		return result;
+	};
+
+	// get WASM time
+	/** @returns {number} */
+	TimingManager.prototype.getWASMTime = function(/** @type {string} */ funcName) {
+		var	/** @type {number} */ result = 0;
+
+		if (this.items[funcName]) {
+			result = this.items[funcName].getWASMTime();
+		}
+
+		return result;
+	};
+
+	// get sorted keys
+	/** @returns {Array<string>} */
+	TimingManager.prototype.getSortedKeys = function() {
+		var	/** Array<string> */ result = [],
+			/** @type {string} */ key;
+
+		for (key in this.items) {
+			result[result.length] = key;
+		}
+
+		return result.sort();
+	};
+
+	// reset
+	TimingManager.prototype.reset = function() {
+		this.items = {};
+		this.lastUpdate = 0;
+		this.updateCounter = 0;
+	};
+
 	// menu manager
 	/**
 	 * @constructor
@@ -2589,6 +2729,9 @@ This file is part of LifeViewer
 		/** @type {number} */ this.loadTotal = 0;
 		/** @type {number} */ this.loadCount = 0;
 
+		// custom timing items
+		/** @type {TimingManager} */ this.timingManager = new TimingManager();
+
 		// register event listeners for canvas click
 		registerEvent(mainCanvas, "mousedown", function(/** @type {MouseEvent} */ event) {me.canvasMouseDown(me, event);}, false);
 		registerEvent(mainCanvas, "mousemove", function(/** @type {MouseEvent} */ event) {me.canvasMouseMove(me, event);}, false);
@@ -2605,6 +2748,15 @@ This file is part of LifeViewer
 		// setup r g b components
 		this.setRGBComponents();
 	}
+
+	// update timing item
+	MenuManager.prototype.updateTimingItem = function(/** @type {string} */ name, /** @type {number} */ value, /** @type {boolean} */ isWASM) {
+		if (isWASM) {
+			this.timingManager.addWASMTime(name, value);
+		} else {
+			this.timingManager.addJSTime(name, value);
+		}
+	};
 
 	// setup RGB components
 	MenuManager.prototype.setRGBComponents = function() {
@@ -3032,6 +3184,92 @@ This file is part of LifeViewer
 		}
 	};
 
+	// draw custom timing
+	MenuManager.prototype.drawCustomTiming = function() {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ ratio = 0,
+			/** @type {string} */ name = "",
+			/** @type {string} */ message = "",
+			/** @type {CanvasRenderingContext2D} */ oc = this.mainContext,
+			/** @type {number} */ xScale = 1,
+			/** @type {number} */ yScale = 1,
+			/** @type {number} */ width = 0,
+			/** @type {number} */ js = 0,
+			/** @type {number} */ wasm = 0,
+			/** @type {Array<string>} */ itemList = this.timingManager.getSortedKeys(),
+			/** @const {number} */ firstTab = 140,
+			/** @const {number} */ secondTab = 190,
+			/** @const {number} */ thirdTab = 240,
+			/** @type {number} */ wasmUpdate = 0,
+			/** @type {number} */ jsUpdate = 0,
+			/** @type {TimingManager} */ manager = this.timingManager,
+			/** @type {string} */ activeCol = "black",
+			/** @type {string} */ inactiveCol = "black";
+
+		// scale information display
+		if (this.currentMenu) {
+			xScale = this.currentMenu.xScale;
+			yScale = this.currentMenu.yScale;
+		}
+
+		// draw the shaded rectangle
+		oc.globalAlpha = 0.7;
+		oc.fillStyle = this.bgCol;
+		oc.fillRect(0, (68 * yScale) | 0, ((thirdTab + 4) * xScale) | 0, ((itemList.length * 12 + 6) * yScale) | 0);
+		oc.globalAlpha = 1;
+
+		oc.fillStyle = "black";
+		for (j = 0; j < 3; j += 2) {
+			for (i = 0; i < itemList.length; i += 1) {
+				name = itemList[i];
+				oc.fillText(name, ((6 - j) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
+				jsUpdate = manager.items[name].lastJSUpdate;
+				wasmUpdate = manager.items[name].lastWASMUpdate;
+
+				wasm = manager.getWASMTime(name);
+				message = wasm.toFixed(2);
+				width = oc.measureText(message).width;
+				if (wasmUpdate > jsUpdate) {
+					oc.fillStyle = activeCol;
+				}
+				oc.fillText(message, ((firstTab - j - width) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
+
+				js = manager.getJSTime(name);
+				message = js.toFixed(2);
+				width = oc.measureText(message).width;
+				if (jsUpdate > wasmUpdate) {
+					oc.fillStyle = activeCol;
+				} else {
+					oc.fillStyle = inactiveCol;
+				}
+				oc.fillText(message, ((secondTab - j - width) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
+
+				if (manager.items[name].lastWASMUpdate > 0 && manager.items[name].lastJSUpdate > 0) {
+					if (js > 0 && wasm > 0) {
+						ratio = js / wasm;
+						if (j === 0) {
+							oc.fillStyle = inactiveCol;
+						} else {
+							if (ratio > 1) {
+								oc.fillStyle = "rgb(32,255,32)";
+							} else {
+								oc.fillStyle = "red";
+							}
+						}
+						message = ratio.toFixed(1) + "x";
+						width = oc.measureText(message).width;
+						oc.fillText(message, ((thirdTab - j - width) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
+					}
+				}
+				oc.fillStyle = inactiveCol;
+			}
+			activeCol = "rgb(32,255,255)";
+			inactiveCol = "white";
+			oc.fillStyle = inactiveCol;
+		}
+	};
+
 	// process callback
 	MenuManager.prototype.processCallback = function(/** @type {MenuManager} */ me) {
 		var	/** @type {number} */ newMenu,
@@ -3248,6 +3486,11 @@ This file is part of LifeViewer
 			messageWidth = oc.measureText(message).width;
 			oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (12 * yScale));
 
+			// draw custom timing items
+			if (me.showExtendedTiming && Controller.useWASM) {
+				me.drawCustomTiming();
+			}
+
 			if (me.showExtendedTiming && me.eventWasTouch) {
 				oc.save();
 				oc.fillStyle = "black";
@@ -3269,6 +3512,7 @@ This file is part of LifeViewer
 			// draw extended timing if enabled
 			if (me.showExtendedTiming) {
 				// draw labels
+				oc.fillStyle = "black";
 				oc.fillText("menu", x + (6 * xScale), y + (28 * yScale));
 				oc.fillText("work", x + (6 * xScale), y + (44 * yScale));
 				oc.fillText("update", x + (6 * xScale), y + (60 * yScale));

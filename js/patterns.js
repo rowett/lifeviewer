@@ -42,7 +42,7 @@ This file is part of LifeViewer
 			/** @type {number} */ l = this.requests.length,
 			request = null,
 			/** @type {boolean} */ found = false,
-			/** @type {string} */ name = pattern.ruleName.toLowerCase();
+			/** @type {string} */ name = pattern.ruleName;
 
 		// convert spaces to underscores
 		name = name.replace(/ /g, "_");
@@ -81,7 +81,6 @@ This file is part of LifeViewer
 			/** @type {boolean} */ found = false,
 			/** @type {string} */ result = "";
 
-		name = name.toLowerCase();
 		// convert spaces to underscores
 		name = name.replace(/ /g, "_");
 
@@ -124,7 +123,7 @@ This file is part of LifeViewer
 			/** @type {number} */ l = this.requests.length,
 			request = null,
 			/** @type {boolean} */ found = false,
-			/** @type {string} */ name = pattern.ruleName.toLowerCase();
+			/** @type {string} */ name = pattern.ruleName;
 
 		// convert spaces to underscores
 		name = name.replace(/ /g, "_");
@@ -164,7 +163,7 @@ This file is part of LifeViewer
 			/** @type {number} */ l = this.requests.length,
 			request = null,
 			/** @type {boolean} */ found = false,
-			/** @type {string} */ name = pattern.ruleName.toLowerCase();
+			/** @type {string} */ name = pattern.ruleName;
 
 		// convert spaces to underscores
 		name = name.replace(/ /g, "_");
@@ -200,7 +199,7 @@ This file is part of LifeViewer
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ l = this.rules.length,
 			/** @type {boolean} */ found = false,
-			/** @type {string} */ name = pattern.ruleName.toLowerCase();
+			/** @type {string} */ name = pattern.ruleName;
 
 		// convert spaces to underscores
 		name = name.replace(/ /g, "_");
@@ -249,7 +248,7 @@ This file is part of LifeViewer
 			/** @type {number} */ l = this.rules.length,
 			record = null,
 			/** @type {boolean} */ found = false,
-			/** @type {string} */ name = pattern.ruleName.toLowerCase();
+			/** @type {string} */ name = pattern.ruleName;
 
 		// convert spaces to underscores
 		name = name.replace(/ /g, "_");
@@ -1137,11 +1136,11 @@ This file is part of LifeViewer
 	Pattern.prototype.copyMultiSettingsFrom = function(/** @type {Pattern} */ source, /** @type {Allocator} */ allocator) {
 		// copy arrays
 		if (source.survivalHROT) {
-			this.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, source.survivalHROT.length, "HROT.altSurvivals"));
+			this.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, source.survivalHROT.length, "HROT.altSurvivals", false));
 			this.altSurvivalHROT.set(source.survivalHROT);
 		}
 		if (source.birthHROT) {
-			this.altBirthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, source.birthHROT.length, "HROT.altBirths"));
+			this.altBirthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, source.birthHROT.length, "HROT.altBirths", false));
 			this.altBirthHROT.set(source.birthHROT);
 		}
 
@@ -1377,7 +1376,7 @@ This file is part of LifeViewer
 			pattern.patternFormat = "Cells";
 
 			// allocate the life array
-			pattern.lifeMap = Array.matrix(Type.Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+			pattern.lifeMap = Array.matrix(Type.Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap", false);
 
 			// populate the array
 			i = sectionStart;
@@ -1599,7 +1598,7 @@ This file is part of LifeViewer
 			pattern.width = maxX - minX + 1;
 
 			// allocate an array
-			pattern.lifeMap = Array.matrix(Type.Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+			pattern.lifeMap = Array.matrix(Type.Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap", false);
 			pattern.patternFormat = "Life 1.06";
 
 			// set Conway rule
@@ -1956,11 +1955,11 @@ This file is part of LifeViewer
 			pattern.width = endX - startX + 1;
 
 			// allocate the life array
-			pattern.lifeMap = Array.matrix(Type.Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+			pattern.lifeMap = Array.matrix(Type.Uint16, pattern.height, ((pattern.width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap", false);
 			pattern.patternFormat = "Life 1.05";
 
 			// allocate multi-state array
-			pattern.multiStateMap = Array.matrix(Type.Uint8, pattern.height, pattern.width, 0, allocator, "Pattern.multiStateMap");
+			pattern.multiStateMap = Array.matrix(Type.Uint8, pattern.height, pattern.width, 0, allocator, "Pattern.multiStateMap", false);
 
 			// set rule
 			if (sawCustom) {
@@ -4132,7 +4131,7 @@ This file is part of LifeViewer
 					extra = 1;
 				}
 				// 4 bits per digit plus zero entry
-				list = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, (numDigits << 2) + 1 + extra, allocName));
+				list = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, (numDigits << 2) + 1 + extra, allocName, false));
 
 				// populate array
 				j = 0;
@@ -4283,7 +4282,7 @@ This file is part of LifeViewer
 						upper = maxCount;
 					}
 					for (i = lower; i <= upper; i += 1) {
-						list[i] = 1;
+						list[i] = 255;
 					}
 					lower = -1;
 					if (this.index < rule.length && rule[this.index] === ",") {
@@ -4619,29 +4618,29 @@ This file is part of LifeViewer
 		maxCount += pattern.middleLTL;
 
 		// allocate the survival and birth arrays
-		pattern.survivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 2, "HROT.survivals"));
-		pattern.birthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 1, "HROT.births"));
+		pattern.survivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 2, "HROT.survivals", Controller.useWASM));
+		pattern.birthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 1, "HROT.births", Controller.useWASM));
 
 		// populate the arrays
 		for (i = pattern.SminLTL; i <= pattern.SmaxLTL; i += 1) {
-			pattern.survivalHROT[i] = 1;
+			pattern.survivalHROT[i] = 255;
 		}
 		for (i = pattern.BminLTL; i <= pattern.BmaxLTL; i += 1) {
-			pattern.birthHROT[i] = 1;
+			pattern.birthHROT[i] = 255;
 		}
 
 		// check for alternate rule
 		if (this.altSpecified) {
 			// allocate the alternate survival and birth arrays
-			pattern.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 2, "HROT.altSurvivals"));
-			pattern.altBirthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 1, "HROT.altBirths"));
+			pattern.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 2, "HROT.altSurvivals", Controller.useWASM));
+			pattern.altBirthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 1, "HROT.altBirths", Controller.useWASM));
 
 			// populate the arrays
 			for (i = pattern.altSminLTL; i <= pattern.altSmaxLTL; i += 1) {
-				pattern.altSurvivalHROT[i] = 1;
+				pattern.altSurvivalHROT[i] = 255;
 			}
 			for (i = pattern.altBminLTL; i <= pattern.altBmaxLTL; i += 1) {
-				pattern.altBirthHROT[i] = 1;
+				pattern.altBirthHROT[i] = 255;
 			}
 		}
 
@@ -4908,7 +4907,7 @@ This file is part of LifeViewer
 							this.failureReason = "HROT expected 'S' got " + rule[this.index].toUpperCase();
 						} else {
 							// read and save survivals
-							pattern.survivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 2, "HROT.survivals"));
+							pattern.survivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 2, "HROT.survivals", Controller.useWASM));
 							result = this.decodeHROTRange(rule, pattern.survivalHROT, "S", maxCount, outer);
 						}
 					} else {
@@ -4935,7 +4934,7 @@ This file is part of LifeViewer
 							this.failureReason = "HROT expected 'B' got " + rule[this.index].toUpperCase();
 						} else {
 							// read and save survivals
-							pattern.birthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 1, "HROT.births"));
+							pattern.birthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, maxCount + 1, "HROT.births", Controller.useWASM));
 							result = this.decodeHROTRange(rule, pattern.birthHROT, "B", maxCount, outer);
 						}
 					} else {
@@ -6821,10 +6820,10 @@ This file is part of LifeViewer
 				pattern.patternFormat = "RLE";
 			} else {
 				// allocate 2d cell array
-				pattern.lifeMap = Array.matrix(Type.Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap");
+				pattern.lifeMap = Array.matrix(Type.Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap", false);
 
 				// allocate multi-state array
-				pattern.multiStateMap = Array.matrix(Type.Uint8, y, width, 0, allocator, "Pattern.multiStateMap");
+				pattern.multiStateMap = Array.matrix(Type.Uint8, y, width, 0, allocator, "Pattern.multiStateMap", false);
 
 				// set decoder used
 				pattern.patternFormat = "RLE";
@@ -8055,8 +8054,8 @@ This file is part of LifeViewer
 			this.altSpecified = false;
 		} else {
 			// B0 without Smax needs two rules
-			pattern.altBirthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, pattern.birthHROT.length, "HROT.altBirths"));
-			pattern.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, pattern.survivalHROT.length, "HROT.altSurvivals"));
+			pattern.altBirthHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, pattern.birthHROT.length, "HROT.altBirths", false));
+			pattern.altSurvivalHROT = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, pattern.survivalHROT.length, "HROT.altSurvivals", false));
 			altBirths = pattern.altBirthHROT;
 			altSurvivals = pattern.altSurvivalHROT;
 
@@ -8068,8 +8067,8 @@ This file is part of LifeViewer
 
 			// even rule -> NOT(bits)
 			for (i = 0; i <= maxn; i += 1) {
-				births[i] = 1 - births[i];
-				survivals[i + 1] = 1 - survivals[i + 1];
+				births[i] = 255 - births[i];
+				survivals[i + 1] = 255 - survivals[i + 1];
 			}
 
 			// set alternating flag
@@ -9719,7 +9718,8 @@ This file is part of LifeViewer
 		// check if decoded successfully
 		if (valid) {
 			if (pattern.allocator === null) {
-				pattern.allocator = new Allocator();
+				//pattern.allocator = new Allocator();
+				pattern.allocator = WASM.allocator;
 			}
 
 			// save rule information
@@ -9993,7 +9993,8 @@ This file is part of LifeViewer
 		// if valid then save parameters
 		if (valid) {
 			if (pattern.allocator === null) {
-				pattern.allocator = new Allocator();
+				//pattern.allocator = new Allocator();
+				pattern.allocator = WASM.allocator;
 			}
 			// save rule information
 			pattern.ruleTreeNeighbours = neighbours;

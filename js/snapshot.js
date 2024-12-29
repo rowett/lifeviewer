@@ -1219,13 +1219,13 @@ This file is part of LifeViewer
 			this.bufferUsed[i] = true;
 		} else {
 			// create a new buffer
-			this.tileGrids[i] = Array.matrix(Type.Uint16, height, width, 0, this.allocator, "Snapshot.tileGrid" + i);
-			this.colourTileGrids[i] = Array.matrix(Type.Uint16, height, width, 0, this.allocator, "Snapshot.colourTileGrid" + i);
-			this.gridBuffers[i] = Array.matrix(Type.Uint32, 1, this.defaultTiles * 8, 0, this.allocator, "Snapshot.gridBuffer" + i);
-			this.colourBuffers[i] = Array.matrix(Type.Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.colourGridBuffer" + i);
+			this.tileGrids[i] = Array.matrix(Type.Uint16, height, width, 0, this.allocator, "Snapshot.tileGrid" + i, false);
+			this.colourTileGrids[i] = Array.matrix(Type.Uint16, height, width, 0, this.allocator, "Snapshot.colourTileGrid" + i, false);
+			this.gridBuffers[i] = Array.matrix(Type.Uint32, 1, this.defaultTiles * 8, 0, this.allocator, "Snapshot.gridBuffer" + i, false);
+			this.colourBuffers[i] = Array.matrix(Type.Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.colourGridBuffer" + i, false);
 			if (usingOverlay) {
-				this.overlayTileGrids[i] = Array.matrix(Type.Uint16, height, width, 0, this.allocator, "Snapshot.overlayTileGrid" + i);
-				this.overlayBuffers[i] = Array.matrix(Type.Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.overlayGridBuffer" + i);
+				this.overlayTileGrids[i] = Array.matrix(Type.Uint16, height, width, 0, this.allocator, "Snapshot.overlayTileGrid" + i, false);
+				this.overlayBuffers[i] = Array.matrix(Type.Uint32, 1, this.defaultTiles * 64, 0, this.allocator, "Snapshot.overlayGridBuffer" + i, false);
 			}
 			this.bufferUsed[i] = true;
 
@@ -1279,10 +1279,10 @@ This file is part of LifeViewer
 			/** @type {number} */ index = snapshot.index;
 
 		// allocate the new tile grids in the buffer
-		this.tileGrids[index] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + index);
-		this.colourTileGrids[index] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + index);
+		this.tileGrids[index] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + index, false);
+		this.colourTileGrids[index] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + index, false);
 		if (useOverlay) {
-			this.overlayTileGrids[index] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + index);
+			this.overlayTileGrids[index] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + index, false);
 		}
 
 		// set them in the snapshot
@@ -1341,10 +1341,10 @@ This file is part of LifeViewer
 		while (i < this.bufferUsed.length) {
 			if (!this.bufferUsed[i]) {
 				// grow the buffer
-				this.tileGrids[i] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + i);
-				this.colourTileGrids[i] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + i);
+				this.tileGrids[i] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.tileGrid" + i, false);
+				this.colourTileGrids[i] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.colourTileGrid" + i, false);
 				if (useOverlay) {
-					this.overlayTileGrids[i] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + i);
+					this.overlayTileGrids[i] = Array.matrix(Type.Uint16, newHeight, newWidth, 0, this.allocator, "Snapshot.overlayTileGrid" + i, false);
 				}
 			}
 			i += 1;

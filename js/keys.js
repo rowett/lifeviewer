@@ -130,6 +130,14 @@ This file is part of LifeViewer
 			me.identifyPressed(me);
 			break;
 
+		// back tick to toggle WASM on/off
+		case 223:
+			me.wasmEnabled = !me.wasmEnabled;
+			if (Controller.useWASM) {
+				me.menuManager.notification.notify("WASM " + (me.wasmEnabled ? "On" : "Off"), 15, 40, 15, true);
+			}
+			break;
+
 		// ignore other keys
 		default:
 			// flag not handled
@@ -2199,6 +2207,14 @@ This file is part of LifeViewer
 				if (!me.yDirectionButton.locked) {
 					me.yDirectionButton.current = me.viewYDirectionToggle([!me.yUp], true, me);
 					me.menuManager.notification.notify("Y Direction " + (me.yUp ? "Up" : "Down"), 15, 40, 15, true);
+				}
+				break;
+
+			// back tick to toggle WASM on/off
+			case 223:
+				me.wasmEnabled = !me.wasmEnabled;
+				if (Controller.useWASM) {
+					me.menuManager.notification.notify("WASM " + (me.wasmEnabled ? "On" : "Off"), 15, 40, 15, true);
 				}
 				break;
 

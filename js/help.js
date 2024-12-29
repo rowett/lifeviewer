@@ -593,7 +593,7 @@ This file is part of LifeViewer
 	Help.renderWelcomeTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
 		// section number
 		var	/** @type {number} */ sectionNum = 0,
-			/** @type {string} */ editionName = ViewConstants.standardEdition;
+			/** @type {string} */ editionName = Controller.useWASM ? ViewConstants.proEdition : ViewConstants.standardEdition;
 
 		// set initial line
 		view.lineNo = 1;
@@ -608,10 +608,6 @@ This file is part of LifeViewer
 		view.tabs[0] = 108;
 		view.helpSections[sectionNum] = [view.lineNo, "Top"];
 		sectionNum += 1;
-
-		if (view.proEdition) {
-			editionName = ViewConstants.proEdition;
-		}
 
 		y = this.renderHelpLine(view, "", ViewConstants.externalViewerTitle + " " + editionName + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		if (view.chromeBug) {

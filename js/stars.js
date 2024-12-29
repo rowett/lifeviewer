@@ -28,9 +28,9 @@ This file is part of LifeViewer
 		/** @type {number} */ this.numStars = numStars;
 
 		// list of stars
-		/**@type {Float32Array} */ this.x = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.x"));
-		/**@type {Float32Array} */ this.y = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.y"));
-		/**@type {Float32Array} */ this.z = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.z"));
+		/**@type {Float32Array} */ this.x = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.x", false));
+		/**@type {Float32Array} */ this.y = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.y", false));
+		/**@type {Float32Array} */ this.z = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.z", false));
 
 		// star colour
 		/** @type {Colour} */ this.starColour = new Colour(255, 255, 255);
@@ -48,8 +48,8 @@ This file is part of LifeViewer
 		/** @type {number} */ this.degreeParts = 8;
 
 		// table for sin and cos
-		/** @type {Float32Array} */ this.sin = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.sin"));
-		/** @type {Float32Array} */ this.cos = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.cos"));
+		/** @type {Float32Array} */ this.sin = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.sin", false));
+		/** @type {Float32Array} */ this.cos = /** @type {!Float32Array} */ (allocator.allocate(Type.Float32, 0, "Stars.cos", false));
 
 		// conversions
 		/** @type {number} */ this.degToRad = Math.PI / (this.circleDegrees / 2);
@@ -76,9 +76,9 @@ This file is part of LifeViewer
 			/** @type {number} */ radius2 = (maxX * maxX) + (maxY * maxY);
 
 		// allocate the stars
-		this.x = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.x"));
-		this.y = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.y"));
-		this.z = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.z"));
+		this.x = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.x", false));
+		this.y = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.y", false));
+		this.z = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, numStars, "Stars.z", false));
 
 		// create random stars
 		for (i = 0; i < numStars; i += 1) {
@@ -98,8 +98,8 @@ This file is part of LifeViewer
 		}
 
 		// populate the sin and cos tables
-		this.sin = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.circleDegrees * this.degreeParts, "Stars.sin"));
-		this.cos = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.circleDegrees * this.degreeParts, "Stars.cos"));
+		this.sin = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.circleDegrees * this.degreeParts, "Stars.sin", false));
+		this.cos = /** @type {!Float32Array} */ (this.allocator.allocate(Type.Float32, this.circleDegrees * this.degreeParts, "Stars.cos", false));
 
 		i = 0;
 		while (i < (this.circleDegrees * this.degreeParts)) {

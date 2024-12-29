@@ -78,7 +78,7 @@ This file is part of LifeViewer
 
 		// check clamped
 		if ((type & AllocBits.clampedMask) !== 0) {
-			typeName += "Clamped";
+			typeName += "Cl";
 		}
 
 		// return the name
@@ -89,13 +89,14 @@ This file is part of LifeViewer
 	/**
 	 * @constructor
 	 */
-	function AllocationInfo(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
+	function AllocationInfo(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {number} */ offset) {
 		// save information
 		/** @type {number} */ this.dataType = type;
 		/** @type {string} */ this.name = name;
 		/** @type {number} */ this.elements = elements;
 		/** @type {number} */ this.size = elements * Type.sizeInBytes(type);
 		/** @type {number} */ this.number = 1;
+		/** @type {number} */ this.offset = offset;
 	}
 
 	// allocator
@@ -117,6 +118,9 @@ This file is part of LifeViewer
 
 		// number of bytes freed
 		/** @type {number} */ this.totalFreedBytes = 0;
+
+		// wasm heap pointer
+		/** @type {number} */ this.wasmPointer = 0;
 	}
 
 	// output a specific allocation as a string
@@ -138,8 +142,29 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// get size of existing allocation (or 0 if none)
+	/** @returns {number} */
+	Allocator.prototype.getInfoFor = function(/** @type {string} */ name) {
+		var	/** @type {number} */ result = 0,
+			/** @type {boolean} */ found = false,
+			/** @type {number} */ i = 0,
+			/** @type {AllocationInfo} */ allocation = null;
+
+		while (i < this.allocations.length && !found) {
+			allocation = this.allocations[i];
+			if (name === allocation.name) {
+				found = true;
+				result = allocation.size;
+			} else {
+				i += 1;
+			}
+		}
+
+		return result;
+	};
+
 	// save allocation information
-	Allocator.prototype.saveAllocationInfo = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
+	Allocator.prototype.saveAllocationInfo = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {number} */ offset) {
 		var	/** @type {number} */ i = 0,
 			/** @type {boolean} */ found = false,
 			/** @type {AllocationInfo} */ allocation = null;
@@ -169,10 +194,11 @@ This file is part of LifeViewer
 			this.allocations[i].elements = elements;
 			this.allocations[i].number += 1;
 			this.allocations[i].size = elements * Type.sizeInBytes(type);
+			this.allocations[i].offset = offset;
 		} else {
 			// create a new allocation record
 			i = this.allocations.length;
-			this.allocations[i] = new AllocationInfo(type, elements, name);
+			this.allocations[i] = new AllocationInfo(type, elements, name, offset);
 		}
 
 		// increment number of major allocations
@@ -180,6 +206,7 @@ This file is part of LifeViewer
 
 		// update total bytes allocated
 		this.totalBytes += (elements * Type.sizeInBytes(type));
+		//console.log(type, elements, name, heapPtr);
 	};
 
 	// get typed view of a memory buffer
@@ -188,7 +215,7 @@ This file is part of LifeViewer
 			/** @type {number} */ type, /** @type {number} */ elements, /** @type {number} */ offset, /** @type {string} */ name) {
 		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null,
 			/** @type {ArrayBuffer} */ buffer = whole.buffer,
-			/** @type {number} */ byteOffset = offset * Type.sizeInBytes(type);
+			/** @type {number} */ byteOffset = offset * Type.sizeInBytes(type) + whole.byteOffset;
 
 		// get view of memory
 		switch (type) {
@@ -249,55 +276,92 @@ This file is part of LifeViewer
 
 	// get typed memory block
 	/** @returns {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */
-	Allocator.prototype.typedMemory = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
-		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
+	Allocator.prototype.typedMemory = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {boolean} */ wasmHeap) {
+		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null,
+			/** @type {number} */ size = elements * Type.sizeInBytes(type);
 
 		// allocate memory
 		try {
 			switch (type) {
 			// unsigned 8bit integer
 			case Type.Uint8:
-				result = new Uint8Array(elements);
+				if (wasmHeap) {
+					result = new Uint8Array(WASM.memory.buffer, this.wasmPointer, elements);
+				} else {
+					result = new Uint8Array(elements);
+				}
 				break;
 
 			// unsigned 8bit clamped integer
 			case Type.Uint8Clamped:
-				result = new Uint8Array(elements);
+				if (wasmHeap) {
+					result = new Uint8ClampedArray(WASM.memory.buffer, this.wasmPointer, elements);
+				} else {
+					result = new Uint8ClampedArray(elements);
+				}
 				break;
 
 			// unsigned 16bit integer
 			case Type.Uint16:
-				result = new Uint16Array(elements);
+				if (wasmHeap) {
+					result = new Uint16Array(WASM.memory.buffer, this.wasmPointer, elements);
+				} else {
+					result = new Uint16Array(elements);
+				}
 				break;
 
 			// unsigned 32bit integer
 			case Type.Uint32:
-				result = new Uint32Array(elements);
+				if (wasmHeap) {
+					result = new Uint32Array(WASM.memory.buffer, this.wasmPointer, elements);
+				} else {
+					result = new Uint32Array(elements);
+				}
 				break;
 
 			// signed 8bit integer
 			case Type.Int8:
-				result = new Int8Array(elements);
+				if (wasmHeap) {
+					result = new Int8Array(WASM.memory.buffer, this.wasmPointer, elements);
+				} else {
+					result = new Int8Array(elements);
+				}
 				break;
 
 			// signed 16bit integer
 			case Type.Int16:
-				result = new Int16Array(elements);
+				if (wasmHeap) {
+					result = new Int16Array(WASM.memory.buffer, this.wasmPointer, elements);
+				} else {
+					result = new Int16Array(elements);
+				}
 				break;
 
 			// signed 32bit integer
 			case Type.Int32:
-				result = new Int32Array(elements);
+				if (wasmHeap) {
+					result = new Int32Array(WASM.memory.buffer, this.wasmPointer, elements);
+				} else {
+					result = new Int32Array(elements);
+				}
 				break;
 
 			// signed 32bit float
 			case Type.Float32:
-				result = new Float32Array(elements);
+				if (wasmHeap) {
+					result = new Float32Array(WASM.memory.buffer, this.wasmPointer, elements);
+				} else {
+					result = new Float32Array(elements);
+				}
 				break;
 
 			// signed 64bit float
 			case Type.Float64:
-				result = new Float64Array(elements);
+				if (wasmHeap) {
+					result = new Float64Array(WASM.memory.buffer, this.wasmPointer, elements);
+				} else {
+					result = new Float64Array(elements);
+				}
 				break;
 
 			default:
@@ -309,6 +373,14 @@ This file is part of LifeViewer
 			alert("Failed to allocate " + elements + " element " + Type.typeName(type) + " array for " + name + "\n\n" + e);
 		}
 
+		// if the allocation succeeded for the WASM heap then update the heap pointer
+		if (result !== null && wasmHeap) {
+			// check size is a multiple of 16
+			if ((size & 0x0f) !== 0) {
+				size = (size & 0xfffffff0) + 16;
+			}
+			this.wasmPointer += size;
+		}
 
 		// return memory
 		return result;
@@ -316,17 +388,21 @@ This file is part of LifeViewer
 
 	// allocate typed memory
 	/** @returns {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */
-	Allocator.prototype.allocate = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name) {
+	Allocator.prototype.allocate = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {boolean} */ wasmHeap) {
 		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
 
-		// get typed block of memory
 		if (elements > 0) {
-			result = this.typedMemory(type, elements, name);
-		}
+			// get typed block of memory
+			result = this.typedMemory(type, elements, name, wasmHeap);
 
-		// check if allocation succeeded
-		if (result || elements === 0) {
-			this.saveAllocationInfo(type, elements, name);
+			// check if allocation succeeded
+			if (result) {
+				if (wasmHeap) {
+					console.log(name, elements + " x " + Type.typeName(type) + " @ " + result.byteOffset, " used: " + (result.byteOffset >> 10) + "K (" + ((100 * result.byteOffset) / this.availableHeap()).toFixed(1) + "%)");
+					name = "* " + name;
+				}
+				this.saveAllocationInfo(type, elements, name, result.byteOffset);
+			}
 		}
 
 		// return memory
@@ -340,21 +416,38 @@ This file is part of LifeViewer
 
 		// get typed block of memory
 		if (elements > 0) {
-			result = this.typedMemory(type, elements, name);
+			result = this.typedMemory(type, elements, name, false);
 		}
 
 		// check if allocation succeeded
 		if (result || elements === 0) {
-			this.saveAllocationInfo(type, elements * rows, name);
+			this.saveAllocationInfo(type, elements * rows, name, result.byteOffset);
 		}
 
 		// return memory
 		return result;
 	};
 
+	// get available WASM heap
+	/** @returns {number} */
+	Allocator.prototype.availableHeap = function() {
+		return WASM.memory.buffer.byteLength - this.wasmPointer;
+	};
+
+	// get WASM heap pointer
+	/** @returns {number} */
+	Allocator.prototype.getHeapPointer = function() {
+		return this.wasmPointer;
+	};
+
+	// set WASM heap pointer
+	Allocator.prototype.setHeapPointer = function(/** @type {number} */ value) {
+		this.wasmPointer = value;
+	};
+
 	// create an array matrix for a given type
 	/** @returns {Array} */
-	Array.matrix = function(/** @type {number} */ type, /** @type {number} */ m, /** @type {number} */ n, /** @type {number} */ initial, /** @type {Allocator} */ allocator, /** @type {string} */ name) {
+	Array.matrix = function(/** @type {number} */ type, /** @type {number} */ m, /** @type {number} */ n, /** @type {number} */ initial, /** @type {Allocator} */ allocator, /** @type {string} */ name, /** @type {boolean} */ wasmHeap) {
 		var	/** @type {number} */ i = 0,
 			/** @type {Array} */ mat = [],
 			/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ whole = null;
@@ -365,7 +458,7 @@ This file is part of LifeViewer
 		mat.whole = null;
 
 		// create whole array
-		whole = allocator.allocate(type, m * n, name);
+		whole = allocator.allocate(type, m * n, name, wasmHeap);
 
 		// save reference to the whole array
 		mat.whole = whole;
@@ -428,7 +521,9 @@ This file is part of LifeViewer
 			// create a typed view of the source row
 			mat[y] = allocator.typedView(source.whole, type, newElements, y * newElements, name);
 		}
+		mat.whole = allocator.typedView(source.whole, type, source.whole.length / Type.sizeInBytes(type), 0, "");
 
 		// return typed view of matrix
 		return mat;
 	};
+	
