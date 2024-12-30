@@ -42,6 +42,7 @@ This file is part of LifeViewer
 		/** @type {number} */ this.scount = 2;
 		/** @type {Uint8Array} */ this.births = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.births", Controller.useWASM));
 		/** @type {Uint8Array} */ this.survivals = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.survivals", Controller.useWASM));
+		/** @type {Uint8Array} */ this.comboList = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.comboList", Controller.useWASM));
 		/** @type {Uint8Array} */ this.altBirths = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.altBirths", Controller.useWASM));
 		/** @type {Uint8Array} */ this.altSurvivals = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.altSurvivals", Controller.useWASM));
 		/** @type {number} */ this.type = manager.mooreHROT;
@@ -2856,12 +2857,11 @@ This file is part of LifeViewer
 			timing = performance.now();
 
 			// compute the rest of the grid
-			if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTMoore && this.engine.view.wasmEnabled) {
+			if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTMoore && this.engine.view.wasmEnabled && !useRandom) {
 				WASM.nextGenerationHROTMoore2(colourGrid.whole.byteOffset, colourGrid[0].length,
 					colourTileHistoryGrid.whole.byteOffset, colourTileHistoryGrid[0].length,
 					counts.whole.byteOffset, counts[0].length,
-					birthList.byteOffset,
-					survivalList.byteOffset,
+					this.comboList.byteOffset,
 					colUsed.byteOffset,
 					bottomY, leftX, topY, rightX,
 					xrange, yrange,
@@ -5104,7 +5104,7 @@ This file is part of LifeViewer
 			timing = performance.now();
 
 			// compute the rest of the grid
-			if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTMoore && this.engine.view.wasmEnabled) {
+			if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTMoore && this.engine.view.wasmEnabled && !useRandom) {
 				WASM.nextGenerationHROTMooreN(colourGrid.whole.byteOffset, colourGrid[0].length,
 					colourTileHistoryGrid.whole.byteOffset, colourTileHistoryGrid[0].length,
 					counts.whole.byteOffset, counts[0].length,

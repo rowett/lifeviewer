@@ -207,6 +207,7 @@ This file is part of LifeViewer
 			// value for changes
 			/** @type {number} */ value = 0;
 
+			console.log(keyCode);
 		// combine meta and control key so it works on Mac
 		if (metaKey) {
 			ctrlKey = true;
@@ -2210,8 +2211,8 @@ This file is part of LifeViewer
 				}
 				break;
 
-			// back tick to toggle WASM on/off
-			case 223:
+			// hash to toggle WASM on/off
+			case 222:
 				me.wasmEnabled = !me.wasmEnabled;
 				if (Controller.useWASM) {
 					me.menuManager.notification.notify("WASM " + (me.wasmEnabled ? "On" : "Off"), 15, 40, 15, true);

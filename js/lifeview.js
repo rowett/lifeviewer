@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1225,
+		/** @const {number} */ versionBuild : 1226,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -19844,6 +19844,10 @@ This file is part of LifeViewer
 			if (pattern.isHROT) {
 				me.engine.HROT.births = pattern.birthHROT;
 				me.engine.HROT.survivals = pattern.survivalHROT;
+				me.engine.HROT.comboList = /** @type {Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, pattern.survivalHROT.length, "HROT.comboList", Controller.useWASM));
+				for (i = 0; i < pattern.survivalHROT.length; i += 1) {
+					me.engine.HROT.comboList[i] = (pattern.birthHROT[i] & 2) | (pattern.survivalHROT[i] & 1);
+				}
 				me.engine.HROT.scount = pattern.multiNumStates;
 				me.engine.HROT.useRandom = pattern.probabilisticHROT;
 				me.engine.HROT.useRandomBirths = pattern.probabilisticBirths;
@@ -22253,27 +22257,34 @@ This file is part of LifeViewer
 
 		var startTime = performance.now();
 
-		WebAssembly.instantiate(wasmBuffer).then(result => {
-			var	/** @type {number} */ count = 0,
-				/** @type {string} */ i = "";
-	
-			// get a reference to each function
-			for (i in result.instance.exports) {
-				if (typeof result.instance.exports[i] === "function") {
-					if (!i.startsWith("_") && !i.startsWith("emscripten")) {
-						WASM[i] = result.instance.exports[i];
-						count += 1;
+		try {
+			WebAssembly.instantiate(wasmBuffer).then(result => {
+				var	/** @type {number} */ count = 0,
+					/** @type {string} */ i = "";
+
+				// get a reference to each function
+				for (i in result.instance.exports) {
+					if (typeof result.instance.exports[i] === "function") {
+						if (!i.startsWith("_") && !i.startsWith("emscripten")) {
+							WASM[i] = result.instance.exports[i];
+							count += 1;
+						}
 					}
 				}
-			}
-	
-			// get the heap
-			WASM.memory = result.instance.exports.memory;
-	
-			// output stats
-			console.log("WASM instantiated: "+ count + " functions (" + wasmBuffer.length + " bytes), " + (WASM.memory.buffer.byteLength >> 20) + "Mb heap, time " + (performance.now() - startTime).toFixed(1) + "ms")
-		});
+
+				// get the heap
+				WASM.memory = result.instance.exports.memory;
+
+				// output stats
+				console.log("WASM instantiated: "+ count + " functions (" + wasmBuffer.length + " bytes), " + (WASM.memory.buffer.byteLength >> 20) + "Mb heap, time " + (performance.now() - startTime).toFixed(1) + "ms")
+			});
+		} catch (e) {
+			// not supported by the browser
+			Controller.useWASM = false;
+			Controller.wasmTiming = false;
+		}
 	} else {
+		// not built with WASM
 		Controller.useWASM = false;
 		Controller.wasmTiming = false;
 	}

@@ -5176,7 +5176,7 @@ This file is part of LifeViewer
 		// read the array looking for ranges
 		while (i < length) {
 			// check for set value
-			if (list[i] === 1) {
+			if (list[i] === 255) {
 				// if no current run then set as start of run
 				if (start === -1) {
 					start = i;
