@@ -555,7 +555,11 @@ This file is part of LifeViewer
 		/** @type {boolean} */ wasmEnableUpdateCellCounts : true,
 		/** @type {boolean} */ wasmEnableUpdateOccupancyStrict : true,
 		/** @type {boolean} */ wasmEnableHROTCounts : true,
-		/** @type {boolean} */ wasmEnableNextGenerationHROTMoore : true
+		/** @type {boolean} */ wasmEnableNextGenerationHROTMoore : true,
+		/** @type {boolean} */ wasmEnableNextGenerationHROTVN : true,
+		/** @type {boolean} */ wasmEnableHROTClear : true,
+		/** @type {boolean} */ wasmEnableWrapTorusHROT : true,
+		/** @type {boolean} */ wasmEnableClearTopAndLeft: true
 	};
 
 	// frame rate calculation function

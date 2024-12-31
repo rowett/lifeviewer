@@ -73,7 +73,7 @@ This file is part of LifeViewer
 		/** @type {number} */ this.cornerRange = -1;
 
 		// range threshold to use fast von Neumann algorithm
-		/** @const {number} */ this.rangeVN = 6;
+		/** @type {number} */ this.rangeVN = 6;
 
 		// fast von Neumann algorithm parameters
 		/** @type {number} */ this.nrows = 0;
@@ -416,12 +416,6 @@ This file is part of LifeViewer
 		return this.counts[this.ccht - 1][this.halfccwd + ((i + j + this.ccht + this.halfccwd + 1) % 2)];
 	};
 
-	// copy a slice
-	// TBD src has no type information because of a type check issue
-	HROT.prototype.copySlice = function(/** @type {Uint8Array} */ dest, source, /** @type number */ left, /** @type {number} */ right, /** @type {number} */ pos) {
-		dest.set(source.slice(left, right), pos);
-	};
-
 	// wrap the grid for HROT torus
 	HROT.prototype.wrapTorusHROT = function(/** @type {number} */ lx, /** @type {number} */ by, /** @type {number} */ rx, /** @type {number} */ ty) {
 		var	/** @type {Array<Uint8Array>} */ colourGrid = this.engine.colourGrid,
@@ -435,16 +429,14 @@ This file is part of LifeViewer
 		for (y = 0; y < yrange; y += 1) {
 			sourceRow = colourGrid[by + y];
 			destRow = colourGrid[ty + y + 1];
-			this.copySlice(destRow, sourceRow, lx, rx + 1, lx);
-			//destRow.set(sourceRow.slice(lx, rx + 1), lx);
+			destRow.set(sourceRow.subarray(lx, rx + 1), lx);
 		}
 
 		// copy the top rows to the bottom border
 		for (y = 0; y < yrange; y += 1) {
 			sourceRow = colourGrid[ty - y];
 			destRow = colourGrid[by - y - 1];
-			this.copySlice(destRow, sourceRow, lx, rx + 1, lx);
-			//destRow.set(sourceRow.slice(lx, rx + 1), lx);
+			destRow.set(sourceRow.subarray(lx, rx + 1), lx);
 		}
 
 		// copy the left columns to the right border
@@ -460,10 +452,8 @@ This file is part of LifeViewer
 		for (y = 0; y < yrange; y += 1) {
 			sourceRow = colourGrid[by + y];
 			destRow = colourGrid[ty + y + 1];
-			this.copySlice(destRow, sourceRow, lx, lx + xrange + 1, rx + 1);
-			//destRow.set(sourceRow.slice(lx, lx + xrange + 1), rx + 1);
-			this.copySlice(destRow, sourceRow, rx - xrange, rx + 1, lx - xrange - 1);
-			//destRow.set(sourceRow.slice(rx - xrange, rx + 1), lx - xrange - 1);
+			destRow.set(sourceRow.subarray(lx, lx + xrange + 1), rx + 1);
+			destRow.set(sourceRow.subarray(rx - xrange, rx + 1), lx - xrange - 1);
 		}
 
 		// copy top left cells to bottom right border
@@ -471,10 +461,8 @@ This file is part of LifeViewer
 		for (y = 0; y < yrange; y += 1) {
 			sourceRow = colourGrid[ty - y];
 			destRow = colourGrid[by - y - 1];
-			this.copySlice(destRow, sourceRow, lx, lx + xrange + 1, rx + 1);
-			//destRow.set(sourceRow.slice(lx, lx + xrange + 1), rx + 1);
-			this.copySlice(destRow, sourceRow, rx - xrange, rx + 1, lx - xrange - 1);
-			//destRow.set(sourceRow.slice(rx - xrange, rx + 1), lx - xrange - 1);
+			destRow.set(sourceRow.subarray(lx, lx + xrange + 1), rx + 1);
+			destRow.set(sourceRow.subarray(rx - xrange, rx + 1), lx - xrange - 1);
 		}
 	};
 
@@ -2446,7 +2434,20 @@ This file is part of LifeViewer
 				if (bottomY - gridBottomY < yrange) {
 					topY = gridTopY;
 				}
-				this.wrapTorusHROT(gridLeftX, gridBottomY, gridRightX, gridTopY);
+
+				timing = performance.now();
+
+				if (Controller.useWASM && Controller.wasmEnableWrapTorusHROT && this.engine.view.wasmEnabled) {
+					WASM.wrapTorusHROT(colourGrid.whole.byteOffset, colourGrid[0].length,
+						gridLeftX, gridBottomY, gridRightX, gridTopY, xrange, yrange);
+				} else {
+					this.wrapTorusHROT(gridLeftX, gridBottomY, gridRightX, gridTopY);
+				}
+
+				if (Controller.wasmTiming) {
+					timing = performance.now() - timing;
+					this.engine.view.menuManager.updateTimingItem("wrapTorusHROT", timing, Controller.useWASM && Controller.wasmEnableWrapTorusHROT && this.engine.view.wasmEnabled);
+				}
 			}
 
 			// check if the bounded grid is a plane and there are just 2 states
@@ -2496,18 +2497,30 @@ This file is part of LifeViewer
 			rightX += rx2;
 			topY += ry2;
 
-			// put zeros in top 2*range rows
-			for (y = bottomY; y < bottomY + ry2; y += 1) {
-				counts[y].fill(0, leftX, rightX + 1);
+			var timing = performance.now();
+
+			if (Controller.useWASM && Controller.wasmEnableClearTopAndLeft && this.engine.view.wasmEnabled) {
+				WASM.clearTopAndLeft(counts.whole.byteOffset, counts[0].length,
+					bottomY, topY, leftX, rightX, ry2, rx2);
+			} else {
+				// put zeros in top 2*range rows
+				for (y = bottomY; y < bottomY + ry2; y += 1) {
+					counts[y].fill(0, leftX, rightX + 1);
+				}
+	
+				// put zeros in left 2*range columns
+				for (y = bottomY + ry2; y <= topY; y += 1) {
+					counts[y].fill(0, leftX, leftX + rx2 + 1);
+				}
 			}
 
-			// put zeros in left 2*range columns
-			for (y = bottomY + ry2; y <= topY; y += 1) {
-				counts[y].fill(0, leftX, leftX + rx2 + 1);
+			if (Controller.wasmTiming) {
+				timing = performance.now() - timing;
+				this.engine.view.menuManager.updateTimingItem("clearTopAndLeft", timing, Controller.useWASM && Controller.wasmEnableClearTopAndLeft && this.engine.view.wasmEnabled);
 			}
 
 			// calculate cumulative counts for each column
-			var timing = performance.now();
+			timing = performance.now();
 
 			if (Controller.useWASM && Controller.wasmEnableHROTCounts && this.engine.view.wasmEnabled) {
 				WASM.cumulativeMooreCounts2(counts.whole.byteOffset, colourGrid.whole.byteOffset, bottomY + ry2, leftX + rx2, topY, rightX, aliveStart, counts[0].length, colourGrid[0].length);
@@ -3102,158 +3115,193 @@ This file is part of LifeViewer
 					this.engine.view.menuManager.updateTimingItem("cumulativeCounts", timing, Controller.useWASM && Controller.wasmEnableHROTCounts && this.engine.view.wasmEnabled);
 				}
 
-				// calculate final neighborhood counts and update the corresponding cells in the grid
-				for (i = yrange; i <= this.nrows - yrange; i += 1) {
-					im1 = i - 1;
-					countRowIm1 = counts[im1];
-					ipr = i + yrange;
-					countRowIpr = counts[ipr];
-					iprm1 = ipr - 1;
-					countRowIprm1 = counts[iprm1];
-					imrm1 = i - yrange - 1;
-					countRowImrm1 = counts[imrm1];
-					imrm2 = imrm1 - 1;
-					countRowImrm2 = counts[imrm2];
-					ipminrow = i + bottomY;
-					colourRow = colourGrid[ipminrow];
-					colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
-					rowAlive = false;
-					liveRowAlive = false;
+				timing = performance.now();
 
-					// check for non-deterministic algo
-					if (useRandom) {
-						// non-deterministic version
-						for (j = xrange; j <= this.ncols - xrange; j += 1) {
-							jpr = j + xrange;
-							jmr = j - xrange;
-							count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
-									this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
-							jpmincol = j + leftX;
-							state = colourRow[jpmincol];
-							aliveIndex = 0;
-							if (state < aliveStart) {
-								if (birthList[count] === 255) {
-									if (myRand.random() >= birthChances[count]) {
+				// calculate final neighborhood counts and update the corresponding cells in the grid
+				if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTVN && this.engine.view.wasmEnabled && !useRandom) {
+					WASM.nextGenerationHROTVN2(colourGrid.whole.byteOffset, colourGrid[0].length,
+						colourTileHistoryGrid.whole.byteOffset, colourTileHistoryGrid[0].length,
+						counts.whole.byteOffset, counts[0].length,
+						this.comboList.byteOffset,
+						bottomY, leftX,
+						xrange, yrange,
+						this.nrows, this.ncols,
+						aliveStart, LifeConstants.aliveMax, LifeConstants.deadStart, deadMin,
+						this.ccht, this.halfccwd,
+						this.sharedBuffer.byteOffset,
+						minX, maxX, minY, maxY,
+						minX1, maxX1, minY1, maxY1,
+						population, births, deaths);
+
+					minX = this.sharedBuffer[0];
+					maxX = this.sharedBuffer[1];
+					minY = this.sharedBuffer[2];
+					maxY = this.sharedBuffer[3];
+					minX1 = this.sharedBuffer[4];
+					maxX1 = this.sharedBuffer[5];
+					minY1 = this.sharedBuffer[6];
+					maxY1 = this.sharedBuffer[7];
+					population = this.sharedBuffer[8];
+					births = this.sharedBuffer[9];
+					deaths = this.sharedBuffer[10];
+				} else {
+					for (i = yrange; i <= this.nrows - yrange; i += 1) {
+						im1 = i - 1;
+						countRowIm1 = counts[im1];
+						ipr = i + yrange;
+						countRowIpr = counts[ipr];
+						iprm1 = ipr - 1;
+						countRowIprm1 = counts[iprm1];
+						imrm1 = i - yrange - 1;
+						countRowImrm1 = counts[imrm1];
+						imrm2 = imrm1 - 1;
+						countRowImrm2 = counts[imrm2];
+						ipminrow = i + bottomY;
+						colourRow = colourGrid[ipminrow];
+						colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
+						rowAlive = false;
+						liveRowAlive = false;
+
+						// check for non-deterministic algo
+						if (useRandom) {
+							// non-deterministic version
+							for (j = xrange; j <= this.ncols - xrange; j += 1) {
+								jpr = j + xrange;
+								jmr = j - xrange;
+								count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+										this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
+								jpmincol = j + leftX;
+								state = colourRow[jpmincol];
+								aliveIndex = 0;
+								if (state < aliveStart) {
+									if (birthList[count] === 255) {
+										if (myRand.random() >= birthChances[count]) {
+											// new cell is born
+											aliveIndex = 128;
+											births += 1;
+										}
+									}
+								} else {
+									// this cell is alive
+									if (survivalList[count] === 0) {
+										// check for immunity
+										if (myRand.random() >= immunityChances[count]) {
+											// this cell survives
+											aliveIndex = 128;
+										} else {
+											// cell dies
+											deaths += 1;
+										}
+									} else {
+										// cell survivces
+										if (myRand.random() >= survivalChances[count]) {
+											// this cell survives
+											aliveIndex = 128;
+										} else {
+											// cell dies
+											deaths += 1;
+										}
+									}
+								}
+
+								// update the cell
+								state = colourLookup[state + aliveIndex];
+								colourRow[jpmincol] = state;
+								if (state > deadMin) {
+									if (jpmincol < minX) {
+										minX = jpmincol;
+									}
+									if (jpmincol > maxX) {
+										maxX = jpmincol;
+									}
+									rowAlive = true;
+									colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
+									if (state >= aliveStart) {
+										population += 1;
+										liveRowAlive = true;
+										if (jpmincol < minX1) {
+											minX1 = jpmincol;
+										}
+										if (jpmincol > maxX1) {
+											maxX1 = jpmincol;
+										}
+									}
+								}
+							}
+						} else {
+							// deterministic version
+							for (j = xrange; j <= this.ncols - xrange; j += 1) {
+								jpr = j + xrange;
+								jmr = j - xrange;
+								count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+										this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
+								jpmincol = j + leftX;
+								state = colourRow[jpmincol];
+								aliveIndex = 0;
+								if (state < aliveStart) {
+									if (birthList[count] === 255) {
 										// new cell is born
 										aliveIndex = 128;
 										births += 1;
 									}
-								}
-							} else {
-								// this cell is alive
-								if (survivalList[count] === 0) {
-									// check for immunity
-									if (myRand.random() >= immunityChances[count]) {
-										// this cell survives
-										aliveIndex = 128;
-									} else {
+								} else {
+									// this cell is alive
+									if (survivalList[count] === 0) {
 										// cell dies
 										deaths += 1;
-									}
-								} else {
-									// cell survivces
-									if (myRand.random() >= survivalChances[count]) {
-										// this cell survives
-										aliveIndex = 128;
 									} else {
-										// cell dies
-										deaths += 1;
+										aliveIndex = 128;
 									}
 								}
-							}
 
-							// update the cell
-							state = colourLookup[state + aliveIndex];
-							colourRow[jpmincol] = state;
-							if (state > deadMin) {
-								if (jpmincol < minX) {
-									minX = jpmincol;
-								}
-								if (jpmincol > maxX) {
-									maxX = jpmincol;
-								}
-								rowAlive = true;
-								colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
-								if (state >= aliveStart) {
-									population += 1;
-									liveRowAlive = true;
-									if (jpmincol < minX1) {
-										minX1 = jpmincol;
+								// update the cell
+								state = colourLookup[state + aliveIndex];
+								colourRow[jpmincol] = state;
+								if (state > deadMin) {
+									if (jpmincol < minX) {
+										minX = jpmincol;
 									}
-									if (jpmincol > maxX1) {
-										maxX1 = jpmincol;
+									if (jpmincol > maxX) {
+										maxX = jpmincol;
+									}
+									rowAlive = true;
+									colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
+									if (state >= aliveStart) {
+										population += 1;
+										liveRowAlive = true;
+										if (jpmincol < minX1) {
+											minX1 = jpmincol;
+										}
+										if (jpmincol > maxX1) {
+											maxX1 = jpmincol;
+										}
 									}
 								}
 							}
 						}
-					} else {
-						// deterministic version
-						for (j = xrange; j <= this.ncols - xrange; j += 1) {
-							jpr = j + xrange;
-							jmr = j - xrange;
-							count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
-									this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
-							jpmincol = j + leftX;
-							state = colourRow[jpmincol];
-							aliveIndex = 0;
-							if (state < aliveStart) {
-								if (birthList[count] === 255) {
-									// new cell is born
-									aliveIndex = 128;
-									births += 1;
-								}
-							} else {
-								// this cell is alive
-								if (survivalList[count] === 0) {
-									// cell dies
-									deaths += 1;
-								} else {
-									aliveIndex = 128;
-								}
-							}
 
-							// update the cell
-							state = colourLookup[state + aliveIndex];
-							colourRow[jpmincol] = state;
-							if (state > deadMin) {
-								if (jpmincol < minX) {
-									minX = jpmincol;
-								}
-								if (jpmincol > maxX) {
-									maxX = jpmincol;
-								}
-								rowAlive = true;
-								colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
-								if (state >= aliveStart) {
-									population += 1;
-									liveRowAlive = true;
-									if (jpmincol < minX1) {
-										minX1 = jpmincol;
-									}
-									if (jpmincol > maxX1) {
-										maxX1 = jpmincol;
-									}
-								}
+						if (rowAlive) {
+							if (ipminrow < minY) {
+								minY = ipminrow;
+							}
+							if (ipminrow > maxY) {
+								maxY = ipminrow;
+							}
+						}
+						if (liveRowAlive) {
+							if (ipminrow < minY1) {
+								minY1 = ipminrow;
+							}
+							if (ipminrow > maxY1) {
+								maxY1 = ipminrow;
 							}
 						}
 					}
+				}
 
-					if (rowAlive) {
-						if (ipminrow < minY) {
-							minY = ipminrow;
-						}
-						if (ipminrow > maxY) {
-							maxY = ipminrow;
-						}
-					}
-					if (liveRowAlive) {
-						if (ipminrow < minY1) {
-							minY1 = ipminrow;
-						}
-						if (ipminrow > maxY1) {
-							maxY1 = ipminrow;
-						}
-					}
+				if (Controller.wasmTiming) {
+					timing = performance.now() - timing;
+					this.engine.view.menuManager.updateTimingItem("nextHROTvN", timing, Controller.useWASM && Controller.wasmEnableNextGenerationHROTVN && this.engine.view.wasmEnabled);
 				}
 
 				// save statistics
@@ -3381,8 +3429,21 @@ This file is part of LifeViewer
 
 		// check if there is a Torus bounded grid
 		if (this.engine.boundedGridType === 1) {
+			timing = performance.now();
+
 			// clear outside
-			this.clearHROTOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
+			if (Controller.useWASM && Controller.wasmEnableHROTClear && this.engine.view.wasmEnabled) {
+				WASM.clearHROTOutside(colourGrid.whole.byteOffset, colourGrid[0].length,
+					gridLeftX, gridBottomY, gridRightX, gridTopY,
+					xrange, yrange);
+			} else {
+				this.clearHROTOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
+			}
+
+			if (Controller.wasmTiming) {
+				timing = performance.now() - timing;
+				this.engine.view.menuManager.updateTimingItem("clearHROTOutside", timing, Controller.useWASM && Controller.wasmEnableHROTClear && this.engine.view.wasmEnabled);
+			}
 		}
 	};
 
@@ -5338,10 +5399,10 @@ This file is part of LifeViewer
 				this.ccht = (this.nrows + (this.ncols - 1) / 2) | 0;
 				this.halfccwd = (this.ncols / 2) | 0;
 
-				var t = performance.now();
+				var timing = performance.now();
 
 				// calculate cumulative counts in top left corner of colcounts
-				if (Controller.useWASM) {
+				if (Controller.useWASM && Controller.wasmEnableHROTCounts && this.engine.view.wasmEnabled) {
 					WASM.cumulativeVNCountsN(this.ccht, this.ncols, this.nrows, bottomY, leftX, maxGenState, this.halfccwd, counts.whole.byteOffset, colourGrid.whole.byteOffset, counts[0].length, colourGrid[0].length);
 				} else {
 					for (i = 0; i < this.ccht; i += 1) {
@@ -5362,41 +5423,146 @@ This file is part of LifeViewer
 					}
 				}
 
-				if (Controller.wasmTIming) {
-					console.log((performance.now() - t).toFixed(2));
+				if (Controller.wasmTiming) {
+					timing = performance.now() - timing;
+					this.engine.view.menuManager.updateTimingItem("cumulativeCounts", timing, Controller.useWASM && Controller.wasmEnableHROTCounts && this.engine.view.wasmEnabled);
 				}
 
-				// calculate final neighborhood counts and update the corresponding cells in the grid
-				for (i = yrange; i <= this.nrows - yrange; i += 1) {
-					im1 = i - 1;
-					countRowIm1 = counts[im1];
-					ipr = i + yrange;
-					countRowIpr = counts[ipr];
-					iprm1 = ipr - 1;
-					countRowIprm1 = counts[iprm1];
-					imrm1 = i - yrange - 1;
-					countRowImrm1 = counts[imrm1];
-					imrm2 = imrm1 - 1;
-					countRowImrm2 = counts[imrm2];
-					ipminrow = i + bottomY;
-					colourRow = colourGrid[ipminrow];
-					colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
-					rowAlive = false;
-					liveRowAlive = false;
+				timing = performance.now();
 
-					// check for non-deterministic algo
-					if (useRandom) {
-						// non-deterministic version
-						for (j = xrange; j <= this.ncols - xrange; j += 1) {
-							jpr = j + xrange;
-							jmr = j - xrange;
-							count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
-									this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
-							jpmincol = j + leftX;
-							state = colourRow[jpmincol];
-							if (state <= deadState) {
-								if (birthList[count] === 255) {
-									if (myRand.random() >= birthChances[count]) {
+				// calculate final neighborhood counts and update the corresponding cells in the grid
+				if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTVN && this.engine.view.wasmEnabled && !useRandom) {
+					WASM.nextGenerationHROTVNN(colourGrid.whole.byteOffset, colourGrid[0].length,
+						colourTileHistoryGrid.whole.byteOffset, colourTileHistoryGrid[0].length,
+						counts.whole.byteOffset, counts[0].length,
+						this.comboList.byteOffset,
+						bottomY, leftX,
+						xrange, yrange,
+						this.nrows, this.ncols,
+						deadState, minDeadState, maxGenState,
+						this.ccht, this.halfccwd,
+						this.sharedBuffer.byteOffset,
+						minX, maxX, minY, maxY,
+						minX1, maxX1, minY1, maxY1,
+						population, births, deaths);
+
+					minX = this.sharedBuffer[0];
+					maxX = this.sharedBuffer[1];
+					minY = this.sharedBuffer[2];
+					maxY = this.sharedBuffer[3];
+					minX1 = this.sharedBuffer[4];
+					maxX1 = this.sharedBuffer[5];
+					minY1 = this.sharedBuffer[6];
+					maxY1 = this.sharedBuffer[7];
+					population = this.sharedBuffer[8];
+					births = this.sharedBuffer[9];
+					deaths = this.sharedBuffer[10];
+				} else {
+					for (i = yrange; i <= this.nrows - yrange; i += 1) {
+						im1 = i - 1;
+						countRowIm1 = counts[im1];
+						ipr = i + yrange;
+						countRowIpr = counts[ipr];
+						iprm1 = ipr - 1;
+						countRowIprm1 = counts[iprm1];
+						imrm1 = i - yrange - 1;
+						countRowImrm1 = counts[imrm1];
+						imrm2 = imrm1 - 1;
+						countRowImrm2 = counts[imrm2];
+						ipminrow = i + bottomY;
+						colourRow = colourGrid[ipminrow];
+						colourTileRow = colourTileHistoryGrid[ipminrow >> 4];
+						rowAlive = false;
+						liveRowAlive = false;
+
+						// check for non-deterministic algo
+						if (useRandom) {
+							// non-deterministic version
+							for (j = xrange; j <= this.ncols - xrange; j += 1) {
+								jpr = j + xrange;
+								jmr = j - xrange;
+								count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+										this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
+								jpmincol = j + leftX;
+								state = colourRow[jpmincol];
+								if (state <= deadState) {
+									if (birthList[count] === 255) {
+										if (myRand.random() >= birthChances[count]) {
+											// new cell is born
+											state = maxGenState;
+											births += 1;
+										} else {
+											if (state > minDeadState) {
+												state -= 1;
+											}
+										}
+									} else {
+										if (state > minDeadState) {
+											state -= 1;
+										}
+									}
+								} else if (state === maxGenState) {
+									// this cell is alive
+									if (survivalList[count] === 0) {
+										if (myRand.random() >= immunityChances[count]) {
+											// cell survives
+										} else {
+											// cell decays by one state
+											state -= 1;
+											deaths += 1;
+										}
+									} else {
+										if (myRand.random() >= survivalChances[count]) {
+											// cell survives
+										} else {
+											// cell decays by one state
+											state -= 1;
+											deaths += 1;
+										}
+									}
+								} else {
+									// this cell will eventually die
+									if (state > minDeadState) {
+										state -= 1;
+									}
+								}
+
+								// update the cell
+								colourRow[jpmincol] = state;
+								if (state > 0) {
+									colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
+									if (jpmincol < minX) {
+										minX = jpmincol;
+									}
+									if (jpmincol > maxX) {
+										maxX = jpmincol;
+									}
+									rowAlive = true;
+									if (state === maxGenState) {
+										population += 1;
+									}
+									if (state > deadState) {
+										liveRowAlive = true;
+										if (jpmincol < minX1) {
+											minX1 = jpmincol;
+										}
+										if (jpmincol > maxX1) {
+											maxX1 = jpmincol;
+										}
+									}
+								}
+							}
+						} else {
+							// deterministic version
+							for (j = xrange; j <= this.ncols - xrange; j += 1) {
+								jpr = j + xrange;
+								jmr = j - xrange;
+								count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
+										this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
+								jpmincol = j + leftX;
+								state = colourRow[jpmincol];
+								if (state <= deadState) {
+									if (birthList[count] === 255) {
 										// new cell is born
 										state = maxGenState;
 										births += 1;
@@ -5405,138 +5571,69 @@ This file is part of LifeViewer
 											state -= 1;
 										}
 									}
-								} else {
-									if (state > minDeadState) {
-										state -= 1;
-									}
-								}
-							} else if (state === maxGenState) {
-								// this cell is alive
-								if (survivalList[count] === 0) {
-									if (myRand.random() >= immunityChances[count]) {
-										// cell survives
-									} else {
+								} else if (state === maxGenState) {
+									// this cell is alive
+									if (survivalList[count] === 0) {
 										// cell decays by one state
 										state -= 1;
 										deaths += 1;
 									}
 								} else {
-									if (myRand.random() >= survivalChances[count]) {
-										// cell survives
-									} else {
-										// cell decays by one state
-										state -= 1;
-										deaths += 1;
-									}
-								}
-							} else {
-								// this cell will eventually die
-								if (state > minDeadState) {
-									state -= 1;
-								}
-							}
-
-							// update the cell
-							colourRow[jpmincol] = state;
-							if (state > 0) {
-								colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
-								if (jpmincol < minX) {
-									minX = jpmincol;
-								}
-								if (jpmincol > maxX) {
-									maxX = jpmincol;
-								}
-								rowAlive = true;
-								if (state === maxGenState) {
-									population += 1;
-								}
-								if (state > deadState) {
-									liveRowAlive = true;
-									if (jpmincol < minX1) {
-										minX1 = jpmincol;
-									}
-									if (jpmincol > maxX1) {
-										maxX1 = jpmincol;
-									}
-								}
-							}
-						}
-					} else {
-						// deterministic version
-						for (j = xrange; j <= this.ncols - xrange; j += 1) {
-							jpr = j + xrange;
-							jmr = j - xrange;
-							count = this.getCount2(ipr , j, countRowIpr)   - this.getCount2(im1 , jpr + 1, countRowIm1) - this.getCount2(im1 , jmr - 1, countRowIm1) + this.getCount2(imrm2 , j, countRowImrm2) +
-									this.getCount2(iprm1 , j, countRowIprm1) - this.getCount2(im1 , jpr, countRowIm1)     - this.getCount2(im1 , jmr, countRowIm1)     + this.getCount2(imrm1 , j, countRowImrm1);
-							jpmincol = j + leftX;
-							state = colourRow[jpmincol];
-							if (state <= deadState) {
-								if (birthList[count] === 255) {
-									// new cell is born
-									state = maxGenState;
-									births += 1;
-								} else {
+									// this cell will eventually die
 									if (state > minDeadState) {
 										state -= 1;
 									}
 								}
-							} else if (state === maxGenState) {
-								// this cell is alive
-								if (survivalList[count] === 0) {
-									// cell decays by one state
-									state -= 1;
-									deaths += 1;
-								}
-							} else {
-								// this cell will eventually die
-								if (state > minDeadState) {
-									state -= 1;
-								}
-							}
 
-							// update the cell
-							colourRow[jpmincol] = state;
-							if (state > 0) {
-								colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
-								if (jpmincol < minX) {
-									minX = jpmincol;
-								}
-								if (jpmincol > maxX) {
-									maxX = jpmincol;
-								}
-								rowAlive = true;
-								if (state === maxGenState) {
-									population += 1;
-								}
-								if (state > deadState) {
-									liveRowAlive = true;
-									if (jpmincol < minX1) {
-										minX1 = jpmincol;
+								// update the cell
+								colourRow[jpmincol] = state;
+								if (state > 0) {
+									colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
+									if (jpmincol < minX) {
+										minX = jpmincol;
 									}
-									if (jpmincol > maxX1) {
-										maxX1 = jpmincol;
+									if (jpmincol > maxX) {
+										maxX = jpmincol;
+									}
+									rowAlive = true;
+									if (state === maxGenState) {
+										population += 1;
+									}
+									if (state > deadState) {
+										liveRowAlive = true;
+										if (jpmincol < minX1) {
+											minX1 = jpmincol;
+										}
+										if (jpmincol > maxX1) {
+											maxX1 = jpmincol;
+										}
 									}
 								}
 							}
 						}
-					}
 
-					if (rowAlive) {
-						if (ipminrow < minY) {
-							minY = ipminrow;
+						if (rowAlive) {
+							if (ipminrow < minY) {
+								minY = ipminrow;
+							}
+							if (ipminrow > maxY) {
+								maxY = ipminrow;
+							}
 						}
-						if (ipminrow > maxY) {
-							maxY = ipminrow;
+						if (liveRowAlive) {
+							if (ipminrow < minY1) {
+								minY1 = ipminrow;
+							}
+							if (ipminrow > maxY1) {
+								maxY1 = ipminrow;
+							}
 						}
 					}
-					if (liveRowAlive) {
-						if (ipminrow < minY1) {
-							minY1 = ipminrow;
-						}
-						if (ipminrow > maxY1) {
-							maxY1 = ipminrow;
-						}
-					}
+				}
+
+				if (Controller.wasmTiming) {
+					timing = performance.now() - timing;
+					this.engine.view.menuManager.updateTimingItem("nextHROTvN", timing, Controller.useWASM && Controller.wasmEnableNextGenerationHROTVN && this.engine.view.wasmEnabled);
 				}
 
 				// save statistics
@@ -5678,6 +5775,13 @@ This file is part of LifeViewer
 		// use alternate rule if specified and odd generation
 		if (this.altSpecified && ((counter & 1) === 1)) {
 			useAlternate = true;
+		}
+
+		// WASM version is faster than short range VN algo
+		if (Controller.useWASM && this.engine.view.wasmEnabled) {
+			this.rangeVN = 0;
+		} else {
+			this.rangeVN = 6;
 		}
 
 		if (this.scount === 2) {

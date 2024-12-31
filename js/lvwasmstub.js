@@ -1,5 +1,10 @@
 var wasmBase64 = "";
 var WASM = {
+	clearTopAndLeft:null,
+	clearHROTOutside:null,
+	wrapTorusHROT:null,
+	nextGenerationHROTVN2:null,
+	nextGenerationHROTVNN:null,
 	nextGenerationHROTMoore2:null,
 	nextGenerationHROTMooreN:null,
 	cumulativeMooreCounts2:null,
