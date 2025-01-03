@@ -398,7 +398,7 @@ This file is part of LifeViewer
 			// check if allocation succeeded
 			if (result) {
 				if (wasmHeap) {
-					console.log(name, elements + " x " + Type.typeName(type) + " @ " + result.byteOffset, " used: " + (result.byteOffset >> 10) + "K (" + ((100 * result.byteOffset) / this.availableHeap()).toFixed(1) + "%)");
+					console.log(name, elements + " x " + Type.typeName(type) + " @ " + result.byteOffset, " used: " + (result.byteOffset >> 20) + "Mb (" + ((100 * result.byteOffset) / WASM.memory.buffer.byteLength).toFixed(1) + "%)");
 					name = "* " + name;
 				}
 				this.saveAllocationInfo(type, elements, name, result.byteOffset);
@@ -407,6 +407,12 @@ This file is part of LifeViewer
 
 		// return memory
 		return result;
+	};
+
+	// return available heap in bytes
+	/** @returns {number} */
+	Allocator.prototype.availableHeap = function() {
+		return WASM.memory.buffer.byteLength - this.wasmPointer;
 	};
 
 	// allocate typed memory when adding a row to a matrix
@@ -426,12 +432,6 @@ This file is part of LifeViewer
 
 		// return memory
 		return result;
-	};
-
-	// get available WASM heap
-	/** @returns {number} */
-	Allocator.prototype.availableHeap = function() {
-		return WASM.memory.buffer.byteLength - this.wasmPointer;
 	};
 
 	// get WASM heap pointer

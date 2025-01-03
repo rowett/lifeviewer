@@ -34,7 +34,7 @@ This file is part of LifeViewer
 		/** @type {PatternManager} */ this.manager = manager;
 
 		// WASM shared buffer
-		/** @type {Uint32Array} */ this.sharedBuffer = /** @type {!Uint32Array} */ (allocator.allocate(Type.Uint32, 16, "HROT.sharedBuffer", Controller.useWASM));
+		/** @type {Uint32Array} */ this.sharedBuffer = engine.sharedBuffer;
 
 		// algorithm parameters
 		/** @type {number} */ this.xrange = 1;

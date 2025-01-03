@@ -1152,6 +1152,9 @@ This file is part of LifeViewer
 		/** @type {Array<number>} */ this.graphBirthColor = [0, 255, 0];
 		/** @type {Array<number>} */ this.graphDeathColor = [255, 0, 0];
 
+		// share buffer for return values from WASM functions
+		/** @type {Uint32Array} */ this.sharedBuffer = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 16, "Life.sharedBuffer", Controller.useWASM));
+
 		// HROT engine
 		/** @type {HROT} */ this.HROT = new HROT(this.allocator, this, manager);
 
@@ -18710,7 +18713,10 @@ This file is part of LifeViewer
 		var	/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
 			/** @type {number} */ boundarySize = 16,
-			/** @type {number} */ currentPop = 0;
+			/** @type {number} */ currentPop = 0,
+			/** @type {number} */ timing = 0,
+			/** @type {number} */ reps = Controller.wasmTiming ? Controller.wasmTimingReps : 1,
+			/** @type {number} */ repNumber = 0;
 
 		// check if snapshot should be saved
 		if (this.counter === this.nextSnapshotTarget - 1 && !noHistory) {
@@ -18781,7 +18787,29 @@ This file is part of LifeViewer
 
 		// check for Generations
 		if (this.multiNumStates !== -1 && !this.isHROT && !this.isPCA && !this.isRuleTree && !this.isSuper && !this.isExtended) {
-			this.nextGenerationGenerations();
+			timing = performance.now();
+
+			while (repNumber < reps) {
+				if (Controller.useWASM && Controller.wasmEnableNextGenerationGenerations && this.view.wasmEnabled) {
+					if ((this.counter & 1) !== 0) {
+						WASM.nextGenerationGenerations(this.colourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.colourTileGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, this.nextGrid.whole.byteOffset, this.nextTileGrid.whole.byteOffset, this.colourGrid[0].length, this.sharedBuffer, this.sharedBuffer.byteOffset);
+					} else {
+						WASM.nextGenerationGenerations(this.colourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.colourTileGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, this.grid.whole.byteOffset, this.tileGrid.whole.byteOffset, this.colourGrid[0].length, this.sharedBuffer.byteOffset);
+					}
+
+					this.population = this.sharedBuffer[0];
+					this.births = this.sharedBuffer[1];
+					this.deaths = this.sharedBuffer[2];
+				} else {
+					this.nextGenerationGenerations();
+				}
+				repNumber += 1;
+			}
+
+			timing = performance.now() - timing;
+			if (Controller.wasmTiming) {
+				this.view.menuManager.updateTimingItem("nextGenerations", timing, Controller.useWASM && Controller.wasmEnableNextGenerationGenerations && this.view.wasmEnabled);
+			}
 		}
 
 		// perform super processing
@@ -23242,93 +23270,109 @@ This file is part of LifeViewer
 								// get the maximum of 4 pixels
 								// first two pixels in first row
 								value = sourceRow[cr];
-								smallValue = (value & 255) | ((value & 1) << 5);
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								value |= (value & 0x0101) << 5;
+								smallValue = value & 255;
+								temp = smallValue - (value >> 8);
 								smallValue -= (temp & (temp >> 255));
 
 								// next two pixels in next row
 								value = sourceRow1[cr];
-								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								value |= (value & 0x0101) << 5;
+								temp = smallValue - (value & 255);
 								smallValue -= (temp & (temp >> 255));
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								temp = smallValue - (value >> 8);
 								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
 								cr += 1;
 
 								// loop unroll x 7
 								value = sourceRow[cr];
-								smallValue = (value & 255) | ((value & 1) << 5);
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								value |= (value & 0x0101) << 5;
+								smallValue = value & 255;
+								temp = smallValue - (value >> 8);
 								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								value |= (value & 0x0101) << 5;
+								temp = smallValue - (value & 255);
 								smallValue -= (temp & (temp >> 255));
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								temp = smallValue - (value >> 8);
 								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
 								cr += 1;
 
 								value = sourceRow[cr];
-								smallValue = (value & 255) | ((value & 1) << 5);
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								value |= (value & 0x0101) << 5;
+								smallValue = value & 255;
+								temp = smallValue - (value >> 8);
 								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								value |= (value & 0x0101) << 5;
+								temp = smallValue - (value & 255);
 								smallValue -= (temp & (temp >> 255));
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								temp = smallValue - (value >> 8);
 								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
 								cr += 1;
 
 								value = sourceRow[cr];
-								smallValue = (value & 255) | ((value & 1) << 5);
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								value |= (value & 0x0101) << 5;
+								smallValue = value & 255;
+								temp = smallValue - (value >> 8);
 								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								value |= (value & 0x0101) << 5;
+								temp = smallValue - (value & 255);
 								smallValue -= (temp & (temp >> 255));
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								temp = smallValue - (value >> 8);
 								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
 								cr += 1;
 
 								value = sourceRow[cr];
-								smallValue = (value & 255) | ((value & 1) << 5);
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								value |= (value & 0x0101) << 5;
+								smallValue = value & 255;
+								temp = smallValue - (value >> 8);
 								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								value |= (value & 0x0101) << 5;
+								temp = smallValue - (value & 255);
 								smallValue -= (temp & (temp >> 255));
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								temp = smallValue - (value >> 8);
 								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
 								cr += 1;
 
 								value = sourceRow[cr];
-								smallValue = (value & 255) | ((value & 1) << 5);
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								value |= (value & 0x0101) << 5;
+								smallValue = value & 255;
+								temp = smallValue - (value >> 8);
 								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								value |= (value & 0x0101) << 5;
+								temp = smallValue - (value & 255);
 								smallValue -= (temp & (temp >> 255));
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								temp = smallValue - (value >> 8);
 								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
 								cr += 1;
 
 								value = sourceRow[cr];
-								smallValue = (value & 255) | ((value & 1) << 5);
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								value |= (value & 0x0101) << 5;
+								smallValue = value & 255;
+								temp = smallValue - (value >> 8);
 								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								value |= (value & 0x0101) << 5;
+								temp = smallValue - (value & 255);
 								smallValue -= (temp & (temp >> 255));
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								temp = smallValue - (value >> 8);
 								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
 								cr += 1;
 
 								value = sourceRow[cr];
-								smallValue = (value & 255) | ((value & 1) << 5);
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								value |= (value & 0x0101) << 5;
+								smallValue = value & 255;
+								temp = smallValue - (value >> 8);
 								smallValue -= (temp & (temp >> 255));
 								value = sourceRow1[cr];
-								temp = smallValue - ((value & 255) | ((value & 1) << 5));
+								value |= (value & 0x0101) << 5;
+								temp = smallValue - (value & 255);
 								smallValue -= (temp & (temp >> 255));
-								temp = smallValue - ((value >> 8) | (value & 256 >> 3));
+								temp = smallValue - (value >> 8);
 								destRow[cr + cr] = (smallValue - (temp & (temp >> 255))) & 31;
 								cr += 1;
 
@@ -29283,6 +29327,7 @@ This file is part of LifeViewer
 						}
 						repNumber += 1;
 					}
+
 					timing = performance.now() - timing;
 					if (Controller.wasmTiming) {
 						this.view.menuManager.updateTimingItem("convertToPens", timing, Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled);
