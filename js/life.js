@@ -9797,7 +9797,7 @@ This file is part of LifeViewer
 		// check if buffer is available
 		if (this.imageData.data.buffer) {
 			// create 32 bit view over the image data buffer
-			this.data32 = new Uint32Array(this.imageData.data.buffer, this.imageData.data.byteOffset);
+			this.data32 = new Uint32Array(this.imageData.data.buffer, this.imageData.data.byteOffset, context.canvas.width * context.canvas.height);
 		} else {
 			// buffer not available so create buffer to copy
 			this.data32 = new Uint32Array(this.imageData.data.length >> 2);
