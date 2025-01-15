@@ -4638,10 +4638,10 @@ void nextGenerationHROTMoore2(
 			v128_t columnsUsed = wasm_v128_load(colUsed + x);
 
 			// create a mask with 1 for each occupied cell
-			v128_t deadMinCols = wasm_v128_bitselect(zero, one, cellsOccupied);
+			v128_t deadMinCols = wasm_v128_bitselect(one, zero, cellsOccupied);
 
 			// create a mask with 2 for each alive cell
-			v128_t aliveStartCols = wasm_v128_bitselect(zero, two, cellsAlive);
+			v128_t aliveStartCols = wasm_v128_bitselect(two, zero, cellsAlive);
 
 			// OR the masks into the columns used flags
 			columnsUsed = wasm_v128_or(columnsUsed, deadMinCols);

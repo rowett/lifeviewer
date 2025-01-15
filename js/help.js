@@ -1138,7 +1138,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.stopWord + " <1..>|" + Keywords.offWord, "stop at generation", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.startFromWord + " <1..>", "play to generation on load", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.gpsWord + " <" + ViewConstants.minGenSpeed + ".." + ViewConstants.maxGenSpeed + ">", "set steps per second", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, Keywords.stepWord + " <" + ViewConstants.minStepSpeed + ".." + ViewConstants.maxStepSpeed + ">", "set generations per step", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.stepWord + " <" + ViewConstants.minStepSpeed + ".." + view.maxStepSpeed + ">", "set generations per step", ctx, x, y, height, helpLine);
 		if ((view.engine.isMargolus || view.engine.isPCA) && view.engine.margolusReverseLookup1) {
 			y = this.renderHelpLine(view, Keywords.reverseStartWord, "set initial playback to Reverse", ctx, x, y, height, helpLine);
 		}

@@ -402,6 +402,7 @@ This file is part of LifeViewer
 		// minimum and maximum steps
 		/** @const {number} */ minStepSpeed : 1,
 		/** @const {number} */ maxStepSpeed : 64,
+		/** @const {number} */ wasmMaxStepSpeed: 96,
 
 		// dead zone factor in speed control
 		/** @const {number} */ deadZoneSpeed : 0.1,
@@ -854,6 +855,12 @@ This file is part of LifeViewer
 
 		// whether WASM enabled for this viewer
 		/** @type {boolean} */ this.wasmEnabled = true;
+
+		// WASM memory reset point after initial construction
+		/** @type {number} */ this.wasmResetPoint = 0;
+
+		// current maximum step speed (is larger in Pro version)
+		/** @type {number} */ this.maxStepSpeed = Controller.useWASM ? ViewConstants.wasmMaxStepSpeed : ViewConstants.maxStepSpeed;
 
 		// last go to generation input
 		/** @type {string} */ this.lastGoto = "";
@@ -8955,7 +8962,7 @@ This file is part of LifeViewer
 		}
 
 		perSPart = Math.sqrt((this.genSpeed - ViewConstants.minGenSpeed) / (ViewConstants.defaultRefreshRate - ViewConstants.minGenSpeed));
-		stepPart = (this.gensPerStep - ViewConstants.minStepSpeed) / (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed);
+		stepPart = (this.gensPerStep - ViewConstants.minStepSpeed) / (this.maxStepSpeed - ViewConstants.minStepSpeed);
 
 		if (stepPart === 0) {
 			result = perSPart * (1 - deadZone);
@@ -8988,7 +8995,7 @@ This file is part of LifeViewer
 				indexValue /= (1 - deadZone);
 			}
 			this.genSpeed = ViewConstants.defaultRefreshRate;
-			this.gensPerStep = Math.round(ViewConstants.minStepSpeed + (indexValue * (ViewConstants.maxStepSpeed - ViewConstants.minStepSpeed)));
+			this.gensPerStep = Math.round(ViewConstants.minStepSpeed + (indexValue * (this.maxStepSpeed - ViewConstants.minStepSpeed)));
 		}
 	};
 
@@ -18720,6 +18727,9 @@ This file is part of LifeViewer
 			// enable notifications
 			this.menuManager.notification.enabled = true;
 
+			// save WASM pointer
+			this.wasmResetPoint = this.engine.allocator.wasmPointer;
+
 			// load view menu
 			this.menuManager.activeMenu(this.viewMenu);
 
@@ -19437,8 +19447,8 @@ This file is part of LifeViewer
 		if (speed > ViewConstants.defaultRefreshRate) {
 			this.genSpeed = ViewConstants.defaultRefreshRate;
 			this.gensPerStep = (speed / ViewConstants.defaultRefreshRate) | 0;
-			if (this.gensPerStep > ViewConstants.maxStepSpeed) {
-				this.gensPerStep = ViewConstants.maxStepSpeed;
+			if (this.gensPerStep > this.maxStepSpeed) {
+				this.gensPerStep = this.maxStepSpeed;
 			}
 		} else {
 			this.genSpeed = speed;
@@ -21396,6 +21406,11 @@ This file is part of LifeViewer
 			Controller.viewers[Controller.viewers.length] = [canvasItem, newView, Controller.popupWindow];
 		}
 
+		if (Controller.useWASM) {
+			newView.wasmResetPoint = newView.engine.allocator.wasmPointer;
+			console.log("Reset point is " + newView.wasmResetPoint);
+		}
+
 		// load the pattern without ignore thumbnail
 		if (!isInPopup) {
 			newView.startViewer(patternString, false);
@@ -21607,6 +21622,9 @@ This file is part of LifeViewer
 				// reset Identify before resizing the Viewer to prevent Cell Period Map generations
 				viewer.lastIdentifyType = "";
 				viewer.engine.countList = null;
+
+				// reset the allocator
+				viewer.engine.allocator.reset(viewer.wasmResetPoint);
 
 				// reset the viewer
 				viewer.viewStart(viewer);
@@ -22293,32 +22311,32 @@ This file is part of LifeViewer
 
 		var startTime = performance.now();
 
-		try {
-			WebAssembly.instantiate(wasmBuffer).then(result => {
-				var	/** @type {number} */ count = 0,
-					/** @type {string} */ i = "";
+		WebAssembly.instantiate(wasmBuffer)
+			.then(result => {
+			var	/** @type {number} */ count = 0,
+				/** @type {string} */ i = "";
 
-				// get a reference to each function
-				for (i in result.instance.exports) {
-					if (typeof result.instance.exports[i] === "function") {
-						if (!i.startsWith("_") && !i.startsWith("emscripten")) {
-							WASM[i] = result.instance.exports[i];
-							count += 1;
-						}
+			// get a reference to each function
+			for (i in result.instance.exports) {
+				if (typeof result.instance.exports[i] === "function") {
+					if (!i.startsWith("_") && !i.startsWith("emscripten")) {
+						WASM[i] = result.instance.exports[i];
+						count += 1;
 					}
 				}
+			}
 
-				// get the heap
-				WASM.memory = result.instance.exports.memory;
+			// get the heap
+			WASM.memory = result.instance.exports.memory;
 
-				// output stats
-				console.log("WASM instantiated: "+ count + " functions (" + wasmBuffer.length + " bytes), " + (WASM.memory.buffer.byteLength >> 20) + "Mb heap, time " + (performance.now() - startTime).toFixed(1) + "ms")
-			});
-		} catch (e) {
-			// not supported by the browser
+			// output stats
+			console.log("WASM instantiated: " + count + " functions (" + wasmBuffer.length + " bytes), " + (WASM.memory.buffer.byteLength >> 20) + "Mb heap, time " + (performance.now() - startTime).toFixed(1) + "ms");
+		})
+		.catch(e => {  // handle errors during instantiation
+			console.error("Error instantiating WebAssembly:", e);
 			Controller.useWASM = false;
 			Controller.wasmTiming = false;
-		}
+		});
 	} else {
 		// not built with WASM
 		Controller.useWASM = false;

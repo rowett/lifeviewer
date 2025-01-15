@@ -1483,13 +1483,13 @@ This file is part of LifeViewer
 								}
 							}
 						} else {
-							if (me.gensPerStep < ViewConstants.maxStepSpeed) {
+							if (me.gensPerStep < me.maxStepSpeed) {
 								if (shiftKey) {
-									me.gensPerStep = ViewConstants.maxStepSpeed;
+									me.gensPerStep = me.maxStepSpeed;
 								} else {
 									me.gensPerStep += 1;
-									if (me.gensPerStep > ViewConstants.maxStepSpeed) {
-										me.gensPerStep = ViewConstants.maxStepSpeed;
+									if (me.gensPerStep > me.maxStepSpeed) {
+										me.gensPerStep = me.maxStepSpeed;
 									}
 								}
 							}

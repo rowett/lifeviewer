@@ -123,6 +123,17 @@ This file is part of LifeViewer
 		/** @type {number} */ this.wasmPointer = 128;
 	}
 
+	// reset the allocator
+	Allocator.prototype.reset = function(/** @type {number} */ pointer) {
+		console.log("Allocator reset to " + pointer);
+		this.wasmPointer = pointer;
+		this.allocations = [];
+		this.numAllocs = 0;
+		this.numFrees = 0;
+		this.totalBytes = 0;
+		this.totalFreedBytes = 0;
+	};
+
 	// output a specific allocation as a string
 	/** @returns {string} */
 	Allocator.prototype.allocationInfo = function(/** @type {number} */ which) {
@@ -391,6 +402,8 @@ This file is part of LifeViewer
 	Allocator.prototype.allocate = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {boolean} */ wasmHeap) {
 		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
 
+		//console.log("allocate(" + Type.typeName(type) + ", " + elements + ", " + name + (wasmHeap ? (", WASM " + String(this.wasmPointer)) : ")"));
+
 		if (elements > 0) {
 			// get typed block of memory
 			result = this.typedMemory(type, elements, name, wasmHeap);
@@ -398,6 +411,9 @@ This file is part of LifeViewer
 			// check if allocation succeeded
 			if (result) {
 				if (wasmHeap) {
+					// clear the memory block
+					result.fill(0);
+
 					//console.log(name, elements + " x " + Type.typeName(type) + " @ " + result.byteOffset, " used: " + (result.byteOffset >> 20) + "Mb (" + ((100 * result.byteOffset) / WASM.memory.buffer.byteLength).toFixed(1) + "%)");
 					name = "* " + name;
 				}

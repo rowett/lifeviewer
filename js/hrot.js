@@ -3948,7 +3948,7 @@ This file is part of LifeViewer
 		var	/** @type {number} */ timing = performance.now();
 
 		if (Controller.useWASM && Controller.wasmEnableNextGenerationCornerEdge && this.engine.view.wasmEnabled) {
-			WASM.nextGenerationCornerEdge2(
+			WASM.nextGenerationCornerEdgeN(
 				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
 				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
 				bottomY | 0,

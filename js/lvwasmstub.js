@@ -1,5 +1,6 @@
 var wasmBase64 = "";
 var WASM = {
+	nextGenerationCornerEdge2: null,
 	nextGenerationCheckerBoth2: null,
 	nextGenerationCheckerboard2: null,
 	nextGenerationAlignedCheckerboard2: null,
@@ -17,6 +18,7 @@ var WASM = {
 	nextGenerationStar2: null,
 	nextGenerationHash2: null,
 	nextGenerationCross2: null,
+	nextGenerationCornerEdgeN: null,
 	nextGenerationCheckerBothN: null,
 	nextGenerationCheckerboardN: null,
 	nextGenerationAlignedCheckerboardN: null,

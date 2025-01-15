@@ -4664,8 +4664,8 @@ This file is part of LifeViewer
 										// set step
 										x = (numberValue / ViewConstants.defaultRefreshRate) | 0;
 										if (x >= 2) {
-											if (x >= ViewConstants.maxStepSpeed) {
-												x = ViewConstants.maxStepSpeed;
+											if (x >= view.maxStepSpeed) {
+												x = view.maxStepSpeed;
 											}
 											currentWaypoint.step = x;
 											currentWaypoint.stepDefined = true;
@@ -5433,7 +5433,7 @@ This file is part of LifeViewer
 								numberValue = scriptReader.getNextTokenAsNumber() | 0;
 
 								// check it is in range
-								if (numberValue >= ViewConstants.minStepSpeed && numberValue <= ViewConstants.maxStepSpeed) {
+								if (numberValue >= ViewConstants.minStepSpeed && numberValue <= view.maxStepSpeed) {
 									// check if step already defined
 									if (currentWaypoint.stepDefined && !view.initialStep && !suppressErrors.step) {
 										scriptErrors[scriptErrors.length] = [Keywords.stepWord + " " + numberValue, "overwrites " + currentWaypoint.step];
@@ -5989,12 +5989,12 @@ This file is part of LifeViewer
 			}
 
 			// check if x or y offset make the pattern not fit on the maximum grid
-			if (view.xOffset !== 0 && (view.patternWidth + ViewConstants.maxStepSpeed + Math.abs(view.xOffset) * 2 >= view.engine.maxGridSize)) {
+			if (view.xOffset !== 0 && (view.patternWidth + view.maxStepSpeed + Math.abs(view.xOffset) * 2 >= view.engine.maxGridSize)) {
 				scriptErrors[scriptErrors.length] = [Keywords.xOffsetWord + " " + view.xOffset, "pattern does not fit on grid at view offset"];
 				view.xOffset = 0;
 			}
 
-			if (view.yOffset !== 0 && (view.patternHeight + ViewConstants.maxStepSpeed + Math.abs(view.yOffset) * 2 >= view.engine.maxGridSize)) {
+			if (view.yOffset !== 0 && (view.patternHeight + view.maxStepSpeed + Math.abs(view.yOffset) * 2 >= view.engine.maxGridSize)) {
 				scriptErrors[scriptErrors.length] = [Keywords.yOffsetWord + " " + view.yOffset, "pattern does not fit on grid at view offset"];
 				view.yOffset = 0;
 			}
