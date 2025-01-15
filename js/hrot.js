@@ -3,7 +3,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2024 Chris Rowett
+ Copyright (C) 2015-2025 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -51,19 +51,19 @@ This file is part of LifeViewer
 		/** @type {Array<Uint8Array>} */ this.neighbourhood = Array.matrix(Type.Uint8, 1, 1, 0, allocator, "HROT.neighbourhood", false);
 
 		// neighbourhood list for custom neighbourhoods (will be resized)
-		/** @type {Int16Array} */ this.neighbourList = /** @type {!Int16Array} */ (allocator.allocate(Type.Int16, 0, "HROT.neighbourList", false));
+		/** @type {Int16Array} */ this.neighbourList = /** @type {!Int16Array} */ (allocator.allocate(Type.Int16, 0, "HROT.neighbourList", Controller.useWASM));
 
 		// neighbour count array (will be resized)
 		/** @type {Array<Int32Array>} */ this.counts = Array.matrix(Type.Int32, 1, 1, 0, allocator, "HROT.counts", Controller.useWASM);
 
 		// range width array (will be resized)
-		/** @type {Uint32Array} */ this.widths = /** @type {!Uint32Array} */ (allocator.allocate(Type.Uint32, 0, "HROT.widths", false));
+		/** @type {Uint32Array} */ this.widths = /** @type {!Uint32Array} */ (allocator.allocate(Type.Uint32, 0, "HROT.widths", Controller.useWASM));
 
 		// used row array (will be resized)
 		/** @type {Uint8Array} */ this.colUsed = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.colUsed", Controller.useWASM));
 
 		// weighted neighbourhood array (will be resized)
-		/** @type {Int8Array} */ this.weightedNeighbourhood = /** @type {!Int8Array} */ (allocator.allocate(Type.Int8, 0, "HROT.weightedNeighbourhood", false));
+		/** @type {Int8Array} */ this.weightedNeighbourhood = /** @type {!Int8Array} */ (allocator.allocate(Type.Int8, 0, "HROT.weightedNeighbourhood", Controller.useWASM));
 
 		// weighted states array
 		/** @type {Uint8Array} */ this.weightedStates = null;
@@ -209,7 +209,7 @@ This file is part of LifeViewer
 		this.type = type;
 		this.yrange = range;
 		this.xrange = (isTriangular && !(type === this.manager.customHROT || type === this.manager.weightedHROT)) ? range + range : range;
-		this.widths = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, width, "HROT.widths", false));
+		this.widths = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, width, "HROT.widths", Controller.useWASM));
 		this.customNeighbourhood = customNeighbourhood;
 		this.customNeighbourCount = neighbourCount;
 		this.isTriangular = isTriangular;
@@ -218,7 +218,7 @@ This file is part of LifeViewer
 
 		// copy the weighted neighbourhood if specified
 		if (weightedNeighbourhood) {
-			this.weightedNeighbourhood = /** @type {!Int8Array} */ (this.allocator.allocate(Type.Int8, weightedNeighbourhood.length, "HROT.weightedNeighbourhood", false));
+			this.weightedNeighbourhood = /** @type {!Int8Array} */ (this.allocator.allocate(Type.Int8, weightedNeighbourhood.length, "HROT.weightedNeighbourhood", Controller.useWASM));
 			for (i = 0; i < weightedNeighbourhood.length; i += 1) {
 				this.weightedNeighbourhood[i] = weightedNeighbourhood[i];
 			}
@@ -228,7 +228,7 @@ This file is part of LifeViewer
 
 		// copy the weighted states if specified
 		if (weightedStates) {
-			this.weightedStates = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, weightedStates.length, "HROT.weightedStates", false));
+			this.weightedStates = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, weightedStates.length, "HROT.weightedStates", Controller.useWASM));
 			for (i = 0; i < weightedStates.length; i += 1) {
 				this.weightedStates[i] = weightedStates[i];
 			}
@@ -344,7 +344,7 @@ This file is part of LifeViewer
 					total += rowCount[i] + 2;
 				}
 			}
-			this.neighbourList = /** @type {!Int16Array} */ (this.allocator.allocate(Type.Int16, total, "HROT.neighbourList", false));
+			this.neighbourList = /** @type {!Int16Array} */ (this.allocator.allocate(Type.Int16, total, "HROT.neighbourList", Controller.useWASM));
 
 			// populate the list from each row in the cache
 			k = 0;
@@ -1001,10 +1001,70 @@ This file is part of LifeViewer
 
 	// update the life grid region using computed counts
 	HROT.prototype.updateGridFromCountsHROT = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {boolean} */ useAlternate) {
+		var	/** @type {number} */ timing = performance.now(),
+			/** @type {number} */ maxGeneration = this.scount - 1,
+			/** @type {BoundingBox} */ zoomBox = this.engine.zoomBox,
+			/** @type {BoundingBox} */ HROTBox = this.engine.HROTBox;
+
 		if (this.useRandom) {
 			this.updateGridFromCountsHROTRandom(leftX, bottomY, rightX, topY, useAlternate);
 		} else {
-			this.updateGridFromCountsHROTNormal(leftX, bottomY, rightX, topY, useAlternate);
+			if (Controller.useWASM && Controller.wasmEnableUpdateGridFromCounts && this.engine.view.wasmEnabled) {
+				if (maxGeneration === 1) {
+					WASM.updateGridFromCounts2(
+						this.engine.colourGrid.whole.byteOffset | 0,
+						this.engine.colourGrid[0].length | 0,
+						this.engine.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.engine.colourTileHistoryGrid[0].length | 0,
+						this.counts.whole.byteOffset | 0,
+						this.counts[0].length | 0,
+						this.comboList.byteOffset | 0,
+						bottomY | 0, leftX | 0, topY | 0, rightX | 0,
+						this.xrange | 0, this.yrange | 0,
+						LifeConstants.aliveStart | 0, LifeConstants.aliveMax | 0, LifeConstants.deadStart | 0, LifeConstants.deadMin | 0,
+						this.sharedBuffer.byteOffset | 0,
+						this.engine.width | 0, this.engine.height | 0
+					);
+				} else {
+					WASM.updateGridFromCountsN(
+						this.engine.colourGrid.whole.byteOffset | 0,
+						this.engine.colourGrid[0].length | 0,
+						this.engine.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.engine.colourTileHistoryGrid[0].length | 0,
+						this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+						this.comboList.byteOffset | 0,
+						bottomY | 0, leftX | 0, topY | 0, rightX | 0,
+						this.xrange | 0, this.yrange | 0,
+						this.engine.historyStates | 0, (this.engine.multiNumStates + this.engine.historyStates - 1) | 0, (this.engine.historyStates > 0 ? 1 : 0) | 0,
+						this.sharedBuffer.byteOffset | 0,
+						this.engine.width | 0, this.engine.height | 0
+					);
+				}
+
+				// save population and bounding box
+				this.engine.population = this.sharedBuffer[8];
+				this.engine.births = this.sharedBuffer[9];
+				this.engine.deaths = this.sharedBuffer[10];
+
+				// don't update bounding box if zero population
+				if (this.engine.population > 0) {
+					zoomBox.leftX = this.sharedBuffer[0];
+					zoomBox.rightX = this.sharedBuffer[1];
+					zoomBox.bottomY = this.sharedBuffer[2];
+					zoomBox.topY = this.sharedBuffer[3];
+					HROTBox.leftX = this.sharedBuffer[4];
+					HROTBox.rightX = this.sharedBuffer[5];
+					HROTBox.bottomY = this.sharedBuffer[6];
+					HROTBox.topY = this.sharedBuffer[7];
+				}
+			} else {
+				this.updateGridFromCountsHROTNormal(leftX, bottomY, rightX, topY, useAlternate);
+			}
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("gridFromCounts", timing, Controller.useWASM && Controller.wasmEnableUpdateGridFromCounts && this.engine.view.wasmEnabled);
 		}
 	};
 
@@ -1195,6 +1255,34 @@ This file is part of LifeViewer
 
 	// 2-state corner/edge
 	HROT.prototype.nextGenerationCornerEdge2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationCornerEdge && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationCornerEdge2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart | 0,
+				this.cornerRange | 0,
+				this.edgeRange | 0
+			);
+		} else {
+			this.nextGenerationCornerEdge2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTCorner", timing, Controller.useWASM && Controller.wasmEnableNextGenerationCornerEdge && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state corner/edge Javascript version
+	HROT.prototype.nextGenerationCornerEdge2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1258,6 +1346,32 @@ This file is part of LifeViewer
 
 	// 2-state asterisk
 	HROT.prototype.nextGenerationAsterisk2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationAsterisk && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationAsterisk2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart | 0
+			);
+		} else {
+			this.nextGenerationAsterisk2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTAsterisk", timing, Controller.useWASM && Controller.wasmEnableNextGenerationAsterisk && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state asterisk Javascript version
+	HROT.prototype.nextGenerationAsterisk2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1307,6 +1421,32 @@ This file is part of LifeViewer
 
 	// 2-state tripod
 	HROT.prototype.nextGenerationTripod2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationTripod && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationTripod2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart | 0
+			);
+		} else {
+			this.nextGenerationTripod2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTTripod", timing, Controller.useWASM && Controller.wasmEnableNextGenerationTripod && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state tripod
+	HROT.prototype.nextGenerationTripod2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1349,6 +1489,47 @@ This file is part of LifeViewer
 
 	// 2-state weighted
 	HROT.prototype.nextGenerationWeighted2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationWeighted && this.engine.view.wasmEnabled) {
+			if (this.weightedStates === null) {
+				// no weighted states
+				WASM.nextGenerationWeighted2(
+					this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+					this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+					this.weightedNeighbourhood.byteOffset | 0, this.weightedNeighbourhood.length | 0,
+					leftX | 0, bottomY | 0,
+					rightX | 0, topY | 0,
+					xrange | 0, yrange | 0,
+					LifeConstants.aliveStart | 0,
+					this.isTriangular
+				);
+			} else {
+				// weighted states
+				WASM.nextGenerationWeightedStates2(
+					this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+					this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+					this.weightedNeighbourhood.byteOffset | 0, this.weightedNeighbourhood.length | 0,
+					this.weightedStates.byteOffset | 0,
+					leftX | 0, bottomY | 0,
+					rightX | 0, topY | 0,
+					xrange | 0, yrange | 0,
+					LifeConstants.aliveStart | 0,
+					this.isTriangular
+				);
+			}
+		} else {
+			this.nextGenerationWeighted2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTWeighted", timing, Controller.useWASM && Controller.wasmEnableNextGenerationWeighted && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state weighted Javascript version
+	HROT.prototype.nextGenerationWeighted2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1436,6 +1617,32 @@ This file is part of LifeViewer
 
 	// 2-state custom
 	HROT.prototype.nextGenerationCustom2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationCustom && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationCustom2(
+				this.counts.whole.byteOffset | 0,
+				this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				this.neighbourList.byteOffset | 0, this.neighbourList.length | 0,
+				leftX | 0, bottomY | 0,
+				rightX | 0, topY | 0,
+				xrange | 0, yrange | 0,
+				LifeConstants.aliveStart | 0,
+				this.isTriangular
+			);
+		} else {
+			this.nextGenerationCustom2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTCustom", timing, Controller.useWASM && Controller.wasmEnableNextGenerationCustom && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state custom Javascript version
+	HROT.prototype.nextGenerationCustom2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1484,6 +1691,32 @@ This file is part of LifeViewer
 
 	// 2-state hash
 	HROT.prototype.nextGenerationHash2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationHash && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationHash2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart | 0
+			);
+		} else {
+			this.nextGenerationHash2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTHash", timing, Controller.useWASM && Controller.wasmEnableNextGenerationHash && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state hash Javascript
+	HROT.prototype.nextGenerationHash2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1699,16 +1932,85 @@ This file is part of LifeViewer
 
 	// 2-state checkerboard
 	HROT.prototype.nextGenerationCheckerboard2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		this.nextGenerationCheckerBoth2(leftX, bottomY, rightX, topY, xrange, yrange, 1);
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationCheckerboard && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationCheckerboard2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				leftX | 0,
+				bottomY | 0,
+				rightX | 0,
+				topY | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart
+			);
+		} else {
+			this.nextGenerationCheckerBoth2(leftX, bottomY, rightX, topY, xrange, yrange, 1);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTChecker", timing, Controller.useWASM && Controller.wasmEnableNextGenerationCheckerboard && this.engine.view.wasmEnabled);
+		}
 	};
 
 	// 2-state aligned checkerboard
 	HROT.prototype.nextGenerationAlignedCheckerboard2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		this.nextGenerationCheckerBoth2(leftX, bottomY, rightX, topY, xrange, yrange, 0);
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationAlignedCheckerboard && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationAlignedCheckerboard2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				leftX | 0,
+				bottomY | 0,
+				rightX | 0,
+				topY | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart
+			);
+		} else {
+			this.nextGenerationCheckerBoth2(leftX, bottomY, rightX, topY, xrange, yrange, 0);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTAligned", timing, Controller.useWASM && Controller.wasmEnableNextGenerationAlignedCheckerboard && this.engine.view.wasmEnabled);
+		}
 	};
+
 
 	// 2-state hexagonal
 	HROT.prototype.nextGenerationHexagonal2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationHex && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationHexagonal2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart
+			);
+		} else {
+			this.nextGenerationHexagonal2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTHex", timing, Controller.useWASM && Controller.wasmEnableNextGenerationHex && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state hexagonal Javascript version
+	HROT.prototype.nextGenerationHexagonal2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1773,6 +2075,32 @@ This file is part of LifeViewer
 
 	// 2-state saltire
 	HROT.prototype.nextGenerationSaltire2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationSaltire && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationSaltire2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart
+			);
+		} else {
+			this.nextGenerationSaltire2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTSaltire", timing, Controller.useWASM && Controller.wasmEnableNextGenerationSaltire && this.engine.view.wasmEnabled);
+		}
+	};
+
+	// 2-state saltire
+	HROT.prototype.nextGenerationSaltire2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1817,6 +2145,32 @@ This file is part of LifeViewer
 
 	// 2-state star
 	HROT.prototype.nextGenerationStar2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationStar && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationStar2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart
+			);
+		} else {
+			this.nextGenerationStar2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTStar", timing, Controller.useWASM && Controller.wasmEnableNextGenerationStar && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state star Javascript
+	HROT.prototype.nextGenerationStar2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1870,6 +2224,32 @@ This file is part of LifeViewer
 
 	// 2-state cross
 	HROT.prototype.nextGenerationCross2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationCross && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationCross2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart
+			);
+		} else {
+			this.nextGenerationCross2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTCross", timing, Controller.useWASM && Controller.wasmEnableNextGenerationCross && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state cross Javascript version
+	HROT.prototype.nextGenerationCross2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -1934,6 +2314,32 @@ This file is part of LifeViewer
 
 	// 2-state triangular
 	HROT.prototype.nextGenerationTriangular2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationTriangular && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationTriangular2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart
+			);
+		} else {
+			this.nextGenerationTriangular2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTTriangular", timing, Controller.useWASM && Controller.wasmEnableNextGenerationTriangular && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state triangular Javascript version
+	HROT.prototype.nextGenerationTriangular2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -2102,6 +2508,29 @@ This file is part of LifeViewer
 
 	// 2-state gaussian
 	HROT.prototype.nextGenerationGaussian2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationGaussian && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationGaussian2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				leftX | 0, bottomY | 0,
+				rightX | 0, topY | 0,
+				xrange | 0, yrange | 0,
+				LifeConstants.aliveStart
+			);
+		} else {
+			this.nextGenerationGaussian2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTGaussian", timing, Controller.useWASM && Controller.wasmEnableNextGenerationGaussian && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state gaussian Javascript version
+	HROT.prototype.nextGenerationGaussian2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -2182,6 +2611,33 @@ This file is part of LifeViewer
 
 	// 2-state shaped
 	HROT.prototype.nextGenerationShaped2 = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationShaped && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationShaped2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				this.widths.byteOffset | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				LifeConstants.aliveStart
+			);
+		} else {
+			this.nextGenerationShaped2JS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTShaped", timing, Controller.useWASM && Controller.wasmEnableNextGenerationShaped && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// 2-state shaped Javascript version
+	HROT.prototype.nextGenerationShaped2JS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -2438,8 +2894,16 @@ This file is part of LifeViewer
 				timing = performance.now();
 
 				if (Controller.useWASM && Controller.wasmEnableWrapTorusHROT && this.engine.view.wasmEnabled) {
-					WASM.wrapTorusHROT(colourGrid.whole.byteOffset, colourGrid[0].length,
-						gridLeftX, gridBottomY, gridRightX, gridTopY, xrange, yrange);
+					WASM.wrapTorusHROT(
+						colourGrid.whole.byteOffset | 0,
+						colourGrid[0].length | 0,
+						gridLeftX | 0,
+						gridBottomY | 0,
+						gridRightX | 0,
+						gridTopY | 0,
+						xrange | 0,
+						yrange | 0
+					);
 				} else {
 					this.wrapTorusHROT(gridLeftX, gridBottomY, gridRightX, gridTopY);
 				}
@@ -2500,8 +2964,11 @@ This file is part of LifeViewer
 			var timing = performance.now();
 
 			if (Controller.useWASM && Controller.wasmEnableClearTopAndLeft && this.engine.view.wasmEnabled) {
-				WASM.clearTopAndLeft(counts.whole.byteOffset, counts[0].length,
-					bottomY, topY, leftX, rightX, ry2, rx2);
+				WASM.clearTopAndLeft(
+					counts.whole.byteOffset | 0, counts[0].length | 0,
+					bottomY | 0, topY | 0, leftX | 0, rightX | 0,
+					ry2 | 0, rx2 | 0
+				);
 			} else {
 				// put zeros in top 2*range rows
 				for (y = bottomY; y < bottomY + ry2; y += 1) {
@@ -2523,7 +2990,17 @@ This file is part of LifeViewer
 			timing = performance.now();
 
 			if (Controller.useWASM && Controller.wasmEnableHROTCounts && this.engine.view.wasmEnabled) {
-				WASM.cumulativeMooreCounts2(counts.whole.byteOffset, colourGrid.whole.byteOffset, bottomY + ry2, leftX + rx2, topY, rightX, aliveStart, counts[0].length, colourGrid[0].length);
+				WASM.cumulativeMooreCounts2(
+					counts.whole.byteOffset | 0,
+					colourGrid.whole.byteOffset | 0,
+					(bottomY + ry2) | 0,
+					(leftX + rx2) | 0,
+					topY | 0,
+					rightX | 0,
+					aliveStart | 0,
+					counts[0].length | 0,
+					colourGrid[0].length | 0
+				);
 			} else {
 				prevCountRow = counts[bottomY + ry2 - 1];
 				for (y = bottomY + ry2; y <= topY; y += 1) {
@@ -2871,18 +3348,20 @@ This file is part of LifeViewer
 
 			// compute the rest of the grid
 			if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTMoore && this.engine.view.wasmEnabled && !useRandom) {
-				WASM.nextGenerationHROTMoore2(colourGrid.whole.byteOffset, colourGrid[0].length,
-					colourTileHistoryGrid.whole.byteOffset, colourTileHistoryGrid[0].length,
-					counts.whole.byteOffset, counts[0].length,
-					this.comboList.byteOffset,
-					colUsed.byteOffset,
-					bottomY, leftX, topY, rightX,
-					xrange, yrange,
-					aliveStart, LifeConstants.aliveMax, LifeConstants.deadStart, deadMin,
-					this.sharedBuffer.byteOffset,
-					minY, maxY,
-					minY1, maxY1,
-					population, births, deaths);
+				WASM.nextGenerationHROTMoore2(
+					colourGrid.whole.byteOffset | 0, colourGrid[0].length | 0,
+					colourTileHistoryGrid.whole.byteOffset | 0, colourTileHistoryGrid[0].length | 0,
+					counts.whole.byteOffset | 0, counts[0].length | 0,
+					this.comboList.byteOffset | 0,
+					colUsed.byteOffset | 0,
+					bottomY | 0, leftX | 0, topY | 0, rightX | 0,
+					xrange | 0, yrange | 0,
+					aliveStart | 0, LifeConstants.aliveMax | 0, LifeConstants.deadStart | 0, deadMin | 0,
+					this.sharedBuffer.byteOffset | 0,
+					minY | 0, maxY | 0,
+					minY1 | 0, maxY1 | 0,
+					population | 0, births | 0, deaths
+				);
 
 				minY = this.sharedBuffer[0];
 				maxY = this.sharedBuffer[1];
@@ -3090,7 +3569,19 @@ This file is part of LifeViewer
 
 				// calculate cumulative counts in top left corner of colcounts
 				if (Controller.useWASM && Controller.wasmEnableHROTCounts && this.engine.view.wasmEnabled) {
-					WASM.cumulativeVNCounts2(this.ccht, this.ncols, this.nrows, bottomY, leftX, aliveStart, this.halfccwd, counts.whole.byteOffset, colourGrid.whole.byteOffset, counts[0].length, colourGrid[0].length);
+					WASM.cumulativeVNCounts2(
+						this.ccht | 0,
+						this.ncols | 0,
+						this.nrows | 0,
+						bottomY | 0,
+						leftX | 0,
+						aliveStart | 0,
+						this.halfccwd | 0,
+						counts.whole.byteOffset | 0,
+						colourGrid.whole.byteOffset | 0,
+						counts[0].length | 0,
+						colourGrid[0].length | 0
+					);
 				} else {
 					for (i = 0; i < this.ccht; i += 1) {
 						countRow = counts[i];
@@ -3119,19 +3610,21 @@ This file is part of LifeViewer
 
 				// calculate final neighborhood counts and update the corresponding cells in the grid
 				if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTVN && this.engine.view.wasmEnabled && !useRandom) {
-					WASM.nextGenerationHROTVN2(colourGrid.whole.byteOffset, colourGrid[0].length,
-						colourTileHistoryGrid.whole.byteOffset, colourTileHistoryGrid[0].length,
-						counts.whole.byteOffset, counts[0].length,
-						this.comboList.byteOffset,
-						bottomY, leftX,
-						xrange, yrange,
-						this.nrows, this.ncols,
-						aliveStart, LifeConstants.aliveMax, LifeConstants.deadStart, deadMin,
-						this.ccht, this.halfccwd,
-						this.sharedBuffer.byteOffset,
-						minX, maxX, minY, maxY,
-						minX1, maxX1, minY1, maxY1,
-						population, births, deaths);
+					WASM.nextGenerationHROTVN2(
+						colourGrid.whole.byteOffset | 0, colourGrid[0].length | 0,
+						colourTileHistoryGrid.whole.byteOffset | 0, colourTileHistoryGrid[0].length | 0,
+						counts.whole.byteOffset | 0, counts[0].length | 0,
+						this.comboList.byteOffset | 0,
+						bottomY | 0, leftX | 0,
+						xrange | 0, yrange | 0,
+						this.nrows | 0, this.ncols | 0,
+						aliveStart | 0, LifeConstants.aliveMax | 0, LifeConstants.deadStart | 0, deadMin | 0,
+						this.ccht | 0, this.halfccwd | 0,
+						this.sharedBuffer.byteOffset | 0,
+						minX | 0, maxX | 0, minY | 0, maxY | 0,
+						minX1 | 0, maxX1 | 0, minY1 | 0, maxY1 | 0,
+						population | 0, births | 0, deaths | 0
+					);
 
 					minX = this.sharedBuffer[0];
 					maxX = this.sharedBuffer[1];
@@ -3433,9 +3926,11 @@ This file is part of LifeViewer
 
 			// clear outside
 			if (Controller.useWASM && Controller.wasmEnableHROTClear && this.engine.view.wasmEnabled) {
-				WASM.clearHROTOutside(colourGrid.whole.byteOffset, colourGrid[0].length,
-					gridLeftX, gridBottomY, gridRightX, gridTopY,
-					xrange, yrange);
+				WASM.clearHROTOutside(
+					colourGrid.whole.byteOffset | 0, colourGrid[0].length | 0,
+					gridLeftX | 0, gridBottomY | 0, gridRightX | 0, gridTopY | 0,
+					xrange | 0, yrange | 0
+				);
 			} else {
 				this.clearHROTOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
 			}
@@ -3447,8 +3942,37 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state corner/edge
+
+	// N-state corner/edge
 	HROT.prototype.nextGenerationCornerEdgeN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationCornerEdge && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationCornerEdge2(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0,
+				this.cornerRange | 0,
+				this.edgeRange | 0
+			);
+		} else {
+			this.nextGenerationCornerEdgeNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTCorner", timing, Controller.useWASM && Controller.wasmEnableNextGenerationCornerEdge && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state corner/edge Javascript version
+	HROT.prototype.nextGenerationCornerEdgeNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -3509,8 +4033,34 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state asterisk
+	// N-state asterisk
 	HROT.prototype.nextGenerationAsteriskN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationAsterisk && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationAsteriskN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationAsteriskNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTAsterisk", timing, Controller.useWASM && Controller.wasmEnableNextGenerationAsterisk && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state asterisk Javascript version
+	HROT.prototype.nextGenerationAsteriskNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -3558,8 +4108,34 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state tripod
+	// N-state tripod
 	HROT.prototype.nextGenerationTripodN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationTripod && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationTripodN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationTripodNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTTripod", timing, Controller.useWASM && Controller.wasmEnableNextGenerationTripod && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state tripod Javscript version
+	HROT.prototype.nextGenerationTripodNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -3600,8 +4176,49 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state weighted
+	// N-state weighted
 	HROT.prototype.nextGenerationWeightedN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationWeighted && this.engine.view.wasmEnabled) {
+			if (this.weightedStates === null) {
+				// no weighted states
+				WASM.nextGenerationWeightedN(
+					this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+					this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+					this.weightedNeighbourhood.byteOffset | 0, this.weightedNeighbourhood.length | 0,
+					leftX | 0, bottomY | 0,
+					rightX | 0, topY | 0,
+					xrange | 0, yrange | 0,
+					(this.engine.multiNumStates + this.engine.historyStates - 1) | 0,
+					this.isTriangular
+				);
+			} else {
+				// weighted states
+				WASM.nextGenerationWeightedStatesN(
+					this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+					this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+					this.weightedNeighbourhood.byteOffset | 0, this.weightedNeighbourhood.length | 0,
+					this.weightedStates.byteOffset | 0,
+					leftX | 0, bottomY | 0,
+					rightX | 0, topY | 0,
+					xrange | 0, yrange | 0,
+					(this.engine.multiNumStates + this.engine.historyStates - 1) | 0,
+					this.isTriangular
+				);
+			}
+		} else {
+			this.nextGenerationWeightedNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTWeighted", timing, Controller.useWASM && Controller.wasmEnableNextGenerationWeighted && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state weighted Javascript version
+	HROT.prototype.nextGenerationWeightedNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -3687,8 +4304,34 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state custom
+	// N-state custom
 	HROT.prototype.nextGenerationCustomN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationCustom && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationCustomN(
+				this.counts.whole.byteOffset | 0,
+				this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				this.neighbourList.byteOffset | 0, this.neighbourList.length | 0,
+				leftX | 0, bottomY | 0,
+				rightX | 0, topY | 0,
+				xrange | 0, yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0,
+				this.isTriangular
+			);
+		} else {
+			this.nextGenerationCustomNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTCustom", timing, Controller.useWASM && Controller.wasmEnableNextGenerationCustom && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state custom Javascript version
+	HROT.prototype.nextGenerationCustomNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -3735,8 +4378,34 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state hash
+	// N-state hash
 	HROT.prototype.nextGenerationHashN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationHash && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationHashN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationHashNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTHash", timing, Controller.useWASM && Controller.wasmEnableNextGenerationHash && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state hash Javascript version
+	HROT.prototype.nextGenerationHashNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -3950,18 +4619,86 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state checkerboard
+	// N-state checkerboard
 	HROT.prototype.nextGenerationCheckerboardN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		this.nextGenerationCheckerBothN(leftX, bottomY, rightX, topY, xrange, yrange, 1);
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationCheckerboard && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationCheckerboardN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				leftX | 0,
+				bottomY | 0,
+				rightX | 0,
+				topY | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationCheckerBothN(leftX, bottomY, rightX, topY, xrange, yrange, 1);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTChecker", timing, Controller.useWASM && Controller.wasmEnableNextGenerationCheckerboard && this.engine.view.wasmEnabled);
+		}
 	};
 
-	// n-state aligned checkerboard
+	// N-state aligned checkerboard
 	HROT.prototype.nextGenerationAlignedCheckerboardN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
-		this.nextGenerationCheckerBothN(leftX, bottomY, rightX, topY, xrange, yrange, 0);
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationAlignedCheckerboard && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationAlignedCheckerboardN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				leftX | 0,
+				bottomY | 0,
+				rightX | 0,
+				topY | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationCheckerBothN(leftX, bottomY, rightX, topY, xrange, yrange, 0);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTAligned", timing, Controller.useWASM && Controller.wasmEnableNextGenerationAlignedCheckerboard && this.engine.view.wasmEnabled);
+		}
 	};
 
-	// n-state hexagonal
+	// N-state hexagonal
 	HROT.prototype.nextGenerationHexagonalN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationHex && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationHexagonalN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationHexagonalNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTHex", timing, Controller.useWASM && Controller.wasmEnableNextGenerationHex && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state hexagonal Javascript version
+	HROT.prototype.nextGenerationHexagonalNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -4024,8 +4761,34 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state saltire
+	// 2-state saltire
 	HROT.prototype.nextGenerationSaltireN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationSaltire && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationSaltireN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationSaltireNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTSaltire", timing, Controller.useWASM && Controller.wasmEnableNextGenerationSaltire && this.engine.view.wasmEnabled);
+		}
+	};
+
+	// n-state saltire Javascript version
+	HROT.prototype.nextGenerationSaltireNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -4068,8 +4831,34 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state star
+	// N-state star
 	HROT.prototype.nextGenerationStarN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationStar && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationStarN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationStarNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTStar", timing, Controller.useWASM && Controller.wasmEnableNextGenerationStar && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state star Javascript version
+	HROT.prototype.nextGenerationStarNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -4121,8 +4910,34 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state cross
+	// N-state cross
 	HROT.prototype.nextGenerationCrossN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationCross && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationCrossN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationCrossNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTCross", timing, Controller.useWASM && Controller.wasmEnableNextGenerationCross && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state cross Javascript version
+	HROT.prototype.nextGenerationCrossNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -4185,8 +5000,34 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state triangular
+	// N-state triangular
 	HROT.prototype.nextGenerationTriangularN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationTriangular && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationTriangularN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationTriangularNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTTriangular", timing, Controller.useWASM && Controller.wasmEnableNextGenerationTriangular && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state triangular Javascript version
+	HROT.prototype.nextGenerationTriangularNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -4353,8 +5194,31 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state gaussian
+	// N-state gaussian
 	HROT.prototype.nextGenerationGaussianN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationGaussian && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationGaussianN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				leftX | 0, bottomY | 0,
+				rightX | 0, topY | 0,
+				xrange | 0, yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationGaussianNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTGaussian", timing, Controller.useWASM && Controller.wasmEnableNextGenerationGaussian && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state gaussian Javascript version
+	HROT.prototype.nextGenerationGaussianNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -4433,8 +5297,35 @@ This file is part of LifeViewer
 		}
 	};
 
-	// n-state shaped
+	// N-state shaped
 	HROT.prototype.nextGenerationShapedN = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationShaped && this.engine.view.wasmEnabled) {
+			WASM.nextGenerationShapedN(
+				this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
+				this.engine.colourGrid.whole.byteOffset | 0, this.engine.colourGrid[0].length | 0,
+				this.widths.byteOffset | 0,
+				bottomY | 0,
+				topY | 0,
+				leftX | 0,
+				rightX | 0,
+				xrange | 0,
+				yrange | 0,
+				(this.engine.multiNumStates + this.engine.historyStates - 1) | 0
+			);
+		} else {
+			this.nextGenerationShapedNJS(leftX, bottomY, rightX, topY, xrange, yrange);
+		}
+
+		if (Controller.wasmTiming) {
+			timing = performance.now() - timing;
+			this.engine.view.menuManager.updateTimingItem("nextHROTShaped", timing, Controller.useWASM && Controller.wasmEnableNextGenerationShaped && this.engine.view.wasmEnabled);
+		}
+	}
+
+	// n-state shaped Javascript version
+	HROT.prototype.nextGenerationShapedNJS = function(/** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ rightX, /** @type {number} */ topY, /** @type {number} */ xrange, /** @type {number} */ yrange) {
 		var	/** @type {Array<Int32Array>} */ counts = this.counts,
 			/** @type {number} */ x,
 			/** @type {number} */ y,
@@ -4744,7 +5635,17 @@ This file is part of LifeViewer
 			var timing = performance.now();
 
 			if (Controller.useWASM) {
-				WASM.cumulativeMooreCountsN(counts.whole.byteOffset, colourGrid.whole.byteOffset, bottomY + ry2, leftX + rx2, topY, rightX, maxGenState, counts[0].length, colourGrid[0].length);
+				WASM.cumulativeMooreCountsN(
+					counts.whole.byteOffset |0,
+					colourGrid.whole.byteOffset |0,
+					(bottomY + ry2) | 0,
+					(leftX + rx2) | 0,
+					topY | 0,
+					rightX | 0,
+					maxGenState | 0,
+					counts[0].length | 0,
+					colourGrid[0].length | 0
+				);
 			} else {
 				// calculate cumulative counts for each column
 				for (y = bottomY + ry2; y <= topY; y += 1) {
@@ -5166,18 +6067,20 @@ This file is part of LifeViewer
 
 			// compute the rest of the grid
 			if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTMoore && this.engine.view.wasmEnabled && !useRandom) {
-				WASM.nextGenerationHROTMooreN(colourGrid.whole.byteOffset, colourGrid[0].length,
-					colourTileHistoryGrid.whole.byteOffset, colourTileHistoryGrid[0].length,
-					counts.whole.byteOffset, counts[0].length,
-					birthList.byteOffset,
-					survivalList.byteOffset,
-					bottomY, leftX, topY, rightX,
-					xrange, yrange,
-					deadState, minDeadState, maxGenState,
-					this.sharedBuffer.byteOffset,
-					minX, maxX, minY, maxY,
-					minX1, maxX1, minY1, maxY1,
-					population, births, deaths);
+				WASM.nextGenerationHROTMooreN(
+					colourGrid.whole.byteOffset | 0, colourGrid[0].length | 0,
+					colourTileHistoryGrid.whole.byteOffset | 0, colourTileHistoryGrid[0].length | 0,
+					counts.whole.byteOffset | 0, counts[0].length | 0,
+					this.comboList.byteOffset | 0,
+					bottomY | 0, leftX | 0, topY | 0, rightX | 0,
+					xrange | 0, yrange | 0,
+					deadState | 0, minDeadState | 0, maxGenState | 0,
+					this.sharedBuffer.byteOffset | 0,
+					minX | 0, maxX | 0, minY | 0, maxY | 0,
+					minX1 | 0, maxX1 | 0, minY1 | 0, maxY1 | 0,
+					population | 0, births | 0, deaths | 0
+				);
+
 				minX = this.sharedBuffer[0];
 				maxX = this.sharedBuffer[1];
 				minY = this.sharedBuffer[2];
@@ -5403,7 +6306,19 @@ This file is part of LifeViewer
 
 				// calculate cumulative counts in top left corner of colcounts
 				if (Controller.useWASM && Controller.wasmEnableHROTCounts && this.engine.view.wasmEnabled) {
-					WASM.cumulativeVNCountsN(this.ccht, this.ncols, this.nrows, bottomY, leftX, maxGenState, this.halfccwd, counts.whole.byteOffset, colourGrid.whole.byteOffset, counts[0].length, colourGrid[0].length);
+					WASM.cumulativeVNCountsN(
+						this.ccht | 0,
+						this.ncols | 0,
+						this.nrows | 0,
+						bottomY | 0,
+						leftX | 0,
+						maxGenState | 0,
+						this.halfccwd | 0,
+						counts.whole.byteOffset | 0,
+						colourGrid.whole.byteOffset | 0,
+						counts[0].length | 0,
+						colourGrid[0].length | 0
+					);
 				} else {
 					for (i = 0; i < this.ccht; i += 1) {
 						countRow = counts[i];
@@ -5432,19 +6347,21 @@ This file is part of LifeViewer
 
 				// calculate final neighborhood counts and update the corresponding cells in the grid
 				if (Controller.useWASM && Controller.wasmEnableNextGenerationHROTVN && this.engine.view.wasmEnabled && !useRandom) {
-					WASM.nextGenerationHROTVNN(colourGrid.whole.byteOffset, colourGrid[0].length,
-						colourTileHistoryGrid.whole.byteOffset, colourTileHistoryGrid[0].length,
-						counts.whole.byteOffset, counts[0].length,
-						this.comboList.byteOffset,
-						bottomY, leftX,
-						xrange, yrange,
-						this.nrows, this.ncols,
-						deadState, minDeadState, maxGenState,
-						this.ccht, this.halfccwd,
-						this.sharedBuffer.byteOffset,
-						minX, maxX, minY, maxY,
-						minX1, maxX1, minY1, maxY1,
-						population, births, deaths);
+					WASM.nextGenerationHROTVNN(
+						colourGrid.whole.byteOffset | 0, colourGrid[0].length | 0,
+						colourTileHistoryGrid.whole.byteOffset | 0, colourTileHistoryGrid[0].length | 0,
+						counts.whole.byteOffset | 0, counts[0].length | 0,
+						this.comboList.byteOffset | 0,
+						bottomY | 0, leftX | 0,
+						xrange | 0, yrange | 0,
+						this.nrows | 0, this.ncols | 0,
+						deadState | 0, minDeadState | 0, maxGenState | 0,
+						this.ccht | 0, this.halfccwd | 0,
+						this.sharedBuffer.byteOffset | 0,
+						minX | 0, maxX | 0, minY | 0, maxY | 0,
+						minX1 | 0, maxX1 | 0, minY1 | 0, maxY1 | 0,
+						population | 0, births | 0, deaths | 0
+					);
 
 					minX = this.sharedBuffer[0];
 					maxX = this.sharedBuffer[1];

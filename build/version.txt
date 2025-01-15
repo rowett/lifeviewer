@@ -1,3 +1,6 @@
+Build 1227
+- added a progress bar to show buffer usage during Identify period detection
+
 Build 1226
 - fixed a regression with HROT/LtL
 - fixed a rendering issue with [R]Super at zooms >= -2 and < 1

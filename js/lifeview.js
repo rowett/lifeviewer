@@ -3,7 +3,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2024 Chris Rowett
+ Copyright (C) 2015-2025 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1226,
+		/** @const {number} */ versionBuild : 1227,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -547,7 +547,6 @@ This file is part of LifeViewer
 		// WASM feature selection
 		/** @type {boolean} */ useWASM: true,
 		/** @type {boolean} */ wasmTiming : true,
-		/** @type {number} */ wasmTimingReps : 1,
 		/** @type {boolean} */ wasmEnableGetHash : true,
 		/** @type {boolean} */ wasmEnableRenderGrid: true,
 		/** @type {boolean} */ wasmEnableConvertToPens : true,
@@ -560,7 +559,23 @@ This file is part of LifeViewer
 		/** @type {boolean} */ wasmEnableHROTClear : true,
 		/** @type {boolean} */ wasmEnableWrapTorusHROT : true,
 		/** @type {boolean} */ wasmEnableClearTopAndLeft: true,
-		/** @type {boolean} */ wasmEnableNextGenerationGenerations: true
+		/** @type {boolean} */ wasmEnableNextGenerationGenerations: true,
+		/** @type {boolean} */ wasmEnableNextGenerationCross: true,
+		/** @type {boolean} */ wasmEnableNextGenerationHash: true,
+		/** @type {boolean} */ wasmEnableNextGenerationSaltire: true,
+		/** @type {boolean} */ wasmEnableNextGenerationStar: true,
+		/** @type {boolean} */ wasmEnableNextGenerationCornerEdge: true,
+		/** @type {boolean} */ wasmEnableNextGenerationCheckerboard: true,
+		/** @type {boolean} */ wasmEnableNextGenerationAlignedCheckerboard: true,
+		/** @type {boolean} */ wasmEnableNextGenerationShaped: true,
+		/** @type {boolean} */ wasmEnableNextGenerationHex: true,
+		/** @type {boolean} */ wasmEnableNextGenerationAsterisk: true,
+		/** @type {boolean} */ wasmEnableNextGenerationTripod: true,
+		/** @type {boolean} */ wasmEnableNextGenerationTriangular: true,
+		/** @type {boolean} */ wasmEnableNextGenerationCustom: true,
+		/** @type {boolean} */ wasmEnableNextGenerationGaussian: true,
+		/** @type {boolean} */ wasmEnableNextGenerationWeighted: true,
+		/** @type {boolean} */ wasmEnableUpdateGridFromCounts: true
 	};
 
 	// frame rate calculation function
@@ -5597,6 +5612,19 @@ This file is part of LifeViewer
 		return clipped;
 	};
 
+
+	// update progress bar for identify period detection
+	View.prototype.updateProgressBarIdentify = function(/** @type {View} */ me) {
+		// update the progress bar
+		me.progressBar.current = (100 * me.engine.oscLength) / LifeConstants.maxOscillatorGens;
+
+		// show the progress bar
+		me.progressBar.deleted = false;
+
+		// clear the bg alpha to show the progress bar
+		me.genToggle.bgAlpha = 0;
+	};
+
 	// update progress bar for start from
 	View.prototype.updateProgressBarStartFrom = function(/** @type {View} */ me) {
 		// update the progress bar
@@ -8306,6 +8334,9 @@ This file is part of LifeViewer
 
 		// render world
 		me.renderWorld(me, false, 0, false);
+
+		// update progress bar
+		me.updateProgressBarIdentify(me);
 
 		// set counters to the current generation
 		me.fixedPointCounter = me.engine.counter * me.refreshRate;

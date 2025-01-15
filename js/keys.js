@@ -3,7 +3,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2024 Chris Rowett
+ Copyright (C) 2015-2025 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ This file is part of LifeViewer
 	KeyProcessor.processKeyOverview = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ shiftKey = event.shiftKey,
 			/** @type {boolean} */ ctrlKey = event.ctrlKey,
 			/** @type {boolean} */ altKey = event.altKey,
 			/** @type {boolean} */ metaKey = event.metaKey;
@@ -41,8 +42,14 @@ This file is part of LifeViewer
 		switch (keyCode) {
 		// t for timing display
 		case 84:
-			// toggle fps
-			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			// check for shift key
+			if (shiftKey) {
+				// toggle extended timing
+				me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
+			} else {
+				// toggle fps
+				me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			}
 			break;
 
 		// Esc to close Overview and return to current pattern
@@ -67,6 +74,7 @@ This file is part of LifeViewer
 	KeyProcessor.processKeyGoTo = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ shiftKey = event.shiftKey,
 			/** @type {boolean} */ ctrlKey = event.ctrlKey,
 			/** @type {boolean} */ altKey = event.altKey,
 			/** @type {boolean} */ metaKey = event.metaKey;
@@ -81,8 +89,14 @@ This file is part of LifeViewer
 		switch (keyCode) {
 		// t for timing display
 		case 84:
-			// toggle fps
-			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			// check for shift key
+			if (shiftKey) {
+				// toggle extended timing
+				me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
+			} else {
+				// toggle fps
+				me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			}
 			break;
 
 		// Esc to cancel
@@ -106,6 +120,7 @@ This file is part of LifeViewer
 	KeyProcessor.processKeyIdentify = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ shiftKey = event.shiftKey,
 			/** @type {boolean} */ ctrlKey = event.ctrlKey,
 			/** @type {boolean} */ metaKey = event.metaKey,
 			/** @type {boolean} */ altKey = event.altKey;
@@ -120,8 +135,14 @@ This file is part of LifeViewer
 		switch (keyCode) {
 		// t for timing display
 		case 84:
-			// toggle fps
-			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			// check for shift key
+			if (shiftKey) {
+				// toggle extended timing
+				me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
+			} else {
+				// toggle fps
+				me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			}
 			break;
 
 		// Esc or f6 to cancel Identify
@@ -165,6 +186,7 @@ This file is part of LifeViewer
 	KeyProcessor.processKeyHistory = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
 		// flag event processed
 		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ shiftKey = event.shiftKey,
 			/** @type {boolean} */ ctrlKey = event.ctrlKey,
 			/** @type {boolean} */ metaKey = event.metaKey,
 			/** @type {boolean} */ altKey = event.altKey;
@@ -179,8 +201,14 @@ This file is part of LifeViewer
 		switch (keyCode) {
 		// t for timing display
 		case 84:
-			// toggle fps
-			me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			// check for shift key
+			if (shiftKey) {
+				// toggle extended timing
+				me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
+			} else {
+				// toggle fps
+				me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+			}
 			break;
 
 		// ignore other keys

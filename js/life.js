@@ -3,7 +3,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2024 Chris Rowett
+ Copyright (C) 2015-2025 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -515,7 +515,6 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.lastZoom16 = true;
 
 		// allocator
-		///** @type {Allocator} */ this.allocator = new Allocator();
 		/** @type {Allocator} */ this.allocator = WASM.allocator;
 
 		// list of potential gliders to clear
@@ -2698,9 +2697,7 @@ This file is part of LifeViewer
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {number} */ gridWidth = this.colourGrid[0].length,
-			/** @type {number} */ timing = performance.now(),
-			/** @type {number} */ reps = Controller.wasmTiming ? Controller.wasmTimingReps : 1,
-			/** @type {number} */ repNumber = 0;
+			/** @type {number} */ timing = performance.now();
 
 		// check for PCA, RuleTree, Super or Extended rules
 		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
@@ -2710,23 +2707,62 @@ This file is part of LifeViewer
 			}
 		}
 
-		while (repNumber < reps) {
-			if (Controller.useWASM && Controller.wasmEnableGetHash && this.view.wasmEnabled) {
-				if (this.isLifeHistory) {
-					result = WASM.getHashLifeHistory(colourGrid.whole.byteOffset, this.overlayGrid.whole.byteOffset, box.bottomY, box.leftX, box.topY, box.rightX, gridWidth, this.aliveStart, ViewConstants.stateMap[6] + 128);
-				} else if (twoState) {
-					result = WASM.getHashTwoState(colourGrid.whole.byteOffset, box.bottomY, box.leftX, box.topY, box.rightX, gridWidth, this.aliveStart);
-				} else if (this.isSuper) {
-					result = WASM.getHashSuper(colourGrid.whole.byteOffset, box.bottomY, box.leftX, box.topY, box.rightX, gridWidth);
-				} else if (this.isRuleTree || this.isPCA || this.isExtended) {
-					result = WASM.getHashRuleLoaderOrPCAOrExtended(colourGrid.whole.byteOffset, box.bottomY, box.leftX, box.topY, box.rightX, gridWidth, this.historyStates);
-				} else {
-					result = WASM.getHashGenerations(colourGrid.whole.byteOffset, box.bottomY, box.leftX, box.topY, box.rightX, gridWidth, this.historyStates, this.multiNumStates);
-				}
+		if (Controller.useWASM && Controller.wasmEnableGetHash && this.view.wasmEnabled) {
+			if (this.isLifeHistory) {
+				result = WASM.getHashLifeHistory(
+					colourGrid.whole.byteOffset | 0,
+					this.overlayGrid.whole.byteOffset | 0,
+					box.bottomY | 0,
+					box.leftX | 0,
+					box.topY | 0,
+					box.rightX | 0,
+					gridWidth | 0,
+					this.aliveStart | 0,
+					(ViewConstants.stateMap[6] + 128) | 0
+				);
+			} else if (twoState) {
+				result = WASM.getHashTwoState(
+					colourGrid.whole.byteOffset | 0,
+					box.bottomY | 0,
+					box.leftX | 0,
+					box.topY | 0,
+					box.rightX | 0,
+					gridWidth | 0,
+					this.aliveStart | 0
+				);
+			} else if (this.isSuper) {
+				result = WASM.getHashSuper(
+					colourGrid.whole.byteOffset | 0,
+					box.bottomY | 0,
+					box.leftX | 0,
+					box.topY | 0,
+					box.rightX | 0,
+					gridWidth | 0
+				);
+			} else if (this.isRuleTree || this.isPCA || this.isExtended) {
+				result = WASM.getHashRuleLoaderOrPCAOrExtended(
+					colourGrid.whole.byteOffset | 0,
+					box.bottomY | 0,
+					box.leftX | 0,
+					box.topY | 0,
+					box.rightX | 0,
+					gridWidth | 0,
+					this.historyStates | 0
+				);
 			} else {
-				result = this.getHashJS(box);
+				result = WASM.getHashGenerations(
+					colourGrid.whole.byteOffset | 0,
+					box.bottomY | 0,
+					box.leftX | 0,
+					box.topY | 0,
+					box.rightX | 0,
+					gridWidth | 0,
+					this.historyStates | 0,
+					this.multiNumStates | 0
+				);
 			}
-			repNumber += 1;
+		} else {
+			result = this.getHashJS(box);
 		}
 
 		timing = performance.now() - timing;
@@ -4138,7 +4174,16 @@ This file is part of LifeViewer
 		var	/** @type {number} */ timing = performance.now();
 
 		if (Controller.useWASM && Controller.wasmEnableUpdateCellCounts) {
-			WASM.updateCellCounts(colourGrid.whole.byteOffset, cellCounts.byteOffset, extent.bottomY, extent.leftX, extent.topY, extent.rightX, colourGrid[0].length, this.aliveStart);
+			WASM.updateCellCounts(
+				colourGrid.whole.byteOffset | 0,
+				cellCounts.byteOffset | 0,
+				extent.bottomY | 0,
+				extent.leftX | 0,
+				extent.topY | 0,
+				extent.rightX | 0,
+				colourGrid[0].length | 0,
+				this.aliveStart | 0
+			);
 		} else {
 			this.updateCellCountsJS(extent, colourGrid, cellCounts);
 		}
@@ -4249,7 +4294,20 @@ This file is part of LifeViewer
 		var	/** @type {number} */ timing = performance.now();
 
 		if (Controller.useWASM && Controller.wasmEnableUpdateOccupancyStrict) {
-			WASM.updateOccupancyStrict(colourGrid.whole.byteOffset, frames.byteOffset, extent.bottomY, extent.leftX, extent.topY, extent.rightX, p, bitRowInBytes, bitFrameInBytes, bitStart, this.aliveStart, colourGrid[0].length);
+			WASM.updateOccupancyStrict(
+				colourGrid.whole.byteOffset | 0,
+				frames.byteOffset | 0,
+				extent.bottomY | 0,
+				extent.leftX | 0,
+				extent.topY | 0,
+				extent.rightX | 0,
+				p | 0,
+				bitRowInBytes | 0,
+				bitFrameInBytes | 0,
+				bitStart | 0,
+				this.aliveStart | 0,
+				colourGrid[0].length | 0
+			);
 		} else {
 			this.updateOccupancyStrictJS(extent, colourGrid, frames, p, bitRowInBytes, bitFrameInBytes, bitStart);
 		}
@@ -18714,9 +18772,7 @@ This file is part of LifeViewer
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
 			/** @type {number} */ boundarySize = 16,
 			/** @type {number} */ currentPop = 0,
-			/** @type {number} */ timing = 0,
-			/** @type {number} */ reps = Controller.wasmTiming ? Controller.wasmTimingReps : 1,
-			/** @type {number} */ repNumber = 0;
+			/** @type {number} */ timing = 0;
 
 		// check if snapshot should be saved
 		if (this.counter === this.nextSnapshotTarget - 1 && !noHistory) {
@@ -18789,21 +18845,46 @@ This file is part of LifeViewer
 		if (this.multiNumStates !== -1 && !this.isHROT && !this.isPCA && !this.isRuleTree && !this.isSuper && !this.isExtended) {
 			timing = performance.now();
 
-			while (repNumber < reps) {
-				if (Controller.useWASM && Controller.wasmEnableNextGenerationGenerations && this.view.wasmEnabled) {
-					if ((this.counter & 1) !== 0) {
-						WASM.nextGenerationGenerations(this.colourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.colourTileGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, this.nextGrid.whole.byteOffset, this.nextTileGrid.whole.byteOffset, this.colourGrid[0].length, this.sharedBuffer, this.sharedBuffer.byteOffset);
-					} else {
-						WASM.nextGenerationGenerations(this.colourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.colourTileGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, this.grid.whole.byteOffset, this.tileGrid.whole.byteOffset, this.colourGrid[0].length, this.sharedBuffer.byteOffset);
-					}
-
-					this.population = this.sharedBuffer[0];
-					this.births = this.sharedBuffer[1];
-					this.deaths = this.sharedBuffer[2];
+			if (Controller.useWASM && Controller.wasmEnableNextGenerationGenerations && this.view.wasmEnabled) {
+				if ((this.counter & 1) !== 0) {
+					WASM.nextGenerationGenerations(
+						this.colourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.colourTileGrid.whole.byteOffset | 0,
+						this.tileY | 0, this.tileX | 0,
+						this.tileRows | 0, this.tileCols | 0,
+						this.nextGrid.whole.byteOffset | 0,
+						this.nextTileGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.sharedBuffer.byteOffset | 0,
+						this.historyStates | 0, (this.multiNumStates + this.historyStates - 1) | 0, (this.historyStates > 0 ? 1 : 0) | 0,
+						this.width | 0, this.height | 0
+					);
 				} else {
-					this.nextGenerationGenerations();
+					WASM.nextGenerationGenerations(
+						this.colourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.colourTileGrid.whole.byteOffset | 0,
+						this.tileY | 0, this.tileX | 0,
+						this.tileRows | 0, this.tileCols | 0,
+						this.grid.whole.byteOffset | 0,
+						this.tileGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.sharedBuffer.byteOffset | 0,
+						this.historyStates | 0, (this.multiNumStates + this.historyStates - 1) | 0, (this.historyStates > 0 ? 1 : 0) | 0,
+						this.width | 0, this.height | 0
+					);
 				}
-				repNumber += 1;
+
+				this.zoomBox.leftX = this.sharedBuffer[0];
+				this.zoomBox.bottomY = this.sharedBuffer[1];
+				this.zoomBox.rightX = this.sharedBuffer[2];
+				this.zoomBox.topY = this.sharedBuffer[3];
+				this.population = this.sharedBuffer[4];
+				this.births = this.sharedBuffer[5];
+				this.deaths = this.sharedBuffer[6];
+			} else {
+				this.nextGenerationGenerations();
 			}
 
 			timing = performance.now() - timing;
@@ -25157,8 +25238,6 @@ This file is part of LifeViewer
 	// create the small colour grids based on zoom level
 	Life.prototype.createSmallColourGrids = function(/** @type {Array<Uint16Array>} */ colourGrid16, /** @type {Array<Uint32Array>} */ colourGrid32, /** @type {number} */ camZoom) {
 		var	/** @type {number} */ timing = performance.now(),
-			/** @type {number} */ reps = Controller.wasmTiming ? Controller.wasmTimingReps : 1,
-			/** @type {number} */ repNumber = 0,
 			/** @type {string} */ fName = "";
 
 		// check if 0.5 <= zoom < 1
@@ -25167,103 +25246,178 @@ This file is part of LifeViewer
 			fName = "max02x02";
 			this.clearSmallGridOnZoom(this.smallColourGrid);
 
-			while (repNumber < reps) {
-				if (this.isSuper) {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create2x2ColourGridSuper(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create2x2ColourGrid16Super(colourGrid16, this.smallColourGrid);
-					}
+			if (this.isSuper) {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create2x2ColourGridSuper(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0, this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
 				} else {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create2x2ColourGrid(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
-					}
+					this.create2x2ColourGrid16Super(colourGrid16, this.smallColourGrid);
 				}
-				repNumber += 1;
+			} else {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create2x2ColourGrid(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
+				} else {
+					this.create2x2ColourGrid16(colourGrid16, this.smallColourGrid);
+				}
 			}
 		} else if (camZoom >= 0.25 && camZoom < 0.5) {
 			// create 4x4 colour grid
 			fName = "max04x04";
 			this.clearSmallGridOnZoom(this.smallColourGrid);
 
-			while (repNumber < reps) {
-				if (this.isSuper) {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create4x4ColourGridSuper(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create4x4ColourGrid32Super(colourGrid32, this.smallColourGrid);
-					}
+			if (this.isSuper) {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create4x4ColourGridSuper(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
 				} else {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create4x4ColourGrid(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
-					}
+					this.create4x4ColourGrid32Super(colourGrid32, this.smallColourGrid);
 				}
-				repNumber += 1;
+			} else {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create4x4ColourGrid(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
+				} else {
+					this.create4x4ColourGrid32(colourGrid32, this.smallColourGrid);
+				}
 			}
 		} else if (camZoom >= 0.125 && camZoom < 0.25) {
 			// create 8x8 colour grid
 			fName = "max08x08";
 			this.clearSmallGridOnZoom(this.smallColourGrid);
 
-			while (repNumber < reps) {
-				if (this.isSuper) {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create8x8ColourGridSuper(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create8x8ColourGrid32Super(colourGrid32, this.smallColourGrid);
-					}
+			if (this.isSuper) {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create8x8ColourGridSuper(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
 				} else {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create8x8ColourGrid(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
-					}
+					this.create8x8ColourGrid32Super(colourGrid32, this.smallColourGrid);
 				}
-				repNumber += 1;
+			} else {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create8x8ColourGrid(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
+				} else {
+					this.create8x8ColourGrid32(colourGrid32, this.smallColourGrid);
+				}
 			}
 		} else if (camZoom >= 0.0625 && camZoom < 0.125) {
 			// create 16x16 colour grid
 			fName = "max16x16";
 			this.clearSmallGridOnZoom(this.smallColourGrid);
 
-			while (repNumber < reps) {
-				if (this.isSuper) {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create16x16ColourGridSuper(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create16x16ColourGrid32Super(colourGrid32, this.smallColourGrid);
-					}
+			if (this.isSuper) {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create16x16ColourGridSuper(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
 				} else {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create16x16ColourGrid(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
-					}
+					this.create16x16ColourGrid32Super(colourGrid32, this.smallColourGrid);
 				}
-				repNumber += 1;
+			} else {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create16x16ColourGrid(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
+				} else {
+					this.create16x16ColourGrid32(colourGrid32, this.smallColourGrid);
+				}
 			}
 		} else {
 			// zoom < 0.0625
 			fName = "max32x32";
-			while (repNumber < reps) {
-				if (this.isSuper) {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create32x32ColourGridSuper(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create32x32ColourGrid32Super(colourGrid32, this.smallColourGrid);
-					}
+
+			if (this.isSuper) {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create32x32ColourGridSuper(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
 				} else {
-					if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
-						WASM.create32x32ColourGrid(colourGrid32.whole.byteOffset, this.smallColourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, colourGrid32[0].length);
-					} else {
-						this.create32x32ColourGrid32(colourGrid32, this.smallColourGrid);
-					}
+					this.create32x32ColourGrid32Super(colourGrid32, this.smallColourGrid);
 				}
-				repNumber += 1;
+			} else {
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create32x32ColourGrid(
+						colourGrid32.whole.byteOffset | 0,
+						this.smallColourGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						colourGrid32[0].length | 0
+					);
+				} else {
+					this.create32x32ColourGrid32(colourGrid32, this.smallColourGrid);
+				}
 			}
 		}
 
@@ -29302,9 +29456,7 @@ This file is part of LifeViewer
 
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTile = function() {
-		var	/** @type {number} */ timing = performance.now(),
-			/** @type {number} */ reps = Controller.wasmTiming ? Controller.wasmTimingReps : 1,
-			/** @type {number} */ repNumber = 0;
+		var	/** @type {number} */ timing = performance.now();
 
 		// ignore if rule is none, PCA, RuleTable, Super or Extended
 		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper || this.isExtended)) {
@@ -29315,17 +29467,36 @@ This file is part of LifeViewer
 					this.convertToPensTileRainbow();
 				} else {
 					// use regular converter
-					while (repNumber < reps) {
-						if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
-							if ((this.counter & 1) !== 0) {
-								WASM.convertToPens(this.colourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.colourTileGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, this.nextGrid.whole.byteOffset, this.nextTileGrid.whole.byteOffset, this.colourGrid[0].length);
-							} else {
-								WASM.convertToPens(this.colourGrid.whole.byteOffset, this.colourTileHistoryGrid.whole.byteOffset, this.colourTileGrid.whole.byteOffset, this.tileY, this.tileX, this.tileRows, this.tileCols, this.grid.whole.byteOffset, this.tileGrid.whole.byteOffset, this.colourGrid[0].length);
-							}
+					if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
+						if ((this.counter & 1) !== 0) {
+							WASM.convertToPens(
+								this.colourGrid.whole.byteOffset | 0,
+								this.colourTileHistoryGrid.whole.byteOffset | 0,
+								this.colourTileGrid.whole.byteOffset | 0,
+								this.tileY | 0,
+								this.tileX | 0,
+								this.tileRows | 0,
+								this.tileCols | 0,
+								this.nextGrid.whole.byteOffset | 0,
+								this.nextTileGrid.whole.byteOffset | 0,
+								this.colourGrid[0].length | 0
+							);
 						} else {
-							this.convertToPensTileRegular();
+							WASM.convertToPens(
+								this.colourGrid.whole.byteOffset | 0,
+								this.colourTileHistoryGrid.whole.byteOffset | 0,
+								this.colourTileGrid.whole.byteOffset | 0,
+								this.tileY | 0,
+								this.tileX | 0,
+								this.tileRows | 0,
+								this.tileCols | 0,
+								this.grid.whole.byteOffset | 0,
+								this.tileGrid.whole.byteOffset | 0,
+								this.colourGrid[0].length | 0
+							);
 						}
-						repNumber += 1;
+					} else {
+						this.convertToPensTileRegular();
 					}
 
 					timing = performance.now() - timing;
@@ -47343,9 +47514,7 @@ This file is part of LifeViewer
 			/** @type {number} */ boundRight = topLeftX,
 
 			// timing and function selection
-			/** @type {number} */ timing = performance.now(),
-			/** @type {number} */ reps = Controller.wasmTiming ? Controller.wasmTimingReps : 1,
-			/** @type {number} */ repNumber = 0;
+			/** @type {number} */ timing = performance.now();
 
 		// set the left X extent
 		if (topRightX < boundLeft) {
@@ -47411,18 +47580,35 @@ This file is part of LifeViewer
 						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 					} else {
 						// check whether to draw layers
-						while (repNumber < reps) {
-							if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1 && !this.isHex) || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
-								this.renderGridProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
-							} else {
-								this.createPixelColours(1);
-								WASM.renderGridClipNoRotate(bottomGrid.whole.byteOffset, mask, this.pixelColours.byteOffset, this.data32.byteOffset, this.displayWidth, this.displayHeight, this.camXOff, this.camYOff, this.widthMask, this.heightMask, bottomGrid[0].length, this.camZoom, this.maxGridSize, this.width, this.height, this.boundaryColour, this.xOffsets.byteOffset, this.xMaxOffsets.byteOffset);
-	
-								// draw grid lines and snow
-								this.drawGridLinesAndSnow(drawingSnow);
-							}
-							repNumber += 1;
+						if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1) || this.isHex || this.isTriangular || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
+							this.renderGridProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+						} else {
+							this.createPixelColours(1);
+							WASM.renderGridClipNoRotate(
+								bottomGrid.whole.byteOffset | 0,
+								mask | 0,
+								this.pixelColours.byteOffset | 0,
+								this.data32.byteOffset | 0,
+								this.displayWidth | 0,
+								this.displayHeight | 0,
+								this.camXOff,
+								this.camYOff,
+								this.widthMask | 0,
+								this.heightMask | 0,
+								bottomGrid[0].length | 0,
+								this.camZoom,
+								this.maxGridSize | 0,
+								this.width | 0,
+								this.height | 0,
+								this.boundaryColour | 0,
+								this.xOffsets.byteOffset | 0,
+								this.xMaxOffsets.byteOffset | 0
+							);
+
+							// draw grid lines and snow
+							this.drawGridLinesAndSnow(drawingSnow);
 						}
+
 						timing = performance.now() - timing;
 						if (Controller.wasmTiming) {
 							this.view.menuManager.updateTimingItem("renderGridClip", timing, Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled);
@@ -47446,18 +47632,30 @@ This file is part of LifeViewer
 						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 					} else {
 						// check whether to draw layers
-						while (repNumber < reps) {
-							if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1 && !this.isHex) || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
-								this.renderGridProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
-							} else {
-								this.createPixelColours(1);
-								WASM.renderGridNoClipNoRotate(bottomGrid.whole.byteOffset, mask, this.pixelColours.byteOffset, this.data32.byteOffset, this.displayWidth, this.displayHeight, this.camXOff, this.camYOff, this.widthMask, this.heightMask, bottomGrid[0].length, this.camZoom, this.xOffsets.byteOffset);
-	
-								// draw grid lines and snow
-								this.drawGridLinesAndSnow(drawingSnow);
-							}
-							repNumber += 1;
+						if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1) || this.isHex || this.isTriangular || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
+							this.renderGridProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+						} else {
+							this.createPixelColours(1);
+							WASM.renderGridNoClipNoRotate(
+								bottomGrid.whole.byteOffset | 0,
+								mask | 0,
+								this.pixelColours.byteOffset | 0,
+								this.data32.byteOffset | 0,
+								this.displayWidth | 0,
+								this.displayHeight | 0,
+								this.camXOff,
+								this.camYOff,
+								this.widthMask | 0,
+								this.heightMask | 0,
+								bottomGrid[0].length | 0,
+								this.camZoom,
+								this.xOffsets.byteOffset | 0
+							);
+
+							// draw grid lines and snow
+							this.drawGridLinesAndSnow(drawingSnow);
 						}
+
 						timing = performance.now() - timing;
 						if (Controller.wasmTiming) {
 							this.view.menuManager.updateTimingItem("renderGridNoClip", timing, Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled);

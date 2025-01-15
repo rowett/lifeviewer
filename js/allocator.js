@@ -3,7 +3,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2024 Chris Rowett
+ Copyright (C) 2015-2025 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ This file is part of LifeViewer
 		/** @type {number} */ this.totalFreedBytes = 0;
 
 		// wasm heap pointer
-		/** @type {number} */ this.wasmPointer = 0;
+		/** @type {number} */ this.wasmPointer = 128;
 	}
 
 	// output a specific allocation as a string
@@ -398,7 +398,7 @@ This file is part of LifeViewer
 			// check if allocation succeeded
 			if (result) {
 				if (wasmHeap) {
-					console.log(name, elements + " x " + Type.typeName(type) + " @ " + result.byteOffset, " used: " + (result.byteOffset >> 20) + "Mb (" + ((100 * result.byteOffset) / WASM.memory.buffer.byteLength).toFixed(1) + "%)");
+					//console.log(name, elements + " x " + Type.typeName(type) + " @ " + result.byteOffset, " used: " + (result.byteOffset >> 20) + "Mb (" + ((100 * result.byteOffset) / WASM.memory.buffer.byteLength).toFixed(1) + "%)");
 					name = "* " + name;
 				}
 				this.saveAllocationInfo(type, elements, name, result.byteOffset);

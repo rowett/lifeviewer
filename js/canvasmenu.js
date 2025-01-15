@@ -3,7 +3,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2024 Chris Rowett
+ Copyright (C) 2015-2025 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -3184,6 +3184,43 @@ This file is part of LifeViewer
 		}
 	};
 
+	// adjust colour based on how long it has been since reading
+	/** @returns {string} */
+	MenuManager.prototype.adjustColour = function(/** @type {Array<number>} */ rgb, /** @type {number} */ age) {
+		var	/** @type {string} */ result = "",
+			/** @type {number} */ red = rgb[0],
+			/** @type {number} */ green = rgb[1],
+			/** @type {number} */ blue = rgb[2];
+
+		if (age > 1) {
+			if (age > 96) {
+				age = 96;
+			} else {
+				if (age > 2) {
+					this.scheduleNextUpdate(this);
+				}
+			}
+			red -= age;
+			if (red < 0) {
+				red = 0;
+			}
+
+			green -= age;
+			if (green < 0) {
+				green = 0;
+			}
+
+			blue -= age;
+			if (blue < 0) {
+				blue = 0;
+			}
+		}
+
+		result = "#" + ("00" + red.toString(16)).slice(-2) + ("00" + green.toString(16)).slice(-2) + ("00" + blue.toString(16)).slice(-2);
+
+		return result;
+	};
+
 	// draw custom timing
 	MenuManager.prototype.drawCustomTiming = function() {
 		var	/** @type {number} */ i = 0,
@@ -3198,14 +3235,16 @@ This file is part of LifeViewer
 			/** @type {number} */ js = 0,
 			/** @type {number} */ wasm = 0,
 			/** @type {Array<string>} */ itemList = this.timingManager.getSortedKeys(),
-			/** @const {number} */ firstTab = 140,
-			/** @const {number} */ secondTab = 190,
-			/** @const {number} */ thirdTab = 240,
+			/** @const {number} */ firstTab = 160,
+			/** @const {number} */ secondTab = 210,
+			/** @const {number} */ thirdTab = 260,
 			/** @type {number} */ wasmUpdate = 0,
 			/** @type {number} */ jsUpdate = 0,
 			/** @type {TimingManager} */ manager = this.timingManager,
-			/** @type {string} */ activeCol = "black",
-			/** @type {string} */ inactiveCol = "black";
+			/** @type {number} */ lastUpdate = manager.updateCounter,
+			/** @type {number} */ latestUpdate = 0,
+			/** @type {Array<number>} */ activeCol = [0, 0, 0],
+			/** @type {Array<number>} */ inactiveCol = [0, 0, 0];
 
 		// scale information display
 		if (this.currentMenu) {
@@ -3222,26 +3261,37 @@ This file is part of LifeViewer
 		oc.fillStyle = "black";
 		for (j = 0; j < 3; j += 2) {
 			for (i = 0; i < itemList.length; i += 1) {
+				// get the update times
 				name = itemList[i];
-				oc.fillText(name, ((6 - j) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
 				jsUpdate = manager.items[name].lastJSUpdate;
 				wasmUpdate = manager.items[name].lastWASMUpdate;
+				latestUpdate = jsUpdate > wasmUpdate ? jsUpdate : wasmUpdate;
+
+				if (j > 0) {
+					oc.fillStyle = this.adjustColour(inactiveCol, lastUpdate - latestUpdate);
+				}
+
+				oc.fillText(name, ((6 - j) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
 
 				wasm = manager.getWASMTime(name);
 				message = wasm.toFixed(2);
 				width = oc.measureText(message).width;
-				if (wasmUpdate > jsUpdate) {
-					oc.fillStyle = activeCol;
+
+				if (j > 0 && wasmUpdate > jsUpdate) {
+					oc.fillStyle = this.adjustColour(activeCol, lastUpdate - latestUpdate);
 				}
 				oc.fillText(message, ((firstTab - j - width) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
 
 				js = manager.getJSTime(name);
 				message = js.toFixed(2);
 				width = oc.measureText(message).width;
-				if (jsUpdate > wasmUpdate) {
-					oc.fillStyle = activeCol;
-				} else {
-					oc.fillStyle = inactiveCol;
+
+				if (j > 0) {
+					if (jsUpdate > wasmUpdate) {
+						oc.fillStyle = this.adjustColour(activeCol, lastUpdate - latestUpdate);
+					} else {
+						oc.fillStyle = this.adjustColour(inactiveCol, lastUpdate - latestUpdate);
+					}
 				}
 				oc.fillText(message, ((secondTab - j - width) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
 
@@ -3249,12 +3299,12 @@ This file is part of LifeViewer
 					if (js > 0 && wasm > 0) {
 						ratio = js / wasm;
 						if (j === 0) {
-							oc.fillStyle = inactiveCol;
+							oc.fillStyle = this.adjustColour(inactiveCol, lastUpdate - latestUpdate);
 						} else {
 							if (ratio > 1) {
-								oc.fillStyle = "rgb(32,255,32)";
+								oc.fillStyle = this.adjustColour([32,255,32], lastUpdate - latestUpdate);
 							} else {
-								oc.fillStyle = "red";
+								oc.fillStyle = this.adjustColour([255,0,0], lastUpdate - latestUpdate);
 							}
 						}
 						message = ratio.toFixed(1) + "x";
@@ -3262,11 +3312,11 @@ This file is part of LifeViewer
 						oc.fillText(message, ((thirdTab - j - width) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
 					}
 				}
-				oc.fillStyle = inactiveCol;
+				oc.fillStyle = this.adjustColour(inactiveCol, lastUpdate - latestUpdate);
 			}
-			activeCol = "rgb(32,255,255)";
-			inactiveCol = "white";
-			oc.fillStyle = inactiveCol;
+			activeCol = [32, 255, 255];
+			inactiveCol = [255, 255, 255];
+			oc.fillStyle = this.adjustColour(inactiveCol, lastUpdate - latestUpdate);
 		}
 	};
 
@@ -3277,6 +3327,7 @@ This file is part of LifeViewer
 			/** @type {number} */ newFrame,
 			/** @type {number} */ menu,
 			/** @type {number} */ work,
+			/** @type {number} */ heap,
 			/** @type {number} */ frame,
 			/** @type {number} */ total,
 			/** @type {string} */ menuStr,
@@ -3443,7 +3494,11 @@ This file is part of LifeViewer
 
 			// check for extended timing
 			if (me.showExtendedTiming) {
-				oc.fillRect(x, y, ((88 * xScale) | 0), ((83 * yScale) | 0));
+				if (Controller.useWASM) {
+					oc.fillRect(x, y, ((88 * xScale) | 0), ((103 * yScale) | 0));
+				} else {
+					oc.fillRect(x, y, ((88 * xScale) | 0), ((83 * yScale) | 0));
+				}
 			} else {
 				oc.fillRect(x, y, ((88 * xScale) | 0), ((20 * yScale) | 0));
 			}
@@ -3464,6 +3519,19 @@ This file is part of LifeViewer
 			}
 			oc.fillRect(x, y, ((88 * load * xScale) | 0), ((20 * yScale) | 0));
 
+			// compute heap usage
+			if (Controller.useWASM && me.showExtendedTiming) {
+				heap = Controller.allocator.wasmPointer / WASM.memory.buffer.byteLength;
+				if (heap < 0.5) {
+					// fade from green to yellow
+					oc.fillStyle = "rgb(" + ((255 * heap * 2) | 0) + ",255,0)";
+				} else {
+					// fade from yellow to red
+					oc.fillStyle = "rgb(255," + ((255 * (1 - (heap - 0.5) * 2)) | 0) + ",0)";
+				}
+				oc.fillRect(x, y + 83 * yScale, ((88 * heap * xScale) | 0), ((20 * yScale) | 0));
+			}
+
 			// convert to one decimal place
 			menuStr = menu.toFixed(1);
 			workStr = work.toFixed(1);
@@ -3480,6 +3548,14 @@ This file is part of LifeViewer
 			// draw fps
 			message = totalStr + "fps";
 			oc.fillText(message, x + (6 * xScale), y + (12 * yScale));
+
+			// draw heap usage%
+			if (Controller.useWASM && me.showExtendedTiming) {
+				oc.fillText("memory", x + (6 * xScale), y + (92 * yScale));
+				message = ((100 * heap) | 0) + "%";
+				messageWidth = oc.measureText(message).width;
+				oc.fillText(message, x + ((8 + 76) * xScale) - messageWidth, y + (92 * yScale));
+			}
 
 			// draw load%
 			message = ((100 * load) | 0) + "%";
@@ -3550,6 +3626,14 @@ This file is part of LifeViewer
 			message = ((100 * load) | 0) + "%";
 			messageWidth = oc.measureText(message).width;
 			oc.fillText(message, x + ((6 + 76) * xScale) - messageWidth, y + (10 * yScale));
+
+			// draw heap usage%
+			if (Controller.useWASM && me.showExtendedTiming) {
+				oc.fillText("memory", x + (4 * xScale), y + (90 * yScale));
+				message = ((100 * heap) | 0) + "%";
+				messageWidth = oc.measureText(message).width;
+				oc.fillText(message, x + ((6 + 76) * xScale) - messageWidth, y + (90 * yScale));
+			}
 
 			// draw extended timing if enabled
 			if (me.showExtendedTiming) {
