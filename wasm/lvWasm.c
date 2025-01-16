@@ -16,6 +16,8 @@
 //	createNxNColourGridSuper (N = 2, 4, 8, 16, 32)
 //	renderGridNoClipNoRotate (single layer)
 //	renderGridClipNoRotate (single layer)
+//	renderOverlayNoClipNoRotate (single layer [R]History)
+//	renderOverlayClipNoRotate (single layer [R]History)
 //
 // Iterator
 //	convertToPens (Life-like)
@@ -7656,33 +7658,39 @@ void renderGridNoClipNoRotate(
 			const v128_t indices = wasm_v128_load(xOffsets + (w << 3));
 
 			// gather pixel data
-			const v128_t pixels1 = wasm_i32x4_make(
-				*(gridRow + wasm_u16x8_extract_lane(indices, 0)),
-				*(gridRow + wasm_u16x8_extract_lane(indices, 1)),
-				*(gridRow + wasm_u16x8_extract_lane(indices, 2)),
-				*(gridRow + wasm_u16x8_extract_lane(indices, 3))
-			);
+			const uint32_t i0 = wasm_u16x8_extract_lane(indices, 0);
+			const uint32_t i1 = wasm_u16x8_extract_lane(indices, 1);
+			const uint32_t i2 = wasm_u16x8_extract_lane(indices, 2);
+			const uint32_t i3 = wasm_u16x8_extract_lane(indices, 3);
+			const uint32_t i4 = wasm_u16x8_extract_lane(indices, 4);
+			const uint32_t i5 = wasm_u16x8_extract_lane(indices, 5);
+			const uint32_t i6 = wasm_u16x8_extract_lane(indices, 6);
+			const uint32_t i7 = wasm_u16x8_extract_lane(indices, 7);
 
-			const v128_t pixels2 = wasm_i32x4_make(
-				*(gridRow + wasm_u16x8_extract_lane(indices, 4)),
-				*(gridRow + wasm_u16x8_extract_lane(indices, 5)),
-				*(gridRow + wasm_u16x8_extract_lane(indices, 6)),
-				*(gridRow + wasm_u16x8_extract_lane(indices, 7))
+			const v128_t pixels = wasm_i16x8_make(
+				*(gridRow + i0),
+				*(gridRow + i1),
+				*(gridRow + i2),
+				*(gridRow + i3),
+				*(gridRow + i4),
+				*(gridRow + i5),
+				*(gridRow + i6),
+				*(gridRow + i7)
 			);
 
 			// map pixel values to RGBA colors
 			const v128_t colors1 = wasm_i32x4_make(
-				pixelColours[wasm_i32x4_extract_lane(pixels1, 0)],
-				pixelColours[wasm_i32x4_extract_lane(pixels1, 1)],
-				pixelColours[wasm_i32x4_extract_lane(pixels1, 2)],
-				pixelColours[wasm_i32x4_extract_lane(pixels1, 3)]
+				pixelColours[wasm_i16x8_extract_lane(pixels, 0)],
+				pixelColours[wasm_i16x8_extract_lane(pixels, 1)],
+				pixelColours[wasm_i16x8_extract_lane(pixels, 2)],
+				pixelColours[wasm_i16x8_extract_lane(pixels, 3)]
 			);
 
 			const v128_t colors2 = wasm_i32x4_make(
-				pixelColours[wasm_i32x4_extract_lane(pixels2, 0)],
-				pixelColours[wasm_i32x4_extract_lane(pixels2, 1)],
-				pixelColours[wasm_i32x4_extract_lane(pixels2, 2)],
-				pixelColours[wasm_i32x4_extract_lane(pixels2, 3)]
+				pixelColours[wasm_i16x8_extract_lane(pixels, 4)],
+				pixelColours[wasm_i16x8_extract_lane(pixels, 5)],
+				pixelColours[wasm_i16x8_extract_lane(pixels, 6)],
+				pixelColours[wasm_i16x8_extract_lane(pixels, 7)]
 			);
 
 			// write 8 RGBA pixels to display buffer
@@ -7845,6 +7853,395 @@ void renderGridClipNoRotate(
 				// write 8 RGBA pixels to display buffer replacing off max grid
 				wasm_v128_store(data32, wasm_v128_bitselect(offMaxGridChunk, pixels1, offMaxGrid1));
 				wasm_v128_store(data32 + 4, wasm_v128_bitselect(offMaxGridChunk, pixels2, offMaxGrid2));
+
+				// move to the next chunk
+				data32 += 8;
+			}
+		} else {
+			// check if this row is off the grid or the max grid
+			if (yi + yadj >= 0 && yi + yadj < maxGridSize) {
+				// off the grid so need to display both grid and max grid colours
+				for (uint32_t w = 0; w < w8; w++) {
+					// load 8 pixel indices indicating off grid or off max grid
+					const v128_t indices1 = wasm_v128_load(xMaxOffsets + (w << 3));
+					const v128_t indices2 = wasm_v128_load(xMaxOffsets + (w << 3) + 4);
+
+					// use the indices to pick the correct pixel colours
+					wasm_v128_store(data32, wasm_v128_bitselect(offMaxGridChunk, offGridChunk, indices1));
+					wasm_v128_store(data32 + 4, wasm_v128_bitselect(offMaxGridChunk, offGridChunk, indices2));
+
+					// next chunk
+					data32 += 8;
+				}
+			} else {
+				// off the max grid so fill the entire row with max grid colour
+				for (uint32_t w = 0; w < w8; w++) {
+					wasm_v128_store(data32, offMaxGridChunk);
+					wasm_v128_store(data32 + 4, offMaxGridChunk);
+
+					// next chunk
+					data32 += 8;
+				}
+			}
+		}
+
+		// next row
+		sy += dyy;
+	}
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// render the grid with no clipping or rotation (single layer)
+void renderOverlayNoClipNoRotate(
+	uint8_t* grid,
+	const uint32_t gridWidth,
+	uint8_t* overlayGrid,
+	const uint32_t mask,
+	const uint32_t* pixelColours,
+	uint32_t* data32,
+	const uint32_t displayWidth,
+	const uint32_t displayHeight,
+	const double camXOff,
+	const double camYOff,
+	const uint32_t widthMask,
+	const uint32_t heightMask,
+	const double camZoom,
+	const uint32_t state3,
+	const uint32_t state4,
+	const uint32_t state5,
+	const uint32_t state6,
+	const uint32_t aliveStart,
+	uint16_t* xOffsets
+) {
+	const uint32_t w8 = displayWidth >> 3;	// display width in 8 pixel chunks
+	const double dyy = 1.0f / camZoom;
+	const double dyx = 1.0f / camZoom;
+
+	double sy = -((double)displayHeight / 2) * dyy + camYOff;
+	const double sx = -((double)displayWidth / 2) * dyx + camXOff;
+
+	const uint32_t wm = widthMask & ~mask;
+	const uint32_t hm = heightMask & ~mask;
+
+	const v128_t state3Vec = wasm_u16x8_splat(state3);
+	const v128_t state4Vec = wasm_u16x8_splat(state4);
+	const v128_t state5Vec = wasm_u16x8_splat(state5);
+	const v128_t state6Vec = wasm_u16x8_splat(state6);
+	const v128_t aliveVec = wasm_u16x8_splat(aliveStart);
+
+	// precompute offsets
+	for (uint32_t i = 0; i < displayWidth; i++) {
+		xOffsets[i] = ((uint16_t)(sx + i * dyx)) & wm;
+	}
+
+	// process each row
+	for (uint32_t h = 0; h < displayHeight; h++) {
+		uint8_t* gridRow = grid + ((uint32_t)sy & hm) * gridWidth;
+		uint8_t* overlayRow = overlayGrid + ((uint32_t)sy & hm) * gridWidth;
+
+		// process each 8 pixel chunk on the row
+		for (uint32_t w = 0; w < w8; w++) {
+			// load 8 pixel indices
+			const v128_t indices = wasm_v128_load(xOffsets + (w << 3));
+
+			// gather pixel data
+			const uint32_t i0 = wasm_u16x8_extract_lane(indices, 0);
+			const uint32_t i1 = wasm_u16x8_extract_lane(indices, 1);
+			const uint32_t i2 = wasm_u16x8_extract_lane(indices, 2);
+			const uint32_t i3 = wasm_u16x8_extract_lane(indices, 3);
+			const uint32_t i4 = wasm_u16x8_extract_lane(indices, 4);
+			const uint32_t i5 = wasm_u16x8_extract_lane(indices, 5);
+			const uint32_t i6 = wasm_u16x8_extract_lane(indices, 6);
+			const uint32_t i7 = wasm_u16x8_extract_lane(indices, 7);
+
+			v128_t pixels = wasm_u16x8_make(
+				*(gridRow + i0),
+				*(gridRow + i1),
+				*(gridRow + i2),
+				*(gridRow + i3),
+				*(gridRow + i4),
+				*(gridRow + i5),
+				*(gridRow + i6),
+				*(gridRow + i7)
+			);
+
+			v128_t overlayPixels = wasm_u16x8_make(
+				*(overlayRow + i0),
+				*(overlayRow + i1),
+				*(overlayRow + i2),
+				*(overlayRow + i3),
+				*(overlayRow + i4),
+				*(overlayRow + i5),
+				*(overlayRow + i6),
+				*(overlayRow + i7)
+			);
+
+			// process overlay
+			const v128_t isState4or6 = wasm_v128_or(
+				wasm_i16x8_eq(overlayPixels, state4Vec),
+				wasm_i16x8_eq(overlayPixels, state6Vec)
+			);
+
+			const v128_t isState3or5 = wasm_v128_or(
+				wasm_i16x8_eq(overlayPixels, state3Vec),
+				wasm_i16x8_eq(overlayPixels, state5Vec)
+			);
+
+			const v128_t cellsAlive = wasm_i16x8_ge(pixels, aliveVec);
+
+			const v128_t changeTo3 = wasm_v128_and(isState4or6, cellsAlive);
+			const v128_t changeTo4 = wasm_v128_andnot(isState3or5, cellsAlive);
+
+			overlayPixels = wasm_v128_bitselect(state3Vec, overlayPixels, changeTo3);
+			overlayPixels = wasm_v128_bitselect(state4Vec, overlayPixels, changeTo4);
+
+			pixels = wasm_v128_bitselect(overlayPixels, pixels, wasm_v128_or(isState4or6, isState3or5));
+
+			// map pixel values to RGBA colors
+			const v128_t colors1 = wasm_u32x4_make(
+				pixelColours[wasm_u16x8_extract_lane(pixels, 0)],
+				pixelColours[wasm_u16x8_extract_lane(pixels, 1)],
+				pixelColours[wasm_u16x8_extract_lane(pixels, 2)],
+				pixelColours[wasm_u16x8_extract_lane(pixels, 3)]
+			);
+
+			const v128_t colors2 = wasm_u32x4_make(
+				pixelColours[wasm_u16x8_extract_lane(pixels, 4)],
+				pixelColours[wasm_u16x8_extract_lane(pixels, 5)],
+				pixelColours[wasm_u16x8_extract_lane(pixels, 6)],
+				pixelColours[wasm_u16x8_extract_lane(pixels, 7)]
+			);
+
+			// write 8 RGBA pixels to display buffer
+			wasm_v128_store(data32, colors1);
+			wasm_v128_store(data32 + 4, colors2);
+
+			// move to the next chunk
+			data32 += 8;
+		}
+
+		// next row
+		sy += dyy;
+	}
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// render the grid with clipping but no rotation (single layer)
+void renderOverlayClipNoRotate(
+	uint8_t* grid,
+	const uint32_t gridWidth,
+	uint8_t* overlayGrid,
+	const uint32_t mask,
+	const uint32_t* pixelColours,
+	uint32_t* data32,
+	const uint32_t displayWidth,
+	const uint32_t displayHeight,
+	const double camXOff,
+	const double camYOff,
+	const uint32_t widthMask,
+	const uint32_t heightMask,
+	const double camZoom,
+	const uint32_t state3,
+	const uint32_t state4,
+	const uint32_t state5,
+	const uint32_t state6,
+	const uint32_t aliveStart,
+	const uint32_t maxGridSize,
+	uint32_t xg,
+	uint32_t yg,
+	const uint32_t offMaxGrid,
+	int32_t *xOffsets,
+	int32_t *xMaxOffsets
+) {
+	const uint32_t w8 = displayWidth >> 3;	// display width in 8 pixel chunks
+	const double dyy = 1.0f / camZoom;
+	const double dyx = 1.0f / camZoom;
+
+	double sy = -((double)displayHeight / 2) * dyy + camYOff;
+	const double sx = -((double)displayWidth / 2) * dyx + camXOff;
+
+	// width and height masks
+	const uint32_t wm = widthMask & ~mask;
+	const uint32_t hm = heightMask & ~mask;
+
+	// comparison masks for clipping
+	const uint32_t wt = ~mask;
+	const uint32_t ht = ~mask;
+
+	// compute the x and y adjustments for full grid size
+	uint32_t xadj = 0;
+	while (xg < maxGridSize) {
+		xadj += xg >> 1;
+		xg <<= 1;
+	}
+
+	uint32_t yadj = 0;
+	while (yg < maxGridSize) {
+		yadj += yg >> 1;
+		yg <<= 1;
+	}
+
+	// pixel index for off grid
+	const uint32_t offGridValue = -2;
+
+	// pixel index for off max grid (this one must be -1 since it's used as a vector mask)
+	const uint32_t offMaxGridValue = -1;
+
+	// precompute offsets
+	double x = sx;
+	for (uint32_t i = 0; i < displayWidth; i++) {
+		int32_t xi = (int32_t)x;
+		if (x >= 0 && ((xi & wt) == (xi & wm))) {
+			xOffsets[i] = xi & wm;
+		} else {
+			if (xi + xadj >= 0 && xi + xadj < maxGridSize) {
+				xOffsets[i] = offGridValue;
+			} else {
+				xOffsets[i] = offMaxGridValue;
+			}
+		}
+		x += dyx;
+	}
+
+	x = sx;
+	for (uint32_t i = 0; i < displayWidth; i++) {
+		int32_t xi = (int32_t)x;
+		if (xi + xadj >= 0 && xi + xadj < maxGridSize) {
+			xMaxOffsets[i] = 0;
+		} else {
+			xMaxOffsets[i] = offMaxGridValue;
+		}
+		x += dyx;
+	}
+
+	// off max grid pixel colour
+	const v128_t offMaxGridChunk = wasm_u32x4_splat(offMaxGrid);
+
+	// off grid pixel colour
+	const v128_t offGridChunk = wasm_u32x4_splat(pixelColours[0]);
+
+	// constants
+	const v128_t zero = wasm_u32x4_splat(0);
+	const v128_t offGridVec = wasm_i32x4_splat(offGridValue);
+	const v128_t offMaxGridVec = wasm_i32x4_splat(offMaxGridValue);
+
+	const v128_t state3Vec = wasm_u16x8_splat(state3);
+	const v128_t state4Vec = wasm_u16x8_splat(state4);
+	const v128_t state5Vec = wasm_u16x8_splat(state5);
+	const v128_t state6Vec = wasm_u16x8_splat(state6);
+	const v128_t aliveVec = wasm_u16x8_splat(aliveStart);
+
+	// process each row
+	for (uint32_t h = 0; h < displayHeight; h++) {
+		// get the next grid row
+		int32_t yi = (int32_t)sy;
+
+		// check the row is on the grid
+		if (yi >= 0 && ((yi & ht) == (yi & hm))) {
+			uint8_t* gridRow = grid + (yi & hm) * gridWidth;
+			uint8_t* overlayRow = overlayGrid + (yi & hm) * gridWidth;
+
+			for (uint32_t w = 0; w < w8; w++) {
+				// load 8 pixel indices
+				v128_t indices1 = wasm_v128_load(xOffsets + (w << 3));
+				v128_t indices2 = wasm_v128_load(xOffsets + (w << 3) + 4);
+
+				// get masks to show which pixels are on the grid
+				const v128_t onGrid1 = wasm_i32x4_ge(indices1, zero); 
+				const v128_t onGrid2 = wasm_i32x4_ge(indices2, zero);
+
+				// get masks to show which pixels are off the normal grid
+				const v128_t offGrid1 = wasm_i32x4_eq(indices1, offGridVec);
+				const v128_t offGrid2 = wasm_i32x4_eq(indices2, offGridVec);
+
+				// get masks to show which pixels are off the max grid
+				const v128_t offMaxGrid1 = wasm_i32x4_eq(indices1, offMaxGridVec);
+				const v128_t offMaxGrid2 = wasm_i32x4_eq(indices2, offMaxGridVec);
+
+				// make the indices safe by setting any negative values to 0
+				indices1 = wasm_v128_bitselect(indices1, zero, onGrid1);
+				indices2 = wasm_v128_bitselect(indices2, zero, onGrid2);
+
+				// gather the pixel data
+				const uint32_t i0 = wasm_u32x4_extract_lane(indices1, 0);
+				const uint32_t i1 = wasm_u32x4_extract_lane(indices1, 1);
+				const uint32_t i2 = wasm_u32x4_extract_lane(indices1, 2);
+				const uint32_t i3 = wasm_u32x4_extract_lane(indices1, 3);
+
+				const uint32_t i4 = wasm_u32x4_extract_lane(indices2, 0);
+				const uint32_t i5 = wasm_u32x4_extract_lane(indices2, 1);
+				const uint32_t i6 = wasm_u32x4_extract_lane(indices2, 2);
+				const uint32_t i7 = wasm_u32x4_extract_lane(indices2, 3);
+
+				// lookup the pixels
+				v128_t pixels = wasm_u16x8_make(
+					*(gridRow + i0),
+					*(gridRow + i1),
+					*(gridRow + i2),
+					*(gridRow + i3),
+					*(gridRow + i4),
+					*(gridRow + i5),
+					*(gridRow + i6),
+					*(gridRow + i7)
+				);
+
+				// lookup the overlay pixels
+				v128_t overlayPixels = wasm_u16x8_make(
+					*(overlayRow + i0),
+					*(overlayRow + i1),
+					*(overlayRow + i2),
+					*(overlayRow + i3),
+					*(overlayRow + i4),
+					*(overlayRow + i5),
+					*(overlayRow + i6),
+					*(overlayRow + i7)
+				);
+
+				// process overlay
+				const v128_t isState4or6 = wasm_v128_or(
+					wasm_i16x8_eq(overlayPixels, state4Vec),
+					wasm_i16x8_eq(overlayPixels, state6Vec)
+				);
+
+				const v128_t isState3or5 = wasm_v128_or(
+					wasm_i16x8_eq(overlayPixels, state3Vec),
+					wasm_i16x8_eq(overlayPixels, state5Vec)
+				);
+
+				const v128_t cellsAlive = wasm_i16x8_ge(pixels, aliveVec);
+
+				const v128_t changeTo3 = wasm_v128_and(isState4or6, cellsAlive);
+				const v128_t changeTo4 = wasm_v128_andnot(isState3or5, cellsAlive);
+
+				overlayPixels = wasm_v128_bitselect(state3Vec, overlayPixels, changeTo3);
+				overlayPixels = wasm_v128_bitselect(state4Vec, overlayPixels, changeTo4);
+
+				pixels = wasm_v128_bitselect(overlayPixels, pixels, wasm_v128_or(isState4or6, isState3or5));
+
+				// lookup the pixels from the colour grid using the indices
+				v128_t colours1 = wasm_u32x4_make(
+					pixelColours[wasm_u16x8_extract_lane(pixels, 0)],
+					pixelColours[wasm_u16x8_extract_lane(pixels, 1)],
+					pixelColours[wasm_u16x8_extract_lane(pixels, 2)],
+					pixelColours[wasm_u16x8_extract_lane(pixels, 3)]
+				);
+
+				v128_t colours2 = wasm_u32x4_make(
+					pixelColours[wasm_u16x8_extract_lane(pixels, 4)],
+					pixelColours[wasm_u16x8_extract_lane(pixels, 5)],
+					pixelColours[wasm_u16x8_extract_lane(pixels, 6)],
+					pixelColours[wasm_u16x8_extract_lane(pixels, 7)]
+				);
+
+				// replace off grid pixels
+				colours1 = wasm_v128_bitselect(offGridChunk, colours1, offGrid1);
+				colours2 = wasm_v128_bitselect(offGridChunk, colours2, offGrid2);
+
+				// write 8 RGBA pixels to display buffer replacing off max grid
+				wasm_v128_store(data32, wasm_v128_bitselect(offMaxGridChunk, colours1, offMaxGrid1));
+				wasm_v128_store(data32 + 4, wasm_v128_bitselect(offMaxGridChunk, colours2, offMaxGrid2));
 
 				// move to the next chunk
 				data32 += 8;

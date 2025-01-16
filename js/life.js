@@ -9204,8 +9204,8 @@ This file is part of LifeViewer
 
 		// check if overlay grid was allocated
 		if (currentOverlayGrid) {
-			this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid", false);
-			this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid", false);
+			this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid", Controller.useWASM);
+			this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid", Controller.useWASM);
 			this.overlayGrid16 = Array.matrixView(Type.Uint16, this.overlayGrid, "Life.overlayGrid16");
 			this.overlayGrid32 = Array.matrixView(Type.Uint32, this.overlayGrid, "Life.overlayGrid32");
 		}
@@ -9456,8 +9456,8 @@ This file is part of LifeViewer
 
 			// check if overlay grid was allocated
 			if (currentOverlayGrid) {
-				this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid", false);
-				this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid", false);
+				this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid", Controller.useWASM);
+				this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid", Controller.useWASM);
 				this.overlayGrid16 = Array.matrixView(Type.Uint16, this.overlayGrid, "Life.overlayGrid16");
 				this.overlayGrid32 = Array.matrixView(Type.Uint32, this.overlayGrid, "Life.overlayGrid32");
 			}
@@ -9883,8 +9883,8 @@ This file is part of LifeViewer
 
 	// create the overlay
 	Life.prototype.createOverlay = function() {
-		this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid", false);
-		this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid", false);
+		this.overlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.overlayGrid", Controller.useWASM);
+		this.smallOverlayGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.smallOverlayGrid", Controller.useWASM);
 		this.overlayGrid16 = Array.matrixView(Type.Uint16, this.overlayGrid, "Life.overlayGrid16");
 		this.overlayGrid32 = Array.matrixView(Type.Uint32, this.overlayGrid, "Life.overlayGrid32");
 	};
@@ -19417,7 +19417,7 @@ This file is part of LifeViewer
 		}
 	};
 
-	// state 6 mask pre function
+	// state 6 mask post function
 	Life.prototype.state6Post = function() {
 		var	/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
@@ -25421,34 +25421,99 @@ This file is part of LifeViewer
 			}
 		}
 
-		timing = performance.now() - timing;
-		if (Controller.wasmTiming) {
-			this.view.menuManager.updateTimingItem(fName, timing, Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled);
-		}
-
 		// check for overlay
 		if (this.drawOverlay) {
 			// check if 0.5 <= zoom < 1
 			if (camZoom >= 0.5 && camZoom < 1) {
 				// create 2x2 colour grid
 				this.clearSmallGridOnZoom(this.smallOverlayGrid);
-				this.create2x2ColourGrid16(this.overlayGrid16, this.smallOverlayGrid);
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create2x2ColourGrid(
+						this.overlayGrid32.whole.byteOffset | 0,
+						this.smallOverlayGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.overlayGrid32[0].length | 0
+					);
+				} else {
+					this.create2x2ColourGrid16(this.overlayGrid16, this.smallOverlayGrid);
+				}
 			} else if (camZoom >= 0.25 && camZoom < 0.5) {
 				// create 4x4 colour grid
 				this.clearSmallGridOnZoom(this.smallOverlayGrid);
-				this.create4x4ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create4x4ColourGrid(
+						this.overlayGrid32.whole.byteOffset | 0,
+						this.smallOverlayGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.overlayGrid32[0].length | 0
+					);
+				} else {
+					this.create4x4ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
+				}
 			} else if (camZoom >= 0.125 && camZoom < 0.25) {
 				// create 8x8 colour grid
 				this.clearSmallGridOnZoom(this.smallOverlayGrid);
-				this.create8x8ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create8x8ColourGrid(
+						this.overlayGrid32.whole.byteOffset | 0,
+						this.smallOverlayGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.overlayGrid32[0].length | 0
+					);
+				} else {
+					this.create8x8ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
+				}
 			} else if (camZoom >= 0.0625 && camZoom < 0.125) {
 				// create 16x16 colour grid
 				this.clearSmallGridOnZoom(this.smallOverlayGrid);
-				this.create16x16ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create16x16ColourGrid(
+						this.overlayGrid32.whole.byteOffset | 0,
+						this.smallOverlayGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.overlayGrid32[0].length | 0
+					);
+				} else {
+					this.create16x16ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
+				}
 			} else {
 				// createa 32x32 colour grid
-				this.create32x32ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
+				if (Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled) {
+					WASM.create32x32ColourGrid(
+						this.overlayGrid32.whole.byteOffset | 0,
+						this.smallOverlayGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileY | 0,
+						this.tileX | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.overlayGrid32[0].length | 0
+					);
+				} else {
+					this.create32x32ColourGrid32(this.overlayGrid32, this.smallOverlayGrid);
+				}
 			}
+		}
+
+		timing = performance.now() - timing;
+		if (Controller.wasmTiming) {
+			this.view.menuManager.updateTimingItem(fName, timing, Controller.useWASM && Controller.wasmEnableCreateSmallGrids && this.view.wasmEnabled);
 		}
 
 		// if zoom was 32x then mark it as so for clear when it changes
@@ -47513,7 +47578,7 @@ This file is part of LifeViewer
 			/** @type {number} */ boundBottom = topLeftY,
 			/** @type {number} */ boundRight = topLeftX,
 
-			// timing and function selection
+			// timing
 			/** @type {number} */ timing = performance.now();
 
 		// set the left X extent
@@ -50784,7 +50849,10 @@ This file is part of LifeViewer
 			/** @type {number} */ boundTop = topLeftY,
 			/** @type {number} */ boundLeft = topLeftX,
 			/** @type {number} */ boundBottom = topLeftY,
-			/** @type {number} */ boundRight = topLeftX;
+			/** @type {number} */ boundRight = topLeftX,
+
+			// timing
+			/** @type {number} */ timing = performance.now();
 
 		// set the left X extent
 		if (topRightX < boundLeft) {
@@ -50839,7 +50907,46 @@ This file is part of LifeViewer
 					this.createPixelColours(1);
 					this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
-					this.renderGridOverlayProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+					// check whether to draw layers
+					if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1) || this.isHex || this.isTriangular || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
+						this.renderGridOverlayProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+					} else {
+						this.createPixelColours(1);
+						WASM.renderOverlayClipNoRotate(
+							layersGrid.whole.byteOffset | 0,
+							bottomGrid[0].length | 0,
+							bottomGrid.whole.byteOffset | 0,
+							mask | 0,
+							this.pixelColours.byteOffset | 0,
+							this.data32.byteOffset | 0,
+							this.displayWidth | 0,
+							this.displayHeight | 0,
+							this.camXOff,
+							this.camYOff,
+							this.widthMask | 0,
+							this.heightMask | 0,
+							this.camZoom,
+							(ViewConstants.stateMap[3] + 128) | 0,
+							(ViewConstants.stateMap[4] + 128) | 0,
+							(ViewConstants.stateMap[5] + 128) | 0,
+							(ViewConstants.stateMap[6] + 128) | 0,
+							LifeConstants.aliveStart | 0,
+							this.maxGridSize | 0,
+							this.width | 0,
+							this.height | 0,
+							this.boundaryColour | 0,
+							this.xOffsets.byteOffset | 0,
+							this.xMaxOffsets.byteOffset | 0
+						);
+
+						// draw grid lines and snow
+						this.drawGridLinesAndSnow(drawingSnow);
+					}
+
+					timing = performance.now() - timing;
+					if (Controller.wasmTiming) {
+						this.view.menuManager.updateTimingItem("renderGridClip", timing, Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled);
+					}
 				}
 			} else {
 				// render with clipping
@@ -50853,7 +50960,41 @@ This file is part of LifeViewer
 					this.createPixelColours(1);
 					this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
-					this.renderGridOverlayProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+					// check whether to draw layers
+					if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1) || this.isHex || this.isTriangular || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
+						this.renderGridOverlayProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
+					} else {
+						this.createPixelColours(1);
+						WASM.renderOverlayNoClipNoRotate(
+							layersGrid.whole.byteOffset | 0,
+							bottomGrid[0].length | 0,
+							bottomGrid.whole.byteOffset | 0,
+							mask | 0,
+							this.pixelColours.byteOffset | 0,
+							this.data32.byteOffset | 0,
+							this.displayWidth | 0,
+							this.displayHeight | 0,
+							this.camXOff,
+							this.camYOff,
+							this.widthMask | 0,
+							this.heightMask | 0,
+							this.camZoom,
+							(ViewConstants.stateMap[3] + 128) | 0,
+							(ViewConstants.stateMap[4] + 128) | 0,
+							(ViewConstants.stateMap[5] + 128) | 0,
+							(ViewConstants.stateMap[6] + 128) | 0,
+							LifeConstants.aliveStart | 0,
+							this.xOffsets.byteOffset | 0
+						);
+
+						// draw grid lines and snow
+						this.drawGridLinesAndSnow(drawingSnow);
+					}
+
+					timing = performance.now() - timing;
+					if (Controller.wasmTiming) {
+						this.view.menuManager.updateTimingItem("renderGridNoClip", timing, Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled);
+					}
 				}
 			} else {
 				// render with no clipping

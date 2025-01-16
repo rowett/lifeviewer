@@ -1,5 +1,6 @@
 Build 1227
 - added a progress bar to show buffer usage during Identify period detection
+- Themes Help topic is now accessed via hotkey E
 
 Build 1226
 - fixed a regression with HROT/LtL

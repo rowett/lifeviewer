@@ -808,22 +808,27 @@ This file is part of LifeViewer
 
 			// e for show cell period table
 			case 69:
-				// check for shift key
-				if (shiftKey) {
-					me.defaultSpeedToggle.current = me.viewDefaultSpeedToggle([!me.defaultSpeedSet], true, me);
-					me.menuManager.notification.notify("Using " + (me.defaultSpeedSet ? "saved" : "standard") + " default speed", 15, 80, 15, true);
+				// check for Help
+				if (me.displayHelp !== 0 && (!(me.engine.isNone || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree))) {
+					this.toggleHelpTopic(me, ViewConstants.themesTopic);
 				} else {
-					// check for ctrl key
-					if (ctrlKey) {
-						me.saveDefaultSpeedPressed(me);
-						me.menuManager.notification.notify("Default speed saved as " + me.genSpeed * me.gensPerStep + "gps", 15, 120, 15, true);
+					// check for shift key
+					if (shiftKey) {
+						me.defaultSpeedToggle.current = me.viewDefaultSpeedToggle([!me.defaultSpeedSet], true, me);
+						me.menuManager.notification.notify("Using " + (me.defaultSpeedSet ? "saved" : "standard") + " default speed", 15, 80, 15, true);
 					} else {
-						// show cell period table
-						if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
-							if (me.periodMapDisplayed === 1) {
-								me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
-							} else {
-								me.identifyStrictToggle.current = me.toggleCellPeriodMap(1, true, me);
+						// check for ctrl key
+						if (ctrlKey) {
+							me.saveDefaultSpeedPressed(me);
+							me.menuManager.notification.notify("Default speed saved as " + me.genSpeed * me.gensPerStep + "gps", 15, 120, 15, true);
+						} else {
+							// show cell period table
+							if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
+								if (me.periodMapDisplayed === 1) {
+									me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
+								} else {
+									me.identifyStrictToggle.current = me.toggleCellPeriodMap(1, true, me);
+								}
 							}
 						}
 					}
@@ -1619,18 +1624,13 @@ This file is part of LifeViewer
 
 			// t for timing display
 			case 84:
-				// check for Help
-				if (me.displayHelp !== 0 && (!(me.engine.isNone || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree))) {
-					this.toggleHelpTopic(me, ViewConstants.themesTopic);
+				// check for shift key
+				if (shiftKey) {
+					// toggle extended timing
+					me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
 				} else {
-					// check for shift key
-					if (shiftKey) {
-						// toggle extended timing
-						me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
-					} else {
-						// toggle fps
-						me.fpsButton.current = me.viewFpsToggle([!me.menuManager.showTiming], true, me);
-					}
+					// toggle fps
+					me.fpsButton.current = me.viewFpsToggle([!me.menuManager.showTiming], true, me);
 				}
 				break;
 

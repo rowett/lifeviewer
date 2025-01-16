@@ -70,6 +70,8 @@ var WASM = {
 	nextGenerationGenerations: null,
 	renderGridNoClipNoRotate: null,
 	renderGridClipNoRotate: null,
+	renderOverlayNoClipNoRotate: null,
+	renderOverlayClipNoRotate: null,
 	memory: null,
 	allocator: null
 };

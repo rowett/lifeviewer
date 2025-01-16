@@ -17889,7 +17889,7 @@ This file is part of LifeViewer
 		this.helpInfoButton.toolTip = "show pattern and engine information [I]";
 
 		this.helpThemesButton = this.viewMenu.addButtonItem(this.themesTopicPressed, Menu.north, 0, 200, 150, 40, "Themes");
-		this.helpThemesButton.toolTip = "show colour Themes [T]";
+		this.helpThemesButton.toolTip = "show colour Themes [E]";
 
 		this.helpColoursButton = this.viewMenu.addButtonItem(this.coloursTopicPressed, Menu.north, 0, 250, 150, 40, "Colours");
 		this.helpColoursButton.toolTip = "show colour names [C]";
