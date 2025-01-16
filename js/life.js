@@ -993,7 +993,7 @@ This file is part of LifeViewer
 		/** @type {Array<Uint16Array>} */ this.diedGrid = null;
 
 		// blank pixel row for fast clear
-		/** @type {Uint32Array} */ this.blankPixelRow = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, this.displayWidth, "Life.blankPixelRow", false));
+		/** @type {Uint32Array} */ this.blankPixelRow = null;
 
 		// blank row for life grid to prevent wrap
 		/** @type {Uint8Array} */ this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
@@ -9783,15 +9783,19 @@ This file is part of LifeViewer
 		this.data8 = null;
 		this.mode7Buffer = null;
 
+		if (Controller.useWASM) {
+			// reset top of memory pointer since screen related data will be at top of memory coming down to handle resizes
+			this.allocator.resetTop();
+		}
+
 		// update the drawing context
-		//this.imageData = context.createImageData(context.canvas.width, context.canvas.height);
-		//this.allocator.saveAllocationInfo(Type.Uint32, context.canvas.width * context.canvas.height, "Life.imageData");
-		const /** @type {Uint8ClampedArray} */ buffer = /** @type {Uint8ClampedArray} */ (this.allocator.allocate(Type.Uint8Clamped, context.canvas.width * context.canvas.height * 4, "Life.imageData", Controller.useWASM));
+		const /** @type {Uint8ClampedArray} */ buffer = /** @type {Uint8ClampedArray} */ (this.allocator.allocateTop(Type.Uint8Clamped, context.canvas.width * context.canvas.height * 4, "Life.imageData", Controller.useWASM));
 		/** @suppress {checkTypes} */
 		this.imageData = new ImageData(buffer, context.canvas.width, context.canvas.height);
+
 		if (Controller.useWASM) {
-			this.xOffsets = /** @type {!Uint32Array}*/ (this.allocator.allocate(Type.Uint32, this.displayWidth, "Life.xOffsets", Controller.useWASM));
-			this.xMaxOffsets = /** @type {!Uint32Array}*/ (this.allocator.allocate(Type.Uint32, this.displayWidth, "Life.xMaxOffsets", Controller.useWASM));
+			this.xOffsets = /** @type {!Uint32Array}*/ (this.allocator.allocateTop(Type.Uint32, this.displayWidth, "Life.xOffsets", Controller.useWASM));
+			this.xMaxOffsets = /** @type {!Uint32Array}*/ (this.allocator.allocateTop(Type.Uint32, this.displayWidth, "Life.xMaxOffsets", Controller.useWASM));
 		}
 
 		// check if buffer is available
@@ -9806,9 +9810,9 @@ This file is part of LifeViewer
 			this.data8 = new Uint8Array(this.data32.buffer);
 		}
 
-		if (sizeChanged) {
+		if (sizeChanged || this.blankPixelRow === null) {
 			// create the new blank pixel row
-			this.blankPixelRow = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, displayWidth, "Life.blankPixelRow", false));
+			this.blankPixelRow = /** @type {!Uint32Array} */ (this.allocator.allocateTop(Type.Uint32, displayWidth, "Life.blankPixelRow", Controller.useWASM));
 			for (i = 0; i < displayWidth; i += 1) {
 				this.blankPixelRow[i] = pixelColour;
 			}
@@ -10334,7 +10338,6 @@ This file is part of LifeViewer
 		var	/** @type {number} */ unoccupied = this.unoccupied,
 			/** @type {Uint8Array} */ blankRow = this.blankRow,
 			/** @type {Uint8Array} */ blankColourRow = this.blankColourRow,
-			/** @type {Uint32Array} */ blankPixelRow = this.blankPixelRow,
 			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
 			/** @type {number} */ pixelColour = 0;
 
@@ -10383,7 +10386,7 @@ This file is part of LifeViewer
 		blankRow.fill(0);
 		blankColourRow.fill(unoccupied);
 		blankTileRow.fill(0);
-		blankPixelRow.fill(pixelColour);
+		this.blankPixelRow.fill(pixelColour);
 
 		// create the 7x7 gliders
 		this.create7x7Gliders();

@@ -121,6 +121,9 @@ This file is part of LifeViewer
 
 		// wasm heap pointer
 		/** @type {number} */ this.wasmPointer = 128;
+
+		// wasm top of memory pointer
+		/** @type {number} */ this.wasmMemTop = 0;
 	}
 
 	// reset the allocator
@@ -132,6 +135,11 @@ This file is part of LifeViewer
 		this.numFrees = 0;
 		this.totalBytes = 0;
 		this.totalFreedBytes = 0;
+	};
+
+	// reset the top of memory pointer
+	Allocator.prototype.resetTop = function() {
+		this.wasmMemTop = WASM.memory.buffer.byteLength;
 	};
 
 	// output a specific allocation as a string
@@ -287,9 +295,19 @@ This file is part of LifeViewer
 
 	// get typed memory block
 	/** @returns {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */
-	Allocator.prototype.typedMemory = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {boolean} */ wasmHeap) {
+	Allocator.prototype.typedMemory = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {boolean} */ wasmHeap, /** @type {boolean} */ atTop) {
 		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null,
-			/** @type {number} */ size = elements * Type.sizeInBytes(type);
+			/** @type {number} */ size = elements * Type.sizeInBytes(type),
+			/** @type {number} */ where = this.wasmPointer;
+
+		// check if allocation at top of heap required
+		if (atTop) {
+			// allocate from top of memory 16 byte aligned
+			where = (this.wasmMemTop - size) & ~15;
+
+			// update top of memory pointer
+			this.wasmMemTop = where;
+		}
 
 		// allocate memory
 		try {
@@ -297,7 +315,7 @@ This file is part of LifeViewer
 			// unsigned 8bit integer
 			case Type.Uint8:
 				if (wasmHeap) {
-					result = new Uint8Array(WASM.memory.buffer, this.wasmPointer, elements);
+					result = new Uint8Array(WASM.memory.buffer, where, elements);
 				} else {
 					result = new Uint8Array(elements);
 				}
@@ -306,7 +324,7 @@ This file is part of LifeViewer
 			// unsigned 8bit clamped integer
 			case Type.Uint8Clamped:
 				if (wasmHeap) {
-					result = new Uint8ClampedArray(WASM.memory.buffer, this.wasmPointer, elements);
+					result = new Uint8ClampedArray(WASM.memory.buffer, where, elements);
 				} else {
 					result = new Uint8ClampedArray(elements);
 				}
@@ -315,7 +333,7 @@ This file is part of LifeViewer
 			// unsigned 16bit integer
 			case Type.Uint16:
 				if (wasmHeap) {
-					result = new Uint16Array(WASM.memory.buffer, this.wasmPointer, elements);
+					result = new Uint16Array(WASM.memory.buffer, where, elements);
 				} else {
 					result = new Uint16Array(elements);
 				}
@@ -324,7 +342,7 @@ This file is part of LifeViewer
 			// unsigned 32bit integer
 			case Type.Uint32:
 				if (wasmHeap) {
-					result = new Uint32Array(WASM.memory.buffer, this.wasmPointer, elements);
+					result = new Uint32Array(WASM.memory.buffer, where, elements);
 				} else {
 					result = new Uint32Array(elements);
 				}
@@ -333,7 +351,7 @@ This file is part of LifeViewer
 			// signed 8bit integer
 			case Type.Int8:
 				if (wasmHeap) {
-					result = new Int8Array(WASM.memory.buffer, this.wasmPointer, elements);
+					result = new Int8Array(WASM.memory.buffer, where, elements);
 				} else {
 					result = new Int8Array(elements);
 				}
@@ -342,7 +360,7 @@ This file is part of LifeViewer
 			// signed 16bit integer
 			case Type.Int16:
 				if (wasmHeap) {
-					result = new Int16Array(WASM.memory.buffer, this.wasmPointer, elements);
+					result = new Int16Array(WASM.memory.buffer, where, elements);
 				} else {
 					result = new Int16Array(elements);
 				}
@@ -351,7 +369,7 @@ This file is part of LifeViewer
 			// signed 32bit integer
 			case Type.Int32:
 				if (wasmHeap) {
-					result = new Int32Array(WASM.memory.buffer, this.wasmPointer, elements);
+					result = new Int32Array(WASM.memory.buffer, where, elements);
 				} else {
 					result = new Int32Array(elements);
 				}
@@ -360,7 +378,7 @@ This file is part of LifeViewer
 			// signed 32bit float
 			case Type.Float32:
 				if (wasmHeap) {
-					result = new Float32Array(WASM.memory.buffer, this.wasmPointer, elements);
+					result = new Float32Array(WASM.memory.buffer, where, elements);
 				} else {
 					result = new Float32Array(elements);
 				}
@@ -369,7 +387,7 @@ This file is part of LifeViewer
 			// signed 64bit float
 			case Type.Float64:
 				if (wasmHeap) {
-					result = new Float64Array(WASM.memory.buffer, this.wasmPointer, elements);
+					result = new Float64Array(WASM.memory.buffer, where, elements);
 				} else {
 					result = new Float64Array(elements);
 				}
@@ -385,7 +403,7 @@ This file is part of LifeViewer
 		}
 
 		// if the allocation succeeded for the WASM heap then update the heap pointer
-		if (result !== null && wasmHeap) {
+		if (result !== null && wasmHeap && !atTop) {
 			// check size is a multiple of 16
 			if ((size & 0x0f) !== 0) {
 				size = (size & 0xfffffff0) + 16;
@@ -406,7 +424,7 @@ This file is part of LifeViewer
 
 		if (elements > 0) {
 			// get typed block of memory
-			result = this.typedMemory(type, elements, name, wasmHeap);
+			result = this.typedMemory(type, elements, name, wasmHeap, false);
 
 			// check if allocation succeeded
 			if (result) {
@@ -416,6 +434,31 @@ This file is part of LifeViewer
 
 					//console.log(name, elements + " x " + Type.typeName(type) + " @ " + result.byteOffset, " used: " + (result.byteOffset >> 20) + "Mb (" + ((100 * result.byteOffset) / WASM.memory.buffer.byteLength).toFixed(1) + "%)");
 					name = "* " + name;
+				}
+				this.saveAllocationInfo(type, elements, name, result.byteOffset);
+			}
+		}
+
+		// return memory
+		return result;
+	};
+
+	// allocate typed memory at top of heap
+	/** @returns {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */
+	Allocator.prototype.allocateTop = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {boolean} */ wasmHeap) {
+		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
+
+		if (elements > 0) {
+			// get typed block of memory
+			result = this.typedMemory(type, elements, name, wasmHeap, true);
+
+			// check if allocation succeeded
+			if (result) {
+				if (wasmHeap) {
+					// clear the memory block
+					result.fill(0);
+
+					name = "^ " + name;
 				}
 				this.saveAllocationInfo(type, elements, name, result.byteOffset);
 			}
@@ -438,7 +481,7 @@ This file is part of LifeViewer
 
 		// get typed block of memory
 		if (elements > 0) {
-			result = this.typedMemory(type, elements, name, false);
+			result = this.typedMemory(type, elements, name, false, false);
 		}
 
 		// check if allocation succeeded
