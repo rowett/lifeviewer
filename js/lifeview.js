@@ -2071,6 +2071,9 @@ This file is part of LifeViewer
 		// state number button
 		/** @type {MenuItem} */ this.stateNumberButton = null;
 
+		// toggle WASM engine button
+		/** @type {MenuItem} */ this.wasmEngineButton = null;
+
 		// y coordinate direction button
 		/** @type {MenuItem} */ this.yDirectionButton = null;
 
@@ -7514,6 +7517,9 @@ This file is part of LifeViewer
 		this.fastLookupButton.deleted = shown;
 		this.fastLookupButton.locked = !this.engine.isRuleTree || (this.engine.isRuleTree && !this.engine.ruleLoaderLookupAvailable());
 		this.stateNumberButton.deleted = shown;
+		if (Controller.useWASM) {
+			this.wasmEngineButton.deleted = shown;
+		}
 		this.yDirectionButton.deleted = shown;
 
 		// display categoy
@@ -8685,6 +8691,17 @@ This file is part of LifeViewer
 		}
 
 		return [me.engine.ruleLoaderLookupEnabled];
+	};
+
+	// toggle WASM engine
+	/** @returns {Array<boolean>} */
+	View.prototype.viewEngineToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		// check if changing
+		if (change) {
+			me.wasmEnabled = newValue[0];
+		}
+
+		return [me.wasmEnabled];
 	};
 
 	// toggle state number display
@@ -18378,6 +18395,12 @@ This file is part of LifeViewer
 		// state number toggle button
 		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 75, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
 		this.stateNumberButton.toolTip = ["toggle state number display [F8]"];
+
+		// toggle WASM engine button
+		if (Controller.useWASM) {
+			this.wasmEngineButton = this.viewMenu.addListItem(this.viewEngineToggle, Menu.middle, 100, 75, 180, 40, ["WASM Engine"], [this.wasmEnabled], Menu.multi);
+			this.wasmEngineButton.toolTip = ["toggle WASM engine [" + this.altKeyText + "`]"];
+		}
 
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");

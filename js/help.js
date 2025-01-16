@@ -903,6 +903,9 @@ This file is part of LifeViewer
 		}
 		y = this.renderHelpLine(view, "T", "toggle timing information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift T", "toggle extended timing information", ctx, x, y, height, helpLine);
+		if (Controller.useWASM) {
+			y = this.renderHelpLine(view, view.altKeyText + " `", "toggle WASM engine", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "I", "toggle pattern and engine information", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift I", "toggle information bar", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.altKeyText + " I", "toggle icons", ctx, x, y, height, helpLine);
@@ -2007,7 +2010,11 @@ This file is part of LifeViewer
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Engine:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Name", ViewConstants.externalViewerTitle, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Edition", Controller.useWASM ? ViewConstants.proEdition : ViewConstants.standardEdition, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Build", ViewConstants.versionBuild, ctx, x, y, height, helpLine);
+		if (Controller.useWASM) {
+			y = this.renderHelpLine(view, "WASM", view.wasmEnabled ? "On" : "Off", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "Author", ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Decoders", "RLE, Life 1.06, Life 1.05, Cells", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "N'hoods", "Moore, Hexagonal, von Neumann, Triangular, 1D,", ctx, x, y, height, helpLine);

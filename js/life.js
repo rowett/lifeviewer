@@ -992,9 +992,6 @@ This file is part of LifeViewer
 		// tile grid of tiles that died
 		/** @type {Array<Uint16Array>} */ this.diedGrid = null;
 
-		// blank pixel row for fast clear
-		/** @type {Uint32Array} */ this.blankPixelRow = null;
-
 		// blank row for life grid to prevent wrap
 		/** @type {Uint8Array} */ this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
 
@@ -9810,13 +9807,7 @@ This file is part of LifeViewer
 			this.data8 = new Uint8Array(this.data32.buffer);
 		}
 
-		if (sizeChanged || this.blankPixelRow === null) {
-			// create the new blank pixel row
-			this.blankPixelRow = /** @type {!Uint32Array} */ (this.allocator.allocateTop(Type.Uint32, displayWidth, "Life.blankPixelRow", Controller.useWASM));
-			for (i = 0; i < displayWidth; i += 1) {
-				this.blankPixelRow[i] = pixelColour;
-			}
-
+		if (sizeChanged) {
 			// clear pixels
 			this.clearPixels(pixelColour);
 
@@ -10386,7 +10377,6 @@ This file is part of LifeViewer
 		blankRow.fill(0);
 		blankColourRow.fill(unoccupied);
 		blankTileRow.fill(0);
-		this.blankPixelRow.fill(pixelColour);
 
 		// create the 7x7 gliders
 		this.create7x7Gliders();

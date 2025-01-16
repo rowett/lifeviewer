@@ -3244,7 +3244,10 @@ This file is part of LifeViewer
 			/** @type {number} */ lastUpdate = manager.updateCounter,
 			/** @type {number} */ latestUpdate = 0,
 			/** @type {Array<number>} */ activeCol = [0, 0, 0],
-			/** @type {Array<number>} */ inactiveCol = [0, 0, 0];
+			/** @type {Array<number>} */ inactiveCol = [0, 0, 0],
+			/** @type {number} */ topY = 205,
+			/** @type {number} */ leftX = oc.canvas.width - (thirdTab + 4) * xScale,
+			/** @type {number} */ rowY = 16;
 
 		// scale information display
 		if (this.currentMenu) {
@@ -3255,7 +3258,7 @@ This file is part of LifeViewer
 		// draw the shaded rectangle
 		oc.globalAlpha = 0.7;
 		oc.fillStyle = this.bgCol;
-		oc.fillRect(0, (68 * yScale) | 0, ((thirdTab + 4) * xScale) | 0, ((itemList.length * 12 + 6) * yScale) | 0);
+		oc.fillRect(leftX, ((topY - 12) * yScale) | 0, ((thirdTab + 4) * xScale) | 0, ((itemList.length * rowY + 6) * yScale) | 0);
 		oc.globalAlpha = 1;
 
 		oc.fillStyle = "black";
@@ -3271,7 +3274,7 @@ This file is part of LifeViewer
 					oc.fillStyle = this.adjustColour(inactiveCol, lastUpdate - latestUpdate);
 				}
 
-				oc.fillText(name, ((6 - j) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
+				oc.fillText(name, ((leftX + 6 - j) * xScale) | 0, ((topY - j + (rowY * i)) * yScale) | 0);
 
 				wasm = manager.getWASMTime(name);
 				message = wasm.toFixed(2);
@@ -3280,7 +3283,7 @@ This file is part of LifeViewer
 				if (j > 0 && wasmUpdate > jsUpdate) {
 					oc.fillStyle = this.adjustColour(activeCol, lastUpdate - latestUpdate);
 				}
-				oc.fillText(message, ((firstTab - j - width) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
+				oc.fillText(message, ((leftX + firstTab - j - width) * xScale) | 0, ((topY - j + (rowY * i)) * yScale) | 0);
 
 				js = manager.getJSTime(name);
 				message = js.toFixed(2);
@@ -3293,7 +3296,7 @@ This file is part of LifeViewer
 						oc.fillStyle = this.adjustColour(inactiveCol, lastUpdate - latestUpdate);
 					}
 				}
-				oc.fillText(message, ((secondTab - j - width) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
+				oc.fillText(message, ((secondTab - j - width + leftX) * xScale) | 0, ((topY - j + (rowY * i)) * yScale) | 0);
 
 				if (manager.items[name].lastWASMUpdate > 0 && manager.items[name].lastJSUpdate > 0) {
 					if (js > 0 && wasm > 0) {
@@ -3309,7 +3312,7 @@ This file is part of LifeViewer
 						}
 						message = ratio.toFixed(1) + "x";
 						width = oc.measureText(message).width;
-						oc.fillText(message, ((thirdTab - j - width) * xScale) | 0, ((80 - j + (12 * i)) * yScale) | 0);
+						oc.fillText(message, ((thirdTab - j - width + leftX) * xScale) | 0, ((topY - j + (rowY * i)) * yScale) | 0);
 					}
 				}
 				oc.fillStyle = this.adjustColour(inactiveCol, lastUpdate - latestUpdate);
