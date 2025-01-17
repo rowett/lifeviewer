@@ -1507,7 +1507,7 @@ void nextGenerationCross2(
 	// cross
 	int32_t* countRow = counts + (bottomY - yrange) * countsWidth;
 	int32_t nextRow = countsWidth - (rightX + xrange - (leftX - xrange) + 1);
-	
+
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
 		int32_t *saveRow = countRow;
 
@@ -2994,7 +2994,7 @@ void nextGenerationCrossN(
 	// cross
 	int32_t* countRow = counts + (bottomY - yrange) * countsWidth;
 	int32_t nextRow = countsWidth - (rightX + xrange - (leftX - xrange) + 1);
-	
+
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
 		int32_t *saveRow = countRow;
 
@@ -3832,7 +3832,7 @@ void updateGridFromCounts2(
 
 			// births is population count of bitmask of born cells
 			births += __builtin_popcount(wasm_i8x16_bitmask(pensIfBorn));
-			
+
 			// merge surviving cells and births to get next generation alive/dead state
 			v128_t cells = wasm_v128_or(pensIfSurvived, pensIfBorn);
 
@@ -4591,7 +4591,7 @@ void nextGenerationHROTMoore2(
 
 			// births is population count of bitmask of born cells
 			births += __builtin_popcount(wasm_i8x16_bitmask(pensIfBorn));
-			
+
 			// merge surviving cells and births to get next generation alive/dead state
 			v128_t cells = wasm_v128_or(pensIfSurvived, pensIfBorn);
 
@@ -4664,7 +4664,7 @@ void nextGenerationHROTMoore2(
 
 			// next column
 			colourRow += 16;
-			
+
 			x += 16;
 		}
 
@@ -5119,7 +5119,7 @@ void nextGenerationHROTMooreN(
 
 			// next column
 			colourRow += 16;
-			
+
 			x += 16;
 		}
 
@@ -5651,7 +5651,7 @@ void updateOccupancyStrict(
 			x += 16;
 			colourRow += 16;
 		}
-		
+
 		if (bit != bitStart) {
 			*frameRow = frameBits;
 		}
@@ -7399,7 +7399,7 @@ void convertToPens(
 					pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 1, 0, 3, 2));
 					pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 2, 3, 0, 1));
 					tileAlive |= wasm_u32x4_extract_lane(pens, 0);
-					
+
 					h++;
 					colourRow += colourGridWidth;
 					gridRow += gridWidth;
@@ -7563,7 +7563,7 @@ void nextGenerationGenerations(
 
 						// check if any cells in the row are alive
 						uint32_t aliveBits = wasm_i8x16_bitmask(wasm_i8x16_gt(newColourVec, deadStateVec));
-						
+
 						// compute the left and right most occupied cell
 						uint32_t leftMost = 31 - __builtin_clz(aliveBits);
 						uint32_t rightMost = __builtin_ctz(aliveBits);
@@ -8277,4 +8277,873 @@ void renderOverlayClipNoRotate(
 		// next row
 		sy += dyy;
 	}
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// update the life grid region using tiles
+void nextGenerationTile(
+	uint16_t *grid16,
+	uint16_t *nextGrid16,
+	const uint32_t gridWidth,
+	uint16_t *tileGrid16,
+	uint16_t *nextTileGrid16,
+	const uint32_t tileGridWidth,
+	uint8_t* indexLookup631,
+	uint8_t* indexLookup632,
+	const uint32_t altSpecified,
+	uint16_t *columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t tileX,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *blankTileRow,
+	const uint32_t blankTileWidth,
+	uint16_t *blankRow16,
+	const uint32_t blankRowWidth,
+	const int32_t bWidth,
+	const int32_t bHeight,
+	const int32_t boundedGridType,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	const uint32_t tileGridWholeBytes,
+	uint32_t *shared
+) {
+	int32_t h, b;
+	int32_t val0, val1, val2;
+	int32_t output;
+	int32_t th, tw;
+	int32_t tiles, nextTiles, belowNextTiles, aboveNextTiles;
+	int32_t bottomY, topY, leftX;
+	int32_t origValue, tileCells;
+	int32_t colOccupied, rowOccupied, rowIndex;
+	const int32_t width16 = width >> 4;
+
+	// population statistics
+	int32_t population = 0, births = 0, deaths = 0;
+
+	// new box extent
+	int32_t newBottomY = height;
+	int32_t newTopY = -1;
+	int32_t newLeftX = width;
+	int32_t newRightX = -1;
+
+	// tile width in 16 bit chunks
+	const int32_t xSize = tileX >> 1;
+
+	// tile columns in 16 bit values
+	const int32_t tileCols16 = tileCols >> 4;
+
+	// flags for edges of tile occupied
+	int32_t neighbours = 0;
+
+	// bottom left
+	const uint32_t bLeftX = (width - bWidth) / 2;
+	const uint32_t bBottomY = (height - bHeight) / 2;
+
+	// top right
+	const uint32_t bRightX = bLeftX + bWidth - 1;
+	const uint32_t bTopY = bBottomY + bHeight - 1;
+
+	// grid
+	uint16_t *grid = grid16;
+	uint16_t *nextGrid = nextGrid16;
+	uint16_t *tileGrid = tileGrid16;
+	uint16_t *nextTileGrid = nextTileGrid16;
+	uint8_t *indexLookup63 = indexLookup631;
+
+	// switch buffers each generation
+	if ((counter & 1) != 0) {
+		grid = nextGrid16;
+		nextGrid = grid16;
+		tileGrid = nextTileGrid16;
+		nextTileGrid = tileGrid16;
+
+		// get alternate lookup buffer if specified
+		if (altSpecified) {
+			indexLookup63 = indexLookup632;
+		}
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// set the initial tile row
+	bottomY = 0;
+	topY = bottomY + ySize;
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridWholeBytes);
+
+	// scan each row of tiles
+	for (th = 0; th < height >> 4; th++) {
+		// set initial tile column
+		leftX = 0;
+
+		// get the tile row
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			tiles = tileRow[tw];
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination (with any set because of edges)
+				nextTiles = nextTileRow[tw];
+				belowNextTiles = belowNextTileRow[tw];
+				aboveNextTiles = aboveNextTileRow[tw];
+
+				uint16_t *gridRow0 = NULL;
+				uint16_t *gridRow1 = NULL;
+				uint16_t *gridRow2 = NULL;
+				uint16_t *nextRow = NULL;
+
+				// compute next generation for each set tile
+				for (b = 15; b >= 0; b -= 1) {
+					// check if this tile needs computing
+					if (tiles & (1 << b)) {
+						// mark no cells in this column
+						colOccupied = 0;
+
+						// mark no cells in the tile rows
+						rowOccupied = 0;
+
+						// clear the edge flags
+						neighbours = 0;
+
+						// process the bottom row of the tile
+						h = bottomY;
+						rowIndex = 32768;
+
+						// current row
+						gridRow1 = grid + h * gridWidth + leftX;
+
+						// deal with bottom row of the grid
+						if (h == 0) {
+							gridRow0 = blankRow16;
+						} else {
+							gridRow0 = gridRow1 - gridWidth;
+						}
+
+						// next row
+						gridRow2 = gridRow1 + gridWidth;
+
+						// row in destination grid
+						nextRow = nextGrid + h * gridWidth + leftX;
+
+						// get original value (used for top row only and then to determine if any cells were alive in tile)
+						origValue = *gridRow1;
+
+						// mix of original cells and cells computed in this tile
+						tileCells = origValue;
+
+						// check if at left edge of grid
+						if (!leftX) {
+							// process left edge tile first row
+							val0 = (*gridRow0 << 1) | (*(gridRow0 + 1) >> 15);
+							val1 = (origValue << 1) | (*(gridRow1 + 1) >> 15);
+							val2 = (*gridRow2 << 1) | (*(gridRow2 + 1) >> 15);
+							output = val0 | val1 | val2;
+							if (output) {
+								// get first 4 bits
+								output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
+
+								// add three sets of 4 bits
+								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+								output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+
+								// check if any cells are set
+								if (output) {
+									// update row and column occupied flags
+									colOccupied |= output;
+									rowOccupied |= rowIndex;
+
+									// check for right column now set
+									if (output & 1) {
+										neighbours |= bottomRightSet;
+									}
+
+									// bottom row set
+									neighbours |= bottomSet;
+
+									// update population
+									population += __builtin_popcount(output);
+								}
+							}
+
+							// save output 16bits
+							*nextRow = output;
+							nextRow += gridWidth;
+
+							// update statistics
+							if (output | origValue) {
+								births += __builtin_popcount(output & ~origValue);
+								deaths += __builtin_popcount(origValue & ~output);
+							}
+
+							// process left edge tile middle rows
+							h++;
+							rowIndex >>= 1;
+							while (h < topY - 1) {
+								// get original value for next row
+								origValue = *gridRow2;
+								tileCells |= origValue;
+
+								// next row
+								gridRow2 += gridWidth;
+
+								// read three rows
+								val0 = val1;
+								val1 = val2;
+								val2 = (*gridRow2 << 1) | (*(gridRow2 + 1) >> 15);
+								output = val0 | val1 | val2;
+								if (output) {
+									// get first 4 bits
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
+
+									// add three sets of 4 bits
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+
+									// check if any cells are set
+									if (output) {
+										// update row and column occupied flags
+										colOccupied |= output;
+										rowOccupied |= rowIndex;
+
+										// update population
+										population += __builtin_popcount(output);
+									}
+								}
+
+								// save output 16bits
+								*nextRow = output;
+								nextRow += gridWidth;
+
+								// update statistics
+								if (output | origValue) {
+									births += __builtin_popcount(output & ~origValue);
+									deaths += __builtin_popcount(origValue & ~output);
+								}
+
+								// next row
+								h++;
+								rowIndex >>= 1;
+							}
+
+							// process left edge last row
+							origValue = *gridRow2;
+							tileCells |= origValue;
+
+							// deal with top row
+							if (h == height - 1) {
+								gridRow2 = blankRow16;
+							} else {
+								gridRow2 += gridWidth;
+							}
+
+							// read three rows
+							val0 = val1;
+							val1 = val2;
+							val2 = (*gridRow2 << 1) | (*(gridRow2 + 1) >> 15);
+							output = val0 | val1 | val2;
+							if (output) {
+								// get first 4 bits
+								output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
+
+								// get next 4 bits
+								output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+								output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+								output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+
+								// check if any cells are set
+								if (output) {
+									// update row and column occupied flags
+									colOccupied |= output;
+									rowOccupied |= rowIndex;
+
+									// update population
+									population += __builtin_popcount(output);
+
+									// check for right column now set
+									if (output & 1) {
+										neighbours |= topRightSet;
+									}
+
+									// top row set
+									neighbours |= topSet;
+								}
+							}
+
+							// save output 16bits
+							*nextRow = output;
+							nextRow += gridWidth;
+
+							// update statistics
+							if (output | origValue) {
+								births += __builtin_popcount(output & ~origValue);
+								deaths += __builtin_popcount(origValue & ~output);
+							}
+						} else {
+							// check if at right edge
+							if (leftX >= width16 - 1) {
+								// process right edge tile first row
+								val0 = ((*(gridRow0 - 1) & 1) << 17) | (*gridRow0 << 1);
+								val1 = ((*(gridRow1 - 1) & 1) << 17) | (origValue << 1);
+								val2 = ((*(gridRow2 - 1) & 1) << 17) | (*gridRow2 << 1);
+								output = val0 | val1 | val2;
+								if (output) {
+									// get first 4 bits
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
+
+									// add three sets of 4 bits
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+
+									// check if any cells are set
+									if (output) {
+										// update row and column occupied flags
+										colOccupied |= output;
+										rowOccupied |= rowIndex;
+
+										// update population
+										population += __builtin_popcount(output);
+
+										// check for left column now set
+										if (output & 32768) {
+											neighbours |= bottomLeftSet;
+										}
+
+										// bottom row set
+										neighbours |= bottomSet;
+									}
+								}
+
+								// save output 16bits
+								*nextRow = output;
+								nextRow += gridWidth;
+
+								// update statistics
+								if (output | origValue) {
+									births += __builtin_popcount(output & ~origValue);
+									deaths += __builtin_popcount(origValue & ~output);
+								}
+
+								// process left edge tile middle rows
+								h++;
+								rowIndex >>= 1;
+
+								while (h < topY - 1) {
+									// get original value for next row
+									origValue = *gridRow2;
+									tileCells |= origValue;
+
+									// next row
+									gridRow2 += gridWidth;
+
+									// read three rows
+									val0 = val1;
+									val1 = val2;
+									val2 = ((*(gridRow2 - 1) & 1) << 17) | (*gridRow2 << 1);
+									output = val0 | val1 | val2;
+									if (output) {
+										// get first 4 bits
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
+
+										// add three sets of 4 bits
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+
+										// check if any cells are set
+										if (output) {
+											// update row and column occupied flags
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
+
+											// update population
+											population += __builtin_popcount(output);
+										}
+									}
+
+									// save output 16bits
+									*nextRow = output;
+									nextRow += gridWidth;
+
+									// update statistics
+									if (output | origValue) {
+										births += __builtin_popcount(output & ~origValue);
+										deaths += __builtin_popcount(origValue & ~output);
+									}
+
+									// next row
+									h++;
+									rowIndex >>= 1;
+								}
+
+								// process left edge last row
+								origValue = *gridRow2;
+								tileCells |= origValue;
+
+								// deal with top row
+								if (h == height - 1) {
+									gridRow2 = blankRow16;
+								} else {
+									gridRow2 += gridWidth;
+								}
+
+								// read three rows
+								val0 = val1;
+								val1 = val2;
+								val2 = ((*(gridRow2 - 1) & 1) << 17) | (*gridRow2 << 1);
+								output = val0 | val1 | val2;
+								if (output) {
+									// get first 4 bits
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
+
+									// get next 4 bits
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+
+									// check if any cells are set
+									if (output) {
+										// update row and column occupied flags
+										colOccupied |= output;
+										rowOccupied |= rowIndex;
+
+										// update population
+										population += __builtin_popcount(output);
+
+										// check for left column now set
+										if (output & 32768) {
+											neighbours |= topLeftSet;
+										}
+
+										// top row set
+										neighbours |= topSet;
+									}
+								}
+
+								// save output 16bits
+								*nextRow = output;
+								nextRow += gridWidth;
+
+								// update statistics
+								if (output | origValue) {
+									births += __builtin_popcount(output & ~origValue);
+									deaths += __builtin_popcount(origValue & ~output);
+								}
+							} else {
+								// process normal tile
+								val0 = ((*(gridRow0 - 1) & 1) << 17) | (*gridRow0 << 1) | (*(gridRow0 + 1) >> 15);
+								val1 = ((*(gridRow1 - 1) & 1) << 17) | (origValue << 1) | (*(gridRow1 + 1) >> 15);
+								val2 = ((*(gridRow2 - 1) & 1) << 17) | (*gridRow2 << 1) | (*(gridRow2 + 1) >> 15);
+								output = val0 | val1 | val2;
+								if (output) {
+									// get first 4 bits
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
+
+									// add three sets of 4 bits
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+
+									// check if any cells are set
+									if (output) {
+										// update row and column occupied flags
+										colOccupied |= output;
+										rowOccupied |= rowIndex;
+
+										// update population
+										population += __builtin_popcount(output);
+
+										// check for left column now set
+										if (output & 32768) {
+											neighbours |= bottomLeftSet;
+										}
+
+										// check for right column now set
+										if (output & 1) {
+											neighbours |= bottomRightSet;
+										}
+
+										// bottom row set
+										neighbours |= bottomSet;
+									}
+								}
+
+								// save output 16bits
+								*nextRow = output;
+								nextRow += gridWidth;
+
+								// update statistics
+								if (output | origValue) {
+									births += __builtin_popcount(output & ~origValue);
+									deaths += __builtin_popcount(origValue & ~output);
+								}
+
+								// process middle rows of the tile
+								h++;
+								rowIndex >>= 1;
+
+								while (h < topY - 1) {
+									// get original value for next row
+									origValue = *gridRow2;
+									tileCells |= origValue;
+
+									// next row
+									gridRow2 += gridWidth;
+
+									// read three rows
+									val0 = val1;
+									val1 = val2;
+									val2 = ((*(gridRow2 - 1) & 1) << 17) | (*gridRow2 << 1) | (*(gridRow2 + 1) >> 15);
+									output = val0 | val1 | val2;
+									if (output) {
+										// get first 4 bits
+										output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
+
+										// get next 4 bits
+										output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+										output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+										output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+
+										// check if any cells are set
+										if (output) {
+											// update row and column occupied flags
+											colOccupied |= output;
+											rowOccupied |= rowIndex;
+
+											// update population
+											population += __builtin_popcount(output);
+										}
+									}
+
+									// save output 16bits
+									*nextRow = output;
+									nextRow += gridWidth;
+
+									// update statistics
+									if (output | origValue) {
+										births += __builtin_popcount(output & ~origValue);
+										deaths += __builtin_popcount(origValue & ~output);
+									}
+
+									// next row
+									h++;
+									rowIndex >>= 1;
+								}
+
+								// get original value
+								origValue = *gridRow2;
+								tileCells |= origValue;
+
+								// deal with top row
+								if (h == height - 1) {
+									gridRow2 = blankRow16;
+								} else {
+									gridRow2 += gridWidth;
+								}
+
+								// read three rows
+								val0 = val1;
+								val1 = val2;
+								val2 = ((*(gridRow2 - 1) & 1) << 17) | (*gridRow2 << 1) | (*(gridRow2 + 1) >> 15);
+								output = val0 | val1 | val2;
+								if (output) {
+									// get first 4 bits
+									output = indexLookup63[(val0 >> 12) | (val1 >> 12) << 6 | (val2 & 258048)] << 12;
+
+									// get next 4 bits
+									output |= indexLookup63[((val0 >> 8) & 63) | ((val1 >> 2) & 4032) | ((val2 << 4) & 258048)] << 8;
+									output |= indexLookup63[((val0 >> 4) & 63) | ((val1 << 2) & 4032) | ((val2 << 8) & 258048)] << 4;
+									output |= indexLookup63[(val0 & 63) | (val1 & 63) << 6 | (val2 & 63) << 12];
+
+									// check if any cells are set
+									if (output) {
+										// update row and column occupied flag
+										colOccupied |= output;
+										rowOccupied |= rowIndex;
+
+										// update population
+										population += __builtin_popcount(output);
+
+										// check for left column now set
+										if (output & 32768) {
+											neighbours |= topLeftSet;
+										}
+
+										// check for right column now set
+										if (output & 1) {
+											neighbours |= topRightSet;
+										}
+
+										// top row set
+										neighbours |= topSet;
+									}
+								}
+
+								// save output 16bits
+								*nextRow = output;
+								nextRow += gridWidth;
+
+								// update statistics
+								if (output | origValue) {
+									births += __builtin_popcount(output & ~origValue);
+									deaths += __builtin_popcount(origValue & ~output);
+								}
+							}
+						}
+
+						// check which columns contained cells
+						if (colOccupied) {
+							// check for left column set
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							// check for right column set
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+						}
+
+						// save the column occupied cells
+						columnOccupied16[leftX] |= colOccupied;
+
+						// check if the source or output were alive
+						if (colOccupied || tileCells) {
+							// update
+							nextTiles |= (1 << b);
+
+							// check for neighbours
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (b < 15) {
+										nextTiles |= (1 << (b + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (b > 0) {
+										nextTiles |= (1 << (b - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << b);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << b);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (b < 15) {
+										belowNextTiles |= (1 << (b + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (b > 0) {
+										belowNextTiles |= (1 << (b - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (b < 15) {
+										aboveNextTiles |= (1 << (b + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (b > 0) {
+										aboveNextTiles |= (1 << (b - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width16 - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+			}
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// remove bounded grid column and row entries (+1 in all directions)
+	if (boundedGridType != -1) {
+		if (bWidth != 0) {
+			columnOccupied16[(bLeftX - 1) >> 4] &= ~(1 << (~(bLeftX - 1) & 15));
+			columnOccupied16[(bRightX + 1) >> 4] &= ~(1 << (~(bRightX + 1) & 15));
+			columnOccupied16[(bLeftX - 2) >> 4] &= ~(1 << (~(bLeftX - 2) & 15));
+			columnOccupied16[(bRightX + 2) >> 4] &= ~(1 << (~(bRightX + 2) & 15));
+		}
+		if (bHeight != 0) {
+			rowOccupied16[(bBottomY - 1) >> 4] &= ~(1 << (~(bBottomY - 1) & 15));
+			rowOccupied16[(bTopY + 1) >> 4] &= ~(1 << (~(bTopY + 1) & 15));
+			rowOccupied16[(bBottomY - 2) >> 4] &= ~(1 << (~(bBottomY - 2) & 15));
+			rowOccupied16[(bTopY + 2) >> 4] &= ~(1 << (~(bTopY + 2) & 15));
+		}
+	}
+
+	// update bounding box
+	for (tw = 0; tw < width16; tw++) {
+		if (columnOccupied16[tw]) {
+			if (tw < newLeftX) {
+				newLeftX = tw;
+			}
+			if (tw > newRightX) {
+				newRightX = tw;
+			}
+		}
+	}
+
+	for (th = 0; th < rowOccupiedWidth; th++) {
+		if (rowOccupied16[th]) {
+			if (th < newBottomY) {
+				newBottomY = th;
+			}
+			if (th > newTopY) {
+				newTopY = th;
+			}
+		}
+	}
+
+	// convert new width to pixels
+	newLeftX = (newLeftX << 4) + (__builtin_clz(columnOccupied16[newLeftX]) - 16);
+	newRightX = (newRightX << 4) + (15 - __builtin_ctz(columnOccupied16[newRightX]));
+
+	// convert new height to pixels
+	newBottomY = (newBottomY << 4) + (__builtin_clz(rowOccupied16[newBottomY]) - 16);
+	newTopY = (newTopY << 4) + (15 - __builtin_ctz(rowOccupied16[newTopY]));
+
+	// ensure the box is not blank
+	if (newTopY < 0) {
+		newTopY = height - 1;
+	}
+	if (newBottomY >= height) {
+		newBottomY = 0;
+	}
+	if (newLeftX >= width) {
+		newLeftX = 0;
+	}
+	if (newRightX < 0) {
+		newRightX = width - 1;
+	}
+
+	// clip to the screen
+	if (newTopY > height - 1) {
+		newTopY = height - 1;
+	}
+	if (newBottomY < 0) {
+		newBottomY = 0;
+	}
+	if (newLeftX < 0) {
+		newLeftX = 0;
+	}
+	if (newRightX > width - 1) {
+		newRightX = width - 1;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileWidth * sizeof(*blankTileRow));
+
+	shared[0] = newLeftX;
+	shared[1] = newBottomY;
+	shared[2] = newRightX;
+	shared[3] = newTopY;
+	shared[4] = population;
+	shared[5] = births;
+	shared[6] = deaths;
 }

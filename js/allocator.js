@@ -471,7 +471,7 @@ This file is part of LifeViewer
 	// return available heap in bytes
 	/** @returns {number} */
 	Allocator.prototype.availableHeap = function() {
-		return WASM.memory.buffer.byteLength - this.wasmPointer;
+		return this.wasmMemTop - this.wasmPointer;
 	};
 
 	// allocate typed memory when adding a row to a matrix

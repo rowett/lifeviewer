@@ -996,10 +996,10 @@ This file is part of LifeViewer
 		/** @type {Uint8Array} */ this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
 
 		// blank row for 16bit life grid
-		/** @type {Uint16Array} */ this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", false));
+		/** @type {Uint16Array} */ this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
 
 		// blank tile row to prevent wrap
-		/** @type {Uint16Array} */ this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", false));
+		/** @type {Uint16Array} */ this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
 
 		// blank colour row
 		/** @type {Uint8Array} */ this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", false));
@@ -4287,7 +4287,7 @@ This file is part of LifeViewer
 		}
 	};
 
-	Life.prototype.updateOccupancyStrict = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {number} */ p, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitStart) {
+	Life.prototype.updateOccupancyStrict = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {number} */ p, /** @type {number} */ bitRowIn16Bits, /** @type {number} */ bitFrameIn16Bits, /** @type {number} */ bitStart) {
 		var	/** @type {number} */ timing = performance.now();
 
 		if (Controller.useWASM && Controller.wasmEnableUpdateOccupancyStrict) {
@@ -4299,14 +4299,14 @@ This file is part of LifeViewer
 				extent.topY | 0,
 				extent.rightX | 0,
 				p | 0,
-				bitRowInBytes | 0,
-				bitFrameInBytes | 0,
+				bitRowIn16Bits | 0,
+				bitFrameIn16Bits | 0,
 				bitStart | 0,
 				this.aliveStart | 0,
 				colourGrid[0].length | 0
 			);
 		} else {
-			this.updateOccupancyStrictJS(extent, colourGrid, frames, p, bitRowInBytes, bitFrameInBytes, bitStart);
+			this.updateOccupancyStrictJS(extent, colourGrid, frames, p, bitRowIn16Bits, bitFrameIn16Bits, bitStart);
 		}
 
 		if (Controller.wasmTiming) {
@@ -4316,7 +4316,7 @@ This file is part of LifeViewer
 	};
 
 	// update cell occupancy for rotor and stator calculation (used when computing strict volatility)
-	Life.prototype.updateOccupancyStrictJS = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {number} */ p, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitStart) {
+	Life.prototype.updateOccupancyStrictJS = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {number} */ p, /** @type {number} */ bitRowIn16Bits, /** @type {number} */ bitFrameIn16Bits, /** @type {number} */ bitStart) {
 		var	/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ bit = 0,
@@ -4335,13 +4335,13 @@ This file is part of LifeViewer
 		}
 
 		// process each row of the pattern extent
-		l = p * bitFrameInBytes;
+		l = p * bitFrameIn16Bits;
 		for (cy = extent.bottomY; cy <= extent.topY; cy += 1) {
 			// get the pattern row
 			colourRow = colourGrid[cy];
 
 			// find the start of the row
-			f = ((cy - extent.bottomY) * bitRowInBytes) + l;
+			f = ((cy - extent.bottomY) * bitRowIn16Bits) + l;
 			bit = bitStart;
 
 			// check for Super or RuleTree rules
@@ -4679,7 +4679,7 @@ This file is part of LifeViewer
 	};
 
 	// compute cell factors
-	Life.prototype.computeCellFactors = function(/** @type {Int32Array} */ cellPeriod, /** @type {number} */ period, /** @type {Uint16Array} */ frames, /** @type {Uint32Array} */ cellCounts, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight, /** @type {number} */ bitFrameInBytes, /** @type {number} */ bitRowInBytes, /** @type {number} */ bitStart) {
+	Life.prototype.computeCellFactors = function(/** @type {Int32Array} */ cellPeriod, /** @type {number} */ period, /** @type {Uint16Array} */ frames, /** @type {Uint32Array} */ cellCounts, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight, /** @type {number} */ bitFrameIn16Bits, /** @type {number} */ bitRowIn16Bits, /** @type {number} */ bitStart) {
 		var	/** @type {number} */ f = 0,
 			/** @type {number} */ bitRow = 0,
 			/** @type {number} */ cx = 0,
@@ -4707,8 +4707,8 @@ This file is part of LifeViewer
 		for (f = 1; f <= (period / 2); f += 1) {
 			if (period % f === 0) {
 				target = period - f;
-				finalFrame = target * bitFrameInBytes;
-				nextFrame = f * bitFrameInBytes;
+				finalFrame = target * bitFrameIn16Bits;
+				nextFrame = f * bitFrameIn16Bits;
 				modValue = period / f;
 
 				//checks = 0;
@@ -4720,7 +4720,7 @@ This file is part of LifeViewer
 				// check each row
 				for (cy = 0; cy < boxHeight; cy += 1) {
 					row = cy * boxWidth;
-					bitRow = cy * bitRowInBytes;
+					bitRow = cy * bitRowIn16Bits;
 					bit = bitStart;
 
 					// check each cell along the row
@@ -4752,7 +4752,7 @@ This file is part of LifeViewer
 										// if a mismatch is found then exit the loop
 										break;
 									}
-									off1 += bitFrameInBytes;
+									off1 += bitFrameIn16Bits;
 								}
 
 								// if evolution is identical then update the subperiod for the cell
@@ -4891,8 +4891,8 @@ This file is part of LifeViewer
 	// compute strict volatility and Mod
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {View} */ view, /** @type {boolean} */ isOscillator, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ p = 0,
-			/** @type {number} */ bitRowInBytes = 0,
-			/** @type {number} */ bitFrameInBytes = 0,
+			/** @type {number} */ bitRowIn16Bits = 0,
+			/** @type {number} */ bitFrameIn16Bits = 0,
 			/** @type {boolean} */ computeStrict = false,
 			/** @type {Uint16Array} */ frames = null,
 			/** @type {Uint32Array} */ cellCounts = null,
@@ -4951,12 +4951,17 @@ This file is part of LifeViewer
 			// compute the maximum box width and height for the oscillator
 			boxWidth = extent.rightX - extent.leftX + 1;
 			boxHeight = extent.topY - extent.bottomY + 1;
-			bitRowInBytes = ((boxWidth - 1) >> 4) + 1;
-			bitFrameInBytes = bitRowInBytes * boxHeight;
 
-			if (bitFrameInBytes * period <= memoryLimit) {
+			// compute the size of the frame row in 16 bit chunks
+			bitRowIn16Bits = ((boxWidth - 1) >> 4) + 1;
+
+			// compute the size of the frame in 16 bit chunks
+			bitFrameIn16Bits = bitRowIn16Bits * boxHeight;
+
+			// check if there is enough memory to allocate
+			if (bitFrameIn16Bits * 2 * period <= memoryLimit) {
 				// allocate memory for each generation in the period (allocation is one bit per cell)
-				frames = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, period * bitFrameInBytes, "Life.bitFrames", Controller.useWASM));
+				frames = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, period * bitFrameIn16Bits, "Life.bitFrames", Controller.useWASM));
 
 				// allocate memory for per-cell period
 				cellPeriod = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, boxWidth * boxHeight, "Life.cellPeriods", false));
@@ -4972,7 +4977,7 @@ This file is part of LifeViewer
 				computeStrict = true;
 			}
 
-			//console.log("memory", bitFrameInBytes * period, ((100 * bitFrameInBytes * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
+			//console.log("memory", bitFrameIn16Bits * period, ((100 * bitFrameIn16Bits * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
 		}
 
 		// if not computing strict volatility then use other method for rotor and stator
@@ -5032,7 +5037,7 @@ This file is part of LifeViewer
 			if (computeStrict) {
 				if (p < period) {
 					this.updateCellCounts(extent, colourGrid, cellCounts);
-					this.updateOccupancyStrict(extent, colourGrid, frames, p, bitRowInBytes, bitFrameInBytes, bitStart);
+					this.updateOccupancyStrict(extent, colourGrid, frames, p, bitRowIn16Bits, bitFrameIn16Bits, bitStart);
 				}
 			} else {
 				// use the original method of computing cell occupancy
@@ -5180,7 +5185,7 @@ This file is part of LifeViewer
 			console.log("alive->max", t.toFixed(2));
 
 			// calculate the factors of the period (subperiods)
-			this.computeCellFactors(cellPeriod, period, frames, cellCounts, boxWidth, boxHeight, bitFrameInBytes, bitRowInBytes, bitStart);
+			this.computeCellFactors(cellPeriod, period, frames, cellCounts, boxWidth, boxHeight, bitFrameIn16Bits, bitRowIn16Bits, bitStart);
 
 			//t = performance.now() - t;
 			//console.log("calculated cell factors in " + (t / 1000).toFixed(1) + " seconds");
@@ -9164,19 +9169,19 @@ This file is part of LifeViewer
 		this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
 
 		// blank row for 16 bit life grid
-		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", false));
+		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
 
 		// blank tile row to prevent wrap
-		this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", false));
+		this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
 
 		// blank colour grid row
 		this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", false));
 
 		// column occupancy array for grid bounding box calculation
-		this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16", false));
+		this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16", Controller.useWASM));
 
 		// row occupancy array for grid bounding box calculation
-		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16", false));
+		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16", Controller.useWASM));
 
 		// column occupancy array for grid alive bounding box calculation
 		this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16", false));
@@ -9249,19 +9254,19 @@ This file is part of LifeViewer
 		this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
 
 		// blank row for 16 bit life grid
-		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", false));
+		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
 
 		// blank tile row to prevent wrap
-		this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", false));
+		this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
 
 		// blank colour grid row
 		this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", false));
 
 		// column occupancy array for grid bounding box calculation
-		this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16", false));
+		this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16", Controller.useWASM));
 
 		// row occupancy array for grid bounding box calculation
-		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16", false));
+		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16", Controller.useWASM));
 
 		// column occupancy array for grid alive bounding box calculation
 		this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16", false));
@@ -9406,19 +9411,19 @@ This file is part of LifeViewer
 			this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
 
 			// blank row for 16 bit life grid
-			this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", false));
+			this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
 
 			// blank tile row to prevent wrap
-			this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", false));
+			this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
 
 			// blank colour grid row
 			this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", false));
 
 			// column occupancy array for grid bounding box calculation
-			this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16", false));
+			this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16", Controller.useWASM));
 
 			// row occupancy array for grid bounding box calculation
-			this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16", false));
+			this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16", Controller.useWASM));
 
 			// column occupancy array for grid alive bounding box calculation
 			this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16", false));
@@ -12735,7 +12740,7 @@ This file is part of LifeViewer
 					}
 				} else {
 					// create the first lookup array
-					this.indexLookup63 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, LifeConstants.hash63, "Life.indexLookup63", false));
+					this.indexLookup63 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, LifeConstants.hash63, "Life.indexLookup63", Controller.useWASM));
 
 					// check for Wolfram
 					if (this.wolframRule === -1) {
@@ -12758,7 +12763,7 @@ This file is part of LifeViewer
 									ruleArray[hashSize - i - 1] = tmp;
 								}
 								odd = true;
-								this.indexLookup632 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, LifeConstants.hash63, "Life.indexLookup632", false));
+								this.indexLookup632 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, LifeConstants.hash63, "Life.indexLookup632", Controller.useWASM));
 								this.createLifeIndex63(this.indexLookup632, ruleArray);
 
 								// even rule -> NOT(bits)
@@ -12784,7 +12789,7 @@ This file is part of LifeViewer
 
 					// copy rules from pattern
 					if (this.altSpecified) {
-						this.indexLookup632 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, LifeConstants.hash63, "Life.indexLookup632", false));
+						this.indexLookup632 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, LifeConstants.hash63, "Life.indexLookup632", Controller.useWASM));
 						this.createLifeIndex63(this.indexLookup632, ruleArray);
 						this.createLifeIndex63(this.indexLookup63, ruleAltArray);
 					} else {
@@ -22052,8 +22057,69 @@ This file is part of LifeViewer
 		this.deaths = deaths;
 	};
 
-	// update the life grid region using tiles
 	Life.prototype.nextGenerationTile = function() {
+		var	/** @type {number} */ timing = performance.now();
+
+		if (Controller.useWASM && Controller.wasmEnableNextGeneration && this.view.wasmEnabled) {
+			WASM.nextGenerationTile(
+				this.grid16.whole.byteOffset | 0,
+				this.nextGrid16.whole.byteOffset | 0,
+				this.grid16[0].length | 0,
+				this.tileGrid.whole.byteOffset | 0,
+				this.nextTileGrid.whole.byteOffset | 0,
+				this.tileGrid[0].length | 0,
+				this.indexLookup63.byteOffset | 0,
+				(this.altSpecified ? this.indexLookup632.byteOffset : 0) | 0,
+				(this.altSpecified ? 1 : 0) | 0,
+				this.columnOccupied16.byteOffset | 0,
+				this.columnOccupied16.length | 0,
+				this.rowOccupied16.byteOffset | 0,
+				this.rowOccupied16.length | 0,
+				this.width | 0,
+				this.height | 0,
+				this.tileX | 0,
+				this.tileY | 0,
+				this.tileRows | 0,
+				this.tileCols | 0,
+				this.blankTileRow.byteOffset | 0,
+				this.blankTileRow.length | 0,
+				this.blankRow16.byteOffset | 0,
+				this.blankRow16.length | 0,
+				this.boundedGridWidth | 0,
+				this.boundedGridHeight | 0,
+				this.boundedGridType | 0,
+				this.counter | 0,
+				LifeConstants.bottomRightSet | 0,
+				LifeConstants.bottomSet | 0,
+				LifeConstants.topRightSet | 0,
+				LifeConstants.topSet | 0,
+				LifeConstants.bottomLeftSet | 0,
+				LifeConstants.topLeftSet | 0,
+				LifeConstants.leftSet | 0,
+				LifeConstants.rightSet | 0,
+				this.tileGrid.whole.byteLength | 0,
+				this.sharedBuffer.byteOffset | 0
+			);
+
+			this.zoomBox.leftX = this.sharedBuffer[0];
+			this.zoomBox.bottomY = this.sharedBuffer[1];
+			this.zoomBox.rightX = this.sharedBuffer[2];
+			this.zoomBox.topY = this.sharedBuffer[3];
+			this.population = this.sharedBuffer[4];
+			this.births = this.sharedBuffer[5];
+			this.deaths = this.sharedBuffer[6];
+		} else {
+			this.nextGenerationTileJS();
+		}
+
+		timing = performance.now() - timing;
+		if (Controller.wasmTiming) {
+			this.view.menuManager.updateTimingItem("nextGeneration", timing, Controller.useWASM && Controller.wasmEnableNextGeneration && this.view.wasmEnabled);
+		}
+	};
+
+	// update the life grid region using tiles Javascript version
+	Life.prototype.nextGenerationTileJS = function() {
 		var	/** @type {Uint8Array} */ indexLookup63 = this.indexLookup63,
 			/** @type {Uint16Array} */ gridRow0 = null,
 			/** @type {Uint16Array} */ gridRow1 = null,
