@@ -562,6 +562,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ wasmEnableClearTopAndLeft: true,
 		/** @type {boolean} */ wasmEnableNextGeneration: true,
 		/** @type {boolean} */ wasmEnableNextGenerationGenerations: true,
+		/** @type {boolean} */ wasmEnableNextGenerationSuper: true,
 		/** @type {boolean} */ wasmEnableNextGenerationCross: true,
 		/** @type {boolean} */ wasmEnableNextGenerationHash: true,
 		/** @type {boolean} */ wasmEnableNextGenerationSaltire: true,

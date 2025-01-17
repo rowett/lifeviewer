@@ -992,9 +992,6 @@ This file is part of LifeViewer
 		// tile grid of tiles that died
 		/** @type {Array<Uint16Array>} */ this.diedGrid = null;
 
-		// blank row for life grid to prevent wrap
-		/** @type {Uint8Array} */ this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
-
 		// blank row for 16bit life grid
 		/** @type {Uint16Array} */ this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
 
@@ -1002,7 +999,7 @@ This file is part of LifeViewer
 		/** @type {Uint16Array} */ this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
 
 		// blank colour row
-		/** @type {Uint8Array} */ this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", false));
+		/** @type {Uint8Array} */ this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", Controller.useWASM));
 
 		// colour grid
 		/** @type {Array<Uint8Array>} */ this.colourGrid = null;
@@ -9165,9 +9162,6 @@ This file is part of LifeViewer
 		this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid", Controller.useWASM);
 		this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid", false);
 
-		// blank row for life grid to prevent wrap
-		this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
-
 		// blank row for 16 bit life grid
 		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
 
@@ -9175,7 +9169,7 @@ This file is part of LifeViewer
 		this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
 
 		// blank colour grid row
-		this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", false));
+		this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", Controller.useWASM));
 
 		// column occupancy array for grid bounding box calculation
 		this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16", Controller.useWASM));
@@ -9184,10 +9178,10 @@ This file is part of LifeViewer
 		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16", Controller.useWASM));
 
 		// column occupancy array for grid alive bounding box calculation
-		this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16", false));
+		this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16", Controller.useWASM));
 
 		// row occupancy array for grid alive bounding box calculation
-		this.rowAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowAliveOccupied16", false));
+		this.rowAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowAliveOccupied16", Controller.useWASM));
 
 		// colour grid
 		this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid", Controller.useWASM);
@@ -9250,9 +9244,6 @@ This file is part of LifeViewer
 		this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid", Controller.useWASM);
 		this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid", false);
 
-		// blank row for life grid to prevent wrap
-		this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
-
 		// blank row for 16 bit life grid
 		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
 
@@ -9260,7 +9251,7 @@ This file is part of LifeViewer
 		this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
 
 		// blank colour grid row
-		this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", false));
+		this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", Controller.useWASM));
 
 		// column occupancy array for grid bounding box calculation
 		this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16", Controller.useWASM));
@@ -9269,10 +9260,10 @@ This file is part of LifeViewer
 		this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16", Controller.useWASM));
 
 		// column occupancy array for grid alive bounding box calculation
-		this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16", false));
+		this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16", Controller.useWASM));
 
 		// row occupancy array for grid alive bounding box calculation
-		this.rowAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowAliveOccupied16", false));
+		this.rowAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowAliveOccupied16", Controller.useWASM));
 
 		// colour grid
 		this.colourGrid = Array.matrix(Type.Uint8, this.height, this.width, this.unoccupied, this.allocator, "Life.colourGrid", Controller.useWASM);
@@ -9407,9 +9398,6 @@ This file is part of LifeViewer
 				this.occMergedTileMap = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.occMergedTileMap", false);
 			}
 
-			// blank row for life grid to prevent wrap
-			this.blankRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, ((this.width - 1) >> 3) + 1, "Life.blankRow", false));
-
 			// blank row for 16 bit life grid
 			this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
 
@@ -9417,7 +9405,7 @@ This file is part of LifeViewer
 			this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
 
 			// blank colour grid row
-			this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", false));
+			this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", Controller.useWASM));
 
 			// column occupancy array for grid bounding box calculation
 			this.columnOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnOccupied16", Controller.useWASM));
@@ -9426,10 +9414,10 @@ This file is part of LifeViewer
 			this.rowOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowOccupied16", Controller.useWASM));
 
 			// column occupancy array for grid alive bounding box calculation
-			this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16", false));
+			this.columnAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.columnAliveOccupied16", Controller.useWASM));
 
 			// row occupancy array for grid alive bounding box calculation
-			this.rowAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowAliveOccupied16", false));
+			this.rowAliveOccupied16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.height - 1) >> 4) + 1, "Life.rowAliveOccupied16", Controller.useWASM));
 
 			// count grid
 			if (currentCountList) {
@@ -10332,17 +10320,9 @@ This file is part of LifeViewer
 	// initialise life engine
 	Life.prototype.initEngine = function(/** @type {CanvasRenderingContext2D} */ context, /** @type {number} */ displayWidth, /** @type {number} */ displayHeight) {
 		var	/** @type {number} */ unoccupied = this.unoccupied,
-			/** @type {Uint8Array} */ blankRow = this.blankRow,
+			/** @type {Uint16Array} */ blankRow16 = this.blankRow16,
 			/** @type {Uint8Array} */ blankColourRow = this.blankColourRow,
-			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow,
-			/** @type {number} */ pixelColour = 0;
-
-		// set the black pixel colour
-		if (this.littleEndian) {
-			pixelColour = 0xff000000;
-		} else {
-			pixelColour = 0x000000ff;
-		}
+			/** @type {Uint16Array} */ blankTileRow = this.blankTileRow;
 
 		// disable overlay
 		this.drawOverlay = false;
@@ -10379,7 +10359,7 @@ This file is part of LifeViewer
 		this.resizeDisplay(displayWidth, displayHeight);
 
 		// create the blank rows
-		blankRow.fill(0);
+		blankRow16.fill(0);
 		blankColourRow.fill(unoccupied);
 		blankTileRow.fill(0);
 
@@ -22057,11 +22037,12 @@ This file is part of LifeViewer
 		this.deaths = deaths;
 	};
 
+	// update the life grid for Life-like rules
 	Life.prototype.nextGenerationTile = function() {
 		var	/** @type {number} */ timing = performance.now();
 
 		if (Controller.useWASM && Controller.wasmEnableNextGeneration && this.view.wasmEnabled) {
-			WASM.nextGenerationTile(
+			WASM.nextGeneration(
 				this.grid16.whole.byteOffset | 0,
 				this.nextGrid16.whole.byteOffset | 0,
 				this.grid16[0].length | 0,
@@ -28923,7 +28904,7 @@ This file is part of LifeViewer
 														if (gridRow[leftX] & colIndex) {
 															gridRow[leftX] &= ~colIndex;
 															this.births -= 1;
-															this.population -=1;
+															this.population -= 1;
 														}
 														break;
 
@@ -29790,7 +29771,8 @@ This file is part of LifeViewer
 			/** @type {number} */ bLeftX = 0,
 			/** @type {number} */ bBottomY = 0,
 			/** @type {number} */ bRightX = 0,
-			/** @type {number} */ bTopY = 0;
+			/** @type {number} */ bTopY = 0,
+			/** @type {number} */ timing = performance.now();
 
 		if (this.isHex) {
 			this.nextGenerationSuperTileHex();
@@ -29798,7 +29780,63 @@ This file is part of LifeViewer
 			if (this.isVonNeumann) {
 				this.nextGenerationSuperTileVN();
 			} else {
-				this.nextGenerationSuperTileMoore();
+				if (Controller.useWASM && Controller.wasmEnableNextGenerationSuper && this.view.wasmEnabled) {
+					WASM.nextGenerationSuperMoore(
+						this.grid16.whole.byteOffset | 0,
+						this.nextGrid16.whole.byteOffset | 0,
+						this.grid16[0].length | 0,
+						this.tileGrid.whole.byteOffset | 0,
+						this.nextTileGrid.whole.byteOffset | 0,
+						this.colourTileGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileGrid[0].length | 0,
+						this.colourGrid.whole.byteOffset | 0,
+						this.nextColourGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.columnOccupied16.byteOffset | 0,
+						this.columnAliveOccupied16.byteOffset | 0,
+						this.columnOccupied16.length | 0,
+						this.rowOccupied16.byteOffset | 0,
+						this.rowAliveOccupied16.byteOffset | 0,
+						this.rowOccupied16.length | 0,
+						this.width | 0,
+						this.height | 0,
+						this.tileX | 0,
+						this.tileY | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.blankTileRow.byteOffset | 0,
+						this.blankTileRow.length | 0,
+						this.blankRow16.byteOffset | 0,
+						this.blankRow16.length | 0,
+						this.blankColourRow.byteOffset | 0,
+						this.blankColourRow.length | 0,
+						this.counter | 0,
+						this.population | 0,
+						this.births | 0,
+						this.deaths | 0,
+						this.sharedBuffer.byteOffset | 0
+					);
+
+					this.zoomBox.leftX = this.sharedBuffer[0];
+					this.zoomBox.bottomY = this.sharedBuffer[1];
+					this.zoomBox.rightX = this.sharedBuffer[2];
+					this.zoomBox.topY = this.sharedBuffer[3];
+					this.aliveBox.leftX = this.sharedBuffer[4];
+					this.aliveBox.bottomY = this.sharedBuffer[5];
+					this.aliveBox.rightX = this.sharedBuffer[6];
+					this.aliveBox.topY = this.sharedBuffer[7];
+					this.population = this.sharedBuffer[8];
+					this.births = this.sharedBuffer[9];
+					this.deaths = this.sharedBuffer[10];
+				} else {
+					this.nextGenerationSuperTileMoore();
+				}
+
+				timing = performance.now() - timing;
+				if (Controller.wasmTiming) {
+					this.view.menuManager.updateTimingItem("nextSuper", timing, Controller.useWASM && Controller.wasmEnableNextGenerationSuper && this.view.wasmEnabled);
+				}
 			}
 		}
 

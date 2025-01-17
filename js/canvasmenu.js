@@ -3524,7 +3524,7 @@ This file is part of LifeViewer
 
 			// compute heap usage
 			if (Controller.useWASM && me.showExtendedTiming) {
-				heap = Controller.allocator.wasmPointer / WASM.memory.buffer.byteLength;
+				heap = (Controller.allocator.wasmPointer + (WASM.memory.buffer.byteLength - Controller.allocator.wasmMemTop)) / WASM.memory.buffer.byteLength;
 				if (heap < 0.5) {
 					// fade from green to yellow
 					oc.fillStyle = "rgb(" + ((255 * heap * 2) | 0) + ",255,0)";
