@@ -25635,8 +25635,6 @@ This file is part of LifeViewer
 		zoomBox.bottomY = newBottomY;
 		zoomBox.leftX = newLeftX;
 		zoomBox.rightX = newRightX;
-
-
 	};
 
 	// clear tiles that died
