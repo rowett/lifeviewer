@@ -469,7 +469,7 @@ This file is part of LifeViewer
 		/** @type {string} */ this.identifyBoxWithTMessage = "";
 
 		// maximum number of generations to check for oscillators
-		/** @type {number} */ this.maxOscillatorGens = (Controller.useWASM ? 8388608 : 4194304);
+		/** @type {number} */ this.maxOscillatorGens = (Controller.useWASM ? 10000000 : 4194304);
 
 		// identify deferred results
 		/** @type {Array} */ this.identifyDeferredResults = [];
@@ -4174,17 +4174,37 @@ This file is part of LifeViewer
 	Life.prototype.updateCellCounts = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint32Array} */ cellCounts) {
 		var	/** @type {number} */ timing = performance.now();
 
-		if (Controller.useWASM && Controller.wasmEnableUpdateCellCounts && this.view.wasmEnabled) {
-			WASM.updateCellCounts(
-				colourGrid.whole.byteOffset | 0,
-				cellCounts.byteOffset | 0,
-				extent.bottomY | 0,
-				extent.leftX | 0,
-				extent.topY | 0,
-				extent.rightX | 0,
-				colourGrid[0].length | 0,
-				this.aliveStart | 0
-			);
+		if (Controller.useWASM && Controller.wasmEnableUpdateCellCounts && this.view.wasmEnabled && !this.isExtended) {
+			// swap grids every generation
+			if (this.isSuper || this.isExtended || this.isRuleTree) {
+				colourGrid = this.colourGrid;
+				if ((this.counter & 1) !== 0) {
+					colourGrid = this.nextColourGrid;
+				}
+			}
+
+			if (this.isSuper || this.isRuleTree) {
+				WASM.updateCellCountsSuperOrRuleTree(
+					colourGrid.whole.byteOffset | 0,
+					cellCounts.byteOffset | 0,
+					extent.bottomY | 0,
+					extent.leftX | 0,
+					extent.topY | 0,
+					extent.rightX | 0,
+					colourGrid[0].length | 0
+				);
+			} else {
+				WASM.updateCellCounts(
+					colourGrid.whole.byteOffset | 0,
+					cellCounts.byteOffset | 0,
+					extent.bottomY | 0,
+					extent.leftX | 0,
+					extent.topY | 0,
+					extent.rightX | 0,
+					colourGrid[0].length | 0,
+					this.aliveStart | 0
+				);
+			}
 		} else {
 			this.updateCellCountsJS(extent, colourGrid, cellCounts);
 		}
@@ -4294,28 +4314,52 @@ This file is part of LifeViewer
 	Life.prototype.updateOccupancyStrict = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {number} */ p, /** @type {number} */ bitRowIn16Bits, /** @type {number} */ bitFrameIn16Bits, /** @type {number} */ bitStart) {
 		var	/** @type {number} */ timing = performance.now();
 
-		if (Controller.useWASM && Controller.wasmEnableUpdateOccupancyStrict && this.view.wasmEnabled) {
-			WASM.updateOccupancyStrict(
-				colourGrid.whole.byteOffset | 0,
-				frames.byteOffset | 0,
-				extent.bottomY | 0,
-				extent.leftX | 0,
-				extent.topY | 0,
-				extent.rightX | 0,
-				p | 0,
-				bitRowIn16Bits | 0,
-				bitFrameIn16Bits | 0,
-				bitStart | 0,
-				this.aliveStart | 0,
-				colourGrid[0].length | 0
-			);
+		// swap grids every generation
+		if (this.isSuper || this.isExtended || this.isRuleTree) {
+			colourGrid = this.colourGrid;
+			if ((this.counter & 1) !== 0) {
+				colourGrid = this.nextColourGrid;
+			}
+		}
+
+		if (Controller.useWASM && Controller.wasmEnableUpdateOccupancyStrict && this.view.wasmEnabled && !this.isExtended) {
+			if (this.isSuper || this.isRuleTree) {
+				WASM.updateOccupancyStrictSuperOrRuleLoader(
+					colourGrid.whole.byteOffset | 0,
+					frames.byteOffset | 0,
+					extent.bottomY | 0,
+					extent.leftX | 0,
+					extent.topY | 0,
+					extent.rightX | 0,
+					p | 0,
+					bitRowIn16Bits | 0,
+					bitFrameIn16Bits | 0,
+					bitStart | 0,
+					colourGrid[0].length | 0
+				);
+			} else {
+				WASM.updateOccupancyStrict(
+					colourGrid.whole.byteOffset | 0,
+					frames.byteOffset | 0,
+					extent.bottomY | 0,
+					extent.leftX | 0,
+					extent.topY | 0,
+					extent.rightX | 0,
+					p | 0,
+					bitRowIn16Bits | 0,
+					bitFrameIn16Bits | 0,
+					bitStart | 0,
+					this.aliveStart | 0,
+					colourGrid[0].length | 0
+				);
+			}
 		} else {
 			this.updateOccupancyStrictJS(extent, colourGrid, frames, p, bitRowIn16Bits, bitFrameIn16Bits, bitStart);
 		}
 
 		if (Controller.wasmTiming) {
 			timing = performance.now() - timing;
-			this.view.menuManager.updateTimingItem("updateOccupancy", timing, Controller.useWASM && Controller.wasmEnableUpdateOc && this.view.wasmEnabled);
+			this.view.menuManager.updateTimingItem("updateOccupancy", timing, Controller.useWASM && Controller.wasmEnableUpdateOccupancyStrict && this.view.wasmEnabled);
 		}
 	};
 

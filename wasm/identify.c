@@ -5,6 +5,7 @@
 // Identify
 //	updateOccupancyStrict
 //	updateCellCounts
+//	updateCellCountsSuperOrRuleLoader
 //	getHashTwoState
 // 	getHashRuleLoaderOrPCAOrExtended
 //	getHashGenerations
@@ -63,7 +64,7 @@ void updateOccupancyStrict(
 	// align row to 16 bytes
 	const uint32_t align16Left = (left + 15) & ~15;
 	const uint32_t align16Right = right & ~15;
-	const uint32_t leftDelta = ((left - align16Left) + 1) & 15;
+	const uint32_t leftDelta = align16Left - left;
 
 	// compute the first target (either the start of a 16 byte run or if smaller the right)
 	const uint32_t leftTarget = align16Left > right + 1 ? right + 1 : align16Left;
@@ -98,11 +99,93 @@ void updateOccupancyStrict(
 			const uint32_t mask = wasm_i8x16_bitmask(row);
 
 			// merge the frame mask with the last one
-			const uint32_t writeMask = frameBits | (mask >> (16 - leftDelta));
+			const uint32_t writeMask = frameBits | (mask >> leftDelta);
 			*frameRow = writeMask;
 			frameRow++;
 
-			frameBits = mask << leftDelta;
+			frameBits = mask << (16 - leftDelta);
+			x += 16;
+			colourRow += 16;
+		}
+
+		if (bit != bitStart) {
+			*frameRow = frameBits;
+		}
+
+		// next row
+		rowOffset += bitRowInBytes;
+	}
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// update cell occupancy for rotor and stator calculation
+void updateOccupancyStrictSuperOrRuleLoader(
+	uint8_t *const colourGrid,
+	uint16_t *const frames,
+	const uint32_t bottom,
+	const uint32_t left,
+	const uint32_t top,
+	const uint32_t right,
+	const int32_t generation,
+	const int32_t bitRowInBytes,
+	const int32_t bitFrameInBytes,
+	int32_t bitStart,
+	const int32_t colourGridWidth
+) {
+	// alive cells mask
+	const v128_t oneVec = wasm_u8x16_splat(1);
+
+	// reverse byte order
+	const v128_t reverse = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// get the frame for this generation
+	uint32_t rowOffset = generation * bitFrameInBytes;
+
+	// align row to 16 bytes
+	const uint32_t align16Left = (left + 15) & ~15;
+	const uint32_t align16Right = right & ~15;
+	const uint32_t leftDelta = align16Left - left;
+
+	// compute the first target (either the start of a 16 byte run or if smaller the right)
+	const uint32_t leftTarget = align16Left > right + 1 ? right + 1 : align16Left;
+
+	for (uint32_t y = bottom; y <= top; y++) {
+		// find the start of the row for this generation frame
+		uint16_t *frameRow = frames + rowOffset;
+
+		// process the left section
+		uint32_t frameBits = 0;
+		uint32_t x = left;
+		uint32_t bit = bitStart;
+
+		// read the first cells on the row up to 16 byte alignment or right edge (whichever comes first)
+		uint8_t *colourRow = colourGrid + y * colourGridWidth + x;
+
+		while (x < leftTarget) {
+			if (*colourRow & 1) {
+				frameBits |= bit;
+			}
+			bit >>= 1;
+			colourRow++;
+			x++;
+		}
+
+		// do the rest of the row in 16 cell chunks
+		while (x <= align16Right) {
+			// get the next 16 cells
+			v128_t row = wasm_v128_load(colourRow);
+			row = wasm_v128_and(row, oneVec);
+			row = wasm_i8x16_eq(row, oneVec);
+			row = wasm_i8x16_swizzle(row, reverse);
+			const uint32_t mask = wasm_i8x16_bitmask(row);
+
+			// merge the frame mask with the last one
+			const uint32_t writeMask = frameBits | (mask >> leftDelta);
+			*frameRow = writeMask;
+			frameRow++;
+
+			frameBits = mask << (16 - leftDelta);
 			x += 16;
 			colourRow += 16;
 		}
@@ -177,6 +260,76 @@ void updateCellCounts(
 
 		while (x <= right) {
 			if (*colourRow >= aliveStart) {
+				*(counts) += 1;
+			}
+			colourRow++;
+			counts++;
+			x++;
+		}
+	}
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// update the cell counts for strict volatility
+void updateCellCountsSuperOrRuleTree(
+	uint8_t *const colourGrid,
+	uint32_t *counts,
+	const uint32_t bottom,
+	const uint32_t left,
+	const uint32_t top,
+	const uint32_t right,
+	const int32_t colourGridWidth
+) {
+	// alive cells mask
+	const v128_t oneVec = wasm_u8x16_splat(1);
+
+	// align row to 16 bytes
+	const uint32_t align16Left = (left + 15) & ~15;
+	const uint32_t align16Right = right & ~15;
+
+	// compute the first target (either the start of a 16 byte run or if smaller the right)
+	const uint32_t leftTarget = align16Left > right + 1 ? right + 1 : align16Left;
+
+	// process each row
+	for (uint32_t y = bottom; y <= top; y++) {
+		uint32_t x = left;
+
+		// read the first cells on the row up to 16 byte alignment or right edge (whichever comes first)
+		uint8_t* colourRow = colourGrid + y * colourGridWidth + x;
+
+		while (x < leftTarget) {
+			if (*colourRow & 1) {
+				*(counts) += 1;
+			}
+			colourRow++;
+			counts++;
+			x++;
+		}
+
+		// do the rest of the row in 16 cell chunks
+		while (x < align16Right) {
+			// get the next 16 cells
+			v128_t row = wasm_v128_load(colourRow);
+			row = wasm_v128_and(row, oneVec);
+			row = wasm_i8x16_eq(row, oneVec);
+			uint16_t mask = wasm_i8x16_bitmask(row);
+
+			// increment counts for those that are alive
+			while (mask) {
+				uint32_t i = __builtin_ctz(mask);
+				*(counts + i) += 1;
+				mask &= (mask - 1);
+			}
+
+			// next chunk
+			counts += 16;
+			colourRow += 16;
+			x += 16;
+		}
+
+		while (x <= right) {
+			if (*colourRow & 1) {
 				*(counts) += 1;
 			}
 			colourRow++;
@@ -538,4 +691,3 @@ uint32_t getHashGenerations(
 
 	return hash;
 }
-

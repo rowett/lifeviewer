@@ -23,7 +23,7 @@ SETTINGS = -s INITIAL_MEMORY=1024MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="
 	'_nextGeneration', '_nextGenerationGenerations', '_nextGenerationSuperMoore', '_convertToPens', \
 	'_renderGridClipNoRotate', '_renderGridNoClipNoRotate', \
 	'_renderOverlayClipNoRotate', '_renderOverlayNoClipNoRotate', \
-	'_updateOccupancyStrict', '_updateCellCounts', \
+	'_updateOccupancyStrict', '_updateCellCounts', '_updateCellCountsSuperOrRuleTree', '_updateOccupancyStrictSuperOrRuleLoader', \
 	'_getHashTwoState', '_getHashRuleLoaderOrPCAOrExtended', '_getHashGenerations', '_getHashLifeHistory', '_getHashSuper', \
 	'_create2x2ColourGridSuper', '_create4x4ColourGridSuper', '_create8x8ColourGridSuper', \
 	'_create16x16ColourGridSuper', '_create32x32ColourGridSuper', \
