@@ -64,10 +64,11 @@ void updateOccupancyStrict(
 	// align row to 16 bytes
 	const uint32_t align16Left = (left + 15) & ~15;
 	const uint32_t align16Right = right & ~15;
-	const uint32_t leftDelta = align16Left - left;
 
 	// compute the first target (either the start of a 16 byte run or if smaller the right)
 	const uint32_t leftTarget = align16Left > right + 1 ? right + 1 : align16Left;
+
+	const uint32_t leftDelta = leftTarget - left;
 
 	for (uint32_t y = bottom; y <= top; y++) {
 		// find the start of the row for this generation frame
@@ -91,7 +92,7 @@ void updateOccupancyStrict(
 		}
 
 		// do the rest of the row in 16 cell chunks
-		while (x <= align16Right) {
+		while (x < align16Right) {
 			// get the next 16 cells
 			v128_t row = wasm_v128_load(colourRow);
 			row = wasm_u8x16_ge(row, alive);
@@ -106,6 +107,15 @@ void updateOccupancyStrict(
 			frameBits = mask << (16 - leftDelta);
 			x += 16;
 			colourRow += 16;
+		}
+
+		while (x <= right) {
+			if (*colourRow >= aliveStart) {
+				frameBits |= bit;
+			}
+			bit >>= 1;
+			colourRow++;
+			x++;
 		}
 
 		if (bit != bitStart) {
@@ -145,10 +155,10 @@ void updateOccupancyStrictSuperOrRuleLoader(
 	// align row to 16 bytes
 	const uint32_t align16Left = (left + 15) & ~15;
 	const uint32_t align16Right = right & ~15;
-	const uint32_t leftDelta = align16Left - left;
 
 	// compute the first target (either the start of a 16 byte run or if smaller the right)
 	const uint32_t leftTarget = align16Left > right + 1 ? right + 1 : align16Left;
+	const uint32_t leftDelta = leftTarget - left;
 
 	for (uint32_t y = bottom; y <= top; y++) {
 		// find the start of the row for this generation frame
@@ -172,7 +182,7 @@ void updateOccupancyStrictSuperOrRuleLoader(
 		}
 
 		// do the rest of the row in 16 cell chunks
-		while (x <= align16Right) {
+		while (x < align16Right) {
 			// get the next 16 cells
 			v128_t row = wasm_v128_load(colourRow);
 			row = wasm_v128_and(row, oneVec);
@@ -188,6 +198,15 @@ void updateOccupancyStrictSuperOrRuleLoader(
 			frameBits = mask << (16 - leftDelta);
 			x += 16;
 			colourRow += 16;
+		}
+
+		while (x <= right) {
+			if (*colourRow & 1) {
+				frameBits |= bit;
+			}
+			bit >>= 1;
+			colourRow++;
+			x++;
 		}
 
 		if (bit != bitStart) {
