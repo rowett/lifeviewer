@@ -124,7 +124,7 @@ void convertToPens(
 					// ensure increment didn't go above the maximum value of 127
 					pensAlive = wasm_u8x16_min(pensAlive, penMaxSet);
 
-					// case 3: assume cells are dead
+					// case 2: assume cells are dead
 					//	pens >= 64 become 63
 					//	pens < 64 decrement to 1
 
@@ -321,11 +321,11 @@ void nextGenerationGenerations(
 						uint32_t rightMost = __builtin_ctz(aliveBits);
 
 						// update the min and max X
-						if (currentX + rightMost < newLeftX) {
-							newLeftX = currentX + rightMost;
+						if ((currentX << 4) + rightMost < newLeftX) {
+							newLeftX = (currentX << 4) + rightMost;
 						}
-						if (currentX + leftMost > newRightX) {
-							newRightX = currentX + leftMost;
+						if ((currentX << 4) + leftMost > newRightX) {
+							newRightX = (currentX << 4) + leftMost;
 						}
 
 						if (h < newBottomY) {
@@ -348,7 +348,7 @@ void nextGenerationGenerations(
 				}
 			}
 
-			leftX += 16;
+			leftX += xSize << 4;
 			colourTileGrid[tw + tileRowOffset] = nextTiles;
 			colourTileHistoryGrid[tw + tileRowOffset] |= nextTiles;
 		}
