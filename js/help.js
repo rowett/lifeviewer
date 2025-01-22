@@ -610,6 +610,9 @@ This file is part of LifeViewer
 		sectionNum += 1;
 
 		y = this.renderHelpLine(view, "", ViewConstants.externalViewerTitle + " " + editionName + " build " + ViewConstants.versionBuild + " by " + ViewConstants.versionAuthor, ctx, x, y, height, helpLine);
+		if (Controller.useWASM) {
+			y = this.renderHelpLine(view, "", "Alpha release for testing", ctx, x, y, height, helpLine);
+		}
 		if (view.chromeBug) {
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "", "If there are no cells displayed please go to chrome://flags", ctx, x, y, height, helpLine);

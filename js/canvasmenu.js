@@ -3678,6 +3678,20 @@ This file is part of LifeViewer
 			me.mainCanvas.style.cursor = me.currentMenu.cursorSet;
 		}
 
+		// draw info if required
+		if (Controller.useWASM) {
+			var beta1 = "LifeViewer Pro";
+			var beta2 = "Alpha relese";
+			oc.font = ((16 * xScale) | 0) + "px Arial";
+
+			oc.fillStyle = "black";
+			oc.fillText(beta1, 3 * xScale, (120 + 1) * yScale);
+			oc.fillText(beta2, 3 * xScale, (140 + 1) * yScale);
+			oc.fillStyle = "white";
+			oc.fillText(beta1, 2 * xScale, 120 * yScale);
+			oc.fillText(beta2, 2 * xScale, 140 * yScale);
+		}
+
 		// mark that event processed
 		me.processedEvent = true;
 	};
