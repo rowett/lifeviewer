@@ -361,9 +361,11 @@ This file is part of LifeViewer
 	/**
 	 * @constructor
 	 */
-	function PatternManager() {
+	function PatternManager(/** @type {Allocator} */ allocator) {
 		// timing
 		/** @type {number} */ this.time = 0;
+
+		/** @type {Allocator} */ this.allocator = allocator;
 
 		/** @type {boolean} */ this.wolframEmulation = false;
 
@@ -532,10 +534,10 @@ This file is part of LifeViewer
 		/** @type {Uint8Array} */ this.ruleAltTriangularArray = new Uint8Array(8192);
 
 		// 512 bit rule
-		/** @type {Uint8Array} */ this.ruleArray = new Uint8Array(512);
+		/** @type {Uint8Array} */ this.ruleArray = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 512, "PatterManager.ruleArray", Controller.useWASM));
 
 		// 512 bit alternate rule
-		/** @type {Uint8Array} */ this.ruleAltArray = new Uint8Array(512);
+		/** @type {Uint8Array} */ this.ruleAltArray = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 512, "PatterManager.ruleArray", Controller.useWASM));
 
 		// swap array
 		/** @type {Uint16Array} */ this.swapArray = new Uint16Array(512);
@@ -786,7 +788,7 @@ This file is part of LifeViewer
 	 */
 	function Pattern(/** @type {string} */ name, /** @type {PatternManager} */ manager) {
 		// allocator
-		/** @type {Allocator} */ this.allocator = null;
+		/** @type {Allocator} */ this.allocator = manager.allocator;
 
 		// manager
 		/** @type {PatternManager} */ this.manager = manager;

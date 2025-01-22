@@ -68,6 +68,7 @@ var WASM = {
 	create32x32ColourGridSuper: null,
 	convertToPens: null,
 	nextGeneration: null,
+	nextGenerationInvestigator: null,
 	nextGenerationSuperMoore: null,
 	nextGenerationGenerations: null,
 	renderGridNoClipNoRotate: null,

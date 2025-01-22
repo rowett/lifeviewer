@@ -125,37 +125,46 @@ This file is part of LifeViewer
 			/** @type {boolean} */ metaKey = event.metaKey,
 			/** @type {boolean} */ altKey = event.altKey;
 
-		// check for control, meta or alt
-		if (ctrlKey || metaKey || altKey) {
-			// clear key code so it is not handled here
-			keyCode = -1;
-		}
-
-		// determine if the key can be processed
-		switch (keyCode) {
-		// t for timing display
-		case 84:
-			// check for shift key
-			if (shiftKey) {
-				// toggle extended timing
-				me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
-			} else {
-				// toggle fps
-				me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+		// check for toggle WASM on/off
+		if (altKey && (keyCode === 192 || keyCode === 223)) {
+			// back tick to toggle WASM on/off
+			if (Controller.useWASM) {
+				me.wasmEngineButton.current = me.viewEngineToggle([!me.wasmEnabled], true, me);
+				me.menuManager.notification.notify("WASM " + (me.wasmEnabled ? "On" : "Off"), 15, 40, 15, true);
 			}
-			break;
+		} else {
+			// check for control, meta or alt
+			if (ctrlKey || metaKey || altKey) {
+				// clear key code so it is not handled here
+				keyCode = -1;
+			}
 
-		// Esc or f6 to cancel Identify
-		case 27:
-		case 117:
-			me.identifyPressed(me);
-			break;
+			// determine if the key can be processed
+			switch (keyCode) {
+			// t for timing display
+			case 84:
+				// check for shift key
+				if (shiftKey) {
+					// toggle extended timing
+					me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
+				} else {
+					// toggle fps
+					me.viewFpsToggle([!me.menuManager.showTiming], true, me);
+				}
+				break;
 
-		// ignore other keys
-		default:
-			// flag not handled
-			processed = false;
-			break;
+			// Esc or f6 to cancel Identify
+			case 27:
+			case 117:
+				me.identifyPressed(me);
+				break;
+
+			// ignore other keys
+			default:
+				// flag not handled
+				processed = false;
+				break;
+			}
 		}
 
 		// return whether key processed

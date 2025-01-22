@@ -81,9 +81,6 @@ This file is part of LifeViewer
 		// mod type names
 		/** @const {Array<string>} */ modTypeName : ["Rot90CW", "Rot90CCW", "FlipX", "FlipY", "Rot180", "Flip" + String.fromCharCode(10189), "Flip" + String.fromCharCode(10187), "FlipOrth", "Rot90", "FlipOrthOrRot90", "FlipDiag", "FlipDiagOrRot90", "FlipXOrRot180", "FlipYOrRot180", "Flip" + String.fromCharCode(10189) + "OrRot180", "Flip" + String.fromCharCode(10187) + "OrRot180", "FlipOrthOrDiag"],
 
-		// maximum number of generations to check for oscillators
-		/** @const {number} */ maxOscillatorGens : 4194304,
-
 		// maxmimum memory to compute strict volatility
 		/** @const {number} */ maxStrictMemory : 256 * 1024 * 1024,
 
@@ -470,6 +467,9 @@ This file is part of LifeViewer
 		/** @type {number} */ this.identifyBoxHeight = 0;
 		/** @type {string} */ this.identifyPopWithTMessage = "";
 		/** @type {string} */ this.identifyBoxWithTMessage = "";
+
+		// maximum number of generations to check for oscillators
+		/** @type {number} */ this.maxOscillatorGens = (Controller.useWASM ? 8388608 : 4194304);
 
 		// identify deferred results
 		/** @type {Array} */ this.identifyDeferredResults = [];
@@ -1051,6 +1051,13 @@ This file is part of LifeViewer
 
 		// pixel colours
 		/** @type {Uint32Array} */ this.pixelColours = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 256, "Life.pixelColours", Controller.useWASM));
+
+		// array for next genaration extended
+		/** @type {Array<number>} */ this.nextStateExtended = [0, 1, 2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19];
+
+		// WASM version
+		/** @type {Uint8Array} */ this.nextStateExtendedWASM = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.nextStateExtended.length, "Life.nextStateExtended", Controller.useWASM));
+		this.nextStateExtendedWASM.set(this.nextStateExtended);
 
 		// ruleLoader fast lookup
 		/** @type {Uint8Array} */ this.ruleLoaderLookup = null;
@@ -1856,11 +1863,11 @@ This file is part of LifeViewer
 			// just switched on so check if buffers are allocated
 			if (this.hashList === null) {
 				// allocate buffers
-				this.hashList = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.hashList", false));
-				this.genList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.genList", false));
-				this.popList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.popList", false));
-				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList", false));
-				this.nextList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.nextList", false));
+				this.hashList = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, this.maxOscillatorGens, "Life.hashList", false));
+				this.genList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, this.maxOscillatorGens, "Life.genList", false));
+				this.popList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, this.maxOscillatorGens, "Life.popList", false));
+				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * this.maxOscillatorGens, "Life.boxList", false));
+				this.nextList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Int32, this.maxOscillatorGens, "Life.nextList", false));
 				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList", false);
 				if (this.multiNumStates > 2 || this.isRuleTree) {
 					this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList", false);
@@ -4167,7 +4174,7 @@ This file is part of LifeViewer
 	Life.prototype.updateCellCounts = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint32Array} */ cellCounts) {
 		var	/** @type {number} */ timing = performance.now();
 
-		if (Controller.useWASM && Controller.wasmEnableUpdateCellCounts) {
+		if (Controller.useWASM && Controller.wasmEnableUpdateCellCounts && this.view.wasmEnabled) {
 			WASM.updateCellCounts(
 				colourGrid.whole.byteOffset | 0,
 				cellCounts.byteOffset | 0,
@@ -4287,7 +4294,7 @@ This file is part of LifeViewer
 	Life.prototype.updateOccupancyStrict = function(/** @type {BoundingBox} */ extent, /** @type {Array<Uint8Array>} */ colourGrid, /** @type {Uint16Array} */ frames, /** @type {number} */ p, /** @type {number} */ bitRowIn16Bits, /** @type {number} */ bitFrameIn16Bits, /** @type {number} */ bitStart) {
 		var	/** @type {number} */ timing = performance.now();
 
-		if (Controller.useWASM && Controller.wasmEnableUpdateOccupancyStrict) {
+		if (Controller.useWASM && Controller.wasmEnableUpdateOccupancyStrict && this.view.wasmEnabled) {
 			WASM.updateOccupancyStrict(
 				colourGrid.whole.byteOffset | 0,
 				frames.byteOffset | 0,
@@ -5830,7 +5837,7 @@ This file is part of LifeViewer
 		}
 
 		// check buffer
-		if (this.oscLength < LifeConstants.maxOscillatorGens) {
+		if (this.oscLength < this.maxOscillatorGens) {
 			// check population
 			if (this.population === 0) {
 				result = ["Empty pattern", "Empty"];
@@ -5940,7 +5947,7 @@ This file is part of LifeViewer
 
 					// check for buffer full
 					this.oscLength += 1;
-					if (this.oscLength === LifeConstants.maxOscillatorGens) {
+					if (this.oscLength === this.maxOscillatorGens) {
 						this.oscLength = 0;
 						result = [LifeConstants.bufferFullMessage];
 					}
@@ -9160,7 +9167,7 @@ This file is part of LifeViewer
 		this.nextTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid", Controller.useWASM);
 		this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid", Controller.useWASM);
 		this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid", Controller.useWASM);
-		this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid", false);
+		this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid", Controller.useWASM);
 
 		// blank row for 16 bit life grid
 		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
@@ -9242,7 +9249,7 @@ This file is part of LifeViewer
 		this.nextTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid", Controller.useWASM);
 		this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid", Controller.useWASM);
 		this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid", Controller.useWASM);
-		this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid", false);
+		this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid", Controller.useWASM);
 
 		// blank row for 16 bit life grid
 		this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
@@ -9390,7 +9397,8 @@ This file is part of LifeViewer
 			this.nextTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.nextTileGrid", Controller.useWASM);
 			this.colourTileGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileGrid", Controller.useWASM);
 			this.colourTileHistoryGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.colourTileHistoryGrid", Controller.useWASM);
-			this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid", false);
+			this.diedGrid = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.diedGrid", Controller.useWASM);
+
 			if (currentOccTileMap) {
 				this.occTileMap = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.occTileMap", false);
 			}
@@ -25847,7 +25855,7 @@ This file is part of LifeViewer
 			/** @const {number} */ requireState1 = (1 << 15) | (1 << 16),
 			/** @const {number} */ treatIfDead = (1 << 1) | (1 << 2) | (1 << 4) | (1 << 6) | (1 << 8) | (1 << 10) | (1 << 12) | (1 << 15) |  (1 << 16) | (1 << 17) | (1 << 19),
 			/** @const {number} */ treatIfAlive = treatIfDead ^ ((1 << 17) | (1 << 18) | (1 << 19) | (1 << 20)),
-			/** @const {Array<number>} */ nextState = [0, 1, 2, 3, 4, 5, 7, 6, 8, 9, 11, 10, 13, 12, 14, 15, 16, 17, 18, 20, 19];
+			/** @const {Array<number>} */ nextState = this.nextStateExtended;
 
 		// select the correct grid
 		if ((this.counter & 1) === 0) {
@@ -27045,13 +27053,6 @@ This file is part of LifeViewer
 							// process the bottom row of the tile
 							y = bottomY;
 							rowIndex = 32768;
-
-							if (y === 0) {
-								gridRow0 = this.blankColourRow;
-							} else {
-								gridRow0 = grid[y - 1];
-							}
-							gridRow1 = grid[y];
 
 							// process each row of the tile
 							while (y < topY) {
@@ -29724,7 +29725,8 @@ This file is part of LifeViewer
 			/** @type {number} */ bLeftX = 0,
 			/** @type {number} */ bBottomY = 0,
 			/** @type {number} */ bRightX = 0,
-			/** @type {number} */ bTopY = 0;
+			/** @type {number} */ bTopY = 0,
+			/** @type {number} */ timing = performance.now();
 
 		if (this.isHex) {
 			this.nextGenerationExtendedTileHex();
@@ -29732,7 +29734,66 @@ This file is part of LifeViewer
 			if (this.isVonNeumann) {
 				this.nextGenerationExtendedTileVN();
 			} else {
-				this.nextGenerationExtendedTileMoore();
+				/*
+				if (Controller.useWASM && Controller.wasmEnableNextGenerationInvestigator && this.view.wasmEnabled) {
+					WASM.nextGenerationInvestigatorMoore(
+						this.colourGrid.whole.byteOffset | 0,
+						this.nextColourGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.tileGrid.whole.byteOffset | 0,
+						this.nextTileGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileGrid[0].length | 0,
+						this.tileGrid.whole.byteLength | 0,
+						this.diedGrid.whole.byteOffset | 0,
+						this.columnOccupied16.byteOffset | 0,
+						this.columnOccupied16.length | 0,
+						this.rowOccupied16.byteOffset | 0,
+						this.rowOccupied16.length | 0,
+						this.manager.ruleArray.byteOffset | 0,
+						this.altSpecified ? (this.manager.ruleAltArray.byteOffset | 0) : 0 | 0,
+						this.width | 0,
+						this.height | 0,
+						this.tileX | 0,
+						this.tileY | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.blankTileRow.byteOffset | 0,
+						this.blankTileRow.length | 0,
+						this.blankColourRow.byteOffset | 0,
+						this.blankColourRow.length | 0,
+						this.counter | 0,
+						this.altSpecified ? (1 | 0) : (0 | 0),
+						this.nextStateExtendedWASM.byteOffset | 0,
+						LifeConstants.bottomRightSet | 0,
+						LifeConstants.bottomSet | 0,
+						LifeConstants.topRightSet | 0,
+						LifeConstants.topSet | 0,
+						LifeConstants.bottomLeftSet | 0,
+						LifeConstants.topLeftSet | 0,
+						LifeConstants.leftSet | 0,
+						LifeConstants.rightSet | 0,
+						this.sharedBuffer.byteOffset | 0
+					);
+
+					this.zoomBox.leftX = this.sharedBuffer[0];
+					this.zoomBox.bottomY = this.sharedBuffer[1];
+					this.zoomBox.rightX = this.sharedBuffer[2];
+					this.zoomBox.topY = this.sharedBuffer[3];
+					this.population = this.sharedBuffer[4];
+					this.births = this.sharedBuffer[5];
+					this.deaths = this.sharedBuffer[6];
+				} else {
+				*/
+					this.nextGenerationExtendedTileMoore();
+				/*
+				}
+
+				timing = performance.now() - timing;
+				if (Controller.wasmTiming) {
+					this.view.menuManager.updateTimingItem("nextInvestigator", timing, Controller.useWASM && Controller.wasmEnableNextGenerationInvestigator && this.view.wasmEnabled);
+				}
+				*/
 			}
 		}
 

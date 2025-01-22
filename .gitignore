@@ -32,3 +32,5 @@ install.bat
 node_modules
 debug
 *.json
+*.o
+*.h

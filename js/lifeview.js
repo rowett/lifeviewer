@@ -246,9 +246,6 @@ This file is part of LifeViewer
 		/** @const {number} */ maxThumbSize : 4,
 		/** @const {number} */ defaultThumbSize : 4,
 
-		// maximum time in ms between UI updates when STEP > 1
-		/** @const {number} */ updateThreshold : 16.7,
-
 		// minimum and maximum grid size 2^n
 		/** @const {number} */ minGridPower : 9,  // 2^9 = 512
 		/** @const {number} */ maxGridPower : 14,  // 2^14 = 16384
@@ -561,6 +558,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ wasmEnableWrapTorusHROT : true,
 		/** @type {boolean} */ wasmEnableClearTopAndLeft: true,
 		/** @type {boolean} */ wasmEnableNextGeneration: true,
+		/** @type {boolean} */ wasmEnableNextGenerationInvestigator: true,
 		/** @type {boolean} */ wasmEnableNextGenerationGenerations: true,
 		/** @type {boolean} */ wasmEnableNextGenerationSuper: true,
 		/** @type {boolean} */ wasmEnableNextGenerationCross: true,
@@ -982,7 +980,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.needsComplete = false;
 
 		// pattern manager
-		/** @type {PatternManager} */ this.manager = new PatternManager();
+		/** @type {PatternManager} */ this.manager = new PatternManager(Controller.allocator);
 
 		// whether identify results displayed
 		/** @type {boolean} */ this.resultsDisplayed = false;
@@ -5628,7 +5626,7 @@ This file is part of LifeViewer
 	// update progress bar for identify period detection
 	View.prototype.updateProgressBarIdentify = function(/** @type {View} */ me) {
 		// update the progress bar
-		me.progressBar.current = (100 * me.engine.oscLength) / LifeConstants.maxOscillatorGens;
+		me.progressBar.current = (100 * me.engine.oscLength) / me.engine.maxOscillatorGens;
 
 		// show the progress bar
 		me.progressBar.deleted = false;
@@ -6830,7 +6828,7 @@ This file is part of LifeViewer
 				deltaTime = performance.now() - currentTime;
 
 				// check for stop or delta time being too large or single step (ignore time for manual stepping)
-				if ((me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) || ((deltaTime > ViewConstants.updateThreshold) && !manualStepping)) {
+				if ((me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) || ((deltaTime > 0.8 * frameTargetTime) && !manualStepping)) {
 					// if at stop generation then actually bailout
 					if (me.engine.counter === me.stopGeneration - 1 && !me.stopDisabled) {
 						bailout = true;
@@ -7221,10 +7219,11 @@ This file is part of LifeViewer
 			/** @type {number} */ errorGreen = 48,
 			/** @type {number} */ errorBlue = 48,
 			/** @type {number} */ mixWeight = 0,
-			/** @type {string} */ controlColour;
+			/** @type {string} */ controlColour,
+			/** @type {number} */ frameTargetTime = (1000 / me.refreshRate);
 
 		// check for frame skip or STEP skip
-		if ((tooSlow || deltaTime > ViewConstants.updateThreshold) && !manualStepping) {
+		if ((tooSlow || deltaTime > 0.8 * frameTargetTime) && !manualStepping) {
 			// ramp the red colour up
 			if (me.perfStep < ViewConstants.perfMax) {
 				me.perfStep += 1;
@@ -22153,9 +22152,8 @@ This file is part of LifeViewer
 			/** @type {Element} */ canvasElement = null,
 
 			// temporary allocator and pattern manager
-			///** @type {Allocator} */ allocator = new Allocator(),
 			/** @type {Allocator} */ allocator = WASM.allocator,
-			/** @type {PatternManager} */ manager = new PatternManager();
+			/** @type {PatternManager} */ manager = new PatternManager(allocator);
 
 		console.time("page scan");
 

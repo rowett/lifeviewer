@@ -1,6 +1,7 @@
 Build 1227
 - added a progress bar to show buffer usage during Identify period detection
 - Themes Help topic is now accessed via hotkey E
+- improved bailout when STEP > 1 and performance target is missed
 
 Build 1226
 - fixed a regression with HROT/LtL
