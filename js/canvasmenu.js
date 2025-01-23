@@ -3681,7 +3681,7 @@ This file is part of LifeViewer
 		// draw info if required
 		if (Controller.useWASM) {
 			var beta1 = "LifeViewer Pro";
-			var beta2 = "Alpha relese";
+			var beta2 = "Alpha release";
 			oc.font = ((16 * xScale) | 0) + "px Arial";
 
 			oc.fillStyle = "black";

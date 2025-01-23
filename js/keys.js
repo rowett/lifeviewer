@@ -1637,7 +1637,7 @@ This file is part of LifeViewer
 				// check for shift key
 				if (shiftKey) {
 					// toggle extended timing
-					me.menuManager.showExtendedTiming = !me.menuManager.showExtendedTiming;
+					me.timingDetailButton.current = me.viewTimingDetailToggle([!me.menuManager.showExtendedTiming], true, me);
 				} else {
 					// toggle fps
 					me.fpsButton.current = me.viewFpsToggle([!me.menuManager.showTiming], true, me);
