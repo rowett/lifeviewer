@@ -7,6 +7,8 @@
 //	nextGeneration (Life-like)
 //	nextGenerationGenerations (Generations)
 //	nextGenerationSuperMoore (Super, Moore)
+//	nextGenerationSuperHex (Super, Hex)
+//	nextGenerationSuperVN (Super, von Neumann)
 
 /*
 This file is part of LifeViewer
@@ -1237,7 +1239,7 @@ void nextGeneration(
 
 
 EMSCRIPTEN_KEEPALIVE
-// compute super rule next generation (after state 0 and 1)
+// compute super rule next generation (after state 0 and 1) for Moore neighbourhood
 void nextGenerationSuperMoore(
 	uint16_t *grid16,
 	uint16_t *nextGrid16,
@@ -1465,7 +1467,7 @@ void nextGenerationSuperMoore(
 
 							// clear cell in bit grid
 							if (!process && (c & 1)) {
-								if (*gridRow & colIndex) {
+								if (nextCell & colIndex) {
 									*gridRow &= ~colIndex;
 									deaths++;
 									population--;
@@ -1488,11 +1490,9 @@ void nextGenerationSuperMoore(
 
 										case 6:
 											// clear cell in bit grid
-											if (*gridRow & colIndex) {
-												*gridRow &= ~colIndex;
-												births--;
-												population--;
-											}
+											*gridRow &= ~colIndex;
+											births--;
+											population--;
 											break;
 
 										case 8:
@@ -1757,3 +1757,1037 @@ void nextGenerationSuperMoore(
 	shared[10] = deaths;
 }
 
+
+EMSCRIPTEN_KEEPALIVE
+// compute super rule next generation (after state 0 and 1) for Hex neighbourhood
+void nextGenerationSuperHex(
+	uint16_t *grid16,
+	uint16_t *nextGrid16,
+	const uint32_t gridWidth,
+	uint16_t *tileGrid16,
+	uint16_t *nextTileGrid16,
+	uint16_t *colourTileGrid,
+	uint16_t *colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	uint8_t *colourGrid8,
+	uint8_t *nextColourGrid8,
+	const uint32_t colourGridWidth,
+	uint16_t *columnOccupied16,
+	uint16_t *columnAliveOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *rowOccupied16,
+	uint16_t *rowAliveOccupied16,
+	const uint32_t rowOccupiedWidth,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t tileX,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *blankTileRow,
+	const uint32_t blankTileWidth,
+	uint16_t *blankRow16,
+	const uint32_t blankRowWidth,
+	uint8_t *blankColourRow,
+	const uint32_t blockColourRowWidth,
+	const uint32_t counter,
+	uint32_t population,
+	uint32_t births,
+	uint32_t deaths,
+	uint32_t *shared
+) {
+	uint32_t nw, n, w, c, e, se, s;
+	int32_t calc;
+	const uint32_t width16 = width >> 4;
+
+	// constants
+	const uint32_t aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+	const uint32_t aliveWith14or18 = aliveWith14 | (1 << 18);
+	const uint32_t alive1or3or5or7 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7);
+	const uint32_t alive9to25 = (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+	const uint32_t alive1or3or5or9or11 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 9) | (1 << 11);
+	const uint32_t alive7or13or15or17or19or21or23or25 = (1 << 7) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+	const uint32_t alive1or5or7or9or11 = (1 << 1) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11);
+	const uint32_t alive13or15or17or19or21or23or25 = (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+	const uint32_t alive9or11 = (1 << 9) | (1 << 11);
+	const uint32_t alive1or3or5or13or15or17or19or21or23or25 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+
+	// new box extent
+	int32_t newBottomY = height;
+	int32_t newTopY = -1;
+	int32_t newLeftX = width;
+	int32_t newRightX = -1;
+	int32_t newAliveBottomY = height;
+	int32_t newAliveTopY = -1;
+	int32_t newAliveLeftX = width;
+	int32_t newAliveRightX = -1;
+
+	// tile width in 16 bit chunks
+	const uint32_t xSize = tileX >> 1;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// grid
+	uint16_t *grid = grid16;
+	uint16_t *nextGrid = nextGrid16;
+	uint16_t *tileGrid = tileGrid16;
+	uint16_t *nextTileGrid = nextTileGrid16;
+	uint8_t *colourGrid = nextColourGrid8;
+	uint8_t *outputGrid = colourGrid8;
+
+	// select the correct grid
+	if (counter & 1) {
+		grid = nextGrid16;
+		tileGrid = nextTileGrid;
+		colourGrid = colourGrid8;
+		outputGrid = nextColourGrid8;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+	memset(columnAliveOccupied16, 0, columnOccupiedWidth * sizeof(*columnAliveOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+	memset(rowAliveOccupied16, 0, rowOccupiedWidth * sizeof(*rowAliveOccupied16));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < height >> 4; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+
+		// get the tile row and colour tile rows
+		uint16_t *tileGridRow = tileGrid + th * tileGridWidth;
+		uint16_t *colourTileRow = colourTileGrid + th * tileGridWidth;
+		uint16_t *colourTileHistoryRow = colourTileHistoryGrid + th * tileGridWidth;
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = tileGridRow[tw] | colourTileRow[tw];
+			uint32_t currentX = leftX;
+			uint32_t nextTiles = 0;
+			uint32_t origTiles = tiles;
+
+			// compute next colour for each tile in the set
+			while (tiles) {
+				uint32_t b = 31 - __builtin_clz(tiles);
+				tiles &= ~(1 << b);
+
+				leftX = currentX + xSize * (15 - b);
+
+				// mark no cells in this column
+				uint32_t colOccupied = 0;
+				uint32_t colAliveOccupied = 0;
+
+				// mark no cells in the tile rows
+				uint32_t rowOccupied = 0;
+				uint32_t rowAliveOccupied = 0;
+				uint32_t rowIndex = 32768;
+
+				// flag nothing alive in the tile
+				uint32_t tileAlive = 0;
+
+				// clear type mask
+				uint32_t typeMask = 0;
+
+				// process each row
+				for (uint32_t h = bottomY; h < topY; h++) {
+					// get correct starting colour index
+					uint32_t cr = (leftX << 4);
+
+					// get the grid and colour grid row
+					uint16_t *gridRow = grid + h * gridWidth + leftX;
+					uint8_t *colourGridRow = colourGrid + h * colourGridWidth + cr;
+					uint8_t *aboveRow = colourGridRow - colourGridWidth;
+					uint8_t *belowRow = colourGridRow + colourGridWidth;
+
+					// deal with bottom row of the grid
+					if (h == 0) {
+						aboveRow = blankColourRow;
+					}
+					if (h == height - 1) {
+						belowRow = blankColourRow;
+					}
+
+					// destination to write bit cells
+					uint8_t *destRow = outputGrid + h * colourGridWidth + cr;
+
+					// get initial neighbours
+					if (cr == 0) {
+						c = 0;
+						n = 0;
+					} else {
+						c = *(colourGridRow - 1);
+						n = *(aboveRow - 1);
+					}
+					se = *belowRow;
+					e = *colourGridRow;
+
+					// process each 16bit chunk (16 cells) along the row
+					uint32_t nextCell = *gridRow;
+
+					// process each cell in the chunk
+					uint32_t colIndex = 1 << 15;
+					while (colIndex > 0) {
+						// shift neighbourhood left
+						nw = n;
+						n = *aboveRow;
+						w = c;
+						c = e;
+						e = *(colourGridRow + 1);
+						s = se;
+						se = *(belowRow + 1);
+						uint32_t value = c;
+
+						// typemask has a bit set per state in the neighbouring cells
+						typeMask = (1 << nw) | (1 << n) | (1 << e) | (1 << w) | (1 << s) | (1 << se);
+
+						// handle state 6
+						bool process = true;
+						if (typeMask & (1 << 6)) {
+							process = false;
+							if (c == 7 || c == 8 || c >= 13) {
+								value = 0;
+							} else {
+								switch (c) {
+									case 1:
+										value = 2;
+										break;
+
+									case 3:
+									case 5:
+										value = 4;
+										break;
+
+									case 9:
+										value = 10;
+										break;
+
+									case 11:
+										value = 12;
+										break;
+
+									default:
+										// not handled here so process below
+										process = true;
+										break;
+								}
+							}
+
+							// clear cell in bit grid
+							if (!process && (c & 1)) {
+								if (nextCell & colIndex) {
+									*gridRow &= ~colIndex;
+									deaths++;
+									population--;
+								}
+							}
+						}
+
+						// check whether state still needs processing
+						if (process) {
+							// get cell state from bit grid
+							if (nextCell & colIndex) {
+								// cell alive
+								// was cell alive in this generation
+								if ((c & 1) == 0) {
+									// cell was dead so has been born now
+									switch (c) {
+										case 4:
+											value = 3;
+											break;
+
+										case 6:
+											// clear cell in bit grid
+											*gridRow &= ~colIndex;
+											births--;
+											population--;
+											break;
+
+										case 8:
+											value = 7;
+											break;
+
+										default:
+											value = 1;
+											calc = typeMask & alive9to25;
+
+											if (((typeMask & alive1or3or5or7) == 0) && (__builtin_popcount(calc) == 1)) {
+												// the bit index gives the cell state
+												value = 31 - __builtin_clz(calc);
+											} else {
+												calc = typeMask & alive13or15or17or19or21or23or25;
+												if ((typeMask & (1 << 3)) && ((typeMask & alive1or5or7or9or11) == 0) && (__builtin_popcount(calc) == 1)) {
+													value = 31 - __builtin_clz(calc);
+												} else {
+													calc = typeMask & alive9or11;
+													if ((typeMask & (1 << 7)) && ((typeMask & alive1or3or5or13or15or17or19or21or23or25) == 0) && (__builtin_popcount(calc) == 1)) {
+														value = 31 - __builtin_clz(calc);
+													} else {
+														calc = typeMask & alive7or13or15or17or19or21or23or25;
+														if (calc && ((typeMask & alive1or3or5or9or11) == 0)) {
+															value = 13;
+														}
+													}
+												}
+											}
+											break;
+									}
+								}
+							} else {
+								// cell dead
+								// was cell alive in this generation
+								if (c & 1) {
+									// cell was alive so has died
+									if (c <= 11) {
+										if (c == 5) {
+											value = 4;
+										} else {
+											value = c + 1;
+										}
+									} else {
+										value = 0;
+									}
+								} else {
+									// cell is still dead
+									if (c >= 14) {
+										switch (c) {
+											case 14:
+												value = 0;
+												break;
+
+											case 16:
+												if (typeMask & aliveWith14) {
+													value = 14;
+												}
+												break;
+
+											case 18:
+												if (typeMask & (1 << 22)) {
+													value = 22;
+												}
+												break;
+
+											case 20:
+												if (typeMask & (1 << 18)) {
+													value = 18;
+												}
+												break;
+
+											case 22:
+												if (typeMask & (1 << 20)) {
+													value = 20;
+												}
+												break;
+
+											case 24:
+												if (typeMask & aliveWith14or18) {
+													value = 18;
+												}
+												break;
+										}
+									}
+								}
+							}
+						}
+
+						// output new cell state
+						*destRow = value;
+						destRow++;
+
+						if (value > 0) {
+							colOccupied |= colIndex;
+							rowOccupied |= rowIndex;
+
+							// update alive tracker
+							if (value & 1) {
+								colAliveOccupied |= colIndex;
+								rowAliveOccupied |= rowIndex;
+							}
+						}
+
+						// next bit cell
+						colIndex >>= 1;
+
+						// get next column
+						colourGridRow++;
+						belowRow++;
+						aboveRow++;
+					}
+
+					// next row
+					rowIndex >>= 1;
+				}
+
+				columnOccupied16[leftX] |= colOccupied;
+				rowOccupied16[th] |= rowOccupied;
+				columnAliveOccupied16[leftX] |= colAliveOccupied;
+				rowAliveOccupied16[th] |= rowAliveOccupied;
+
+				// check if the row was alive
+				if (tileAlive) {
+					// update tile flag
+					nextTiles |= (1 << b);
+				}
+			}
+
+			// save the tile group
+			colourTileRow[tw] = origTiles | nextTiles;
+			colourTileHistoryRow[tw] |= origTiles | nextTiles;
+
+			// next tile set
+			leftX = currentX + (xSize << 4);
+		}
+
+		// next tile row
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// update bounding box
+	for (int32_t tw = 0; tw < width16; tw++) {
+		if (columnOccupied16[tw]) {
+			if (tw < newLeftX) {
+				newLeftX = tw;
+			}
+			if (tw > newRightX) {
+				newRightX = tw;
+			}
+		}
+
+		if (columnAliveOccupied16[tw]) {
+			if (tw < newAliveLeftX) {
+				newAliveLeftX = tw;
+			}
+			if (tw > newAliveRightX) {
+				newAliveRightX = tw;
+			}
+		}
+	}
+
+	for (int32_t th = 0; th < rowOccupiedWidth; th++) {
+		if (rowOccupied16[th]) {
+			if (th < newBottomY) {
+				newBottomY = th;
+			}
+			if (th > newTopY) {
+				newTopY = th;
+			}
+		}
+
+		if (rowAliveOccupied16[th]) {
+			if (th < newAliveBottomY) {
+				newAliveBottomY = th;
+			}
+			if (th > newAliveTopY) {
+				newAliveTopY = th;
+			}
+		}
+	}
+
+	// convert new width to pixels
+	newLeftX = (newLeftX << 4) + (__builtin_clz(columnOccupied16[newLeftX]) - 16);
+	newRightX = (newRightX << 4) + (15 - __builtin_ctz(columnOccupied16[newRightX]));
+
+	// convert new height to pixels
+	newBottomY = (newBottomY << 4) + (__builtin_clz(rowOccupied16[newBottomY]) - 16);
+	newTopY = (newTopY << 4) + (15 - __builtin_ctz(rowOccupied16[newTopY]));
+
+	// ensure the box is not blank
+	if (newTopY < 0) {
+		newTopY = height - 1;
+	}
+	if (newBottomY >= height) {
+		newBottomY = 0;
+	}
+	if (newLeftX >= width) {
+		newLeftX = 0;
+	}
+	if (newRightX < 0) {
+		newRightX = width - 1;
+	}
+
+	// clip to the screen
+	if (newTopY > height - 1) {
+		newTopY = height - 1;
+	}
+	if (newBottomY < 0) {
+		newBottomY = 0;
+	}
+	if (newLeftX < 0) {
+		newLeftX = 0;
+	}
+	if (newRightX > width - 1) {
+		newRightX = width - 1;
+	}
+
+	// convert new width to pixels
+	newAliveLeftX = (newAliveLeftX << 4) + (__builtin_clz(columnAliveOccupied16[newAliveLeftX]) - 16);
+	newAliveRightX = (newAliveRightX << 4) + (15 - __builtin_ctz(columnAliveOccupied16[newAliveRightX]));
+
+	// convert new height to pixels
+	newAliveBottomY = (newAliveBottomY << 4) + (__builtin_clz(rowAliveOccupied16[newAliveBottomY]) - 16);
+	newAliveTopY = (newAliveTopY << 4) + (15 - __builtin_ctz(rowAliveOccupied16[newAliveTopY]));
+
+	// ensure the alive box is not blank
+	if (newAliveTopY < 0) {
+		newAliveTopY = height - 1;
+	}
+	if (newAliveBottomY >= height) {
+		newAliveBottomY = 0;
+	}
+	if (newAliveLeftX >= width) {
+		newAliveLeftX = 0;
+	}
+	if (newAliveRightX < 0) {
+		newAliveRightX = width - 1;
+	}
+
+	// clip to the screen
+	if (newAliveTopY > height - 1) {
+		newAliveTopY = height - 1;
+	}
+	if (newAliveBottomY < 0) {
+		newAliveBottomY = 0;
+	}
+	if (newAliveLeftX < 0) {
+		newAliveLeftX = 0;
+	}
+	if (newAliveRightX > width - 1) {
+		newAliveRightX = width - 1;
+	}
+
+	// return data to JS
+	shared[0] = newLeftX;
+	shared[1] = newBottomY;
+	shared[2] = newRightX;
+	shared[3] = newTopY;
+	shared[4] = newAliveLeftX;
+	shared[5] = newAliveBottomY;
+	shared[6] = newAliveRightX;
+	shared[7] = newAliveTopY;
+	shared[8] = population;
+	shared[9] = births;
+	shared[10] = deaths;
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute super rule next generation (after state 0 and 1) for von Neumann neighbourhood
+void nextGenerationSuperVN(
+	uint16_t *grid16,
+	uint16_t *nextGrid16,
+	const uint32_t gridWidth,
+	uint16_t *tileGrid16,
+	uint16_t *nextTileGrid16,
+	uint16_t *colourTileGrid,
+	uint16_t *colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	uint8_t *colourGrid8,
+	uint8_t *nextColourGrid8,
+	const uint32_t colourGridWidth,
+	uint16_t *columnOccupied16,
+	uint16_t *columnAliveOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *rowOccupied16,
+	uint16_t *rowAliveOccupied16,
+	const uint32_t rowOccupiedWidth,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t tileX,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *blankTileRow,
+	const uint32_t blankTileWidth,
+	uint16_t *blankRow16,
+	const uint32_t blankRowWidth,
+	uint8_t *blankColourRow,
+	const uint32_t blockColourRowWidth,
+	const uint32_t counter,
+	uint32_t population,
+	uint32_t births,
+	uint32_t deaths,
+	uint32_t *shared
+) {
+	uint32_t  n, w, c, e, s;
+	int32_t calc;
+	const uint32_t width16 = width >> 4;
+
+	// constants
+	const uint32_t aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+	const uint32_t aliveWith14or18 = aliveWith14 | (1 << 18);
+	const uint32_t alive1or3or5or7 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7);
+	const uint32_t alive9to25 = (1 << 9) | (1 << 11) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+	const uint32_t alive1or3or5or9or11 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 9) | (1 << 11);
+	const uint32_t alive7or13or15or17or19or21or23or25 = (1 << 7) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+	const uint32_t alive1or5or7or9or11 = (1 << 1) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11);
+	const uint32_t alive13or15or17or19or21or23or25 = (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+	const uint32_t alive9or11 = (1 << 9) | (1 << 11);
+	const uint32_t alive1or3or5or13or15or17or19or21or23or25 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
+
+	// new box extent
+	int32_t newBottomY = height;
+	int32_t newTopY = -1;
+	int32_t newLeftX = width;
+	int32_t newRightX = -1;
+	int32_t newAliveBottomY = height;
+	int32_t newAliveTopY = -1;
+	int32_t newAliveLeftX = width;
+	int32_t newAliveRightX = -1;
+
+	// tile width in 16 bit chunks
+	const uint32_t xSize = tileX >> 1;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// grid
+	uint16_t *grid = grid16;
+	uint16_t *nextGrid = nextGrid16;
+	uint16_t *tileGrid = tileGrid16;
+	uint16_t *nextTileGrid = nextTileGrid16;
+	uint8_t *colourGrid = nextColourGrid8;
+	uint8_t *outputGrid = colourGrid8;
+
+	// select the correct grid
+	if (counter & 1) {
+		grid = nextGrid16;
+		tileGrid = nextTileGrid;
+		colourGrid = colourGrid8;
+		outputGrid = nextColourGrid8;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+	memset(columnAliveOccupied16, 0, columnOccupiedWidth * sizeof(*columnAliveOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+	memset(rowAliveOccupied16, 0, rowOccupiedWidth * sizeof(*rowAliveOccupied16));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < height >> 4; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+
+		// get the tile row and colour tile rows
+		uint16_t *tileGridRow = tileGrid + th * tileGridWidth;
+		uint16_t *colourTileRow = colourTileGrid + th * tileGridWidth;
+		uint16_t *colourTileHistoryRow = colourTileHistoryGrid + th * tileGridWidth;
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = tileGridRow[tw] | colourTileRow[tw];
+			uint32_t currentX = leftX;
+			uint32_t nextTiles = 0;
+			uint32_t origTiles = tiles;
+
+			// compute next colour for each tile in the set
+			while (tiles) {
+				uint32_t b = 31 - __builtin_clz(tiles);
+				tiles &= ~(1 << b);
+
+				leftX = currentX + xSize * (15 - b);
+
+				// mark no cells in this column
+				uint32_t colOccupied = 0;
+				uint32_t colAliveOccupied = 0;
+
+				// mark no cells in the tile rows
+				uint32_t rowOccupied = 0;
+				uint32_t rowAliveOccupied = 0;
+				uint32_t rowIndex = 32768;
+
+				// flag nothing alive in the tile
+				uint32_t tileAlive = 0;
+
+				// clear type mask
+				uint32_t typeMask = 0;
+
+				// process each row
+				for (uint32_t h = bottomY; h < topY; h++) {
+					// get correct starting colour index
+					uint32_t cr = (leftX << 4);
+
+					// get the grid and colour grid row
+					uint16_t *gridRow = grid + h * gridWidth + leftX;
+					uint8_t *colourGridRow = colourGrid + h * colourGridWidth + cr;
+					uint8_t *aboveRow = colourGridRow - colourGridWidth;
+					uint8_t *belowRow = colourGridRow + colourGridWidth;
+
+					// deal with bottom row of the grid
+					if (h == 0) {
+						aboveRow = blankColourRow;
+					}
+					if (h == height - 1) {
+						belowRow = blankColourRow;
+					}
+
+					// destination to write bit cells
+					uint8_t *destRow = outputGrid + h * colourGridWidth + cr;
+
+					// get initial neighbours
+					if (cr == 0) {
+						c = 0;
+					} else {
+						c = *(colourGridRow - 1);
+					}
+					e = *colourGridRow;
+
+					// process each 16bit chunk (16 cells) along the row
+					uint32_t nextCell = *gridRow;
+
+					// process each cell in the chunk
+					uint32_t colIndex = 1 << 15;
+					while (colIndex > 0) {
+						// shift neighbourhood left
+						n = *aboveRow;
+						w = c;
+						c = e;
+						e = *(colourGridRow + 1);
+						s = *belowRow;
+						uint32_t value = c;
+
+						// get next column
+						colourGridRow++;
+						belowRow++;
+						aboveRow++;
+
+						// typemask has a bit set per state in the neighbouring cells
+						typeMask = (1 << n) | (1 << e) | (1 << w) | (1 << s);
+
+						// handle state 6
+						bool process = true;
+						if (typeMask & (1 << 6)) {
+							process = false;
+							if (c == 7 || c == 8 || c >= 13) {
+								value = 0;
+							} else {
+								switch (c) {
+									case 1:
+										value = 2;
+										break;
+
+									case 3:
+									case 5:
+										value = 4;
+										break;
+
+									case 9:
+										value = 10;
+										break;
+
+									case 11:
+										value = 12;
+										break;
+
+									default:
+										// not handled here so process below
+										process = true;
+										break;
+								}
+							}
+
+							// clear cell in bit grid
+							if (!process && (c & 1)) {
+								if (nextCell & colIndex) {
+									*gridRow &= ~colIndex;
+									deaths++;
+									population--;
+								}
+							}
+						}
+
+						// check whether state still needs processing
+						if (process) {
+							// get cell state from bit grid
+							if (nextCell & colIndex) {
+								// cell alive
+								// was cell alive in this generation
+								if ((c & 1) == 0) {
+									// cell was dead so has been born now
+									switch (c) {
+										case 4:
+											value = 3;
+											break;
+
+										case 6:
+											// clear cell in bit grid
+											*gridRow &= ~colIndex;
+											births--;
+											population--;
+											break;
+
+										case 8:
+											value = 7;
+											break;
+
+										default:
+											value = 1;
+											calc = typeMask & alive9to25;
+
+											if (((typeMask & alive1or3or5or7) == 0) && (__builtin_popcount(calc) == 1)) {
+												// the bit index gives the cell state
+												value = 31 - __builtin_clz(calc);
+											} else {
+												calc = typeMask & alive13or15or17or19or21or23or25;
+												if ((typeMask & (1 << 3)) && ((typeMask & alive1or5or7or9or11) == 0) && (__builtin_popcount(calc) == 1)) {
+													value = 31 - __builtin_clz(calc);
+												} else {
+													calc = typeMask & alive9or11;
+													if ((typeMask & (1 << 7)) && ((typeMask & alive1or3or5or13or15or17or19or21or23or25) == 0) && (__builtin_popcount(calc) == 1)) {
+														value = 31 - __builtin_clz(calc);
+													} else {
+														calc = typeMask & alive7or13or15or17or19or21or23or25;
+														if (calc && ((typeMask & alive1or3or5or9or11) == 0)) {
+															value = 13;
+														}
+													}
+												}
+											}
+											break;
+									}
+								}
+							} else {
+								// cell dead
+								// was cell alive in this generation
+								if (c & 1) {
+									// cell was alive so has died
+									if (c <= 11) {
+										if (c == 5) {
+											value = 4;
+										} else {
+											value = c + 1;
+										}
+									} else {
+										value = 0;
+									}
+								} else {
+									// cell is still dead
+									if (c >= 14) {
+										switch (c) {
+											case 14:
+												value = 0;
+												break;
+
+											case 16:
+												if (typeMask & aliveWith14) {
+													value = 14;
+												}
+												break;
+
+											case 18:
+												if (typeMask & (1 << 22)) {
+													value = 22;
+												}
+												break;
+
+											case 20:
+												if (typeMask & (1 << 18)) {
+													value = 18;
+												}
+												break;
+
+											case 22:
+												if (typeMask & (1 << 20)) {
+													value = 20;
+												}
+												break;
+
+											case 24:
+												if (typeMask & aliveWith14or18) {
+													value = 18;
+												}
+												break;
+										}
+									}
+								}
+							}
+						}
+
+						// output new cell state
+						*destRow = value;
+						destRow++;
+
+						if (value > 0) {
+							colOccupied |= colIndex;
+							rowOccupied |= rowIndex;
+
+							// update alive tracker
+							if (value & 1) {
+								colAliveOccupied |= colIndex;
+								rowAliveOccupied |= rowIndex;
+							}
+						}
+
+						// next bit cell
+						colIndex >>= 1;
+					}
+
+					// next row
+					rowIndex >>= 1;
+				}
+
+				columnOccupied16[leftX] |= colOccupied;
+				rowOccupied16[th] |= rowOccupied;
+				columnAliveOccupied16[leftX] |= colAliveOccupied;
+				rowAliveOccupied16[th] |= rowAliveOccupied;
+
+				// check if the row was alive
+				if (tileAlive) {
+					// update tile flag
+					nextTiles |= (1 << b);
+				}
+			}
+
+			// save the tile group
+			colourTileRow[tw] = origTiles | nextTiles;
+			colourTileHistoryRow[tw] |= origTiles | nextTiles;
+
+			// next tile set
+			leftX = currentX + (xSize << 4);
+		}
+
+		// next tile row
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// update bounding box
+	for (int32_t tw = 0; tw < width16; tw++) {
+		if (columnOccupied16[tw]) {
+			if (tw < newLeftX) {
+				newLeftX = tw;
+			}
+			if (tw > newRightX) {
+				newRightX = tw;
+			}
+		}
+
+		if (columnAliveOccupied16[tw]) {
+			if (tw < newAliveLeftX) {
+				newAliveLeftX = tw;
+			}
+			if (tw > newAliveRightX) {
+				newAliveRightX = tw;
+			}
+		}
+	}
+
+	for (int32_t th = 0; th < rowOccupiedWidth; th++) {
+		if (rowOccupied16[th]) {
+			if (th < newBottomY) {
+				newBottomY = th;
+			}
+			if (th > newTopY) {
+				newTopY = th;
+			}
+		}
+
+		if (rowAliveOccupied16[th]) {
+			if (th < newAliveBottomY) {
+				newAliveBottomY = th;
+			}
+			if (th > newAliveTopY) {
+				newAliveTopY = th;
+			}
+		}
+	}
+
+	// convert new width to pixels
+	newLeftX = (newLeftX << 4) + (__builtin_clz(columnOccupied16[newLeftX]) - 16);
+	newRightX = (newRightX << 4) + (15 - __builtin_ctz(columnOccupied16[newRightX]));
+
+	// convert new height to pixels
+	newBottomY = (newBottomY << 4) + (__builtin_clz(rowOccupied16[newBottomY]) - 16);
+	newTopY = (newTopY << 4) + (15 - __builtin_ctz(rowOccupied16[newTopY]));
+
+	// ensure the box is not blank
+	if (newTopY < 0) {
+		newTopY = height - 1;
+	}
+	if (newBottomY >= height) {
+		newBottomY = 0;
+	}
+	if (newLeftX >= width) {
+		newLeftX = 0;
+	}
+	if (newRightX < 0) {
+		newRightX = width - 1;
+	}
+
+	// clip to the screen
+	if (newTopY > height - 1) {
+		newTopY = height - 1;
+	}
+	if (newBottomY < 0) {
+		newBottomY = 0;
+	}
+	if (newLeftX < 0) {
+		newLeftX = 0;
+	}
+	if (newRightX > width - 1) {
+		newRightX = width - 1;
+	}
+
+	// convert new width to pixels
+	newAliveLeftX = (newAliveLeftX << 4) + (__builtin_clz(columnAliveOccupied16[newAliveLeftX]) - 16);
+	newAliveRightX = (newAliveRightX << 4) + (15 - __builtin_ctz(columnAliveOccupied16[newAliveRightX]));
+
+	// convert new height to pixels
+	newAliveBottomY = (newAliveBottomY << 4) + (__builtin_clz(rowAliveOccupied16[newAliveBottomY]) - 16);
+	newAliveTopY = (newAliveTopY << 4) + (15 - __builtin_ctz(rowAliveOccupied16[newAliveTopY]));
+
+	// ensure the alive box is not blank
+	if (newAliveTopY < 0) {
+		newAliveTopY = height - 1;
+	}
+	if (newAliveBottomY >= height) {
+		newAliveBottomY = 0;
+	}
+	if (newAliveLeftX >= width) {
+		newAliveLeftX = 0;
+	}
+	if (newAliveRightX < 0) {
+		newAliveRightX = width - 1;
+	}
+
+	// clip to the screen
+	if (newAliveTopY > height - 1) {
+		newAliveTopY = height - 1;
+	}
+	if (newAliveBottomY < 0) {
+		newAliveBottomY = 0;
+	}
+	if (newAliveLeftX < 0) {
+		newAliveLeftX = 0;
+	}
+	if (newAliveRightX > width - 1) {
+		newAliveRightX = width - 1;
+	}
+
+	// return data to JS
+	shared[0] = newLeftX;
+	shared[1] = newBottomY;
+	shared[2] = newRightX;
+	shared[3] = newTopY;
+	shared[4] = newAliveLeftX;
+	shared[5] = newAliveBottomY;
+	shared[6] = newAliveRightX;
+	shared[7] = newAliveTopY;
+	shared[8] = population;
+	shared[9] = births;
+	shared[10] = deaths;
+}

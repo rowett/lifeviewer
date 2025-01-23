@@ -442,8 +442,6 @@ uint32_t getHashSuper(
 	// state 6 cells
 	const v128_t state6 = wasm_u8x16_splat(6);
 
-	// state 6 cells
-
 	// align left to 16 bytes
 	// we can read bytes to the left or right of the box since none of them will be alive so won't change the hash value
 	const uint32_t align16Left = left & ~15;

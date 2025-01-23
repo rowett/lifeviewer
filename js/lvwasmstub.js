@@ -72,6 +72,8 @@ var WASM = {
 	nextGeneration: null,
 	nextGenerationInvestigator: null,
 	nextGenerationSuperMoore: null,
+	nextGenerationSuperHex: null,
+	nextGenerationSuperVN: null,
 	nextGenerationGenerations: null,
 	renderGridNoClipNoRotate: null,
 	renderGridClipNoRotate: null,
