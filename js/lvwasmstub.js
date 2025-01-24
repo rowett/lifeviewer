@@ -71,6 +71,8 @@ var WASM = {
 	convertToPens: null,
 	nextGeneration: null,
 	nextGenerationInvestigatorMoore: null,
+	nextGenerationInvestigatorHex: null,
+	nextGenerationInvestigatorVN: null,
 	nextGenerationSuperMoore: null,
 	nextGenerationSuperHex: null,
 	nextGenerationSuperVN: null,

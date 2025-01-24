@@ -18906,13 +18906,13 @@ This file is part of LifeViewer
 					);
 				}
 
-				this.zoomBox.leftX = this.sharedBuffer[0];
-				this.zoomBox.bottomY = this.sharedBuffer[1];
-				this.zoomBox.rightX = this.sharedBuffer[2];
-				this.zoomBox.topY = this.sharedBuffer[3];
-				this.population = this.sharedBuffer[4];
-				this.births = this.sharedBuffer[5];
-				this.deaths = this.sharedBuffer[6];
+				this.population = this.sharedBuffer[0];
+				this.births = this.sharedBuffer[1];
+				this.deaths = this.sharedBuffer[2];
+				this.zoomBox.leftX = this.sharedBuffer[3];
+				this.zoomBox.bottomY = this.sharedBuffer[4];
+				this.zoomBox.rightX = this.sharedBuffer[5];
+				this.zoomBox.topY = this.sharedBuffer[6];
 			} else {
 				this.nextGenerationGenerations();
 			}
@@ -22134,13 +22134,13 @@ This file is part of LifeViewer
 				this.sharedBuffer.byteOffset | 0
 			);
 
-			this.zoomBox.leftX = this.sharedBuffer[0];
-			this.zoomBox.bottomY = this.sharedBuffer[1];
-			this.zoomBox.rightX = this.sharedBuffer[2];
-			this.zoomBox.topY = this.sharedBuffer[3];
-			this.population = this.sharedBuffer[4];
-			this.births = this.sharedBuffer[5];
-			this.deaths = this.sharedBuffer[6];
+			this.population = this.sharedBuffer[0];
+			this.births = this.sharedBuffer[1];
+			this.deaths = this.sharedBuffer[2];
+			this.zoomBox.leftX = this.sharedBuffer[3];
+			this.zoomBox.bottomY = this.sharedBuffer[4];
+			this.zoomBox.rightX = this.sharedBuffer[5];
+			this.zoomBox.topY = this.sharedBuffer[6];
 		} else {
 			this.nextGenerationTileJS();
 		}
@@ -26043,7 +26043,6 @@ This file is part of LifeViewer
 									c = e;
 									e = gridRow1[x + 1];
 									s = gridRow2[x];
-									state = c;
 
 									// check for higher states
 									if (c >= 2) {
@@ -26052,19 +26051,24 @@ This file is part of LifeViewer
 										// typemask has a bit set per state in the neighbouring cells
 										typeMask = (1 << n) | (1 << w) | (1 << e) | (1 << s);
 
-										if (typeMask & (c ? deadForcer : birthForcer)) {
-											state = 1 - c;
+										// check for all cells dead
+										if (typeMask === 1 && c === 0) {
+											state = 0;
 										} else {
-											if (!c && (typeMask & requireState1) && !(typeMask & 2)) {
-												state = 0;
+											if (typeMask & (c ? deadForcer : birthForcer)) {
+												state = 1 - c;
 											} else {
-												treat = c ? treatIfAlive : treatIfDead;
-												state = ruleArray[
-														(((treat >> s) & 1) << 7) |
-														(((treat >> w) & 1) << 5) |
-														(c << 4) |
-														(((treat >> e) & 1) << 3) |
-														(((treat >> n) & 1) << 1)];
+												if (!c && (typeMask & requireState1) && !(typeMask & 2)) {
+													state = 0;
+												} else {
+													treat = c ? treatIfAlive : treatIfDead;
+													state = ruleArray[
+															(((treat >> s) & 1) << 7) |
+															(((treat >> w) & 1) << 5) |
+															(c << 4) |
+															(((treat >> e) & 1) << 3) |
+															(((treat >> n) & 1) << 1)];
+												}
 											}
 										}
 									}
@@ -26106,7 +26110,6 @@ This file is part of LifeViewer
 									e = gridRow1[x + 1];
 								}
 								s = gridRow2[x];
-								state = c;
 
 								// check for higher states
 								if (c >= 2) {
@@ -26115,19 +26118,24 @@ This file is part of LifeViewer
 									// typemask has a bit set per state in the neighbouring cells
 									typeMask = (1 << n) | (1 << w) | (1 << e) | (1 << s);
 
-									if (typeMask & (c ? deadForcer : birthForcer)) {
-										state = 1 - c;
+									// check for all cells dead
+									if (typeMask === 1 && c === 0) {
+										state = 0;
 									} else {
-										if (!c && (typeMask & requireState1) && !(typeMask & 2)) {
-											state = 0;
+										if (typeMask & (c ? deadForcer : birthForcer)) {
+											state = 1 - c;
 										} else {
-											treat = c ? treatIfAlive : treatIfDead;
-											state = ruleArray[
-													(((treat >> s) & 1) << 7) |
-													(((treat >> w) & 1) << 5) |
-													(c << 4) |
-													(((treat >> e) & 1) << 3) |
-													(((treat >> n) & 1) << 1)];
+											if (!c && (typeMask & requireState1) && !(typeMask & 2)) {
+												state = 0;
+											} else {
+												treat = c ? treatIfAlive : treatIfDead;
+												state = ruleArray[
+														(((treat >> s) & 1) << 7) |
+														(((treat >> w) & 1) << 5) |
+														(c << 4) |
+														(((treat >> e) & 1) << 3) |
+														(((treat >> n) & 1) << 1)];
+											}
 										}
 									}
 								}
@@ -26386,14 +26394,12 @@ This file is part of LifeViewer
 
 			// cells in the neighbourhood
 			/** @type {number} */ nw = 0,
-			/** @type {number} */ ne = 0,
 			/** @type {number} */ w = 0,
 			/** @type {number} */ n = 0,
 			/** @type {number} */ c = 0,
 			/** @type {number} */ s = 0,
 			/** @type {number} */ e = 0,
 			/** @type {number} */ se = 0,
-			/** @type {number} */ sw = 0,
 
 			// column occupied
 			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16,
@@ -26570,29 +26576,24 @@ This file is part of LifeViewer
 
 								// get initial neighbours
 								if (x === 0) {
-									n = 0;
 									c = 0;
-									s = 0;
+									n = 0;
 								} else {
-									n = gridRow0[x - 1];
 									c = gridRow1[x - 1];
-									s = gridRow2[x - 1];
+									n = gridRow0[x - 1];
 								}
-								ne = gridRow0[x];
-								e = gridRow1[x];
 								se = gridRow2[x];
+								e = gridRow1[x];
 
 								// process each cell in the chunk
 								while (x < rightX - 1) {
 									// shift neighbourhood left
 									nw = n;
+									n = gridRow0[x];
 									w = c;
-									sw = s;
-									n = ne;
 									c = e;
-									s = se;
-									ne = gridRow0[x + 1];
 									e = gridRow1[x + 1];
+									s = se;
 									se = gridRow2[x + 1];
 
 									// check for higher states
@@ -26602,23 +26603,26 @@ This file is part of LifeViewer
 										// typemask has a bit set per state in the neighbouring cells
 										typeMask = (1 << nw) | (1 << n) | (1 << w) | (1 << e) | (1 << s) | (1 << se);
 
-										if (typeMask & (c ? deadForcer : birthForcer)) {
-											state = 1 - c;
+										// check for all cells dead
+										if (typeMask == 1 && c == 0) {
+											state = 0;
 										} else {
-											if (!c && (typeMask & requireState1) && !(typeMask & 2)) {
-												state = 0;
+											if (typeMask & (c ? deadForcer : birthForcer)) {
+												state = 1 - c;
 											} else {
-												treat = c ? treatIfAlive : treatIfDead;
-												state = ruleArray[
-														(((treat >> sw) & 1) << 8) |
-														(((treat >> s) & 1) << 7) |
-														(((treat >> se) & 1) << 6) |
-														(((treat >> w) & 1) << 5) |
-														(c << 4) |
-														(((treat >> e) & 1) << 3) |
-														(((treat >> nw) & 1) << 2) |
-														(((treat >> n) & 1) << 1) |
-														((treat >> ne) & 1)];
+												if (!c && (typeMask & requireState1) && !(typeMask & 2)) {
+													state = 0;
+												} else {
+													treat = c ? treatIfAlive : treatIfDead;
+													state = ruleArray[
+															(((treat >> s) & 1) << 7) |
+															(((treat >> se) & 1) << 6) |
+															(((treat >> w) & 1) << 5) |
+															(c << 4) |
+															(((treat >> e) & 1) << 3) |
+															(((treat >> nw) & 1) << 2) |
+															(((treat >> n) & 1) << 1)];
+												}
 											}
 										}
 									}
@@ -26652,21 +26656,17 @@ This file is part of LifeViewer
 
 								// handle right edge
 								nw = n;
+								n = gridRow0[x];
 								w = c;
-								sw = s;
-								n = ne;
 								c = e;
 								s = se;
 								if (x === width - 1) {
 									e = 0;
 									se = 0;
-									ne = 0;
 								} else {
-									ne = gridRow0[x + 1];
 									e = gridRow1[x + 1];
 									se = gridRow2[x + 1];
 								}
-								state = c;
 
 								// check for higher states
 								if (c >= 2) {
@@ -26675,23 +26675,26 @@ This file is part of LifeViewer
 									// typemask has a bit set per state in the neighbouring cells
 									typeMask = (1 << nw) | (1 << n) | (1 << w) | (1 << e) | (1 << s) | (1 << se);
 
-									if (typeMask & (c ? deadForcer : birthForcer)) {
-										state = 1 - c;
+									// check for all cells dead
+									if (typeMask == 1 && c == 0) {
+										state = 0;
 									} else {
-										if (!c && (typeMask & requireState1) && !(typeMask & 2)) {
-											state = 0;
+										if (typeMask & (c ? deadForcer : birthForcer)) {
+											state = 1 - c;
 										} else {
-											treat = c ? treatIfAlive : treatIfDead;
-											state = ruleArray[
-													(((treat >> sw) & 1) << 8) |
-													(((treat >> s) & 1) << 7) |
-													(((treat >> se) & 1) << 6) |
-													(((treat >> w) & 1) << 5) |
-													(c << 4) |
-													(((treat >> e) & 1) << 3) |
-													(((treat >> nw) & 1) << 2) |
-													(((treat >> n) & 1) << 1) |
-													((treat >> ne) & 1)];
+											if (!c && (typeMask & requireState1) && !(typeMask & 2)) {
+												state = 0;
+											} else {
+												treat = c ? treatIfAlive : treatIfDead;
+												state = ruleArray[
+														(((treat >> s) & 1) << 7) |
+														(((treat >> se) & 1) << 6) |
+														(((treat >> w) & 1) << 5) |
+														(c << 4) |
+														(((treat >> e) & 1) << 3) |
+														(((treat >> nw) & 1) << 2) |
+														(((treat >> n) & 1) << 1)];
+											}
 										}
 									}
 								}
@@ -29771,10 +29774,96 @@ This file is part of LifeViewer
 			/** @type {number} */ timing = performance.now();
 
 		if (this.isHex) {
-			this.nextGenerationExtendedTileHex();
+			if (Controller.useWASM && Controller.wasmEnableNextGenerationInvestigator && this.view.wasmEnabled) {
+				WASM.nextGenerationInvestigatorHex(
+					this.colourGrid.whole.byteOffset | 0,
+					this.nextColourGrid.whole.byteOffset | 0,
+					this.colourGrid[0].length | 0,
+					this.tileGrid.whole.byteOffset | 0,
+					this.nextTileGrid.whole.byteOffset | 0,
+					this.colourTileHistoryGrid.whole.byteOffset | 0,
+					this.tileGrid[0].length | 0,
+					this.tileGrid.whole.length | 0,
+					this.tileGrid.length | 0,
+					this.diedGrid.whole.byteOffset | 0,
+					this.columnOccupied16.byteOffset | 0,
+					this.columnOccupied16.length | 0,
+					this.rowOccupied16.byteOffset | 0,
+					this.rowOccupied16.length | 0,
+					this.manager.ruleArray.byteOffset | 0,
+					this.altSpecified ? (this.manager.ruleAltArray.byteOffset | 0) : 0 | 0,
+					this.width | 0,
+					this.height | 0,
+					this.tileX | 0,
+					this.tileY | 0,
+					this.tileRows | 0,
+					this.tileCols | 0,
+					this.blankTileRow.byteOffset | 0,
+					this.blankTileRow.length | 0,
+					this.blankColourRow.byteOffset | 0,
+					this.blankColourRow.length | 0,
+					this.counter | 0,
+					this.altSpecified ? (1 | 0) : (0 | 0),
+					this.nextStateExtendedWASM.byteOffset | 0,
+					LifeConstants.bottomRightSet | 0,
+					LifeConstants.bottomSet | 0,
+					LifeConstants.topRightSet | 0,
+					LifeConstants.topSet | 0,
+					LifeConstants.bottomLeftSet | 0,
+					LifeConstants.topLeftSet | 0,
+					LifeConstants.leftSet | 0,
+					LifeConstants.rightSet | 0,
+					this.sharedBuffer.byteOffset | 0
+				);
+			} else {
+				this.nextGenerationExtendedTileHex();
+			}
 		} else {
 			if (this.isVonNeumann) {
-				this.nextGenerationExtendedTileVN();
+				if (Controller.useWASM && Controller.wasmEnableNextGenerationInvestigator && this.view.wasmEnabled) {
+					WASM.nextGenerationInvestigatorVN(
+						this.colourGrid.whole.byteOffset | 0,
+						this.nextColourGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.tileGrid.whole.byteOffset | 0,
+						this.nextTileGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileGrid[0].length | 0,
+						this.tileGrid.whole.length | 0,
+						this.tileGrid.length | 0,
+						this.diedGrid.whole.byteOffset | 0,
+						this.columnOccupied16.byteOffset | 0,
+						this.columnOccupied16.length | 0,
+						this.rowOccupied16.byteOffset | 0,
+						this.rowOccupied16.length | 0,
+						this.manager.ruleArray.byteOffset | 0,
+						this.altSpecified ? (this.manager.ruleAltArray.byteOffset | 0) : 0 | 0,
+						this.width | 0,
+						this.height | 0,
+						this.tileX | 0,
+						this.tileY | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.blankTileRow.byteOffset | 0,
+						this.blankTileRow.length | 0,
+						this.blankColourRow.byteOffset | 0,
+						this.blankColourRow.length | 0,
+						this.counter | 0,
+						this.altSpecified ? (1 | 0) : (0 | 0),
+						this.nextStateExtendedWASM.byteOffset | 0,
+						LifeConstants.bottomRightSet | 0,
+						LifeConstants.bottomSet | 0,
+						LifeConstants.topRightSet | 0,
+						LifeConstants.topSet | 0,
+						LifeConstants.bottomLeftSet | 0,
+						LifeConstants.topLeftSet | 0,
+						LifeConstants.leftSet | 0,
+						LifeConstants.rightSet | 0,
+						this.sharedBuffer.byteOffset | 0
+					);
+				} else {
+					this.nextGenerationExtendedTileVN();
+				}
 			} else {
 				if (Controller.useWASM && Controller.wasmEnableNextGenerationInvestigator && this.view.wasmEnabled) {
 					WASM.nextGenerationInvestigatorMoore(
@@ -29817,23 +29906,25 @@ This file is part of LifeViewer
 						LifeConstants.rightSet | 0,
 						this.sharedBuffer.byteOffset | 0
 					);
-
-					this.population = this.sharedBuffer[0];
-					this.births = this.sharedBuffer[1];
-					this.deaths = this.sharedBuffer[2];
-					this.zoomBox.leftX = this.sharedBuffer[3];
-					this.zoomBox.bottomY = this.sharedBuffer[4];
-					this.zoomBox.rightX = this.sharedBuffer[5];
-					this.zoomBox.topY = this.sharedBuffer[6];
 				} else {
 					this.nextGenerationExtendedTileMoore();
 				}
-
-				timing = performance.now() - timing;
-				if (Controller.wasmTiming) {
-					this.view.menuManager.updateTimingItem("nextInvestigator", timing, Controller.useWASM && Controller.wasmEnableNextGenerationInvestigator && this.view.wasmEnabled);
-				}
 			}
+		}
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationSuper && this.view.wasmEnabled) {
+			this.population = this.sharedBuffer[0];
+			this.births = this.sharedBuffer[1];
+			this.deaths = this.sharedBuffer[2];
+			this.zoomBox.leftX = this.sharedBuffer[3];
+			this.zoomBox.bottomY = this.sharedBuffer[4];
+			this.zoomBox.rightX = this.sharedBuffer[5];
+			this.zoomBox.topY = this.sharedBuffer[6];
+		}
+
+		timing = performance.now() - timing;
+		if (Controller.wasmTiming) {
+			this.view.menuManager.updateTimingItem("nextInvestigator", timing, Controller.useWASM && Controller.wasmEnableNextGenerationInvestigator && this.view.wasmEnabled);
 		}
 
 		// clip bounding box to bounded grid
@@ -30000,17 +30091,17 @@ This file is part of LifeViewer
 		}
 
 		if (Controller.useWASM && Controller.wasmEnableNextGenerationSuper && this.view.wasmEnabled) {
-			this.zoomBox.leftX = this.sharedBuffer[0];
-			this.zoomBox.bottomY = this.sharedBuffer[1];
-			this.zoomBox.rightX = this.sharedBuffer[2];
-			this.zoomBox.topY = this.sharedBuffer[3];
-			this.aliveBox.leftX = this.sharedBuffer[4];
-			this.aliveBox.bottomY = this.sharedBuffer[5];
-			this.aliveBox.rightX = this.sharedBuffer[6];
-			this.aliveBox.topY = this.sharedBuffer[7];
-			this.population = this.sharedBuffer[8];
-			this.births = this.sharedBuffer[9];
-			this.deaths = this.sharedBuffer[10];
+			this.population = this.sharedBuffer[0];
+			this.births = this.sharedBuffer[1];
+			this.deaths = this.sharedBuffer[2];
+			this.zoomBox.leftX = this.sharedBuffer[3];
+			this.zoomBox.bottomY = this.sharedBuffer[4];
+			this.zoomBox.rightX = this.sharedBuffer[5];
+			this.zoomBox.topY = this.sharedBuffer[6];
+			this.aliveBox.leftX = this.sharedBuffer[7];
+			this.aliveBox.bottomY = this.sharedBuffer[8];
+			this.aliveBox.rightX = this.sharedBuffer[9];
+			this.aliveBox.topY = this.sharedBuffer[10];
 		}
 
 		timing = performance.now() - timing;

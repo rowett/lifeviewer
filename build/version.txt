@@ -1,3 +1,6 @@
+Build 1229
+- fixed consistency in [R]Investigator Hex and von Neumann neighbourhoods
+
 Build 1228
 - fixed the population count with [R]Super Hex and von Neumann neighbourhoods
 
