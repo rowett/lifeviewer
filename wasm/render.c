@@ -5,8 +5,8 @@
 // Rendering
 //	createNxNColourGrid (N = 2, 4, 8, 16, 32)
 //	createNxNColourGridSuper (N = 2, 4, 8, 16, 32)
-//	renderGridNoClipNoRotate (single layer)
-//	renderGridClipNoRotate (single layer)
+//	renderGridNoClipNoRotate (single layer, square or triangular)
+//	renderGridClipNoRotate (single layer, square or triangular)
 //	renderOverlayNoClipNoRotate (single layer [R]History)
 //	renderOverlayClipNoRotate (single layer [R]History)
 
@@ -1249,10 +1249,11 @@ void renderGridNoClipNoRotate(
 	const uint32_t heightMask,
 	const uint32_t gridWidth,
 	const double camZoom,
+	const double yFactor,
 	uint16_t *const xOffsets
 ) {
 	const uint32_t w8 = displayWidth >> 3;	// display width in 8 pixel chunks
-	const double dyy = 1.0f / camZoom;
+	const double dyy = (1.0f / camZoom) / yFactor;
 	const double dyx = 1.0f / camZoom;
 
 	double sy = -((double)displayHeight / 2) * dyy + camYOff;
@@ -1340,6 +1341,7 @@ void renderGridClipNoRotate(
 	const uint32_t heightMask,
 	const uint32_t gridWidth,
 	const double camZoom,
+	const double yFactor,
 	const uint32_t maxGridSize,
 	uint32_t xg,
 	uint32_t yg,
@@ -1348,7 +1350,7 @@ void renderGridClipNoRotate(
 	int32_t *const xMaxOffsets
 ) {
 	const uint32_t w8 = displayWidth >> 3;	// display width in 8 pixel chunks
-	const double dyy = 1.0f / camZoom;
+	const double dyy = (1.0f / camZoom) / yFactor;
 	const double dyx = 1.0f / camZoom;
 
 	double sy = -((double)displayHeight / 2) * dyy + camYOff;

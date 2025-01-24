@@ -27,6 +27,9 @@
 //	clearTopAndLeft (Moore)
 //	wrapTorusHROT (Torus Bounded Grid)
 //	clearHROTOutside (Bounded Grid)
+//
+// TODO:
+//	handle negative counts from Weighted States in updateGridFromCounts2/N
 
 /*
 This file is part of LifeViewer

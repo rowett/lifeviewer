@@ -70,7 +70,7 @@ var WASM = {
 	create32x32ColourGridSuper: null,
 	convertToPens: null,
 	nextGeneration: null,
-	nextGenerationInvestigator: null,
+	nextGenerationInvestigatorMoore: null,
 	nextGenerationSuperMoore: null,
 	nextGenerationSuperHex: null,
 	nextGenerationSuperVN: null,

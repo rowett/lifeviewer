@@ -22,6 +22,7 @@ SETTINGS = -s INITIAL_MEMORY=1024MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="
 	'_clearTopAndLeft', '_wrapTorusHROT', '_clearHROTOutside', \
 	'_nextGeneration', '_nextGenerationGenerations', '_convertToPens', \
 	'_nextGenerationSuperMoore', '_nextGenerationSuperHex', '_nextGenerationSuperVN', \
+	'_nextGenerationInvestigatorMoore', \
 	'_renderGridClipNoRotate', '_renderGridNoClipNoRotate', \
 	'_renderOverlayClipNoRotate', '_renderOverlayNoClipNoRotate', \
 	'_updateOccupancyStrict', '_updateCellCounts', '_updateCellCountsSuperOrRuleTree', '_updateOccupancyStrictSuperOrRuleLoader', \

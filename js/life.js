@@ -1153,7 +1153,7 @@ This file is part of LifeViewer
 		/** @type {Array<number>} */ this.graphDeathColor = [255, 0, 0];
 
 		// share buffer for return values from WASM functions
-		/** @type {Uint32Array} */ this.sharedBuffer = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 16, "Life.sharedBuffer", Controller.useWASM));
+		/** @type {Uint32Array} */ this.sharedBuffer = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 64, "Life.sharedBuffer", Controller.useWASM));
 
 		// HROT engine
 		/** @type {HROT} */ this.HROT = new HROT(this.allocator, this, manager);
@@ -29776,7 +29776,6 @@ This file is part of LifeViewer
 			if (this.isVonNeumann) {
 				this.nextGenerationExtendedTileVN();
 			} else {
-				/*
 				if (Controller.useWASM && Controller.wasmEnableNextGenerationInvestigator && this.view.wasmEnabled) {
 					WASM.nextGenerationInvestigatorMoore(
 						this.colourGrid.whole.byteOffset | 0,
@@ -29786,7 +29785,8 @@ This file is part of LifeViewer
 						this.nextTileGrid.whole.byteOffset | 0,
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
 						this.tileGrid[0].length | 0,
-						this.tileGrid.whole.byteLength | 0,
+						this.tileGrid.whole.length | 0,
+						this.tileGrid.length | 0,
 						this.diedGrid.whole.byteOffset | 0,
 						this.columnOccupied16.byteOffset | 0,
 						this.columnOccupied16.length | 0,
@@ -29818,24 +29818,21 @@ This file is part of LifeViewer
 						this.sharedBuffer.byteOffset | 0
 					);
 
-					this.zoomBox.leftX = this.sharedBuffer[0];
-					this.zoomBox.bottomY = this.sharedBuffer[1];
-					this.zoomBox.rightX = this.sharedBuffer[2];
-					this.zoomBox.topY = this.sharedBuffer[3];
-					this.population = this.sharedBuffer[4];
-					this.births = this.sharedBuffer[5];
-					this.deaths = this.sharedBuffer[6];
+					this.population = this.sharedBuffer[0];
+					this.births = this.sharedBuffer[1];
+					this.deaths = this.sharedBuffer[2];
+					this.zoomBox.leftX = this.sharedBuffer[3];
+					this.zoomBox.bottomY = this.sharedBuffer[4];
+					this.zoomBox.rightX = this.sharedBuffer[5];
+					this.zoomBox.topY = this.sharedBuffer[6];
 				} else {
-				*/
 					this.nextGenerationExtendedTileMoore();
-				/*
 				}
 
 				timing = performance.now() - timing;
 				if (Controller.wasmTiming) {
 					this.view.menuManager.updateTimingItem("nextInvestigator", timing, Controller.useWASM && Controller.wasmEnableNextGenerationInvestigator && this.view.wasmEnabled);
 				}
-				*/
 			}
 		}
 
@@ -47923,7 +47920,7 @@ This file is part of LifeViewer
 						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 					} else {
 						// check whether to draw layers
-						if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1) || this.isHex || this.isTriangular || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
+						if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1) || this.isHex || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
 							this.renderGridProjectionClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
 						} else {
 							this.createPixelColours(1);
@@ -47940,6 +47937,7 @@ This file is part of LifeViewer
 								this.heightMask | 0,
 								bottomGrid[0].length | 0,
 								this.camZoom,
+								this.isTriangular ? ViewConstants.triangularYFactor : 1,
 								this.maxGridSize | 0,
 								this.width | 0,
 								this.height | 0,
@@ -47975,7 +47973,7 @@ This file is part of LifeViewer
 						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 					} else {
 						// check whether to draw layers
-						if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1) || this.isHex || this.isTriangular || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
+						if ((this.layersOn && this.layers > 1 && this.camLayerDepth > 1) || this.isHex || !(Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled)) {
 							this.renderGridProjectionNoClipNoRotate(bottomGrid, layersGrid, mask, drawingSnow);
 						} else {
 							this.createPixelColours(1);
@@ -47992,6 +47990,7 @@ This file is part of LifeViewer
 								this.heightMask | 0,
 								bottomGrid[0].length | 0,
 								this.camZoom,
+								this.isTriangular ? ViewConstants.triangularYFactor : 1,
 								this.xOffsets.byteOffset | 0
 							);
 
