@@ -2419,9 +2419,9 @@ void nextGenerationSuperVN(
 
 // clear tiles that died
 void clearTilesThatDied(
-	uint8_t *grid,
+	uint8_t *const grid,
 	const uint32_t gridWidth,
-	uint16_t *diedGrid,
+	uint16_t *const diedGrid,
 	const uint32_t diedGridHeight,
 	const uint32_t diedGridWidth,
 	const uint32_t xSize,
@@ -2447,6 +2447,7 @@ void clearTilesThatDied(
 			if (diedTiles) {
 				for (int32_t bit = 15; bit >= 0; bit--) {
 					if (diedTiles & (1 << bit)) {
+
 						// clear source cells for double buffering
 						uint8_t* gridRow = grid + bottomY * gridWidth + leftX;
 
@@ -2784,7 +2785,7 @@ void nextGenerationInvestigatorMoore(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -4214,7 +4215,7 @@ void nextGenerationRuleTreeMoore(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -4632,7 +4633,7 @@ void nextGenerationRuleLoaderMooreLookup1(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -5050,7 +5051,7 @@ void nextGenerationRuleLoaderMooreLookup2(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -5468,7 +5469,7 @@ void nextGenerationRuleLoaderMooreLookup3(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -5902,7 +5903,7 @@ void nextGenerationRuleTreeMoorePartial4(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -6316,7 +6317,7 @@ void nextGenerationRuleTreeVN(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -6732,7 +6733,7 @@ void nextGenerationRuleLoaderVNLookup1(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -7148,7 +7149,7 @@ void nextGenerationRuleLoaderVNLookup2(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -7564,7 +7565,7 @@ void nextGenerationRuleLoaderVNLookup3(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -7980,7 +7981,7 @@ void nextGenerationRuleLoaderVNLookup4(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -8396,7 +8397,7 @@ void nextGenerationRuleLoaderVNLookup5(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -8906,7 +8907,7 @@ void nextGenerationRuleTableMoore(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -9397,7 +9398,7 @@ void nextGenerationRuleTableHex(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
@@ -9865,7 +9866,7 @@ void nextGenerationRuleTableVN(
 							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= newAlive;
+							anyAlive |= origAlive;
 
 							if (newAlive) {
 								colOccupied |= newAlive;
