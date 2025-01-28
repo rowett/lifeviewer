@@ -78,6 +78,7 @@ var WASM = {
 	nextGenerationSuperVN: null,
 	nextGenerationGenerations: null,
 	nextGenerationRuleTreeMoore: null,
+	nextGenerationRuleTreeMoorePartial4: null,
 	nextGenerationRuleLoaderMooreLookup1: null,
 	nextGenerationRuleLoaderMooreLookup2: null,
 	nextGenerationRuleLoaderMooreLookup3: null,

@@ -23,7 +23,7 @@ SETTINGS = -s INITIAL_MEMORY=1024MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="
 	'_nextGeneration', '_nextGenerationGenerations', '_convertToPens', \
 	'_nextGenerationSuperMoore', '_nextGenerationSuperHex', '_nextGenerationSuperVN', \
 	'_nextGenerationInvestigatorMoore', '_nextGenerationInvestigatorHex', '_nextGenerationInvestigatorVN', \
-	'_nextGenerationRuleTreeMoore', \
+	'_nextGenerationRuleTreeMoore', '_nextGenerationRuleTreeMoorePartial4', \
 	'_nextGenerationRuleLoaderMooreLookup1', '_nextGenerationRuleLoaderMooreLookup2', '_nextGenerationRuleLoaderMooreLookup3', \
 	'_nextGenerationRuleTreeVN', \
 	'_nextGenerationRuleLoaderVNLookup1', '_nextGenerationRuleLoaderVNLookup2', '_nextGenerationRuleLoaderVNLookup3', \
