@@ -43,6 +43,7 @@ This file is part of LifeViewer
 		/** @type {Uint8Array} */ this.births = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.births", Controller.useWASM));
 		/** @type {Uint8Array} */ this.survivals = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.survivals", Controller.useWASM));
 		/** @type {Uint8Array} */ this.comboList = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.comboList", Controller.useWASM));
+		/** @type {Uint8Array} */ this.altComboList = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.altComboList", Controller.useWASM));
 		/** @type {Uint8Array} */ this.altBirths = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.altBirths", Controller.useWASM));
 		/** @type {Uint8Array} */ this.altSurvivals = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, 0, "HROT.altSurvivals", Controller.useWASM));
 		/** @type {number} */ this.type = manager.mooreHROT;
@@ -1018,7 +1019,7 @@ This file is part of LifeViewer
 						this.engine.colourTileHistoryGrid[0].length | 0,
 						this.counts.whole.byteOffset | 0,
 						this.counts[0].length | 0,
-						this.comboList.byteOffset | 0,
+						useAlternate ? (this.altComboList.byteOffset | 0) : (this.comboList.byteOffset | 0),
 						bottomY | 0, leftX | 0, topY | 0, rightX | 0,
 						this.xrange | 0, this.yrange | 0,
 						LifeConstants.aliveStart | 0, LifeConstants.aliveMax | 0, LifeConstants.deadStart | 0, LifeConstants.deadMin | 0,
@@ -1032,7 +1033,7 @@ This file is part of LifeViewer
 						this.engine.colourTileHistoryGrid.whole.byteOffset | 0,
 						this.engine.colourTileHistoryGrid[0].length | 0,
 						this.counts.whole.byteOffset | 0, this.counts[0].length | 0,
-						this.comboList.byteOffset | 0,
+						useAlternate ? (this.altComboList.byteOffset | 0) : (this.comboList.byteOffset | 0),
 						bottomY | 0, leftX | 0, topY | 0, rightX | 0,
 						this.xrange | 0, this.yrange | 0,
 						this.engine.historyStates | 0, (this.engine.multiNumStates + this.engine.historyStates - 1) | 0, (this.engine.historyStates > 0 ? 1 : 0) | 0,
@@ -3352,7 +3353,7 @@ This file is part of LifeViewer
 					colourGrid.whole.byteOffset | 0, colourGrid[0].length | 0,
 					colourTileHistoryGrid.whole.byteOffset | 0, colourTileHistoryGrid[0].length | 0,
 					counts.whole.byteOffset | 0, counts[0].length | 0,
-					this.comboList.byteOffset | 0,
+					useAlternate ? (this.altComboList.byteOffset | 0) : (this.comboList.byteOffset | 0),
 					colUsed.byteOffset | 0,
 					bottomY | 0, leftX | 0, topY | 0, rightX | 0,
 					xrange | 0, yrange | 0,
@@ -3614,7 +3615,7 @@ This file is part of LifeViewer
 						colourGrid.whole.byteOffset | 0, colourGrid[0].length | 0,
 						colourTileHistoryGrid.whole.byteOffset | 0, colourTileHistoryGrid[0].length | 0,
 						counts.whole.byteOffset | 0, counts[0].length | 0,
-						this.comboList.byteOffset | 0,
+						useAlternate ? (this.altComboList.byteOffset | 0) : (this.comboList.byteOffset | 0),
 						bottomY | 0, leftX | 0,
 						xrange | 0, yrange | 0,
 						this.nrows | 0, this.ncols | 0,
@@ -6071,7 +6072,7 @@ This file is part of LifeViewer
 					colourGrid.whole.byteOffset | 0, colourGrid[0].length | 0,
 					colourTileHistoryGrid.whole.byteOffset | 0, colourTileHistoryGrid[0].length | 0,
 					counts.whole.byteOffset | 0, counts[0].length | 0,
-					this.comboList.byteOffset | 0,
+					useAlternate ? (this.altComboList.byteOffset | 0) : (this.comboList.byteOffset | 0),
 					bottomY | 0, leftX | 0, topY | 0, rightX | 0,
 					xrange | 0, yrange | 0,
 					deadState | 0, minDeadState | 0, maxGenState | 0,
@@ -6351,7 +6352,7 @@ This file is part of LifeViewer
 						colourGrid.whole.byteOffset | 0, colourGrid[0].length | 0,
 						colourTileHistoryGrid.whole.byteOffset | 0, colourTileHistoryGrid[0].length | 0,
 						counts.whole.byteOffset | 0, counts[0].length | 0,
-						this.comboList.byteOffset | 0,
+						useAlternate ? (this.altComboList.byteOffset | 0) : (this.comboList.byteOffset | 0),
 						bottomY | 0, leftX | 0,
 						xrange | 0, yrange | 0,
 						this.nrows | 0, this.ncols | 0,

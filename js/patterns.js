@@ -1036,6 +1036,9 @@ This file is part of LifeViewer
 		// rule table LUT
 		/** @type {Array} */ this.ruleTableLUT = null;
 
+		// flat rule table LUT for WASM
+		/** @type {Uint32Array} */ this.flatRuleTableLUT = null;
+
 		// rule table output
 		/** @type {Uint8Array} */ this.ruleTableOutput = null;
 
@@ -9311,17 +9314,35 @@ This file is part of LifeViewer
 		}
 
 		// save the LUT
+		k = 0;
 		pattern.ruleTableLUT = [];
 		for (i = 0; i < nInputs; i += 1) {
 			pattern.ruleTableLUT[i] = [];
 			for (j = 0; j < pattern.ruleTableStates; j += 1) {
 				pattern.ruleTableLUT[i][j] = new Uint32Array(lut[i][j].length);
 				pattern.ruleTableLUT[i][j].set(lut[i][j]);
+				k += lut[i][j].length;
+			}
+		}
+
+		// flatten the array
+		if (Controller.useWASM) {
+			pattern.flatRuleTableLUT = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, k, "Life.ruleTableLUT", Controller.useWASM));
+
+			var /** @type {number} */ l = 0;
+
+			for (i = 0; i < nInputs; i += 1) {
+				for (j = 0; j < pattern.ruleTableStates; j += 1) {
+					for (k = 0; k < lut[i][j].length; k += 1) {
+						pattern.flatRuleTableLUT[l] = lut[i][j][k];
+						l += 1;
+					}
+				}
 			}
 		}
 
 		// save the outputs
-		pattern.ruleTableOutput = new Uint8Array(outputList.length);
+		pattern.ruleTableOutput = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, outputList.length, "Life.ruleTableOutput", Controller.useWASM));
 		pattern.ruleTableOutput.set(outputList);
 		pattern.ruleTableDups = numDups;
 	};
@@ -9995,7 +10016,6 @@ This file is part of LifeViewer
 		// if valid then save parameters
 		if (valid) {
 			if (pattern.allocator === null) {
-				//pattern.allocator = new Allocator();
 				pattern.allocator = WASM.allocator;
 			}
 			// save rule information
@@ -10003,8 +10023,16 @@ This file is part of LifeViewer
 			pattern.ruleTreeStates = states;
 			pattern.ruleTreeNodes = nodes;
 			pattern.ruleTreeBase = noff[noff.length - 1];
-			pattern.ruleTreeA = dat.slice(0, datLen);
-			pattern.ruleTreeB = datb.slice(0, datBLen);
+
+			pattern.ruleTreeA = /** @type {!Uint32Array} */ (pattern.allocator.allocate(Type.Uint32, datLen, "Life.ruleTreeA", Controller.useWASM));
+			pattern.ruleTreeB = /** @type {!Uint8Array} */ (pattern.allocator.allocate(Type.Uint8, datBLen, "Life.ruleTreeB", Controller.useWASM));
+			for (i = 0; i < datLen; i += 1) {
+				pattern.ruleTreeA[i] = dat[i];
+			}
+			for (i = 0; i < datBLen; i += 1) {
+				pattern.ruleTreeB[i] = datb[i];
+			}
+
 			pattern.ruleTreeIsHex = this.ruleTreeHex(reader);
 			pattern.isHex = pattern.ruleTreeIsHex;
 

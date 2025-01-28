@@ -332,7 +332,7 @@ void nextGenerationCustom2(
 	uint8_t *const colourGrid,
 	const uint32_t colourGridWidth,
 	const int16_t *const neighbourList,
-	const uint32_t neighbourLength,
+	const int32_t neighbourLength,
 	const int32_t leftX,
 	const int32_t bottomY,
 	const int32_t rightX,
@@ -342,7 +342,7 @@ void nextGenerationCustom2(
 	const int32_t aliveStart,
 	const int32_t isTriangular
 ) {
-	int32_t i, j, k, l, x, y, width, count;
+	int32_t i, j, k, l, x, y, count;
 
 	// Custom
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
@@ -389,11 +389,11 @@ void nextGenerationWeighted2R1(
 	uint8_t *colourGrid,
 	const uint32_t colourGridWidth,
 	const int8_t *weightedNeighbourhood,
-	const uint32_t bottomY,
-	const uint32_t leftX,
-	const uint32_t topY,
-	const uint32_t rightX,
-	const uint32_t range,
+	const int32_t bottomY,
+	const int32_t leftX,
+	const int32_t topY,
+	const int32_t rightX,
+	const int32_t range,
 	const uint32_t aliveStart
 ) {
 	int32_t x, y, count;
@@ -1228,7 +1228,7 @@ void nextGenerationSaltire2(
 	const int32_t yrange,
 	const int32_t aliveStart
 ) {
-	int32_t x, y, i, j, count;
+	int32_t x, y, j, count;
 
 	// saltire
 	int32_t * countRow = counts + (bottomY - yrange) * countsWidth;
@@ -1360,7 +1360,6 @@ void nextGenerationHash2(
 	const int32_t aliveStart
 ) {
 	int32_t x, y, i, j, count, rowCount, rowCount2;
-	int32_t nextRow = countsWidth - (rightX + xrange - (leftX - xrange) + 1);
 
 	// hash
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
@@ -1476,7 +1475,6 @@ void nextGenerationCross2(
 
 	// cross
 	int32_t* countRow = counts + (bottomY - yrange) * countsWidth;
-	int32_t nextRow = countsWidth - (rightX + xrange - (leftX - xrange) + 1);
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
 		int32_t *saveRow = countRow;
@@ -1819,7 +1817,7 @@ void nextGenerationCustomN(
 	uint8_t *const colourGrid,
 	const uint32_t colourGridWidth,
 	const int16_t *neighbourList,
-	const uint32_t neighbourLength,
+	const int32_t neighbourLength,
 	const int32_t leftX,
 	const int32_t bottomY,
 	const int32_t rightX,
@@ -1829,7 +1827,7 @@ void nextGenerationCustomN(
 	const int32_t maxGenState,
 	const int32_t isTriangular
 ) {
-	int32_t i, j, k, l, x, y, width, count;
+	int32_t i, j, k, l, x, y, count;
 
 	// Custom
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
@@ -1876,11 +1874,11 @@ void nextGenerationWeightedNR1(
 	uint8_t *colourGrid,
 	const uint32_t colourGridWidth,
 	const int8_t *weightedNeighbourhood,
-	const uint32_t bottomY,
-	const uint32_t leftX,
-	const uint32_t topY,
-	const uint32_t rightX,
-	const uint32_t range,
+	const int32_t bottomY,
+	const int32_t leftX,
+	const int32_t topY,
+	const int32_t rightX,
+	const int32_t range,
 	const uint32_t maxGenState
 ) {
 	int32_t x, y, count;
@@ -2715,7 +2713,7 @@ void nextGenerationSaltireN(
 	const int32_t yrange,
 	const int32_t maxGenState
 ) {
-	int32_t x, y, i, j, count;
+	int32_t x, y, j, count;
 
 	// saltire
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
@@ -2847,7 +2845,6 @@ void nextGenerationHashN(
 	const int32_t maxGenState
 ) {
 	int32_t x, y, i, j, count, rowCount, rowCount2;
-	int32_t nextRow = countsWidth - (rightX + xrange - (leftX - xrange) + 1);
 
 	// hash
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
@@ -2963,7 +2960,6 @@ void nextGenerationCrossN(
 
 	// cross
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
-	int32_t nextRow = countsWidth - (rightX + xrange - (leftX - xrange) + 1);
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
 		int32_t *saveRow = countRow;
@@ -3082,7 +3078,7 @@ void wrapTorusHROT(
 	for (y = 0; y < yrange; y++) {
 		uint8_t *sourceRow = colourGrid + (by + y) * colourGridWidth + lx;
 		uint8_t *destRow = colourGrid + (ty + y + 1) * colourGridWidth + lx;
-		for (int i = 0; i < rowSize; i++) {
+		for (uint32_t i = 0; i < rowSize; i++) {
 			destRow[i] = sourceRow[i];
 		}
 	}
@@ -3091,7 +3087,7 @@ void wrapTorusHROT(
 	for (y = 0; y < yrange; y++) {
 		uint8_t *sourceRow = colourGrid + (ty - y) * colourGridWidth + lx;
 		uint8_t *destRow = colourGrid + (by - y - 1) * colourGridWidth + lx;
-		for (int i = 0; i < rowSize; i++) {
+		for (uint32_t i = 0; i < rowSize; i++) {
 			destRow[i] = sourceRow[i];
 		}
 	}
@@ -3100,11 +3096,11 @@ void wrapTorusHROT(
 	for (y = by; y <= ty; y++) {
 		uint8_t *sourceRow = colourGrid + y * colourGridWidth;
 		// copy left to right
-		for (int i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++) {
 			sourceRow[rx + 1 + i] = sourceRow[lx + i];
 		}
 		// copy right to left
-		for (int i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++) {
 			sourceRow[lx - xrange - 1 + i] = sourceRow[rx - xrange + i];
 		}
 	}
@@ -3113,10 +3109,10 @@ void wrapTorusHROT(
 	for (y = 0; y < yrange; y++) {
 		uint8_t *sourceRow = colourGrid + (by + y) * colourGridWidth;
 		uint8_t *destRow = colourGrid + (ty + y + 1) * colourGridWidth;
-		for (int i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++) {
 			destRow[rx + 1 + i] = sourceRow[lx + i];
 		}
-		for (int i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++) {
 			destRow[lx - xrange - 1 + i] = sourceRow[rx - xrange + i];
 		}
 	}
@@ -3125,10 +3121,10 @@ void wrapTorusHROT(
 	for (y = 0; y < yrange; y++) {
 		uint8_t *sourceRow = colourGrid + (ty - y) * colourGridWidth;
 		uint8_t *destRow = colourGrid + (by - y - 1) * colourGridWidth;
-		for (int i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++) {
 			destRow[rx + 1 + i] = sourceRow[lx + i];
 		}
-		for (int i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++) {
 			destRow[lx - xrange - 1 + i] = sourceRow[rx - xrange + i];
 		}
 	}
@@ -3635,12 +3631,12 @@ void updateGridFromCounts2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
 	const uint8_t *const comboList,
-	const uint32_t bottomY,
-	const uint32_t leftX,
-	const uint32_t topY,
-	const uint32_t rightX,
-	const uint32_t xrange,
-	const uint32_t yrange,
+	const int32_t bottomY,
+	const int32_t leftX,
+	const int32_t topY,
+	const int32_t rightX,
+	const int32_t xrange,
+	const int32_t yrange,
 	const uint32_t aliveStart,
 	const uint32_t aliveMax,
 	const uint32_t deadStart,
@@ -3650,14 +3646,14 @@ void updateGridFromCounts2(
 	const uint32_t engineHeight
 ) {
 	// setup bounding box
-	uint32_t minX = engineWidth;
-	uint32_t maxX = 0;
-	uint32_t minY = engineHeight;
-	uint32_t maxY = 0;
-	uint32_t minX1 = minX;
-	uint32_t maxX1 = maxX;
-	uint32_t minY1 = minY;
-	uint32_t maxY1 = maxY;
+	int32_t minX = engineWidth;
+	int32_t maxX = 0;
+	int32_t minY = engineHeight;
+	int32_t maxY = 0;
+	int32_t minX1 = minX;
+	int32_t maxX1 = maxX;
+	int32_t minY1 = minY;
+	int32_t maxY1 = maxY;
 
 	// clear population
 	uint32_t population = 0;
@@ -3674,10 +3670,10 @@ void updateGridFromCounts2(
 	const v128_t increment = wasm_u8x16_splat(1);			// increment/iecrement by 1
 
 	// compute the rest of the grid
-	const uint32_t alignedStart = (leftX - xrange + 15) & ~15;
-	const uint32_t alignedEnd = (rightX + xrange) & ~15;
+	const int32_t alignedStart = (leftX - xrange + 15) & ~15;
+	const int32_t alignedEnd = (rightX + xrange) & ~15;
 
-	uint32_t leftMost, rightMost;
+	int32_t leftMost, rightMost;
 
 	for (int32_t y = bottomY - yrange; y <= topY + yrange; y++) {
 		uint8_t *colourRow = colourGrid + y * colourGridWidth;
@@ -3687,7 +3683,7 @@ void updateGridFromCounts2(
 		bool rowOccupied = false;
 		bool rowAlive = false;
 
-		uint32_t x = leftX - xrange;
+		int32_t x = leftX - xrange;
 
 		while (x < alignedStart) {
 			// get the next state
@@ -3993,12 +3989,12 @@ void updateGridFromCountsN(
 	int32_t *const counts,
 	const uint32_t countsWidth,
 	const uint8_t *const comboList,
-	const uint32_t bottomY,
-	const uint32_t leftX,
-	const uint32_t topY,
-	const uint32_t rightX,
-	const uint32_t xrange,
-	const uint32_t yrange,
+	const int32_t bottomY,
+	const int32_t leftX,
+	const int32_t topY,
+	const int32_t rightX,
+	const int32_t xrange,
+	const int32_t yrange,
 	const uint32_t deadState,
 	const uint32_t maxGenState,
 	const uint32_t minDeadState,
@@ -4007,14 +4003,14 @@ void updateGridFromCountsN(
 	const uint32_t engineHeight
 ) {
 	// setup bounding box
-	uint32_t minX = engineWidth;
-	uint32_t maxX = 0;
-	uint32_t minY = engineHeight;
-	uint32_t maxY = 0;
-	uint32_t minX1 = minX;
-	uint32_t maxX1 = maxX;
-	uint32_t minY1 = minY;
-	uint32_t maxY1 = maxY;
+	int32_t minX = engineWidth;
+	int32_t maxX = 0;
+	int32_t minY = engineHeight;
+	int32_t maxY = 0;
+	int32_t minX1 = minX;
+	int32_t maxX1 = maxX;
+	int32_t minY1 = minY;
+	int32_t maxY1 = maxY;
 
 	// clear population
 	uint32_t population = 0;
@@ -4022,18 +4018,14 @@ void updateGridFromCountsN(
 	uint32_t deaths = 0;
 
 	// compute the rest of the grid
-	const uint32_t alignedStart = (leftX - xrange + 15) & ~15;
-	const uint32_t alignedEnd = (rightX + xrange) & ~15;
+	const int32_t alignedStart = (leftX - xrange + 15) & ~15;
+	const int32_t alignedEnd = (rightX + xrange) & ~15;
 
-	uint32_t leftMost, rightMost;
-
-	const v128_t zeroVec = wasm_u8x16_splat(0);				// zero
 	const v128_t oneVec = wasm_u8x16_splat(1);				// one
 	const v128_t twoVec = wasm_u8x16_splat(2);				// two
 	const v128_t deadStateVec = wasm_u8x16_splat(deadState);		// newly dead state
 	const v128_t maxGenStateVec = wasm_u8x16_splat(maxGenState);	// state for alive cell
 	const v128_t minDeadStateVec = wasm_u8x16_splat(minDeadState);	// minimum dead state
-	const v128_t maskVec = wasm_u64x2_splat(0x0102040810204080);	// mask to isolate cell bits
 	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 
 	for (int32_t y = bottomY - yrange; y <= topY + yrange; y++) {
@@ -4044,7 +4036,7 @@ void updateGridFromCountsN(
 		bool rowOccupied = false;
 		bool rowAlive = false;
 
-		uint32_t x = leftX - xrange;
+		int32_t x = leftX - xrange;
 
 		while (x < alignedStart) {
 			// get the next state
@@ -4212,8 +4204,8 @@ void updateGridFromCountsN(
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 
 				// compute the left and right most occupied cell
-				uint32_t leftMost = 31 - __builtin_clz(occupiedBits);
-				uint32_t rightMost = __builtin_ctz(occupiedBits);
+				int32_t leftMost = 31 - __builtin_clz(occupiedBits);
+				int32_t rightMost = __builtin_ctz(occupiedBits);
 
 				// update occupied bounding box
 				if (x + rightMost < minX) {
@@ -4229,8 +4221,8 @@ void updateGridFromCountsN(
 					rowAlive = true;
 
 					// compute the left and right most occupied cell
-					uint32_t leftMost = 31 - __builtin_clz(aliveBits);
-					uint32_t rightMost = __builtin_ctz(aliveBits);
+					int32_t leftMost = 31 - __builtin_clz(aliveBits);
+					int32_t rightMost = __builtin_ctz(aliveBits);
 
 					// update alive bounding box
 					if (x + rightMost < minX1) {
@@ -4766,7 +4758,6 @@ void nextGenerationHROTMooreN(
 	const uint32_t ryp1 = yrange + 1;
 	const uint32_t leftXp1 = leftX + 1;
 
-	const v128_t zeroVec = wasm_u8x16_splat(0);				// zero
 	const v128_t oneVec = wasm_u8x16_splat(1);				// one
 	const v128_t twoVec = wasm_u8x16_splat(2);				// two
 	const v128_t deadStateVec = wasm_u8x16_splat(deadState);		// newly dead state
@@ -5227,9 +5218,6 @@ void cumulativeMooreCounts2(
 	// alive cells
 	const v128_t alive = wasm_u8x16_splat(aliveStart);
 
-	// zero
-	const v128_t zero = wasm_u8x16_splat(0);
-
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t count = 0;
 
@@ -5457,7 +5445,7 @@ static inline int32_t getCount2(int32_t i, int32_t j, int32_t *const countRow) {
 EMSCRIPTEN_KEEPALIVE
 // cumulative counts for HROT von Neumann neighbourhood 2-state
 void cumulativeVNCounts2(
-	const uint32_t ccht,
+	const int32_t ccht,
 	const int32_t ncols,
 	const int32_t nrows,
 	const int32_t bottomY,
@@ -5505,7 +5493,7 @@ void cumulativeVNCounts2(
 EMSCRIPTEN_KEEPALIVE
 // cumulative counts for HROT von Neumann neighbourhood N-state
 void cumulativeVNCountsN(
-	const uint32_t ccht,
+	const int32_t ccht,
 	const int32_t ncols,
 	const int32_t nrows,
 	const int32_t bottomY,

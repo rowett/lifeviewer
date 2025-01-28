@@ -40,7 +40,6 @@ void create2x2ColourGrid(
 	uint32_t *const colourGrid,
 	uint32_t *const smallColourGrid,
 	uint16_t *const tileGrid,
-	const uint32_t tileY,
 	const uint32_t tileX,
 	const uint32_t tileRows,
 	const uint32_t tileCols,
@@ -65,7 +64,6 @@ void create2x2ColourGrid(
 
 	// find each occupied tile
 	uint32_t tileRowOffset = 0;
-	uint32_t bottomY = 0, topY = tileY;
 
 	for (uint32_t th = 0; th < tileRows; th++) {
 		uint32_t leftX = 0;
@@ -148,8 +146,6 @@ void create2x2ColourGrid(
 			}
 		}
 
-		bottomY += tileY;
-		topY += tileY;
 		tileRowOffset += tileGridWidth;
 	}
 }
@@ -343,7 +339,6 @@ void create16x16ColourGrid(
 	uint32_t *colourGrid,
 	uint32_t *smallColourGrid,
 	uint16_t *tileGrid,
-	const uint32_t tileY,
 	const uint32_t tileX,
 	const uint32_t tileRows,
 	const uint32_t tileCols,
@@ -371,7 +366,6 @@ void create16x16ColourGrid(
 
 	// find each occupied tile
 	uint32_t tileRowOffset = 0;
-	uint32_t bottomY = 0, topY = tileY;
 
 	for (uint32_t th = 0; th < tileRows; th++) {
 		uint32_t leftX = 0;
@@ -451,8 +445,6 @@ void create16x16ColourGrid(
 			}
 		}
 
-		bottomY += tileY;
-		topY += tileY;
 		tileRowOffset += tileGridWidth;
 	}
 }
@@ -599,7 +591,6 @@ void create2x2ColourGridSuper(
 	uint32_t *const colourGrid,
 	uint32_t *const smallColourGrid,
 	uint16_t *const tileGrid,
-	const uint32_t tileY,
 	const uint32_t tileX,
 	const uint32_t tileRows,
 	const uint32_t tileCols,
@@ -630,7 +621,6 @@ void create2x2ColourGridSuper(
 
 	// find each occupied tile
 	uint32_t tileRowOffset = 0;
-	uint32_t bottomY = 0, topY = tileY;
 
 	for (uint32_t th = 0; th < tileRows; th++) {
 		uint32_t leftX = 0;
@@ -729,8 +719,6 @@ void create2x2ColourGridSuper(
 			}
 		}
 
-		bottomY += tileY;
-		topY += tileY;
 		tileRowOffset += tileGridWidth;
 	}
 }
@@ -948,7 +936,6 @@ void create16x16ColourGridSuper(
 	uint32_t *colourGrid,
 	uint32_t *smallColourGrid,
 	uint16_t *tileGrid,
-	const uint32_t tileY,
 	const uint32_t tileX,
 	const uint32_t tileRows,
 	const uint32_t tileCols,
@@ -982,7 +969,6 @@ void create16x16ColourGridSuper(
 
 	// find each occupied tile
 	uint32_t tileRowOffset = 0;
-	uint32_t bottomY = 0, topY = tileY;
 
 	for (uint32_t th = 0; th < tileRows; th++) {
 		uint32_t leftX = 0;
@@ -1078,8 +1064,6 @@ void create16x16ColourGridSuper(
 			}
 		}
 
-		bottomY += tileY;
-		topY += tileY;
 		tileRowOffset += tileGridWidth;
 	}
 }

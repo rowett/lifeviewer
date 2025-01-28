@@ -5,7 +5,7 @@
 CC = emcc
 
 # C flags (no main entry point, instrinsic SIMD, optimize)
-CFLAGS = --no-entry -msimd128 -O3
+CFLAGS = --no-entry -msimd128 -O3 -Wall -Wextra
 
 # WebAssembly settings (heap size, standalone output, exported functions)
 SETTINGS = -s INITIAL_MEMORY=1024MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="[ \
@@ -23,6 +23,12 @@ SETTINGS = -s INITIAL_MEMORY=1024MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="
 	'_nextGeneration', '_nextGenerationGenerations', '_convertToPens', \
 	'_nextGenerationSuperMoore', '_nextGenerationSuperHex', '_nextGenerationSuperVN', \
 	'_nextGenerationInvestigatorMoore', '_nextGenerationInvestigatorHex', '_nextGenerationInvestigatorVN', \
+	'_nextGenerationRuleTreeMoore', \
+	'_nextGenerationRuleLoaderMooreLookup1', '_nextGenerationRuleLoaderMooreLookup2', '_nextGenerationRuleLoaderMooreLookup3', \
+	'_nextGenerationRuleTreeVN', \
+	'_nextGenerationRuleLoaderVNLookup1', '_nextGenerationRuleLoaderVNLookup2', '_nextGenerationRuleLoaderVNLookup3', \
+	'_nextGenerationRuleLoaderVNLookup4', '_nextGenerationRuleLoaderVNLookup5', \
+	'_nextGenerationRuleTableMoore', \
 	'_renderGridClipNoRotate', '_renderGridNoClipNoRotate', \
 	'_renderOverlayClipNoRotate', '_renderOverlayNoClipNoRotate', \
 	'_updateOccupancyStrict', '_updateCellCounts', '_updateCellCountsSuperOrRuleTree', '_updateOccupancyStrictSuperOrRuleLoader', \

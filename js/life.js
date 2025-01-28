@@ -565,6 +565,7 @@ This file is part of LifeViewer
 
 		// RuleTable
 		/** @type {Array} */ this.ruleTableLUT = [];
+		/** @type {Uint32Array} */ this.flatRuleTableLUT = null;
 		/** @type {Uint8Array} */ this.ruleTableOutput = null;
 		/** @type {number} */ this.ruleTableCompressedRules = 0;
 		/** @type {number} */ this.ruleTableNeighbourhood = 0;
@@ -11783,7 +11784,7 @@ This file is part of LifeViewer
 		if (bitsNeeded <= LifeConstants.maxRuleTreeLookupBits) {
 			// build lookup table
 			if (this.ruleLoaderLookup === null) {
-				this.ruleLoaderLookup = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, (1 << bitsNeeded), "Life.ruleTreeLookup", false));
+				this.ruleLoaderLookup = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, (1 << bitsNeeded), "Life.ruleTreeLookup", Controller.useWASM));
 				this.ruleLoaderLookupBits = i;
 			}
 
@@ -11983,7 +11984,7 @@ This file is part of LifeViewer
 		// check lookup is small enough for lookup table
 		if (bitsNeeded <= LifeConstants.maxRuleTreeLookupBits) {
 			// build lookup table
-			this.ruleLoaderLookup = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, (1 << bitsNeeded), "Life.ruleTreeLookup", false));
+			this.ruleLoaderLookup = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, (1 << bitsNeeded), "Life.ruleTreeLookup", Controller.useWASM));
 			this.ruleLoaderLookupBits = i;
 
 			// check neighbourhood
@@ -12332,7 +12333,7 @@ This file is part of LifeViewer
 		// check lookup is small enough for lookup table
 		if (bitsNeeded <= LifeConstants.maxRuleTreeLookupBits) {
 			// build lookup table
-			this.ruleLoaderLookup = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, (1 << bitsNeeded), "Life.ruleTreeLookup", false));
+			this.ruleLoaderLookup = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, (1 << bitsNeeded), "Life.ruleTreeLookup", Controller.useWASM));
 			this.ruleLoaderLookupBits = i;
 
 			// check neighbourhood
@@ -12422,7 +12423,7 @@ This file is part of LifeViewer
 			// check for partial lookup
 			if (this.ruleTreeNeighbours === 8 && bitsNeeded <= LifeConstants.maxRuleTreePartialLookupBits) {
 				// build lookup table
-				this.ruleTreePartialLookup = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 1 << 24, "Life.ruleTreePartialLookup", false));
+				this.ruleTreePartialLookup = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 1 << 24, "Life.ruleTreePartialLookup", Controller.useWASM));
 				this.ruleLoaderLookupBits = 24;
 
 				// Moore
@@ -22117,7 +22118,6 @@ This file is part of LifeViewer
 				this.blankTileRow.byteOffset | 0,
 				this.blankTileRow.length | 0,
 				this.blankRow16.byteOffset | 0,
-				this.blankRow16.length | 0,
 				this.boundedGridWidth | 0,
 				this.boundedGridHeight | 0,
 				this.boundedGridType | 0,
@@ -25344,7 +25344,6 @@ This file is part of LifeViewer
 						colourGrid32.whole.byteOffset | 0,
 						this.smallColourGrid.whole.byteOffset | 0,
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
-						this.tileY | 0,
 						this.tileX | 0,
 						this.tileRows | 0, this.tileCols | 0,
 						colourGrid32[0].length | 0
@@ -25358,7 +25357,6 @@ This file is part of LifeViewer
 						colourGrid32.whole.byteOffset | 0,
 						this.smallColourGrid.whole.byteOffset | 0,
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
-						this.tileY | 0,
 						this.tileX | 0,
 						this.tileRows | 0,
 						this.tileCols | 0,
@@ -25451,7 +25449,6 @@ This file is part of LifeViewer
 						colourGrid32.whole.byteOffset | 0,
 						this.smallColourGrid.whole.byteOffset | 0,
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
-						this.tileY | 0,
 						this.tileX | 0,
 						this.tileRows | 0,
 						this.tileCols | 0,
@@ -25466,7 +25463,6 @@ This file is part of LifeViewer
 						colourGrid32.whole.byteOffset | 0,
 						this.smallColourGrid.whole.byteOffset | 0,
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
-						this.tileY | 0,
 						this.tileX | 0,
 						this.tileRows | 0,
 						this.tileCols | 0,
@@ -29784,7 +29780,6 @@ This file is part of LifeViewer
 					this.colourTileHistoryGrid.whole.byteOffset | 0,
 					this.tileGrid[0].length | 0,
 					this.tileGrid.whole.length | 0,
-					this.tileGrid.length | 0,
 					this.diedGrid.whole.byteOffset | 0,
 					this.columnOccupied16.byteOffset | 0,
 					this.columnOccupied16.length | 0,
@@ -29794,14 +29789,12 @@ This file is part of LifeViewer
 					this.altSpecified ? (this.manager.ruleAltArray.byteOffset | 0) : 0 | 0,
 					this.width | 0,
 					this.height | 0,
-					this.tileX | 0,
 					this.tileY | 0,
 					this.tileRows | 0,
 					this.tileCols | 0,
 					this.blankTileRow.byteOffset | 0,
 					this.blankTileRow.length | 0,
 					this.blankColourRow.byteOffset | 0,
-					this.blankColourRow.length | 0,
 					this.counter | 0,
 					this.altSpecified ? (1 | 0) : (0 | 0),
 					this.nextStateExtendedWASM.byteOffset | 0,
@@ -29830,7 +29823,6 @@ This file is part of LifeViewer
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
 						this.tileGrid[0].length | 0,
 						this.tileGrid.whole.length | 0,
-						this.tileGrid.length | 0,
 						this.diedGrid.whole.byteOffset | 0,
 						this.columnOccupied16.byteOffset | 0,
 						this.columnOccupied16.length | 0,
@@ -29840,14 +29832,12 @@ This file is part of LifeViewer
 						this.altSpecified ? (this.manager.ruleAltArray.byteOffset | 0) : 0 | 0,
 						this.width | 0,
 						this.height | 0,
-						this.tileX | 0,
 						this.tileY | 0,
 						this.tileRows | 0,
 						this.tileCols | 0,
 						this.blankTileRow.byteOffset | 0,
 						this.blankTileRow.length | 0,
 						this.blankColourRow.byteOffset | 0,
-						this.blankColourRow.length | 0,
 						this.counter | 0,
 						this.altSpecified ? (1 | 0) : (0 | 0),
 						this.nextStateExtendedWASM.byteOffset | 0,
@@ -29875,7 +29865,6 @@ This file is part of LifeViewer
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
 						this.tileGrid[0].length | 0,
 						this.tileGrid.whole.length | 0,
-						this.tileGrid.length | 0,
 						this.diedGrid.whole.byteOffset | 0,
 						this.columnOccupied16.byteOffset | 0,
 						this.columnOccupied16.length | 0,
@@ -29885,14 +29874,12 @@ This file is part of LifeViewer
 						this.altSpecified ? (this.manager.ruleAltArray.byteOffset | 0) : 0 | 0,
 						this.width | 0,
 						this.height | 0,
-						this.tileX | 0,
 						this.tileY | 0,
 						this.tileRows | 0,
 						this.tileCols | 0,
 						this.blankTileRow.byteOffset | 0,
 						this.blankTileRow.length | 0,
 						this.blankColourRow.byteOffset | 0,
-						this.blankColourRow.length | 0,
 						this.counter | 0,
 						this.altSpecified ? (1 | 0) : (0 | 0),
 						this.nextStateExtendedWASM.byteOffset | 0,
@@ -29987,14 +29974,8 @@ This file is part of LifeViewer
 					this.height | 0,
 					this.tileX | 0,
 					this.tileY | 0,
-					this.tileRows | 0,
 					this.tileCols | 0,
-					this.blankTileRow.byteOffset | 0,
-					this.blankTileRow.length | 0,
-					this.blankRow16.byteOffset | 0,
-					this.blankRow16.length | 0,
 					this.blankColourRow.byteOffset | 0,
-					this.blankColourRow.length | 0,
 					this.counter | 0,
 					this.population | 0,
 					this.births | 0,
@@ -30029,14 +30010,8 @@ This file is part of LifeViewer
 						this.height | 0,
 						this.tileX | 0,
 						this.tileY | 0,
-						this.tileRows | 0,
 						this.tileCols | 0,
-						this.blankTileRow.byteOffset | 0,
-						this.blankTileRow.length | 0,
-						this.blankRow16.byteOffset | 0,
-						this.blankRow16.length | 0,
 						this.blankColourRow.byteOffset | 0,
-						this.blankColourRow.length | 0,
 						this.counter | 0,
 						this.population | 0,
 						this.births | 0,
@@ -30070,14 +30045,8 @@ This file is part of LifeViewer
 						this.height | 0,
 						this.tileX | 0,
 						this.tileY | 0,
-						this.tileRows | 0,
 						this.tileCols | 0,
-						this.blankTileRow.byteOffset | 0,
-						this.blankTileRow.length | 0,
-						this.blankRow16.byteOffset | 0,
-						this.blankRow16.length | 0,
 						this.blankColourRow.byteOffset | 0,
-						this.blankColourRow.length | 0,
 						this.counter | 0,
 						this.population | 0,
 						this.births | 0,
@@ -30136,66 +30105,533 @@ This file is part of LifeViewer
 
 	// update the life grid region using tiles for RuleTable patterns
 	Life.prototype.nextGenerationRuleTableTile = function() {
+		var	/** @type {number} */ timing = performance.now();
+
 		switch (this.ruleTableNeighbourhood) {
 		// von Neumann
 		case PatternConstants.ruleTableVN:
-			// check if a fast lookup is available
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
-				switch (this.ruleLoaderLookupBits) {
-				case 1:
-					this.nextGenerationRuleLoaderTileVNLookup1();
-					break;
+			if (Controller.useWASM && Controller.wasmEnableNextGenerationRuleLoader && this.view.wasmEnabled) {
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					// pick appropriate algo for state bits
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						WASM.nextGenerationRuleLoaderVNLookup1(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 2:
-					this.nextGenerationRuleLoaderTileVNLookup2();
-					break;
+					case 2:
+						WASM.nextGenerationRuleLoaderVNLookup2(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 3:
-					this.nextGenerationRuleLoaderTileVNLookup3();
-					break;
+					case 3:
+						WASM.nextGenerationRuleLoaderVNLookup3(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 4:
-					this.nextGenerationRuleLoaderTileVNLookup4();
-					break;
+					case 4:
+						WASM.nextGenerationRuleLoaderVNLookup4(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 5:
-					this.nextGenerationRuleLoaderTileVNLookup5();
-					break;
+					case 5:
+						WASM.nextGenerationRuleLoaderVNLookup5(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				default:
-					this.nextGenerationRuleTreeTileVN();
-					break;
+					default:
+						WASM.nextGenerationRuleTableVN(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.flatRuleTableLUT.byteOffset | 0,
+							this.flatRuleTableLUT.length | 0,
+							this.ruleTableOutput.byteOffset | 0,
+							this.ruleTableCompressedRules | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
+					}
+				} else {
+					WASM.nextGenerationRuleTableVN(
+						this.colourGrid.whole.byteOffset | 0,
+						this.nextColourGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.tileGrid.whole.byteOffset | 0,
+						this.nextTileGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileGrid[0].length | 0,
+						this.tileGrid.whole.length | 0,
+						this.diedGrid.whole.byteOffset | 0,
+						this.columnOccupied16.byteOffset | 0,
+						this.columnOccupied16.length | 0,
+						this.rowOccupied16.byteOffset | 0,
+						this.rowOccupied16.length | 0,
+						this.flatRuleTableLUT.byteOffset | 0,
+						this.flatRuleTableLUT.length | 0,
+						this.ruleTableOutput.byteOffset | 0,
+						this.ruleTableCompressedRules | 0,
+						this.width | 0,
+						this.height | 0,
+						this.tileY | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.blankTileRow.byteOffset | 0,
+						this.blankTileRow.length | 0,
+						this.blankColourRow.byteOffset | 0,
+						this.counter | 0,
+						LifeConstants.bottomRightSet | 0,
+						LifeConstants.bottomSet | 0,
+						LifeConstants.topRightSet | 0,
+						LifeConstants.topSet | 0,
+						LifeConstants.bottomLeftSet | 0,
+						LifeConstants.topLeftSet | 0,
+						LifeConstants.leftSet | 0,
+						LifeConstants.rightSet | 0,
+						this.sharedBuffer.byteOffset | 0
+					);
 				}
 			} else {
-				// no fast lookup so use standard routine
-				this.nextGenerationRuleTableTileVN();
+				// check if a fast lookup is available
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						this.nextGenerationRuleLoaderTileVNLookup1();
+						break;
+
+					case 2:
+						this.nextGenerationRuleLoaderTileVNLookup2();
+						break;
+
+					case 3:
+						this.nextGenerationRuleLoaderTileVNLookup3();
+						break;
+
+					case 4:
+						this.nextGenerationRuleLoaderTileVNLookup4();
+						break;
+
+					case 5:
+						this.nextGenerationRuleLoaderTileVNLookup5();
+						break;
+
+					default:
+						this.nextGenerationRuleTreeTileVN();
+						break;
+					}
+				} else {
+					// no fast lookup so use standard routine
+					this.nextGenerationRuleTableTileVN();
+				}
+				break;
 			}
 			break;
 
 		// Moore
 		case PatternConstants.ruleTableMoore:
-			// check if a fast lookup is available
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
-				switch (this.ruleLoaderLookupBits) {
-				case 1:
-					this.nextGenerationRuleLoaderTileMooreLookup1();
-					break;
+			if (Controller.useWASM && Controller.wasmEnableNextGenerationRuleLoader && this.view.wasmEnabled) {
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						WASM.nextGenerationRuleLoaderMooreLookup1(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 2:
-					this.nextGenerationRuleLoaderTileMooreLookup2();
-					break;
+					case 2:
+						WASM.nextGenerationRuleLoaderMooreLookup2(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 3:
-					this.nextGenerationRuleLoaderTileMooreLookup3();
-					break;
+					case 3:
+						WASM.nextGenerationRuleLoaderMooreLookup3(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				default:
-					this.nextGenerationRuleTableTileMoore();
-					break;
+					default:
+						WASM.nextGenerationRuleTableMoore(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.flatRuleTableLUT.byteOffset | 0,
+							this.flatRuleTableLUT.length | 0,
+							this.ruleTableOutput.byteOffset | 0,
+							this.ruleTableCompressedRules | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+					}
+				} else {
+					WASM.nextGenerationRuleTableMoore(
+						this.colourGrid.whole.byteOffset | 0,
+						this.nextColourGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.tileGrid.whole.byteOffset | 0,
+						this.nextTileGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileGrid[0].length | 0,
+						this.tileGrid.whole.length | 0,
+						this.diedGrid.whole.byteOffset | 0,
+						this.columnOccupied16.byteOffset | 0,
+						this.columnOccupied16.length | 0,
+						this.rowOccupied16.byteOffset | 0,
+						this.rowOccupied16.length | 0,
+						this.flatRuleTableLUT.byteOffset | 0,
+						this.flatRuleTableLUT.length | 0,
+						this.ruleTableOutput.byteOffset | 0,
+						this.ruleTableCompressedRules | 0,
+						this.width | 0,
+						this.height | 0,
+						this.tileY | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.blankTileRow.byteOffset | 0,
+						this.blankTileRow.length | 0,
+						this.blankColourRow.byteOffset | 0,
+						this.counter | 0,
+						LifeConstants.bottomRightSet | 0,
+						LifeConstants.bottomSet | 0,
+						LifeConstants.topRightSet | 0,
+						LifeConstants.topSet | 0,
+						LifeConstants.bottomLeftSet | 0,
+						LifeConstants.topLeftSet | 0,
+						LifeConstants.leftSet | 0,
+						LifeConstants.rightSet | 0,
+						this.sharedBuffer.byteOffset | 0
+					);
 				}
 			} else {
-				// no fast lookup so use standard routine
-				this.nextGenerationRuleTableTileMoore();
+				// check if a fast lookup is available
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						this.nextGenerationRuleLoaderTileMooreLookup1();
+						break;
+
+					case 2:
+						this.nextGenerationRuleLoaderTileMooreLookup2();
+						break;
+
+					case 3:
+						this.nextGenerationRuleLoaderTileMooreLookup3();
+						break;
+
+					default:
+						this.nextGenerationRuleTableTileMoore();
+						break;
+					}
+				} else {
+					// no fast lookup so use standard routine
+					this.nextGenerationRuleTableTileMoore();
+				}
 			}
 			break;
 
@@ -30231,7 +30667,22 @@ This file is part of LifeViewer
 			this.nextGenerationRuleTableTile1D();
 			break;
 		}
-	};
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationRuleLoader && this.view.wasmEnabled) {
+			this.population = this.sharedBuffer[0];
+			this.births = this.sharedBuffer[1];
+			this.deaths = this.sharedBuffer[2];
+			this.zoomBox.leftX = this.sharedBuffer[3];
+			this.zoomBox.bottomY = this.sharedBuffer[4];
+			this.zoomBox.rightX = this.sharedBuffer[5];
+			this.zoomBox.topY = this.sharedBuffer[6];
+		}
+
+		timing = performance.now() - timing;
+		if (Controller.wasmTiming) {
+			this.view.menuManager.updateTimingItem("nextRuleTable", timing, Controller.useWASM && Controller.wasmEnableNextGenerationRuleLoader && this.view.wasmEnabled);
+		}
+};
 
 	// update the life grid region using tiles for 1D RuleTable patterns
 	Life.prototype.nextGenerationRuleTableTile1D = function() {
@@ -32384,66 +32835,543 @@ This file is part of LifeViewer
 
 	// update the life grid using tiles for RuleTree patterns
 	Life.prototype.nextGenerationRuleTreeTile = function() {
+		var	/** @type {number} */ timing = performance.now();
+
 		// check neighbourhood
 		if (this.ruleTreeNeighbours === 4) {
-			// von Neumann
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
-				// pick appropriate algo for state bits
-				switch (this.ruleLoaderLookupBits) {
-				case 1:
-					this.nextGenerationRuleLoaderTileVNLookup1();
-					break;
+			if (Controller.useWASM && Controller.wasmEnableNextGenerationRuleLoader && this.view.wasmEnabled) {
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					// pick appropriate algo for state bits
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						WASM.nextGenerationRuleLoaderVNLookup1(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 2:
-					this.nextGenerationRuleLoaderTileVNLookup2();
-					break;
+					case 2:
+						WASM.nextGenerationRuleLoaderVNLookup2(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 3:
-					this.nextGenerationRuleLoaderTileVNLookup3();
-					break;
+					case 3:
+						WASM.nextGenerationRuleLoaderVNLookup3(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 4:
-					this.nextGenerationRuleLoaderTileVNLookup4();
-					break;
+					case 4:
+						WASM.nextGenerationRuleLoaderVNLookup4(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 5:
-					this.nextGenerationRuleLoaderTileVNLookup5();
-					break;
+					case 5:
+						WASM.nextGenerationRuleLoaderVNLookup5(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				default:
-					this.nextGenerationRuleTreeTileVN();
-					break;
+					default:
+						WASM.nextGenerationRuleTreeVN(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleTreeA.byteOffset | 0,
+							this.ruleTreeB.byteOffset | 0,
+							this.ruleTreeBase | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
+					}
+				} else {
+					WASM.nextGenerationRuleTreeVN(
+						this.colourGrid.whole.byteOffset | 0,
+						this.nextColourGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.tileGrid.whole.byteOffset | 0,
+						this.nextTileGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileGrid[0].length | 0,
+						this.tileGrid.whole.length | 0,
+						this.diedGrid.whole.byteOffset | 0,
+						this.columnOccupied16.byteOffset | 0,
+						this.columnOccupied16.length | 0,
+						this.rowOccupied16.byteOffset | 0,
+						this.rowOccupied16.length | 0,
+						this.ruleTreeA.byteOffset | 0,
+						this.ruleTreeB.byteOffset | 0,
+						this.ruleTreeBase | 0,
+						this.width | 0,
+						this.height | 0,
+						this.tileY | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.blankTileRow.byteOffset | 0,
+						this.blankTileRow.length | 0,
+						this.blankColourRow.byteOffset | 0,
+						this.counter | 0,
+						LifeConstants.bottomRightSet | 0,
+						LifeConstants.bottomSet | 0,
+						LifeConstants.topRightSet | 0,
+						LifeConstants.topSet | 0,
+						LifeConstants.bottomLeftSet | 0,
+						LifeConstants.topLeftSet | 0,
+						LifeConstants.leftSet | 0,
+						LifeConstants.rightSet | 0,
+						this.sharedBuffer.byteOffset | 0
+					);
 				}
 			} else {
-				this.nextGenerationRuleTreeTileVN();
+				// von Neumann
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					// pick appropriate algo for state bits
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						this.nextGenerationRuleLoaderTileVNLookup1();
+						break;
+
+					case 2:
+						this.nextGenerationRuleLoaderTileVNLookup2();
+						break;
+
+					case 3:
+						this.nextGenerationRuleLoaderTileVNLookup3();
+						break;
+
+					case 4:
+						this.nextGenerationRuleLoaderTileVNLookup4();
+						break;
+
+					case 5:
+						this.nextGenerationRuleLoaderTileVNLookup5();
+						break;
+
+					default:
+						this.nextGenerationRuleTreeTileVN();
+						break;
+					}
+				} else {
+					this.nextGenerationRuleTreeTileVN();
+				}
 			}
 		} else {
-			// Moore
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
-				switch (this.ruleLoaderLookupBits) {
-				case 1:
-					this.nextGenerationRuleLoaderTileMooreLookup1();
-					break;
+			if (Controller.useWASM && Controller.wasmEnableNextGenerationRuleLoader && this.view.wasmEnabled) {
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						WASM.nextGenerationRuleLoaderMooreLookup1(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 2:
-					this.nextGenerationRuleLoaderTileMooreLookup2();
-					break;
+					case 2:
+						WASM.nextGenerationRuleLoaderMooreLookup2(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 3:
-					this.nextGenerationRuleLoaderTileMooreLookup3();
-					break;
+					case 3:
+						WASM.nextGenerationRuleLoaderMooreLookup3(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				default:
-					this.nextGenerationRuleTreeTileMoore();
-					break;
+					default:
+						WASM.nextGenerationRuleTreeMoore(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleTreeA.byteOffset | 0,
+							this.ruleTreeB.byteOffset | 0,
+							this.ruleTreeBase | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
+					};
+				} else {
+					WASM.nextGenerationRuleTreeMoore(
+						this.colourGrid.whole.byteOffset | 0,
+						this.nextColourGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.tileGrid.whole.byteOffset | 0,
+						this.nextTileGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileGrid[0].length | 0,
+						this.tileGrid.whole.length | 0,
+						this.diedGrid.whole.byteOffset | 0,
+						this.columnOccupied16.byteOffset | 0,
+						this.columnOccupied16.length | 0,
+						this.rowOccupied16.byteOffset | 0,
+						this.rowOccupied16.length | 0,
+						this.ruleTreeA.byteOffset | 0,
+						this.ruleTreeB.byteOffset | 0,
+						this.ruleTreeBase | 0,
+						this.width | 0,
+						this.height | 0,
+						this.tileY | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.blankTileRow.byteOffset | 0,
+						this.blankTileRow.length | 0,
+						this.blankColourRow.byteOffset | 0,
+						this.counter | 0,
+						LifeConstants.bottomRightSet | 0,
+						LifeConstants.bottomSet | 0,
+						LifeConstants.topRightSet | 0,
+						LifeConstants.topSet | 0,
+						LifeConstants.bottomLeftSet | 0,
+						LifeConstants.topLeftSet | 0,
+						LifeConstants.leftSet | 0,
+						LifeConstants.rightSet | 0,
+						this.sharedBuffer.byteOffset | 0
+					);
 				}
 			} else {
-				if (this.ruleTreePartialLookup !== null && this.ruleLoaderLookupEnabled) {
-					this.nextGenerationRuleTreeTileMoorePartial4();
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						this.nextGenerationRuleLoaderTileMooreLookup1();
+						break;
+
+					case 2:
+						this.nextGenerationRuleLoaderTileMooreLookup2();
+						break;
+
+					case 3:
+						this.nextGenerationRuleLoaderTileMooreLookup3();
+						break;
+
+					default:
+						this.nextGenerationRuleTreeTileMoore();
+						break;
+					}
 				} else {
-					this.nextGenerationRuleTreeTileMoore();
+					if (this.ruleTreePartialLookup !== null && this.ruleLoaderLookupEnabled) {
+						this.nextGenerationRuleTreeTileMoorePartial4();
+					} else {
+						this.nextGenerationRuleTreeTileMoore();
+					}
 				}
 			}
+		}
+
+		if (Controller.useWASM && Controller.wasmEnableNextGenerationRuleLoader && this.view.wasmEnabled) {
+			this.population = this.sharedBuffer[0];
+			this.births = this.sharedBuffer[1];
+			this.deaths = this.sharedBuffer[2];
+			this.zoomBox.leftX = this.sharedBuffer[3];
+			this.zoomBox.bottomY = this.sharedBuffer[4];
+			this.zoomBox.rightX = this.sharedBuffer[5];
+			this.zoomBox.topY = this.sharedBuffer[6];
+		}
+
+		timing = performance.now() - timing;
+		if (Controller.wasmTiming) {
+			this.view.menuManager.updateTimingItem("nextRuleTree", timing, Controller.useWASM && Controller.wasmEnableNextGenerationRuleLoader && this.view.wasmEnabled);
 		}
 	};
 
@@ -48028,7 +48956,7 @@ This file is part of LifeViewer
 								this.heightMask | 0,
 								bottomGrid[0].length | 0,
 								this.camZoom,
-								this.isTriangular ? ViewConstants.triangularYFactor : 1,
+								this.isTriangular ? ViewConstants.triangularYFactor : this.isHex ? ViewConstants.hexagonalYFactor : 1,
 								this.maxGridSize | 0,
 								this.width | 0,
 								this.height | 0,
@@ -48043,7 +48971,7 @@ This file is part of LifeViewer
 
 						timing = performance.now() - timing;
 						if (Controller.wasmTiming) {
-							this.view.menuManager.updateTimingItem("renderGridClip", timing, Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled);
+							this.view.menuManager.updateTimingItem("renderGridClip", timing, Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled && !this.isHex);
 						}
 					}
 				}
@@ -48081,7 +49009,7 @@ This file is part of LifeViewer
 								this.heightMask | 0,
 								bottomGrid[0].length | 0,
 								this.camZoom,
-								this.isTriangular ? ViewConstants.triangularYFactor : 1,
+								this.isTriangular ? ViewConstants.triangularYFactor : this.isHex ? ViewConstants.hexagonalYFactor : 1,
 								this.xOffsets.byteOffset | 0
 							);
 
@@ -48091,7 +49019,7 @@ This file is part of LifeViewer
 
 						timing = performance.now() - timing;
 						if (Controller.wasmTiming) {
-							this.view.menuManager.updateTimingItem("renderGridNoClip", timing, Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled);
+							this.view.menuManager.updateTimingItem("renderGridNoClip", timing, Controller.useWASM && Controller.wasmEnableRenderGrid && this.view.wasmEnabled && !this.isHex);
 						}
 					}
 				}

@@ -77,7 +77,7 @@ void updateOccupancyStrict(
 		// process the left section
 		uint32_t frameBits = 0;
 		uint32_t x = left;
-		uint32_t bit = bitStart;
+		int32_t bit = bitStart;
 
 		// read the first cells on the row up to 16 byte alignment or right edge (whichever comes first)
 		uint8_t *colourRow = colourGrid + y * colourGridWidth + x;
@@ -167,7 +167,7 @@ void updateOccupancyStrictSuperOrRuleLoader(
 		// process the left section
 		uint32_t frameBits = 0;
 		uint32_t x = left;
-		uint32_t bit = bitStart;
+		int32_t bit = bitStart;
 
 		// read the first cells on the row up to 16 byte alignment or right edge (whichever comes first)
 		uint8_t *colourRow = colourGrid + y * colourGridWidth + x;
@@ -546,7 +546,7 @@ uint32_t getHashLifeHistory(
 
 			// check for overlay state 6 cells
 			v128_t ov6Row = wasm_v128_load(overlayRow);
-			ov6Row = wasm_i8x16_eq(row, ov6Row);
+			ov6Row = wasm_i8x16_eq(row, overlay6);
 
 			// combine the alive and overlay 6 cells
 			row = wasm_v128_or(row, ov6Row);

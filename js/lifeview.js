@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1229,
+		/** @const {number} */ versionBuild : 1230,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -576,6 +576,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ wasmEnableNextGenerationCustom: true,
 		/** @type {boolean} */ wasmEnableNextGenerationGaussian: true,
 		/** @type {boolean} */ wasmEnableNextGenerationWeighted: true,
+		/** @type {boolean} */ wasmEnableNextGenerationRuleLoader: true,
 		/** @type {boolean} */ wasmEnableUpdateGridFromCounts: true
 	};
 
@@ -19897,6 +19898,7 @@ This file is part of LifeViewer
 			// check if the rule is a RuleTable rule
 			if (pattern.ruleTableOutput !== null) {
 				me.engine.ruleTableLUT = pattern.ruleTableLUT;
+				me.engine.flatRuleTableLUT = pattern.flatRuleTableLUT;
 				me.engine.ruleTableOutput = pattern.ruleTableOutput;
 				me.engine.ruleTableCompressedRules = pattern.ruleTableCompressedRules;
 				me.engine.ruleTableNeighbourhood = pattern.ruleTableNeighbourhood;
@@ -19925,9 +19927,13 @@ This file is part of LifeViewer
 				me.engine.HROT.useRandomImmunities = pattern.probabilisticImmunities;
 				me.engine.HROT.setTypeAndRange(pattern.neighborhoodHROT, pattern.rangeHROT, pattern.customNeighbourhood, pattern.customNeighbourCount, pattern.isTriangular, pattern.weightedNeighbourhood, pattern.weightedStates, pattern.cornerRange, pattern.edgeRange);
 				if (me.manager.altSpecified) {
+					me.engine.HROT.altComboList = /** @type {Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, pattern.survivalHROT.length, "HROT.altComboList", Controller.useWASM));
 					me.engine.HROT.altBirths = pattern.altBirthHROT;
 					me.engine.HROT.altSurvivals = pattern.altSurvivalHROT;
 					me.engine.HROT.altSpecified = true;
+					for (i = 0; i < pattern.survivalHROT.length; i += 1) {
+						me.engine.HROT.altComboList[i] = (pattern.altBirthHROT[i] & 2) | (pattern.altSurvivalHROT[i] & 1);
+					}
 				} else {
 					me.engine.HROT.altSpecified = false;
 				}

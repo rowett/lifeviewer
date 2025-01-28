@@ -12,6 +12,17 @@
 //	nextGenerationInvestigatorMoore (Investigator, Moore)
 //	nextGenerationInvestigatorHex (Investigator, Hex)
 //	nextGenerationInvestigatorVN (Investigator, von Neumann)
+//	nextGenerationRuleTreeMoore (RuleTree, Moore)
+//	nextGenerationRuleTreeVN (RuleTree, von Neumann)
+//	nextGenerationRuleTableMoore (RuleTable, Moore)
+//	nextGenerationRuleTableHex (RuleTable, Moore)
+//	nextGenerationRuleTableVN (RuleTable, Moore)
+//	nextGenerationRuleLoaderMooreLookupN (RuleLoader, Moore)
+//	nextGenerationRuleLoaderVNLookupN (RuleLoader, von Neumann)
+//
+// TODO:
+//	Moore partial lookup
+//	nextGenerationRuleLoaderHexLookupN (RuleLoader, Hex)
 
 /*
 This file is part of LifeViewer
@@ -40,11 +51,11 @@ This file is part of LifeViewer
 // update bounding box from the column and row occupancy arrays and append to shared memory, return next shared memory slot
 uint32_t* updateBoundingBox(
 	const uint16_t *const columnOccupied16,
-	const uint32_t columnOccupiedWidth,
+	const int32_t columnOccupiedWidth,
 	const uint16_t *const rowOccupied16,
-	const uint32_t rowOccupiedWidth,
-	const uint32_t width,
-	const uint32_t height,
+	const int32_t rowOccupiedWidth,
+	const int32_t width,
+	const int32_t height,
 	uint32_t *shared
 ) {
 	// new box extent
@@ -154,7 +165,7 @@ void convertToPens(
 	const v128_t mask = wasm_u64x2_splat(0x0102040810204080);	// mask to isolate cell bits
 
 	// find each occupied tile
-	for (uint32_t th = 0; th < tileRows; th++) {
+	for (int32_t th = 0; th < tileRows; th++) {
 		uint32_t leftX = 0;
 
 		for (uint32_t tw = 0; tw < tileCols16; tw++) {
@@ -318,7 +329,7 @@ void nextGenerationGenerations(
 	uint32_t deaths = 0;
 
 	// find each occupied tile group
-	for (uint32_t th = 0; th < tileRows; th++) {
+	for (int32_t th = 0; th < tileRows; th++) {
 		uint32_t leftX = 0;
 		const uint32_t colourRowOffset = (th << 4) * colourGridWidth;
 		const uint32_t gridRowOffset = (th << 4) * gridWidth;
@@ -484,7 +495,6 @@ void nextGeneration(
 	uint16_t *const blankTileRow,
 	const uint32_t blankTileWidth,
 	uint16_t *const blankRow16,
-	const uint32_t blankRowWidth,
 	const int32_t bWidth,
 	const int32_t bHeight,
 	const int32_t boundedGridType,
@@ -1284,14 +1294,8 @@ void nextGenerationSuperMoore(
 	const uint32_t height,
 	const uint32_t tileX,
 	const uint32_t ySize,
-	const uint32_t tileRows,
 	const uint32_t tileCols,
-	uint16_t *const blankTileRow,
-	const uint32_t blankTileWidth,
-	uint16_t *const blankRow16,
-	const uint32_t blankRowWidth,
 	uint8_t *const blankColourRow,
-	const uint32_t blockColourRowWidth,
 	const uint32_t counter,
 	uint32_t population,
 	uint32_t births,
@@ -1299,9 +1303,8 @@ void nextGenerationSuperMoore(
 	uint32_t *shared
 ) {
 	uint32_t c, e;
-	uint32_t lcol, ccol, rcol;
+	uint32_t ccol, rcol;
 	int32_t calc;
-	const uint32_t width16 = width >> 4;
 
 	// constants
 	const uint32_t aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
@@ -1323,16 +1326,14 @@ void nextGenerationSuperMoore(
 
 	// grid
 	uint16_t *grid = grid16;
-	uint16_t *nextGrid = nextGrid16;
 	uint16_t *tileGrid = tileGrid16;
-	uint16_t *nextTileGrid = nextTileGrid16;
 	uint8_t *colourGrid = nextColourGrid8;
 	uint8_t *outputGrid = colourGrid8;
 
 	// select the correct grid
 	if (counter & 1) {
 		grid = nextGrid16;
-		tileGrid = nextTileGrid;
+		tileGrid = nextTileGrid16;
 		colourGrid = colourGrid8;
 		outputGrid = nextColourGrid8;
 	}
@@ -1677,14 +1678,8 @@ void nextGenerationSuperHex(
 	const uint32_t height,
 	const uint32_t tileX,
 	const uint32_t ySize,
-	const uint32_t tileRows,
 	const uint32_t tileCols,
-	uint16_t *const blankTileRow,
-	const uint32_t blankTileWidth,
-	uint16_t *const blankRow16,
-	const uint32_t blankRowWidth,
 	uint8_t *const blankColourRow,
-	const uint32_t blockColourRowWidth,
 	const uint32_t counter,
 	uint32_t population,
 	uint32_t births,
@@ -1693,7 +1688,6 @@ void nextGenerationSuperHex(
 ) {
 	uint32_t nw, n, w, c, e, se, s;
 	int32_t calc;
-	const uint32_t width16 = width >> 4;
 
 	// constants
 	const uint32_t aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
@@ -1715,16 +1709,14 @@ void nextGenerationSuperHex(
 
 	// grid
 	uint16_t *grid = grid16;
-	uint16_t *nextGrid = nextGrid16;
 	uint16_t *tileGrid = tileGrid16;
-	uint16_t *nextTileGrid = nextTileGrid16;
 	uint8_t *colourGrid = nextColourGrid8;
 	uint8_t *outputGrid = colourGrid8;
 
 	// select the correct grid
 	if (counter & 1) {
 		grid = nextGrid16;
-		tileGrid = nextTileGrid;
+		tileGrid = nextTileGrid16;
 		colourGrid = colourGrid8;
 		outputGrid = nextColourGrid8;
 	}
@@ -2070,14 +2062,8 @@ void nextGenerationSuperVN(
 	const uint32_t height,
 	const uint32_t tileX,
 	const uint32_t ySize,
-	const uint32_t tileRows,
 	const uint32_t tileCols,
-	uint16_t *const blankTileRow,
-	const uint32_t blankTileWidth,
-	uint16_t *const blankRow16,
-	const uint32_t blankRowWidth,
 	uint8_t *const blankColourRow,
-	const uint32_t blockColourRowWidth,
 	const uint32_t counter,
 	uint32_t population,
 	uint32_t births,
@@ -2086,7 +2072,6 @@ void nextGenerationSuperVN(
 ) {
 	uint32_t  n, w, c, e, s;
 	int32_t calc;
-	const uint32_t width16 = width >> 4;
 
 	// constants
 	const uint32_t aliveWith14 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 7) | (1 << 9) | (1 << 11) | (1 << 13) | (1 << 14) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
@@ -2108,16 +2093,14 @@ void nextGenerationSuperVN(
 
 	// grid
 	uint16_t *grid = grid16;
-	uint16_t *nextGrid = nextGrid16;
 	uint16_t *tileGrid = tileGrid16;
-	uint16_t *nextTileGrid = nextTileGrid16;
 	uint8_t *colourGrid = nextColourGrid8;
 	uint8_t *outputGrid = colourGrid8;
 
 	// select the correct grid
 	if (counter & 1) {
 		grid = nextGrid16;
-		tileGrid = nextTileGrid;
+		tileGrid = nextTileGrid16;
 		colourGrid = colourGrid8;
 		outputGrid = nextColourGrid8;
 	}
@@ -2497,7 +2480,6 @@ void nextGenerationInvestigatorMoore(
 	uint16_t *const colourTileHistoryGrid,
 	const uint32_t tileGridWidth,
 	const uint32_t tileGridSize,
-	const uint32_t tileGridLength,
 	uint16_t *const diedGrid,
 	uint16_t *const columnOccupied16,
 	const uint32_t columnOccupiedWidth,
@@ -2507,14 +2489,12 @@ void nextGenerationInvestigatorMoore(
 	uint8_t *const ruleAltArray8,
 	const uint32_t width,
 	const uint32_t height,
-	const uint32_t tileX,
 	const uint32_t ySize,
 	const uint32_t tileRows,
 	const uint32_t tileCols,
 	uint16_t *const blankTileRow,
 	const uint32_t blankTileRowWidth,
 	uint8_t *const blankColourRow,
-	const uint32_t blankColourRowWidth,
 	const uint32_t counter,
 	const uint32_t altSpecified,
 	const uint8_t *nextStateInvestigator,
@@ -2530,7 +2510,6 @@ void nextGenerationInvestigatorMoore(
 ) {
 	uint32_t typeMask;
 	uint32_t nw, w, sw, n, c, s, ne, e, se;
-	const uint32_t width16 = width >> 4;
 
 	// population statistics
 	uint32_t population = 0, births = 0, deaths = 0;
@@ -2541,15 +2520,14 @@ void nextGenerationInvestigatorMoore(
 	// tile columns in 16 bit values
 	const uint32_t tileCols16 = tileCols >> 4;
 
-	// flags if cells are alive
-	uint32_t oldCellWasAlive = 0;
-
 	// constants
 	const uint32_t deadForcer = (1 << 2) | (1 << 3) | (1 << 6) | (1 << 7) | (1 << 14) | (1 << 16);
 	const uint32_t birthForcer = (1 << 8) | (1 << 9) | (1 << 12) | (1 << 13) | (1 << 14);
 	const uint32_t requireState1 = (1 << 15) | (1 << 16);
 	const uint32_t treatIfDead = (1 << 1) | (1 << 2) | (1 << 4) | (1 << 6) | (1 << 8) | (1 << 10) | (1 << 12) | (1 << 15) |  (1 << 16) | (1 << 17) | (1 << 19);
 	const uint32_t treatIfAlive = treatIfDead ^ ((1 << 17) | (1 << 18) | (1 << 19) | (1 << 20));
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 
 	// grid
 	uint8_t *grid = nextColourGrid;
@@ -2655,11 +2633,11 @@ void nextGenerationInvestigatorMoore(
 								gridRow2 = gridRow1 + colourGridWidth;
 							}
 
-							// column index
-							uint32_t colIndex = 32768;
-
 							// process each column in the row
 							uint32_t x = leftX;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
 
 							// get initial neighbours
 							if (x == 0) {
@@ -2724,28 +2702,8 @@ void nextGenerationInvestigatorMoore(
 
 								// check if state is alive
 								*(nextRow + x) = state;
-								oldCellWasAlive = c ? 1 : 0;
-								if (state > 0) {
-									population++;
-
-									// update births
-									births += 1 - oldCellWasAlive;
-								} else {
-									// update deaths
-									deaths += oldCellWasAlive;
-								}
-
-								// update tile occupancy
-								if (state > 0) {
-									rowOccupied |= rowIndex;
-									colOccupied |= colIndex;
-								}
-
-								// check if any cell was alive in the source
-								anyAlive |= c;
 
 								// next column
-								colIndex >>= 1;
 								x++;
 							}
 
@@ -2802,25 +2760,36 @@ void nextGenerationInvestigatorMoore(
 
 							// check if state is alive
 							*(nextRow + x) = state;
-							oldCellWasAlive = c ? 1 : 0;
-							if (state > 0) {
-								population++;
 
-								// update births
-								births += 1 - oldCellWasAlive;
-							} else {
-								// update death
-								deaths += oldCellWasAlive;
-							}
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
 
-							// update tile occupancy
-							if (state > 0) {
-								rowOccupied |= rowIndex;
-								colOccupied |= colIndex;
-							}
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
 
 							// check if any cell was alive in the source
-							anyAlive |= c;
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
 
 							// next row
 							y++;
@@ -3019,7 +2988,6 @@ void nextGenerationInvestigatorHex(
 	uint16_t *const colourTileHistoryGrid,
 	const uint32_t tileGridWidth,
 	const uint32_t tileGridSize,
-	const uint32_t tileGridLength,
 	uint16_t *const diedGrid,
 	uint16_t *const columnOccupied16,
 	const uint32_t columnOccupiedWidth,
@@ -3029,14 +2997,12 @@ void nextGenerationInvestigatorHex(
 	uint8_t *const ruleAltArray8,
 	const uint32_t width,
 	const uint32_t height,
-	const uint32_t tileX,
 	const uint32_t ySize,
 	const uint32_t tileRows,
 	const uint32_t tileCols,
 	uint16_t *const blankTileRow,
 	const uint32_t blankTileRowWidth,
 	uint8_t *const blankColourRow,
-	const uint32_t blankColourRowWidth,
 	const uint32_t counter,
 	const uint32_t altSpecified,
 	const uint8_t *nextStateInvestigator,
@@ -3052,7 +3018,6 @@ void nextGenerationInvestigatorHex(
 ) {
 	uint32_t typeMask;
 	uint32_t nw, w, n, c, s, e, se;
-	const uint32_t width16 = width >> 4;
 
 	// population statistics
 	uint32_t population = 0, births = 0, deaths = 0;
@@ -3529,7 +3494,6 @@ void nextGenerationInvestigatorVN(
 	uint16_t *const colourTileHistoryGrid,
 	const uint32_t tileGridWidth,
 	const uint32_t tileGridSize,
-	const uint32_t tileGridLength,
 	uint16_t *const diedGrid,
 	uint16_t *const columnOccupied16,
 	const uint32_t columnOccupiedWidth,
@@ -3539,14 +3503,12 @@ void nextGenerationInvestigatorVN(
 	uint8_t *const ruleAltArray8,
 	const uint32_t width,
 	const uint32_t height,
-	const uint32_t tileX,
 	const uint32_t ySize,
 	const uint32_t tileRows,
 	const uint32_t tileCols,
 	uint16_t *const blankTileRow,
 	const uint32_t blankTileRowWidth,
 	uint8_t *const blankColourRow,
-	const uint32_t blankColourRowWidth,
 	const uint32_t counter,
 	const uint32_t altSpecified,
 	const uint8_t *nextStateInvestigator,
@@ -3562,7 +3524,6 @@ void nextGenerationInvestigatorVN(
 ) {
 	uint32_t typeMask;
 	uint32_t n, w, c, s, e;
-	const uint32_t width16 = width >> 4;
 
 	// population statistics
 	uint32_t population = 0, births = 0, deaths = 0;
@@ -3829,6 +3790,5653 @@ void nextGenerationInvestigatorVN(
 
 							// check if any cell was alive in the source
 							anyAlive |= c;
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleTree rule next generation for Moore neighbourhood
+void nextGenerationRuleTreeMoore(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint32_t *const a,
+	uint8_t *const b,
+	const uint32_t base,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t n, e, s, w, c, ne, nw, se, sw;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// grid
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// get initial neighbours
+							if (x == 0) {
+								n = 0;
+								c = 0;
+								s = 0;
+							} else {
+								n = *(gridRow0 + x - 1);
+								c = *(gridRow1 + x - 1);
+								s = *(gridRow2 + x - 1);
+							}
+							ne = *(gridRow0 + x);
+							e = *(gridRow1 + x);
+							se = *(gridRow2 + x);
+
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								nw = n;
+								n = ne;
+								ne = *(gridRow0 + x + 1);
+								w = c;
+								c = e;
+								e = *(gridRow1 + x + 1);
+								sw = s;
+								s = se;
+								se = *(gridRow2 + x + 1);
+
+								// check for higher states
+								uint8_t state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							nw = n;
+							n = ne;
+							w = c;
+							c = e;
+							sw = s;
+							s = se;
+							if (x == width - 1) {
+								ne = 0;
+								e = 0;
+								se = 0;
+							} else {
+								ne = *(gridRow0 + x + 1);
+								e = *(gridRow1 + x + 1);
+								se = *(gridRow2 + x + 1);
+							}
+
+							// get the next state
+							uint8_t state = b[a[a[a[a[a[a[a[a[base + nw] + ne] + sw] + se] + n] + w] + e] + s] + c];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleLoader rule next generation for Moore neighbourhood using 1 bit lookup
+void nextGenerationRuleLoaderMooreLookup1(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint8_t *const lookup,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t e, ne, se;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// switch buffers each generation
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+							uint32_t index;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// process each cell along the tile row
+							ne = gridRow0[x + 1];
+							e = gridRow1[x + 1];
+							se = gridRow2[x + 1];
+							if (x == 0) {
+								// handle left edge of grid
+								index = (gridRow0[x] << 3) | (gridRow1[x] << 4) | (gridRow2[x] << 5) | (ne << 6) | (e << 7) | (se << 8);
+							} else {
+								index = gridRow0[x - 1] | (gridRow1[x - 1] << 1) | (gridRow2[x - 1] << 2) | (gridRow0[x] << 3) | (gridRow1[x] << 4) | (gridRow2[x] << 5) | (ne << 6) | (e << 7) | (se << 8);
+							}
+							uint8_t state = lookup[index];
+							*(nextRow + x) = state;
+
+							// next column
+							x++;
+
+							// handle middle cells
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								ne = *(gridRow0 + x + 1);
+								e = *(gridRow1 + x + 1);
+								se = *(gridRow2 + x + 1);
+								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
+								state = lookup[index];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							if (x == width - 1) {
+								ne = 0;
+								e = 0;
+								se = 0;
+							} else {
+								ne = *(gridRow0 + x + 1);
+								e = *(gridRow1 + x + 1);
+								se = *(gridRow2 + x + 1);
+							}
+							index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
+							state = lookup[index];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleLoader rule next generation for Moore neighbourhood using 2 bit lookup
+void nextGenerationRuleLoaderMooreLookup2(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint8_t *const lookup,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t e, ne, se;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// switch buffers each generation
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+							uint32_t index;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// process each cell along the tile row
+							ne = gridRow0[x + 1];
+							e = gridRow1[x + 1];
+							se = gridRow2[x + 1];
+							if (x == 0) {
+								// handle left edge of grid
+								index = (gridRow0[x] << 6) | (gridRow1[x] << 8) | (gridRow2[x] << 10) | (ne << 12) | (e << 14) | (se << 16);
+							} else {
+								index = gridRow0[x - 1] | (gridRow1[x - 1] << 2) | (gridRow2[x - 1] << 4) | (gridRow0[x] << 6) | (gridRow1[x] << 8) | (gridRow2[x] << 10) | (ne << 12) | (e << 14) | (se << 16);
+							}
+							uint8_t state = lookup[index];
+							*(nextRow + x) = state;
+
+							// next column
+							x++;
+
+							// handle middle cells
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								ne = *(gridRow0 + x + 1);
+								e = *(gridRow1 + x + 1);
+								se = *(gridRow2 + x + 1);
+								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
+								state = lookup[index];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							if (x == width - 1) {
+								ne = 0;
+								e = 0;
+								se = 0;
+							} else {
+								ne = *(gridRow0 + x + 1);
+								e = *(gridRow1 + x + 1);
+								se = *(gridRow2 + x + 1);
+							}
+							index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
+							state = lookup[index];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleLoader rule next generation for Moore neighbourhood using 3 bit lookup
+void nextGenerationRuleLoaderMooreLookup3(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint8_t *const lookup,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t e, ne, se;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// switch buffers each generation
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+							uint32_t index;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// process each cell along the tile row
+							ne = gridRow0[x + 1];
+							e = gridRow1[x + 1];
+							se = gridRow2[x + 1];
+							if (x == 0) {
+								// handle left edge of grid
+								index = (gridRow0[x] << 9) | (gridRow1[x] << 12) | (gridRow2[x] << 15) | (ne << 18) | (e << 21) | (se << 24);
+							} else {
+								index = gridRow0[x - 1] | (gridRow1[x - 1] << 3) | (gridRow2[x - 1] << 6) | (gridRow0[x] << 9) | (gridRow1[x] << 12) | (gridRow2[x] << 15) | (ne << 18) | (e << 21) | (se << 24);
+							}
+							uint8_t state = lookup[index];
+							*(nextRow + x) = state;
+
+							// next column
+							x++;
+
+							// handle middle cells
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								ne = *(gridRow0 + x + 1);
+								e = *(gridRow1 + x + 1);
+								se = *(gridRow2 + x + 1);
+								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
+								state = lookup[index];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							if (x == width - 1) {
+								ne = 0;
+								e = 0;
+								se = 0;
+							} else {
+								ne = *(gridRow0 + x + 1);
+								e = *(gridRow1 + x + 1);
+								se = *(gridRow2 + x + 1);
+							}
+							index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
+							state = lookup[index];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleTree rule next generation for von Neumann neighbourhood
+void nextGenerationRuleTreeVN(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint32_t *const a,
+	uint8_t *const b,
+	const uint32_t base,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t n, e, s, w, c;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// grid
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// get initial neighbours
+							if (x == 0) {
+								c = 0;
+							} else {
+								c = *(gridRow1 + x - 1);
+							}
+							e = *(gridRow1 + x);
+
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								w = c;
+								c = e;
+								n = *(gridRow0 + x);
+								e = *(gridRow1 + x + 1);
+								s = *(gridRow2 + x);
+
+								// lookup state
+								uint8_t state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							w = c;
+							c = e;
+							n = *(gridRow0 + x);
+							if (x == width - 1) {
+								e = 0;
+							} else {
+								e = *(gridRow1 + x + 1);
+							}
+							s = *(gridRow2 + x);
+
+							// get the next state
+							uint8_t state = b[a[a[a[a[base + n] + w] + e] + s] + c];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleLoader rule next generation for von Neumann neighbourhood using 1 bit lookup
+void nextGenerationRuleLoaderVNLookup1(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint8_t *const lookup,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t e, n, s;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// switch buffers each generation
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+							uint32_t index;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// process each cell along the tile row
+							e = gridRow1[x + 1];
+							if (x == 0) {
+								// handle left edge of grid
+								index = (gridRow1[x] << 3) | (e << 2) | (gridRow0[x] << 1) | gridRow2[x];
+							} else {
+								index = (gridRow1[x - 1] << 4) | (gridRow1[x] << 3) | (e << 2) | (gridRow0[x] << 1) | gridRow2[x];
+							}
+							uint8_t state = lookup[index];
+							*(nextRow + x) = state;
+
+							// next column
+							x++;
+
+							// handle middle cells
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								n = gridRow0[x];
+								e = gridRow1[x + 1];
+								s = gridRow2[x];
+								index = ((index << 1) & 24) | (e << 2) | (n << 1) | s;
+
+								state = lookup[index];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							n = gridRow0[x];
+							if (x == width - 1) {
+								e = 0;
+							} else {
+								e = *(gridRow1 + x + 1);
+							}
+							s = gridRow2[x];
+							index = ((index << 1) & 24) | (e << 2) | (n << 1) | s;
+
+							state = lookup[index];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleLoader rule next generation for von Neumann neighbourhood using 2 bit lookup
+void nextGenerationRuleLoaderVNLookup2(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint8_t *const lookup,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t e, n, s;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// switch buffers each generation
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+							uint32_t index;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// process each cell along the tile row
+							e = gridRow1[x + 1];
+							if (x == 0) {
+								// handle left edge of grid
+								index = (gridRow1[x] << 6) | (e << 4) | (gridRow0[x] << 2) | gridRow2[x];
+							} else {
+								index = (gridRow1[x - 1] << 8) | (gridRow1[x] << 6) | (e << 4) | (gridRow0[x] << 2) | gridRow2[x];
+							}
+							uint8_t state = lookup[index];
+							*(nextRow + x) = state;
+
+							// next column
+							x++;
+
+							// handle middle cells
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								n = gridRow0[x];
+								e = gridRow1[x + 1];
+								s = gridRow2[x];
+								index = ((index << 1) & 960) | (e << 4) | (n << 2) | s;
+
+								state = lookup[index];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							n = gridRow0[x];
+							if (x == width - 1) {
+								e = 0;
+							} else {
+								e = *(gridRow1 + x + 1);
+							}
+							s = gridRow2[x];
+							index = ((index << 2) & 960) | (e << 4) | (n << 2) | s;
+
+							state = lookup[index];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleLoader rule next generation for von Neumann neighbourhood using 3 bit lookup
+void nextGenerationRuleLoaderVNLookup3(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint8_t *const lookup,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t e, n, s;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// switch buffers each generation
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+							uint32_t index;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// process each cell along the tile row
+							e = gridRow1[x + 1];
+							if (x == 0) {
+								// handle left edge of grid
+								index = (gridRow1[x] << 9) | (e << 6) | (gridRow0[x] << 3) | gridRow2[x];
+							} else {
+								index = (gridRow1[x - 1] << 12) | (gridRow1[x] << 9) | (e << 6) | (gridRow0[x] << 3) | gridRow2[x];
+							}
+							uint8_t state = lookup[index];
+							*(nextRow + x) = state;
+
+							// next column
+							x++;
+
+							// handle middle cells
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								n = gridRow0[x];
+								e = gridRow1[x + 1];
+								s = gridRow2[x];
+								index = ((index << 3) & 32256) | (e << 6) | (n << 3) | s;
+
+								state = lookup[index];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							n = gridRow0[x];
+							if (x == width - 1) {
+								e = 0;
+							} else {
+								e = *(gridRow1 + x + 1);
+							}
+							s = gridRow2[x];
+							index = ((index << 3) & 32256) | (e << 6) | (n << 3) | s;
+
+							state = lookup[index];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleLoader rule next generation for von Neumann neighbourhood using 4 bit lookup
+void nextGenerationRuleLoaderVNLookup4(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint8_t *const lookup,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t e, n, s;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// switch buffers each generation
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+							uint32_t index;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// process each cell along the tile row
+							e = gridRow1[x + 1];
+							if (x == 0) {
+								// handle left edge of grid
+								index = (gridRow1[x] << 12) | (e << 8) | (gridRow0[x] << 4) | gridRow2[x];
+							} else {
+								index = (gridRow1[x - 1] << 16) | (gridRow1[x] << 12) | (e << 8) | (gridRow0[x] << 4) | gridRow2[x];
+							}
+							uint8_t state = lookup[index];
+							*(nextRow + x) = state;
+
+							// next column
+							x++;
+
+							// handle middle cells
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								n = gridRow0[x];
+								e = gridRow1[x + 1];
+								s = gridRow2[x];
+								index = ((index << 4) & 1044480) | (e << 8) | (n << 4) | s;
+
+								state = lookup[index];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							n = gridRow0[x];
+							if (x == width - 1) {
+								e = 0;
+							} else {
+								e = *(gridRow1 + x + 1);
+							}
+							s = gridRow2[x];
+							index = ((index << 4) & 1044480) | (e << 8) | (n << 4) | s;
+
+							state = lookup[index];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleLoader rule next generation for von Neumann neighbourhood using 5 bit lookup
+void nextGenerationRuleLoaderVNLookup5(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint8_t *const lookup,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t e, n, s;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// switch buffers each generation
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+							uint32_t index;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// process each cell along the tile row
+							e = gridRow1[x + 1];
+							if (x == 0) {
+								// handle left edge of grid
+								index = (gridRow1[x] << 15) | (e << 10) | (gridRow0[x] << 5) | gridRow2[x];
+							} else {
+								index = (gridRow1[x - 1] << 20) | (gridRow1[x] << 15) | (e << 10) | (gridRow0[x] << 5) | gridRow2[x];
+							}
+							uint8_t state = lookup[index];
+							*(nextRow + x) = state;
+
+							// next column
+							x++;
+
+							// handle middle cells
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								n = gridRow0[x];
+								e = gridRow1[x + 1];
+								s = gridRow2[x];
+								index = ((index << 5) & 33521664) | (e << 10) | (n << 5) | s;
+
+								state = lookup[index];
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							n = gridRow0[x];
+							if (x == width - 1) {
+								e = 0;
+							} else {
+								e = *(gridRow1 + x + 1);
+							}
+							s = gridRow2[x];
+							index = ((index << 5) & 33521664) | (e << 10) | (n << 5) | s;
+
+							state = lookup[index];
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleTable rule next generation for Moore neighbourhood
+void nextGenerationRuleTableMoore(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint32_t *const lut,
+	const uint32_t lutSize,
+	uint8_t *const output,
+	const uint32_t nCompressed,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t n, e, s, w, c, ne, nw, se, sw;
+
+	// compute the offsets in the LUT array
+	uint32_t nOffset = lutSize / 9;
+
+	// get the pointers to the per neighbour LUTs
+	uint32_t *const lut0 = lut;
+	uint32_t *const lut1 = lut + nOffset;
+	uint32_t *const lut2 = lut + nOffset * 2;
+	uint32_t *const lut3 = lut + nOffset * 3;
+	uint32_t *const lut4 = lut + nOffset * 4;
+	uint32_t *const lut5 = lut + nOffset * 5;
+	uint32_t *const lut6 = lut + nOffset * 6;
+	uint32_t *const lut7 = lut + nOffset * 7;
+	uint32_t *const lut8 = lut + nOffset * 8;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// grid
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// get initial neighbours
+							if (x == 0) {
+								n = 0;
+								c = 0;
+								s = 0;
+							} else {
+								n = *(gridRow0 + x - 1);
+								c = *(gridRow1 + x - 1);
+								s = *(gridRow2 + x - 1);
+							}
+							ne = *(gridRow0 + x);
+							e = *(gridRow1 + x);
+							se = *(gridRow2 + x);
+
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								nw = n;
+								n = ne;
+								ne = *(gridRow0 + x + 1);
+								w = c;
+								c = e;
+								e = *(gridRow1 + x + 1);
+								sw = s;
+								s = se;
+								se = *(gridRow2 + x + 1);
+								uint8_t state = c;
+
+								uint32_t *lutc = lut0 + c * nCompressed;
+								uint32_t *lutn = lut1 + n * nCompressed;
+								uint32_t *lutne = lut2 + ne * nCompressed;
+								uint32_t *lute = lut3 + e * nCompressed;
+								uint32_t *lutse = lut4 + se * nCompressed;
+								uint32_t *luts = lut5 + s * nCompressed;
+								uint32_t *lutsw = lut6+ sw * nCompressed;
+								uint32_t *lutw = lut7 + w * nCompressed;
+								uint32_t *lutnw = lut8 + nw * nCompressed;
+
+								for (uint32_t iRuleC = 0; iRuleC < nCompressed; iRuleC++) {
+									uint32_t isMatch = lutc[iRuleC] & lutn[iRuleC];
+									if (isMatch) {
+										isMatch &= lutne[iRuleC] & lute[iRuleC];
+										if (isMatch) {
+											isMatch &= lutse[iRuleC] & luts[iRuleC];
+											if (isMatch) {
+												isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+												if (isMatch) {
+													uint32_t iBit = 0;
+													uint32_t mask = 1;
+													while (!(isMatch & mask)) {
+														iBit++;
+														mask <<= 1;
+													}
+													state = output[(iRuleC << 5) + iBit];
+													break;
+												}
+											}
+										}
+									}
+								}
+
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							nw = n;
+							n = ne;
+							w = c;
+							c = e;
+							sw = s;
+							s = se;
+							if (x == width - 1) {
+								ne = 0;
+								e = 0;
+								se = 0;
+							} else {
+								ne = *(gridRow0 + x + 1);
+								e = *(gridRow1 + x + 1);
+								se = *(gridRow2 + x + 1);
+							}
+
+							// get the next state
+							uint32_t *lutc = lut0 + c * nCompressed;
+							uint32_t *lutn = lut1 + n * nCompressed;
+							uint32_t *lutne = lut2 + ne * nCompressed;
+							uint32_t *lute = lut3 + e * nCompressed;
+							uint32_t *lutse = lut4 + se * nCompressed;
+							uint32_t *luts = lut5 + s * nCompressed;
+							uint32_t *lutsw = lut6+ sw * nCompressed;
+							uint32_t *lutw = lut7 + w * nCompressed;
+							uint32_t *lutnw = lut8 + nw * nCompressed;
+
+							uint32_t state = c;
+
+							for (uint32_t iRuleC = 0; iRuleC < nCompressed; iRuleC += 1) {
+								uint32_t isMatch = lutc[iRuleC] & lutn[iRuleC];
+								if (isMatch) {
+									isMatch &= lutne[iRuleC] & lute[iRuleC];
+									if (isMatch) {
+										isMatch &= lutse[iRuleC] & luts[iRuleC];
+										if (isMatch) {
+											isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+											if (isMatch) {
+												uint32_t iBit = 0;
+												uint32_t mask = 1;
+												while (!(isMatch & mask)) {
+													iBit += 1;
+													mask <<= 1;
+												}
+												state = output[(iRuleC << 5) + iBit];
+												break;
+											}
+										}
+									}
+								}
+							}
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleTable rule next generation for Hexagonal neighbourhood
+void nextGenerationRuleTableHex(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint32_t *const lut,
+	const uint32_t lutSize,
+	uint8_t *const output,
+	const uint32_t nCompressed,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t n, e, s, w, c, nw, se;
+
+	// compute the offsets in the LUT array
+	uint32_t nOffset = lutSize / 7;
+
+	// get the pointers to the per neighbour LUTs
+	uint32_t *const lut0 = lut;
+	uint32_t *const lut1 = lut + nOffset;
+	uint32_t *const lut2 = lut + nOffset * 2;
+	uint32_t *const lut3 = lut + nOffset * 3;
+	uint32_t *const lut4 = lut + nOffset * 4;
+	uint32_t *const lut5 = lut + nOffset * 5;
+	uint32_t *const lut6 = lut + nOffset * 6;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// grid
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// get initial neighbours
+							if (x == 0) {
+								n = 0;
+								c = 0;
+								s = 0;
+							} else {
+								n = *(gridRow0 + x - 1);
+								c = *(gridRow1 + x - 1);
+								s = *(gridRow2 + x - 1);
+							}
+							e = *(gridRow1 + x);
+							se = *(gridRow2 + x);
+
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								nw = n;
+								n = *(gridRow1 + x);
+								w = c;
+								c = e;
+								e = *(gridRow1 + x + 1);
+								s = se;
+								se = *(gridRow2 + x + 1);
+								uint8_t state = c;
+
+								uint32_t *lutc = lut0 + c * nCompressed;
+								uint32_t *lutn = lut1 + n * nCompressed;
+								uint32_t *lute = lut2 + e * nCompressed;
+								uint32_t *lutse = lut3 + se * nCompressed;
+								uint32_t *luts = lut4 + s * nCompressed;
+								uint32_t *lutw = lut5 + w * nCompressed;
+								uint32_t *lutnw = lut6 + nw * nCompressed;
+
+								for (uint32_t iRuleC = 0; iRuleC < nCompressed; iRuleC++) {
+									uint32_t isMatch = lutc[iRuleC] & lutn[iRuleC];
+									if (isMatch) {
+										isMatch &= lute[iRuleC] & lutse[iRuleC];
+										if (isMatch) {
+											isMatch &= luts[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+											if (isMatch) {
+												uint32_t iBit = 0;
+												uint32_t mask = 1;
+												while (!(isMatch & mask)) {
+													iBit++;
+													mask <<= 1;
+												}
+												state = output[(iRuleC << 5) + iBit];
+												break;
+											}
+										}
+									}
+								}
+
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							nw = n;
+							n = gridRow0[x];
+							w = c;
+							c = e;
+							s = se;
+							if (x == width - 1) {
+								e = 0;
+								se = 0;
+							} else {
+								e = gridRow1[x + 1];
+								se = gridRow2[x + 1];
+							}
+
+							uint32_t *lutc = lut0 + c * nCompressed;
+							uint32_t *lutn = lut1 + n * nCompressed;
+							uint32_t *lute = lut2 + e * nCompressed;
+							uint32_t *lutse = lut3 + se * nCompressed;
+							uint32_t *luts = lut4 + s * nCompressed;
+							uint32_t *lutw = lut5 + w * nCompressed;
+							uint32_t *lutnw = lut6 + nw * nCompressed;
+							uint8_t state = c;
+
+							for (uint32_t iRuleC = 0; iRuleC < nCompressed; iRuleC++) {
+								uint32_t isMatch = lutc[iRuleC] & lutn[iRuleC];
+								if (isMatch) {
+									isMatch &= lute[iRuleC] & lutse[iRuleC];
+									if (isMatch) {
+										isMatch &= luts[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
+										if (isMatch) {
+											uint32_t iBit = 0;
+											uint32_t mask = 1;
+											while (!(isMatch & mask)) {
+												iBit++;
+												mask <<= 1;
+											}
+											state = output[(iRuleC << 5) + iBit];
+											break;
+										}
+									}
+								}
+							}
+
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
+
+							// next row
+							y++;
+							rowIndex >>= 1;
+							gridRow1 += colourGridWidth;
+							nextRow += colourGridWidth;
+						}
+
+						// update the column and row occupied cells
+						columnOccupied16[leftX >> 4] |= colOccupied;
+
+						// update tile grid if any cells are set
+						if (colOccupied) {
+							// set this tile
+							nextTiles |= (1 << bit);
+
+							// check for neighbours
+							if (rowOccupied & 1) {
+								neighbours |= topSet;
+								if (colOccupied & 32768) {
+									neighbours |= topLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= topRightSet;
+								}
+							}
+
+							if (rowOccupied & 32768) {
+								neighbours |= bottomSet;
+								if (colOccupied & 32768) {
+									neighbours |= bottomLeftSet;
+								}
+								if (colOccupied & 1) {
+									neighbours |= bottomRightSet;
+								}
+							}
+
+							if (colOccupied & 32768) {
+								neighbours |= leftSet;
+							}
+
+							if (colOccupied & 1) {
+								neighbours |= rightSet;
+							}
+
+							// update any neighbouring tiles
+							if (neighbours) {
+								// check whether left edge occupied
+								if (neighbours & leftSet) {
+									if (bit < 15) {
+										nextTiles |= (1 << (bit + 1));
+									} else {
+										// set in previous set if not at left edge
+										if ((tw > 0) && (leftX > 0)) {
+											nextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether right edge occupied
+								if (neighbours & rightSet) {
+									if (bit > 0) {
+										nextTiles |= (1 << (bit - 1));
+									} else {
+										// set carry over to go into next set if not at right edge
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											nextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether bottom edge occupied
+								if (neighbours & bottomSet) {
+									// set in lower tile set
+									belowNextTiles |= (1 << bit);
+								}
+
+								// check whether top edge occupied
+								if (neighbours & topSet) {
+									// set in upper tile set
+									aboveNextTiles |= (1 << bit);
+								}
+
+								// check whether bottom left occupied
+								if (neighbours & bottomLeftSet) {
+									if (bit < 15) {
+										belowNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											belowNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether bottom right occupied
+								if (neighbours & bottomRightSet) {
+									if (bit > 0) {
+										belowNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											belowNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+
+								// check whether top left occupied
+								if (neighbours & topLeftSet) {
+									if (bit < 15) {
+										aboveNextTiles |= (1 << (bit + 1));
+									} else {
+										if ((tw > 0) && (leftX > 0)) {
+											aboveNextTileRow[tw - 1] |= 1;
+										}
+									}
+								}
+
+								// check whether top right occupied
+								if (neighbours & topRightSet) {
+									if (bit > 0) {
+										aboveNextTiles |= (1 << (bit - 1));
+									} else {
+										if ((tw < tileCols16 - 1) && (leftX < width - 1)) {
+											aboveNextTileRow[tw + 1] |= (1 << 15);
+										}
+									}
+								}
+							}
+						} else {
+							// all the cells in the tile died so check if any source cells were alive
+							if (anyAlive) {
+								diedTiles |= 1 << bit;
+							}
+						}
+
+						// save the row occupied falgs
+						rowOccupied16[th] |= rowOccupied;
+					}
+
+					// next tile columns
+					leftX += xSize;
+					rightX += xSize;
+				}
+
+				// save the tile groups
+				nextTileRow[tw] |= nextTiles;
+				if (th > 0) {
+					belowNextTileRow[tw] |= belowNextTiles;
+				}
+				if (th < tileRows - 1) {
+					aboveNextTileRow[tw] |= aboveNextTiles;
+				}
+			} else {
+				// skip tile set
+				leftX += xSize << 4;
+				rightX += xSize << 4;
+			}
+
+			// update tiles where all cells died
+			diedRow[tw] = diedTiles;
+		}
+
+		// next tile rows
+		bottomY += ySize;
+		topY += ySize;
+	}
+
+	// clear the blank tile row since it may have been written to at top and bottom
+	memset(blankTileRow, 0, blankTileRowWidth * sizeof(*blankTileRow));
+
+	// clear tiles in source that died
+	clearTilesThatDied(grid, colourGridWidth, diedGrid, tileRows, tileGridWidth, xSize, ySize, tileCols16);
+
+	// set the history tile grid to the colour tile grid
+	for (uint32_t y = 0; y < tileGridSize; y++) {
+		colourTileHistoryGrid[y] |= tileGrid[y] | nextTileGrid[y];
+	}
+
+	// return data to JS
+	*shared++ = population;
+	*shared++ = births;
+	*shared++ = deaths;
+
+	// update bounding box
+	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// compute RuleTable rule next generation for von Neumann neighbourhood
+void nextGenerationRuleTableVN(
+	uint8_t *const colourGrid,
+	uint8_t *const nextColourGrid,
+	const uint32_t colourGridWidth,
+	uint16_t *const tileGrid16,
+	uint16_t *const nextTileGrid16,
+	uint16_t *const colourTileHistoryGrid,
+	const uint32_t tileGridWidth,
+	const uint32_t tileGridSize,
+	uint16_t *const diedGrid,
+	uint16_t *const columnOccupied16,
+	const uint32_t columnOccupiedWidth,
+	uint16_t *const rowOccupied16,
+	const uint32_t rowOccupiedWidth,
+	uint32_t *const lut,
+	const uint32_t lutSize,
+	uint8_t *const output,
+	const uint32_t nCompressed,
+	const uint32_t width,
+	const uint32_t height,
+	const uint32_t ySize,
+	const uint32_t tileRows,
+	const uint32_t tileCols,
+	uint16_t *const blankTileRow,
+	const uint32_t blankTileRowWidth,
+	uint8_t *const blankColourRow,
+	const uint32_t counter,
+	const uint32_t bottomRightSet,
+	const uint32_t bottomSet,
+	const uint32_t topRightSet,
+	const uint32_t topSet,
+	const uint32_t bottomLeftSet,
+	const uint32_t topLeftSet,
+	const uint32_t leftSet,
+	const uint32_t rightSet,
+	uint32_t *shared
+) {
+	uint32_t n, e, s, w, c;
+
+	// compute the offsets in the LUT array
+	uint32_t nOffset = lutSize / 5;
+
+	// get the pointers to the per neighbour LUTs
+	uint32_t *const lut0 = lut;
+	uint32_t *const lut1 = lut + nOffset;
+	uint32_t *const lut2 = lut + nOffset * 2;
+	uint32_t *const lut3 = lut + nOffset * 3;
+	uint32_t *const lut4 = lut + nOffset * 4;
+
+	// population statistics
+	uint32_t population = 0, births = 0, deaths = 0;
+
+	// tile width
+	const uint32_t xSize = ySize;
+
+	// tile columns in 16 bit values
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	// constants
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+
+	// grid
+	uint8_t *grid = nextColourGrid;
+	uint8_t *nextGrid = colourGrid;
+	uint16_t *tileGrid = nextTileGrid16;
+	uint16_t *nextTileGrid = tileGrid16;
+
+	// select the correct grid
+	if ((counter & 1) == 0) {
+		grid = colourGrid;
+		nextGrid = nextColourGrid;
+		tileGrid = tileGrid16;
+		nextTileGrid = nextTileGrid16;
+	}
+
+	// clear column occupied flags
+	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
+
+	// clear row occupied flags
+	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
+
+	// clear the next tile grid
+	memset(nextTileGrid, 0, tileGridSize * sizeof(*nextTileGrid));
+
+	// set the initial tile row
+	uint32_t bottomY = 0;
+	uint32_t topY = bottomY + ySize;
+
+	// scan each row of tiles
+	for (uint32_t th = 0; th < tileRows; th++) {
+		// set initial tile column
+		uint32_t leftX = 0;
+		uint32_t rightX = leftX + xSize;
+
+		// get the colour tile rows
+		uint16_t *tileRow = tileGrid + th * tileGridWidth;
+		uint16_t *nextTileRow = nextTileGrid + th * tileGridWidth;
+		uint16_t *diedRow = diedGrid + th * tileGridWidth;
+		uint16_t *belowNextTileRow = blankTileRow;
+		uint16_t *aboveNextTileRow = blankTileRow;
+
+		// get the tile row below
+		if (th > 0) {
+			belowNextTileRow = nextTileRow - tileGridWidth;
+		}
+
+		// get the tile row above
+		if (th < tileRows - 1) {
+			aboveNextTileRow = nextTileRow + tileGridWidth;
+		}
+
+		// scan each set of tiles
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group (16 tiles)
+			uint32_t tiles = *(tileRow + tw);
+			uint32_t diedTiles = 0;
+
+			// check if any are occupied
+			if (tiles) {
+				// get the destination
+				uint32_t nextTiles = *(nextTileRow + tw);
+				uint32_t belowNextTiles = *(belowNextTileRow + tw);
+				uint32_t aboveNextTiles = *(aboveNextTileRow + tw);
+
+				// compute next colour for each tile in the set
+				for (int32_t bit = 15; bit >= 0; bit--) {
+					// check if this tile is occupied
+					if (tiles & (1 << bit)) {
+						// mark no cells alive in the source tile
+						uint32_t anyAlive = 0;
+
+						// mark no cells in this column
+						uint32_t colOccupied = 0;
+
+						// mark no cells in the tile rows
+						uint32_t rowOccupied = 0;
+
+						// clear the edge flags
+						uint32_t neighbours = 0;
+
+						// process the bottom row of the tile
+						uint32_t y = bottomY;
+						uint32_t rowIndex = 32768;
+
+						// process each row of the tile
+						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
+						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
+
+						while (y < topY) {
+							uint8_t *gridRow0 = blankColourRow;
+							uint8_t *gridRow2 = blankColourRow;
+
+							// deal with bottom row of the grid
+							if (y > 0) {
+								gridRow0 = gridRow1 - colourGridWidth;
+							}
+							// deal with top row of the grid
+							if (y < height - 1) {
+								gridRow2 = gridRow1 + colourGridWidth;
+							}
+
+							// process each column in the row
+							uint32_t x = leftX;
+
+							// get original 16 cells
+							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+							// get initial neighbours
+							if (x == 0) {
+								c = 0;
+							} else {
+								c = *(gridRow1 + x - 1);
+							}
+							e = *(gridRow1 + x);
+
+							while (x < rightX - 1) {
+								// shift neighbourhood left
+								n = *(gridRow0 + x);
+								w = c;
+								c = e;
+								e = *(gridRow1 + x + 1);
+								s = *(gridRow2 + x);
+								uint8_t state = c;
+
+								uint32_t *lutc = lut0 + c * nCompressed;
+								uint32_t *lutn = lut1 + n * nCompressed;
+								uint32_t *lute = lut2 + e * nCompressed;
+								uint32_t *luts = lut3 + s * nCompressed;
+								uint32_t *lutw = lut4 + w * nCompressed;
+
+								for (uint32_t iRuleC = 0; iRuleC < nCompressed; iRuleC++) {
+									uint32_t isMatch = lutc[iRuleC] & lutn[iRuleC];
+									if (isMatch) {
+										isMatch &= lute[iRuleC] & luts[iRuleC] & lutw[iRuleC];
+										if (isMatch) {
+											uint32_t iBit = 0;
+											uint32_t mask = 1;
+											while (!(isMatch & mask)) {
+												iBit++;
+												mask <<= 1;
+											}
+											state = output[(iRuleC << 5) + iBit];
+											break;
+										}
+									}
+								}
+
+								*(nextRow + x) = state;
+
+								// next column
+								x++;
+							}
+
+							// handle right edge
+							w = c;
+							c = e;
+							n = gridRow0[x];
+							if (x == width - 1) {
+								e = 0;
+							} else {
+								e = gridRow1[x + 1];
+							}
+
+							uint32_t *lutc = lut0 + c * nCompressed;
+							uint32_t *lutn = lut1 + n * nCompressed;
+							uint32_t *lute = lut2 + e * nCompressed;
+							uint32_t *luts = lut3 + s * nCompressed;
+							uint32_t *lutw = lut4 + w * nCompressed;
+							uint8_t state = c;
+
+							for (uint32_t iRuleC = 0; iRuleC < nCompressed; iRuleC++) {
+								uint32_t isMatch = lutc[iRuleC] & lutn[iRuleC];
+								if (isMatch) {
+									isMatch &= lute[iRuleC] & luts[iRuleC] & lutw[iRuleC];
+									if (isMatch) {
+										uint32_t iBit = 0;
+										uint32_t mask = 1;
+										while (!(isMatch & mask)) {
+											iBit++;
+											mask <<= 1;
+										}
+										state = output[(iRuleC << 5) + iBit];
+										break;
+									}
+								}
+							}
+
+							*(nextRow + x) = state;
+
+							// load new row
+							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
+
+							// get original alive cells
+							v128_t origAliveVec = wasm_u8x16_gt(origCellsVec, zeroVec);
+							uint32_t origAlive = wasm_i8x16_bitmask(origAliveVec);
+
+							// get new alive cells
+							v128_t newAliveVec = wasm_u8x16_gt(newCellsVec, zeroVec);
+							uint32_t newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update births and deaths
+							births += __builtin_popcount(newAlive & ~origAlive);
+							deaths += __builtin_popcount(origAlive & ~newAlive);
+
+							// get new alive cells in correct order
+							newAliveVec = wasm_i8x16_swizzle(newAliveVec, reverseVec);
+							newAlive = wasm_i8x16_bitmask(newAliveVec);
+
+							// update population
+							population += __builtin_popcount(newAlive);
+
+							// check if any cell was alive in the source
+							anyAlive |= newAlive;
+
+							if (newAlive) {
+								colOccupied |= newAlive;
+								rowOccupied |= rowIndex;
+							}
 
 							// next row
 							y++;
