@@ -28,7 +28,8 @@ SETTINGS = -s INITIAL_MEMORY=1024MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="
 	'_nextGenerationRuleTreeVN', \
 	'_nextGenerationRuleLoaderVNLookup1', '_nextGenerationRuleLoaderVNLookup2', '_nextGenerationRuleLoaderVNLookup3', \
 	'_nextGenerationRuleLoaderVNLookup4', '_nextGenerationRuleLoaderVNLookup5', \
-	'_nextGenerationRuleTableMoore', \
+	'_nextGenerationRuleTableMoore', '_nextGenerationRuleTableHex', '_nextGenerationRuleTableVN', \
+	'_nextGenerationRuleLoaderHexLookup1', '_nextGenerationRuleLoaderHexLookup2', '_nextGenerationRuleLoaderHexLookup3', \
 	'_renderGridClipNoRotate', '_renderGridNoClipNoRotate', \
 	'_renderOverlayClipNoRotate', '_renderOverlayNoClipNoRotate', \
 	'_updateOccupancyStrict', '_updateCellCounts', '_updateCellCountsSuperOrRuleTree', '_updateOccupancyStrictSuperOrRuleLoader', \

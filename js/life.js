@@ -30637,28 +30637,222 @@ This file is part of LifeViewer
 
 		// Hex
 		case PatternConstants.ruleTableHex:
-			// check if a fast lookup is available
-			if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
-				switch (this.ruleLoaderLookupBits) {
-				case 1:
-					this.nextGenerationRuleLoaderTileHexLookup1();
-					break;
+			if (Controller.useWASM && Controller.wasmEnableNextGenerationRuleLoader && this.view.wasmEnabled) {
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						WASM.nextGenerationRuleLoaderHexLookup1(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 2:
-					this.nextGenerationRuleLoaderTileHexLookup2();
-					break;
+					case 2:
+						WASM.nextGenerationRuleLoaderHexLookup2(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				case 3:
-					this.nextGenerationRuleLoaderTileHexLookup3();
-					break;
+					case 3:
+						WASM.nextGenerationRuleLoaderHexLookup3(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.ruleLoaderLookup.byteOffset | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+						break;
 
-				default:
-					this.nextGenerationRuleTableTileHex();
-					break;
+					default:
+						WASM.nextGenerationRuleTableHex(
+							this.colourGrid.whole.byteOffset | 0,
+							this.nextColourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							this.tileGrid.whole.byteOffset | 0,
+							this.nextTileGrid.whole.byteOffset | 0,
+							this.colourTileHistoryGrid.whole.byteOffset | 0,
+							this.tileGrid[0].length | 0,
+							this.tileGrid.whole.length | 0,
+							this.diedGrid.whole.byteOffset | 0,
+							this.columnOccupied16.byteOffset | 0,
+							this.columnOccupied16.length | 0,
+							this.rowOccupied16.byteOffset | 0,
+							this.rowOccupied16.length | 0,
+							this.flatRuleTableLUT.byteOffset | 0,
+							this.flatRuleTableLUT.length | 0,
+							this.ruleTableOutput.byteOffset | 0,
+							this.ruleTableCompressedRules | 0,
+							this.width | 0,
+							this.height | 0,
+							this.tileY | 0,
+							this.tileRows | 0,
+							this.tileCols | 0,
+							this.blankTileRow.byteOffset | 0,
+							this.blankTileRow.length | 0,
+							this.blankColourRow.byteOffset | 0,
+							this.counter | 0,
+							LifeConstants.bottomRightSet | 0,
+							LifeConstants.bottomSet | 0,
+							LifeConstants.topRightSet | 0,
+							LifeConstants.topSet | 0,
+							LifeConstants.bottomLeftSet | 0,
+							LifeConstants.topLeftSet | 0,
+							LifeConstants.leftSet | 0,
+							LifeConstants.rightSet | 0,
+							this.sharedBuffer.byteOffset | 0
+						);
+					}
+				} else {
+					WASM.nextGenerationRuleTableHex(
+						this.colourGrid.whole.byteOffset | 0,
+						this.nextColourGrid.whole.byteOffset | 0,
+						this.colourGrid[0].length | 0,
+						this.tileGrid.whole.byteOffset | 0,
+						this.nextTileGrid.whole.byteOffset | 0,
+						this.colourTileHistoryGrid.whole.byteOffset | 0,
+						this.tileGrid[0].length | 0,
+						this.tileGrid.whole.length | 0,
+						this.diedGrid.whole.byteOffset | 0,
+						this.columnOccupied16.byteOffset | 0,
+						this.columnOccupied16.length | 0,
+						this.rowOccupied16.byteOffset | 0,
+						this.rowOccupied16.length | 0,
+						this.flatRuleTableLUT.byteOffset | 0,
+						this.flatRuleTableLUT.length | 0,
+						this.ruleTableOutput.byteOffset | 0,
+						this.ruleTableCompressedRules | 0,
+						this.width | 0,
+						this.height | 0,
+						this.tileY | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
+						this.blankTileRow.byteOffset | 0,
+						this.blankTileRow.length | 0,
+						this.blankColourRow.byteOffset | 0,
+						this.counter | 0,
+						LifeConstants.bottomRightSet | 0,
+						LifeConstants.bottomSet | 0,
+						LifeConstants.topRightSet | 0,
+						LifeConstants.topSet | 0,
+						LifeConstants.bottomLeftSet | 0,
+						LifeConstants.topLeftSet | 0,
+						LifeConstants.leftSet | 0,
+						LifeConstants.rightSet | 0,
+						this.sharedBuffer.byteOffset | 0
+					);
 				}
 			} else {
-				// no fast lookup so use standard routine
-				this.nextGenerationRuleTableTileHex();
+				// check if a fast lookup is available
+				if (this.ruleLoaderLookup !== null && this.ruleLoaderLookupEnabled && this.ruleLoaderStep === -1) {
+					switch (this.ruleLoaderLookupBits) {
+					case 1:
+						this.nextGenerationRuleLoaderTileHexLookup1();
+						break;
+	
+					case 2:
+						this.nextGenerationRuleLoaderTileHexLookup2();
+						break;
+	
+					case 3:
+						this.nextGenerationRuleLoaderTileHexLookup3();
+						break;
+	
+					default:
+						this.nextGenerationRuleTableTileHex();
+						break;
+					}
+				} else {
+					// no fast lookup so use standard routine
+					this.nextGenerationRuleTableTileHex();
+				}
 			}
 			break;
 
