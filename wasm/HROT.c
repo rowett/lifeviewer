@@ -29,7 +29,7 @@
 //	clearHROTOutside (Bounded Grid)
 //
 // TODO:
-//	handle negative counts from Weighted States in updateGridFromCounts2/N
+//	handle negative counts from Weighted Grid in updateGridFromCounts2/N
 
 /*
 This file is part of LifeViewer

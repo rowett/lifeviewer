@@ -4442,8 +4442,6 @@ void nextGenerationRuleLoaderMooreLookup1(
 	const uint32_t rightSet,
 	uint32_t *shared
 ) {
-	uint32_t e, ne, se;
-
 	// population statistics
 	uint32_t population = 0, births = 0, deaths = 0;
 
@@ -4488,7 +4486,6 @@ void nextGenerationRuleLoaderMooreLookup1(
 	for (uint32_t th = 0; th < tileRows; th++) {
 		// set initial tile column
 		uint32_t leftX = 0;
-		uint32_t rightX = leftX + xSize;
 
 		// get the colour tile rows
 		uint16_t *tileRow = tileGrid + th * tileGridWidth;
@@ -4540,73 +4537,115 @@ void nextGenerationRuleLoaderMooreLookup1(
 						uint32_t y = bottomY;
 						uint32_t rowIndex = 32768;
 
+						// get pointers to the current source row, the row above and row below
+						uint8_t *gridRow1 = grid + y * colourGridWidth;
+						v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+						uint8_t *gridRow0 = y ? gridRow1 - colourGridWidth : blankColourRow;
+						v128_t aboveCellsVec = y ? wasm_v128_load(gridRow0 + leftX) : zeroVec;
+
+						uint8_t *gridRow2 = gridRow1 + colourGridWidth;
+						v128_t belowCellsVec = wasm_v128_load(gridRow2 + leftX);
+
+						// combine the three rows with shifts since we can fit 3 x 1 bits in the 8 bit lane
+						v128_t combinedVec = wasm_v128_or(aboveCellsVec, wasm_i8x16_shl(origCellsVec, 1));
+						combinedVec = wasm_v128_or(combinedVec, wasm_i8x16_shl(belowCellsVec, 2));
+
+						// get pointer to destintation row
+						uint8_t *nextRow = nextGrid + y * colourGridWidth;
+
 						// process each row of the tile
-						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
-						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
-
 						while (y < topY) {
-							uint8_t *gridRow0 = blankColourRow;
-							uint8_t *gridRow2 = blankColourRow;
-
-							// deal with bottom row of the grid
-							if (y > 0) {
-								gridRow0 = gridRow1 - colourGridWidth;
-							}
-							// deal with top row of the grid
-							if (y < height - 1) {
-								gridRow2 = gridRow1 + colourGridWidth;
-							}
-
 							// process each column in the row
-							uint32_t x = leftX;
 							uint32_t index;
 
-							// get original 16 cells
-							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
-
 							// process each cell along the tile row
-							ne = gridRow0[x + 1];
-							e = gridRow1[x + 1];
-							se = gridRow2[x + 1];
-							if (x == 0) {
+							uint8_t ne = wasm_u8x16_extract_lane(combinedVec, 1);
+							uint8_t n = wasm_u8x16_extract_lane(combinedVec, 0);
+
+							if (leftX == 0) {
 								// handle left edge of grid
-								index = (gridRow0[x] << 3) | (gridRow1[x] << 4) | (gridRow2[x] << 5) | (ne << 6) | (e << 7) | (se << 8);
+								index = (n << 3) | (ne << 6);
 							} else {
-								index = gridRow0[x - 1] | (gridRow1[x - 1] << 1) | (gridRow2[x - 1] << 2) | (gridRow0[x] << 3) | (gridRow1[x] << 4) | (gridRow2[x] << 5) | (ne << 6) | (e << 7) | (se << 8);
+								index = gridRow0[leftX - 1] | (gridRow1[leftX - 1] << 1) | (gridRow2[leftX - 1] << 2) | (n << 3) | (ne << 6);
 							}
-							uint8_t state = lookup[index];
-							*(nextRow + x) = state;
+							const uint8_t state0 = lookup[index];
 
-							// next column
-							x++;
+							// process middle lanes
+							ne = wasm_u8x16_extract_lane(combinedVec, 2);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state1 = lookup[index];
 
-							// handle middle cells
-							while (x < rightX - 1) {
-								// shift neighbourhood left
-								ne = *(gridRow0 + x + 1);
-								e = *(gridRow1 + x + 1);
-								se = *(gridRow2 + x + 1);
-								index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
-								state = lookup[index];
-								*(nextRow + x) = state;
+							ne = wasm_u8x16_extract_lane(combinedVec, 3);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state2 = lookup[index];
 
-								// next column
-								x++;
-							}
+							ne = wasm_u8x16_extract_lane(combinedVec, 4);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state3 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 5);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state4 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 6);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state5 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 7);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state6 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 8);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state7 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 9);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state8 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 10);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state9 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 11);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state10 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 12);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state11 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 13);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state12 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 14);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state13 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 15);
+							index = (index >> 3) | (ne << 6);
+							const uint8_t state14 = lookup[index];
 
 							// handle right edge
-							if (x == width - 1) {
+							uint8_t e, se;
+							if (leftX + 15 == width - 1) {
 								ne = 0;
 								e = 0;
 								se = 0;
 							} else {
-								ne = *(gridRow0 + x + 1);
-								e = *(gridRow1 + x + 1);
-								se = *(gridRow2 + x + 1);
+								ne = *(gridRow0 + leftX + 16);
+								e = *(gridRow1 + leftX + 16);
+								se = *(gridRow2 + leftX + 16);
 							}
 							index = (index >> 3) | (ne << 6) | (e << 7) | (se << 8);
-							state = lookup[index];
-							*(nextRow + x) = state;
+							const uint8_t state15 = lookup[index];
+
+							// write the new cells
+							v128_t writeVec = wasm_u8x16_make(state0, state1, state2, state3, state4, state5, state6, state7,
+								state8, state9, state10, state11, state12, state13, state14, state15);
+							wasm_v128_store(nextRow + leftX, writeVec);
 
 							// load new row
 							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
@@ -4641,7 +4680,21 @@ void nextGenerationRuleLoaderMooreLookup1(
 							// next row
 							y++;
 							rowIndex >>= 1;
+
+							// move the three source rows up
+							aboveCellsVec = origCellsVec;
+							origCellsVec = belowCellsVec;
+							gridRow0 = gridRow1;
 							gridRow1 += colourGridWidth;
+
+							// handle bottom of grid
+							gridRow2 = (y < height - 1) ? gridRow1 + colourGridWidth : blankColourRow;
+							belowCellsVec = (y < height - 1) ? wasm_v128_load(gridRow2 + leftX) : zeroVec;
+
+							combinedVec = wasm_v128_or(aboveCellsVec, wasm_i8x16_shl(origCellsVec, 1));
+							combinedVec = wasm_v128_or(combinedVec, wasm_i8x16_shl(belowCellsVec, 2));
+
+							// next destination row
 							nextRow += colourGridWidth;
 						}
 
@@ -4777,7 +4830,6 @@ void nextGenerationRuleLoaderMooreLookup1(
 
 					// next tile columns
 					leftX += xSize;
-					rightX += xSize;
 				}
 
 				// save the tile groups
@@ -4791,7 +4843,6 @@ void nextGenerationRuleLoaderMooreLookup1(
 			} else {
 				// skip tile set
 				leftX += xSize << 4;
-				rightX += xSize << 4;
 			}
 
 			// update tiles where all cells died
@@ -4860,8 +4911,6 @@ void nextGenerationRuleLoaderMooreLookup2(
 	const uint32_t rightSet,
 	uint32_t *shared
 ) {
-	uint32_t e, ne, se;
-
 	// population statistics
 	uint32_t population = 0, births = 0, deaths = 0;
 
@@ -4906,7 +4955,6 @@ void nextGenerationRuleLoaderMooreLookup2(
 	for (uint32_t th = 0; th < tileRows; th++) {
 		// set initial tile column
 		uint32_t leftX = 0;
-		uint32_t rightX = leftX + xSize;
 
 		// get the colour tile rows
 		uint16_t *tileRow = tileGrid + th * tileGridWidth;
@@ -4958,73 +5006,115 @@ void nextGenerationRuleLoaderMooreLookup2(
 						uint32_t y = bottomY;
 						uint32_t rowIndex = 32768;
 
+						// get pointers to the current source row, the row above and row below
+						uint8_t *gridRow1 = grid + y * colourGridWidth;
+						v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+						uint8_t *gridRow0 = y ? gridRow1 - colourGridWidth : blankColourRow;
+						v128_t aboveCellsVec = y ? wasm_v128_load(gridRow0 + leftX) : zeroVec;
+
+						uint8_t *gridRow2 = gridRow1 + colourGridWidth;
+						v128_t belowCellsVec = wasm_v128_load(gridRow2 + leftX);
+
+						// combine the three rows with shifts since we can fit 3 x 2 bits in the 8 bit lane
+						v128_t combinedVec = wasm_v128_or(aboveCellsVec, wasm_i8x16_shl(origCellsVec, 2));
+						combinedVec = wasm_v128_or(combinedVec, wasm_i8x16_shl(belowCellsVec, 4));
+
+						// get pointer to destintation row
+						uint8_t *nextRow = nextGrid + y * colourGridWidth;
+
 						// process each row of the tile
-						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
-						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
-
 						while (y < topY) {
-							uint8_t *gridRow0 = blankColourRow;
-							uint8_t *gridRow2 = blankColourRow;
-
-							// deal with bottom row of the grid
-							if (y > 0) {
-								gridRow0 = gridRow1 - colourGridWidth;
-							}
-							// deal with top row of the grid
-							if (y < height - 1) {
-								gridRow2 = gridRow1 + colourGridWidth;
-							}
-
 							// process each column in the row
-							uint32_t x = leftX;
 							uint32_t index;
 
-							// get original 16 cells
-							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
-
 							// process each cell along the tile row
-							ne = gridRow0[x + 1];
-							e = gridRow1[x + 1];
-							se = gridRow2[x + 1];
-							if (x == 0) {
+							uint8_t ne = wasm_u8x16_extract_lane(combinedVec, 1);
+							uint8_t n = wasm_u8x16_extract_lane(combinedVec, 0);
+
+							if (leftX == 0) {
 								// handle left edge of grid
-								index = (gridRow0[x] << 6) | (gridRow1[x] << 8) | (gridRow2[x] << 10) | (ne << 12) | (e << 14) | (se << 16);
+								index = (n << 6) | (ne << 12);
 							} else {
-								index = gridRow0[x - 1] | (gridRow1[x - 1] << 2) | (gridRow2[x - 1] << 4) | (gridRow0[x] << 6) | (gridRow1[x] << 8) | (gridRow2[x] << 10) | (ne << 12) | (e << 14) | (se << 16);
+								index = gridRow0[leftX - 1] | (gridRow1[leftX - 1] << 2) | (gridRow2[leftX - 1] << 4) | (n << 6) | (ne << 12);
 							}
-							uint8_t state = lookup[index];
-							*(nextRow + x) = state;
+							const uint8_t state0 = lookup[index];
 
-							// next column
-							x++;
+							// process middle lanes
+							ne = wasm_u8x16_extract_lane(combinedVec, 2);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state1 = lookup[index];
 
-							// handle middle cells
-							while (x < rightX - 1) {
-								// shift neighbourhood left
-								ne = *(gridRow0 + x + 1);
-								e = *(gridRow1 + x + 1);
-								se = *(gridRow2 + x + 1);
-								index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
-								state = lookup[index];
-								*(nextRow + x) = state;
+							ne = wasm_u8x16_extract_lane(combinedVec, 3);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state2 = lookup[index];
 
-								// next column
-								x++;
-							}
+							ne = wasm_u8x16_extract_lane(combinedVec, 4);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state3 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 5);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state4 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 6);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state5 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 7);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state6 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 8);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state7 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 9);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state8 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 10);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state9 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 11);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state10 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 12);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state11 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 13);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state12 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 14);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state13 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(combinedVec, 15);
+							index = (index >> 6) | (ne << 12);
+							const uint8_t state14 = lookup[index];
 
 							// handle right edge
-							if (x == width - 1) {
+							uint8_t e, se;
+							if (leftX + 15 == width - 1) {
 								ne = 0;
 								e = 0;
 								se = 0;
 							} else {
-								ne = *(gridRow0 + x + 1);
-								e = *(gridRow1 + x + 1);
-								se = *(gridRow2 + x + 1);
+								ne = *(gridRow0 + leftX + 16);
+								e = *(gridRow1 + leftX + 16);
+								se = *(gridRow2 + leftX + 16);
 							}
 							index = (index >> 6) | (ne << 12) | (e << 14) | (se << 16);
-							state = lookup[index];
-							*(nextRow + x) = state;
+							const uint8_t state15 = lookup[index];
+
+							// write the new cells
+							v128_t writeVec = wasm_u8x16_make(state0, state1, state2, state3, state4, state5, state6, state7,
+								state8, state9, state10, state11, state12, state13, state14, state15);
+							wasm_v128_store(nextRow + leftX, writeVec);
 
 							// load new row
 							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
@@ -5059,7 +5149,21 @@ void nextGenerationRuleLoaderMooreLookup2(
 							// next row
 							y++;
 							rowIndex >>= 1;
+
+							// move the three source rows up
+							aboveCellsVec = origCellsVec;
+							origCellsVec = belowCellsVec;
+							gridRow0 = gridRow1;
 							gridRow1 += colourGridWidth;
+
+							// handle bottom of grid
+							gridRow2 = (y < height - 1) ? gridRow1 + colourGridWidth : blankColourRow;
+							belowCellsVec = (y < height - 1) ? wasm_v128_load(gridRow2 + leftX) : zeroVec;
+
+							combinedVec = wasm_v128_or(aboveCellsVec, wasm_i8x16_shl(origCellsVec, 2));
+							combinedVec = wasm_v128_or(combinedVec, wasm_i8x16_shl(belowCellsVec, 4));
+
+							// next destination row
 							nextRow += colourGridWidth;
 						}
 
@@ -5195,7 +5299,6 @@ void nextGenerationRuleLoaderMooreLookup2(
 
 					// next tile columns
 					leftX += xSize;
-					rightX += xSize;
 				}
 
 				// save the tile groups
@@ -5209,7 +5312,6 @@ void nextGenerationRuleLoaderMooreLookup2(
 			} else {
 				// skip tile set
 				leftX += xSize << 4;
-				rightX += xSize << 4;
 			}
 
 			// update tiles where all cells died
@@ -5278,8 +5380,6 @@ void nextGenerationRuleLoaderMooreLookup3(
 	const uint32_t rightSet,
 	uint32_t *shared
 ) {
-	uint32_t e, ne, se;
-
 	// population statistics
 	uint32_t population = 0, births = 0, deaths = 0;
 
@@ -5324,7 +5424,6 @@ void nextGenerationRuleLoaderMooreLookup3(
 	for (uint32_t th = 0; th < tileRows; th++) {
 		// set initial tile column
 		uint32_t leftX = 0;
-		uint32_t rightX = leftX + xSize;
 
 		// get the colour tile rows
 		uint16_t *tileRow = tileGrid + th * tileGridWidth;
@@ -5376,73 +5475,130 @@ void nextGenerationRuleLoaderMooreLookup3(
 						uint32_t y = bottomY;
 						uint32_t rowIndex = 32768;
 
+						// get pointers to the current source row, the row above and row below
+						uint8_t *gridRow1 = grid + y * colourGridWidth;
+						v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
+
+						uint8_t *gridRow0 = y ? gridRow1 - colourGridWidth : blankColourRow;
+						v128_t aboveCellsVec = y ? wasm_v128_load(gridRow0 + leftX) : zeroVec;
+
+						uint8_t *gridRow2 = gridRow1 + colourGridWidth;
+						v128_t belowCellsVec = wasm_v128_load(gridRow2 + leftX);
+
+						// combine the middle and bottom row with a shift since we can fit 2 x 3 bits in the 8 bit lane
+						v128_t botTwoVec = wasm_v128_or(origCellsVec, wasm_i8x16_shl(belowCellsVec, 3));
+
+						// get pointer to destintation row
+						uint8_t *nextRow = nextGrid + y * colourGridWidth;
+
 						// process each row of the tile
-						uint8_t *gridRow1 = grid + bottomY * colourGridWidth;
-						uint8_t *nextRow = nextGrid + bottomY * colourGridWidth;
-
 						while (y < topY) {
-							uint8_t *gridRow0 = blankColourRow;
-							uint8_t *gridRow2 = blankColourRow;
-
-							// deal with bottom row of the grid
-							if (y > 0) {
-								gridRow0 = gridRow1 - colourGridWidth;
-							}
-							// deal with top row of the grid
-							if (y < height - 1) {
-								gridRow2 = gridRow1 + colourGridWidth;
-							}
-
 							// process each column in the row
-							uint32_t x = leftX;
 							uint32_t index;
 
-							// get original 16 cells
-							v128_t origCellsVec = wasm_v128_load(gridRow1 + leftX);
-
 							// process each cell along the tile row
-							ne = gridRow0[x + 1];
-							e = gridRow1[x + 1];
-							se = gridRow2[x + 1];
-							if (x == 0) {
+							uint8_t ne = wasm_u8x16_extract_lane(aboveCellsVec, 1);
+							uint8_t e = wasm_u8x16_extract_lane(botTwoVec, 1);
+							uint8_t n = wasm_u8x16_extract_lane(aboveCellsVec, 0);
+							uint8_t c = wasm_u8x16_extract_lane(botTwoVec, 0);
+
+							if (leftX == 0) {
 								// handle left edge of grid
-								index = (gridRow0[x] << 9) | (gridRow1[x] << 12) | (gridRow2[x] << 15) | (ne << 18) | (e << 21) | (se << 24);
+								index = (n << 9) | (c << 12) | (ne << 18) | (e << 21);
 							} else {
-								index = gridRow0[x - 1] | (gridRow1[x - 1] << 3) | (gridRow2[x - 1] << 6) | (gridRow0[x] << 9) | (gridRow1[x] << 12) | (gridRow2[x] << 15) | (ne << 18) | (e << 21) | (se << 24);
+								index = gridRow0[leftX - 1] | (gridRow1[leftX - 1] << 3) | (gridRow2[leftX - 1] << 6) | (n << 9) | (c << 12) | (ne << 18) | (e << 21);
 							}
-							uint8_t state = lookup[index];
-							*(nextRow + x) = state;
+							const uint8_t state0 = lookup[index];
 
-							// next column
-							x++;
+							// process middle lanes
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 2);
+							e = wasm_u8x16_extract_lane(botTwoVec, 2);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state1 = lookup[index];
 
-							// handle middle cells
-							while (x < rightX - 1) {
-								// shift neighbourhood left
-								ne = *(gridRow0 + x + 1);
-								e = *(gridRow1 + x + 1);
-								se = *(gridRow2 + x + 1);
-								index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
-								state = lookup[index];
-								*(nextRow + x) = state;
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 3);
+							e = wasm_u8x16_extract_lane(botTwoVec, 3);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state2 = lookup[index];
 
-								// next column
-								x++;
-							}
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 4);
+							e = wasm_u8x16_extract_lane(botTwoVec, 4);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state3 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 5);
+							e = wasm_u8x16_extract_lane(botTwoVec, 5);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state4 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 6);
+							e = wasm_u8x16_extract_lane(botTwoVec, 6);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state5 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 7);
+							e = wasm_u8x16_extract_lane(botTwoVec, 7);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state6 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 8);
+							e = wasm_u8x16_extract_lane(botTwoVec, 8);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state7 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 9);
+							e = wasm_u8x16_extract_lane(botTwoVec, 9);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state8 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 10);
+							e = wasm_u8x16_extract_lane(botTwoVec, 10);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state9 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 11);
+							e = wasm_u8x16_extract_lane(botTwoVec, 11);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state10 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 12);
+							e = wasm_u8x16_extract_lane(botTwoVec, 12);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state11 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 13);
+							e = wasm_u8x16_extract_lane(botTwoVec, 13);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state12 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 14);
+							e = wasm_u8x16_extract_lane(botTwoVec, 14);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state13 = lookup[index];
+
+							ne = wasm_u8x16_extract_lane(aboveCellsVec, 15);
+							e = wasm_u8x16_extract_lane(botTwoVec, 15);
+							index = (index >> 9) | (ne << 18) | (e << 21);
+							const uint8_t state14 = lookup[index];
 
 							// handle right edge
-							if (x == width - 1) {
+							uint8_t se;
+							if (leftX + 15 == width - 1) {
 								ne = 0;
 								e = 0;
 								se = 0;
 							} else {
-								ne = *(gridRow0 + x + 1);
-								e = *(gridRow1 + x + 1);
-								se = *(gridRow2 + x + 1);
+								ne = *(gridRow0 + leftX + 16);
+								e = *(gridRow1 + leftX + 16);
+								se = *(gridRow2 + leftX + 16);
 							}
 							index = (index >> 9) | (ne << 18) | (e << 21) | (se << 24);
-							state = lookup[index];
-							*(nextRow + x) = state;
+							const uint8_t state15 = lookup[index];
+
+							// write the new cells
+							v128_t writeVec = wasm_u8x16_make(state0, state1, state2, state3, state4, state5, state6, state7,
+								state8, state9, state10, state11, state12, state13, state14, state15);
+							wasm_v128_store(nextRow + leftX, writeVec);
 
 							// load new row
 							v128_t newCellsVec = wasm_v128_load(nextRow + leftX);
@@ -5477,7 +5633,20 @@ void nextGenerationRuleLoaderMooreLookup3(
 							// next row
 							y++;
 							rowIndex >>= 1;
+
+							// move the three source rows up
+							aboveCellsVec = origCellsVec;
+							origCellsVec = belowCellsVec;
+							gridRow0 = gridRow1;
 							gridRow1 += colourGridWidth;
+
+							// handle bottom of grid
+							gridRow2 = (y < height - 1) ? gridRow1 + colourGridWidth : blankColourRow;
+							belowCellsVec = (y < height - 1) ? wasm_v128_load(gridRow2 + leftX) : zeroVec;
+
+							botTwoVec = wasm_v128_or(origCellsVec, wasm_i8x16_shl(belowCellsVec, 3));
+
+							// next destination row
 							nextRow += colourGridWidth;
 						}
 
@@ -5613,7 +5782,6 @@ void nextGenerationRuleLoaderMooreLookup3(
 
 					// next tile columns
 					leftX += xSize;
-					rightX += xSize;
 				}
 
 				// save the tile groups
@@ -5627,7 +5795,6 @@ void nextGenerationRuleLoaderMooreLookup3(
 			} else {
 				// skip tile set
 				leftX += xSize << 4;
-				rightX += xSize << 4;
 			}
 
 			// update tiles where all cells died
