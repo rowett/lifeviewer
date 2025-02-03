@@ -25,6 +25,11 @@ This file is part of LifeViewer
 		// how long to show notification before Identify phase 2 begins
 		/** @const {number} */ identifyNotificationDuration : 15,
 
+		// render modes for 2-state Life-like patterns
+		/** @const {number} */ renderLongevity : 0,
+		/** @const {number} */ renderRainbow : 1,
+		/** @const {number} */ renderNeighbourCount : 2,
+
 		// state modes
 		/** @const {number} */ mode2 : 0,
 		/** @const {number} */ mode2Table : 1,
@@ -520,8 +525,8 @@ This file is part of LifeViewer
 		// list of potential gliders to clear
 		/** @type {Array} */ this.potentialClears = [];
 
-		// whether to draw 2-state as rainbow
-		/** @type {boolean} */ this.rainbow = false;
+		// 2-state renderer
+		/** @type {number} */ this.cellRenderer = LifeConstants.renderLongevity;
 
 		// whether to draw grid
 		/** @type {boolean} */ this.doDrawGrid = true;
@@ -7801,10 +7806,18 @@ This file is part of LifeViewer
 				}
 
 				// set cell
-				if (this.rainbow) {
-					colourGrid[y][x] = ((x + y) & 127) + 64;
-				} else {
-					colourGrid[y][x] = this.aliveStart;
+				switch (this.cellRenderer) {
+					case LifeConstants.renderLongevity:
+						colourGrid[y][x] = this.aliveStart;
+						break;
+
+					case LifeConstants.renderRainbow:
+						colourGrid[y][x] = ((x + y) & 127) + 64;
+						break;
+
+					case LifeConstants.renderNeighbourCount:
+						colourGrid[y][x] = this.aliveStart;  // TBD rainbow
+						break;
 				}
 
 				// update tile grids
@@ -8367,13 +8380,18 @@ This file is part of LifeViewer
 					}
 
 					// set cell
-					if (this.rainbow) {
+					if (this.cellRenderer === LifeConstants.renderRainbow) {
 						colourGrid[y][x] = ((x + y) & 127) + 64;
 					} else {
-						if (this.isExtended || this.isSuper) {
-							colourGrid[y][x] = state;
-						} else {
+						if (this.cellRenderer === LifeConstants.renderNeighbourCount) {
+							// TBD rainbow
 							colourGrid[y][x] = this.aliveStart;
+						} else {
+							if (this.isExtended || this.isSuper) {
+								colourGrid[y][x] = state;
+							} else {
+								colourGrid[y][x] = this.aliveStart;
+							}
 						}
 					}
 
@@ -9344,7 +9362,7 @@ This file is part of LifeViewer
 
 
 	// copy data in a grid to the center of a new grid (used by grow grid)
-	Life.prototype.copyGridToCenter = function(/** @type {number} */ currentHeight, /** @type {number} */ yOffset, /** @type {number} */ xOffset, /** @type {Array} */ destGrid, /** @type {Array} */sourceGrid) {
+	Life.prototype.copyGridToCenter = function(/** @type {number} */ currentHeight, /** @type {number} */ yOffset, /** @type {number} */ xOffset, /** @type {Array} */ destGrid, /** @type {Array} */ sourceGrid) {
 		var	/** @type {number} */ y = 0;
 
 		for (y = 0; y < currentHeight; y += 1) {
@@ -9727,7 +9745,7 @@ This file is part of LifeViewer
 			/** @type {number} */ aliveState = 0,
 
 			// get grid bounding box
-			/** @type {BoundingBox} */zoomBox = this.zoomBox,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {number} */ leftX = zoomBox.leftX,
 			/** @type {number} */ rightX = zoomBox.rightX,
 			/** @type {number} */ topY = zoomBox.topY,
@@ -10139,10 +10157,18 @@ This file is part of LifeViewer
 
 	// reset the colour grid from the grid
 	Life.prototype.resetColourGridBox = function(/** @type {Array<Uint16Array>} */ grid) {
-		if (this.rainbow) {
-			this.resetColourGridBoxRainbow(grid);
-		} else {
-			this.resetColourGridBoxNormal(grid);
+		switch (this.cellRenderer) {
+			case LifeConstants.renderLongevity:
+				this.resetColourGridBoxNormal(grid);
+				break;
+
+			case LifeConstants.renderRainbow:
+				this.resetColourGridBoxRainbow(grid);
+				break;
+
+			case LifeConstants.renderNeighbourCount:
+				this.resetColourGridBoxNormal(grid);  // TBD rainbow
+				break;
 		}
 	};
 
@@ -10749,10 +10775,18 @@ This file is part of LifeViewer
 
 	// create the colour index
 	Life.prototype.createColourIndex = function() {
-		if (this.rainbow) {
-			this.createColourIndexRainbow();
-		} else {
-			this.createColourIndexRegular();
+		switch (this.cellRenderer) {
+			case LifeConstants.renderLongevity:
+				this.createColourIndexRegular();
+				break;
+
+			case LifeConstants.renderRainbow:
+				this.createColourIndexRainbow();
+				break;
+
+			case LifeConstants.renderNeighbourCount:
+				// TBD rainbow
+				break;
 		}
 	};
 
@@ -11176,10 +11210,19 @@ This file is part of LifeViewer
 		// initialize colours
 		this.pixelColours.fill(0xffffffff);
 
-		if (this.rainbow) {
-			this.createPixelColoursRainbow(brightness);
-		} else {
-			this.createPixelColoursNormal(brightness);
+		switch (this.cellRenderer) {
+			case LifeConstants.renderLongevity:
+				this.createPixelColoursNormal(brightness);
+				break;
+
+			case LifeConstants.renderRainbow:
+				this.createPixelColoursRainbow(brightness);
+				break;
+
+			case LifeConstants.renderNeighbourCount:
+				// TBD rainbow
+				break;
+
 		}
 	};
 
@@ -11275,6 +11318,133 @@ This file is part of LifeViewer
 
 		// create off grid colour string
 		colourStrings[256] = this.boundaryColourString;
+	};
+
+	// create rainbow pixel colours
+	Life.prototype.createPixelColoursNeighbourCount = function(/** @type {number} */ brightness) {
+		var	/** @type {Uint32Array} */ pixelColours = this.pixelColours,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ r = 255,
+			/** @type {number} */ g = 15,
+			/** @type {number} */ b = 15,
+			/** @type {number} */ alpha = 255,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ steps = 240 / 6,
+			/** @type {number} */ inc = 0,
+			/** @type {number} */ amount = (240 / steps),
+			/** @type {Array<Array<number>>} */ incs = [[0, 1, 0], [-1, 0, 0], [0, 0, 1], [0, -1, 0], [1, 0, 0], [0, 0, -1]],
+			/** @type {Uint8Array} */ redChannel = this.redChannel,
+			/** @type {Uint8Array} */ greenChannel = this.greenChannel,
+			/** @type {Uint8Array} */ blueChannel = this.blueChannel,
+			/** @type {Array<string>} */ colourStrings = this.cellColourStrings,
+			/** @type {boolean} */ needStrings = (this.isHex && !this.forceRectangles) || (this.isTriangular && !this.forceRectangles),
+			/** @type {number} */ gridLineRaw = this.gridLineRaw,
+			/** @type {number} */ gridLineBoldRaw = this.gridLineBoldRaw;
+
+		// create rainbow colours
+		for (i = 1; i <= 240; i += 1) {
+			if (this.littleEndian) {
+				pixelColours[i] = (alpha << 24) | ((b * brightness) << 16) | ((g * brightness) << 8) | (r * brightness);
+			} else {
+				pixelColours[i] = ((r * brightness) << 24) | ((g * brightness) << 16) | ((b * brightness) << 8) | alpha;
+			}
+			r += incs[inc][0] * amount;
+			g += incs[inc][1] * amount;
+			b += incs[inc][2] * amount;
+			s += 1;
+			if (s === steps) {
+				s = 0;
+				inc += 1;
+			}
+		}
+
+		// spread across colours 64 to 127 to match renderer
+		for (i = 0; i < 128; i += 1) {
+			s = ((i + 1) * 240 / 128) | 0;
+			pixelColours[i] = pixelColours[s];
+		}
+
+		// move to start at 64 and create colour strings if needed for hexagons or triangles
+		for (i = 127; i >= 0; i -= 1) {
+			pixelColours[i + 64] = pixelColours[i];
+			if (needStrings) {
+				if (this.littleEndian) {
+					r = pixelColours[i] & 255;
+					g = (pixelColours[i] >> 8) & 255;
+					b = (pixelColours[i] >> 16) & 255;
+				} else {
+					r = (pixelColours[i] >> 24);
+					g = (pixelColours[i] >> 16) & 255;
+					b = (pixelColours[i] >> 8) & 255;
+				}
+				colourStrings[i + 64] = "#" + (0x1000000 + ((r << 16) + (g << 8) + b)).toString(16).substring(1);
+			}
+		}
+
+		// create background colour
+		if (this.littleEndian) {
+			pixelColours[0] = (alpha << 24) | ((blueChannel[0] * brightness) << 16) | ((greenChannel[0] * brightness) << 8) | (redChannel[0] * brightness);
+		} else {
+			pixelColours[0] = ((redChannel[0] * brightness) << 24) | ((greenChannel[0] * brightness) << 16) | ((blueChannel[0] * brightness) << 8) | alpha;
+		}
+
+		// create grid line colours
+		if (this.littleEndian) {
+			this.gridLineColour = (alpha << 24) | ((gridLineRaw & 255) << 16) | (((gridLineRaw >> 8) & 255) << 8) | (gridLineRaw >> 16);
+			this.gridLineBoldColour = (alpha << 24) | ((gridLineBoldRaw & 255) << 16) | (((gridLineBoldRaw >> 8) & 255) << 8) | (gridLineBoldRaw >> 16);
+		} else {
+			this.gridLineColour = ((gridLineRaw >> 16) << 24) | (((gridLineRaw >> 8) & 255) << 16) | ((gridLineRaw & 255) << 8) | alpha;
+			this.gridLineBoldColour = ((gridLineBoldRaw >> 16) << 24) | (((gridLineBoldRaw >> 8) & 255) << 16) | ((gridLineBoldRaw & 255) << 8) | alpha;
+		}
+
+		// create bounded grid border colour
+		if (this.boundedGridType !== -1) {
+			i = this.boundedBorderColour;
+			if (this.littleEndian) {
+				pixelColours[i] = (alpha << 24) | ((blueChannel[i] * brightness) << 16) | ((greenChannel[i] * brightness) << 8) | (redChannel[i] * brightness);
+			} else {
+				pixelColours[i] = ((redChannel[i] * brightness) << 24) | ((greenChannel[i] * brightness) << 16) | ((blueChannel[i] * brightness) << 8) | alpha;
+			}
+			if (needStrings) {
+				colourStrings[i] = "#" + (0x1000000 + ((redChannel[i] << 16) + (greenChannel[i] << 8) + blueChannel[i])).toString(16).substring(1);
+			}
+		}
+
+		// create off grid colour string
+		colourStrings[256] = this.boundaryColourString;
+
+		// create rainbow colours
+		inc = 0;
+		s = 0;
+		for (i = 1; i <= 240; i += 1) {
+			if (this.littleEndian) {
+				pixelColours[i] = (alpha << 24) | ((b * brightness) << 16) | ((g * brightness) << 8) | (r * brightness);
+			} else {
+				pixelColours[i] = ((r * brightness) << 24) | ((g * brightness) << 16) | ((b * brightness) << 8) | alpha;
+			}
+			r += incs[inc][0] * amount;
+			g += incs[inc][1] * amount;
+			b += incs[inc][2] * amount;
+			s += 1;
+			if (s === steps) {
+				s = 0;
+				inc += 1;
+			}
+		}
+
+		var temp = [];
+		for (i = 0; i < 25; i += 1) {
+			s = ((i + 1) * 240 / 25) | 0;
+
+			temp[i] = pixelColours[s - 1];
+		}
+		for (i = 0; i < 25; i += 1) {
+			pixelColours[64 + i] = temp[i];
+		}
+
+		for (i = 63; i > 0; i -= 1) {
+			pixelColours[i] = (255 << 24) | (((i * 1) + 47) << 16);
+		}
 	};
 
 	// create pixel colours
@@ -14986,7 +15156,7 @@ This file is part of LifeViewer
 	};
 
 	// delete a single glider
-	Life.prototype.deleteGlider = function(/** @type {Array<Array<number>>} */glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ orientation, /** @type {number} */ edge) {
+	Life.prototype.deleteGlider = function(/** @type {Array<Array<number>>} */ glider, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ orientation, /** @type {number} */ edge) {
 		var	/** @type {number} */ xc = 0,
 			/** @type {number} */ yc = 0,
 			/** @type {number} */ state = 0,
@@ -26600,7 +26770,7 @@ This file is part of LifeViewer
 										typeMask = (1 << nw) | (1 << n) | (1 << w) | (1 << e) | (1 << s) | (1 << se);
 
 										// check for all cells dead
-										if (typeMask == 1 && c == 0) {
+										if (typeMask === 1 && c === 0) {
 											state = 0;
 										} else {
 											if (typeMask & (c ? deadForcer : birthForcer)) {
@@ -26672,7 +26842,7 @@ This file is part of LifeViewer
 									typeMask = (1 << nw) | (1 << n) | (1 << w) | (1 << e) | (1 << s) | (1 << se);
 
 									// check for all cells dead
-									if (typeMask == 1 && c == 0) {
+									if (typeMask === 1 && c === 0) {
 										state = 0;
 									} else {
 										if (typeMask & (c ? deadForcer : birthForcer)) {
@@ -29607,47 +29777,54 @@ This file is part of LifeViewer
 		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper || this.isExtended)) {
 			// ignore Generations
 			if (this.multiNumStates === -1) {
-				// check for rainbow
-				if (this.rainbow) {
-					this.convertToPensTileRainbow();
-				} else {
-					// use regular converter
-					if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
-						if ((this.counter & 1) !== 0) {
-							WASM.convertToPens(
-								this.colourGrid.whole.byteOffset | 0,
-								this.colourTileHistoryGrid.whole.byteOffset | 0,
-								this.colourTileGrid.whole.byteOffset | 0,
-								this.tileY | 0,
-								this.tileX | 0,
-								this.tileRows | 0,
-								this.tileCols | 0,
-								this.nextGrid.whole.byteOffset | 0,
-								this.nextTileGrid.whole.byteOffset | 0,
-								this.colourGrid[0].length | 0
-							);
+				switch (this.cellRenderer) {
+					case LifeConstants.renderLongevity:
+						// use regular converter
+						if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
+							if ((this.counter & 1) !== 0) {
+								WASM.convertToPens(
+									this.colourGrid.whole.byteOffset | 0,
+									this.colourTileHistoryGrid.whole.byteOffset | 0,
+									this.colourTileGrid.whole.byteOffset | 0,
+									this.tileY | 0,
+									this.tileX | 0,
+									this.tileRows | 0,
+									this.tileCols | 0,
+									this.nextGrid.whole.byteOffset | 0,
+									this.nextTileGrid.whole.byteOffset | 0,
+									this.colourGrid[0].length | 0
+								);
+							} else {
+								WASM.convertToPens(
+									this.colourGrid.whole.byteOffset | 0,
+									this.colourTileHistoryGrid.whole.byteOffset | 0,
+									this.colourTileGrid.whole.byteOffset | 0,
+									this.tileY | 0,
+									this.tileX | 0,
+									this.tileRows | 0,
+									this.tileCols | 0,
+									this.grid.whole.byteOffset | 0,
+									this.tileGrid.whole.byteOffset | 0,
+									this.colourGrid[0].length | 0
+								);
+							}
 						} else {
-							WASM.convertToPens(
-								this.colourGrid.whole.byteOffset | 0,
-								this.colourTileHistoryGrid.whole.byteOffset | 0,
-								this.colourTileGrid.whole.byteOffset | 0,
-								this.tileY | 0,
-								this.tileX | 0,
-								this.tileRows | 0,
-								this.tileCols | 0,
-								this.grid.whole.byteOffset | 0,
-								this.tileGrid.whole.byteOffset | 0,
-								this.colourGrid[0].length | 0
-							);
+							this.convertToPensTileRegular();
 						}
-					} else {
-						this.convertToPensTileRegular();
-					}
 
-					timing = performance.now() - timing;
-					if (Controller.wasmTiming) {
-						this.view.menuManager.updateTimingItem("convertToPens", timing, Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled);
-					}
+						timing = performance.now() - timing;
+						if (Controller.wasmTiming) {
+							this.view.menuManager.updateTimingItem("convertToPens", timing, Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled);
+						}
+						break;
+
+					case LifeConstants.renderRainbow:
+						this.convertToPensTileRainbow();
+						break;
+
+					case LifeConstants.renderNeighbourCount:
+						// TBD rainbow
+						break;
 				}
 			}
 
@@ -30836,15 +31013,15 @@ This file is part of LifeViewer
 					case 1:
 						this.nextGenerationRuleLoaderTileHexLookup1();
 						break;
-	
+
 					case 2:
 						this.nextGenerationRuleLoaderTileHexLookup2();
 						break;
-	
+
 					case 3:
 						this.nextGenerationRuleLoaderTileHexLookup3();
 						break;
-	
+
 					default:
 						this.nextGenerationRuleTableTileHex();
 						break;
@@ -45962,6 +46139,218 @@ This file is part of LifeViewer
 	};
 
 	// convert life grid region to pens using tiles
+	Life.prototype.convertToPensTileNeighbourCount = function() {
+		var	/** @type {number} */ h = 0,
+			/** @type {number} */ cr = 0,
+			/** @type {number} */ nextCell = 0,
+			/** @type {number} */ aboveCell = 0,
+			/** @type {number} */ belowCell = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourGridRow = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Array<Uint16Array>} */ grid = null,
+			/** @type {Uint16Array} */ gridRow = null,
+			/** @type {Uint16Array} */ aboveRow = null,
+			/** @type {Uint16Array} */ belowRow = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Uint16Array} */ tileGridRow = null,
+			/** @type {Uint16Array} */ blankGridRow = this.blankRow16,
+			/** @type {number} */ th = 0,
+			/** @type {number} */ tw = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ bit = 0,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ topY = 0,
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ tiles = 0,
+			/** @type {number} */ nextTiles = 0,
+
+			// whether the tile is alive
+			/** @type {number} */ tileAlive = 0,
+
+			// set tile height
+			/** @type {number} */ ySize = this.tileY,
+
+			// tile width (in 16bit chunks)
+			/** @type {number} */ xSize = this.tileX >> 1,
+
+			// tile rows
+			/** @type {number} */ tileRows = this.tileRows,
+
+			// tile columns in 16 bit values
+			/** @type {number} */ tileCols16 = this.tileCols >> 4,
+
+			// starting and ending tile row
+			/** @type {number} */ tileStartRow = 0,
+			/** @type {number} */ tileEndRow = tileRows;
+
+		// select the correct grid
+		if ((this.counter & 1) !== 0) {
+			grid = this.nextGrid16;
+			tileGrid = this.nextTileGrid;
+		} else {
+			grid = this.grid16;
+			tileGrid = this.tileGrid;
+		}
+
+		// set the initial tile row
+		bottomY = tileStartRow << this.tilePower;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = tileStartRow; th < tileEndRow; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			tileGridRow = tileGrid[th];
+			colourTileRow = colourTileGrid[th];
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = tileGridRow[tw] | colourTileRow[tw];
+				nextTiles = 0;
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// flag nothing alive in the tile
+							tileAlive = 0;
+
+							// process each row
+							h = bottomY;
+							while (h < topY) {
+								// get the grid and colour grid row
+								gridRow = grid[h];
+								if (h === 0) {
+									aboveRow = blankGridRow;
+								} else {
+									aboveRow = grid[h - 1];
+								}
+
+								if (h >= this.height - 1) {
+									belowRow = blankGridRow;
+								} else {
+									belowRow = grid[h + 1];
+								}
+
+								colourGridRow = colourGrid[h];
+
+								// get correct starting colour index
+								cr = (leftX << 4);
+
+								// get next 16 cells
+								nextCell = gridRow[leftX];
+								aboveCell = aboveRow[leftX];
+								belowCell = belowRow[leftX];
+
+								var count = 0;
+								for (bit = 15; bit >= 0; bit -= 1) {
+									// check if the cell is alive
+									var s;
+
+									if ((nextCell & (1 << bit)) !== 0) {
+										// calculate the number of neighbours
+										if (bit === 15) {
+											// handle left edge
+											var leftTop = aboveRow[leftX - 1] & 1;
+											var leftMid = gridRow[leftX - 1] & 1;
+											var leftBottom = belowRow[leftX - 1] & 1;
+
+											count = 5 * ((nextCell & (1 << (bit - 1))) ? 1 : 0) +
+												5 * leftMid +
+												((aboveCell & (1 << (bit - 1))) ? 1 : 0) +
+												5 * ((aboveCell & (1 << bit)) ? 1 : 0) +
+												leftTop +
+												((belowCell & (1 << (bit - 1))) ? 1 : 0) +
+												5 * ((belowCell & (1 << bit)) ? 1 : 0) +
+												leftBottom;
+
+										} else if (bit === 0) {
+											// handle right edge
+											var rightTop = aboveRow[leftX + 1] >> 15;
+											var rightMid = gridRow[leftX + 1] >> 15;
+											var rightBottom = belowRow[leftX + 1] >> 15;
+
+											count = 5 * rightMid +
+												5 * ((nextCell & (1 << (bit + 1))) ? 1 : 0) +
+												rightTop +
+												5 * ((aboveCell & (1 << bit)) ? 1 : 0) +
+												((aboveCell & (1 << (bit + 1))) ? 1 : 0) +
+												rightBottom +
+												5 * ((belowCell & (1 << bit)) ? 1 : 0) +
+												((belowCell & (1 << (bit + 1))) ? 1 : 0);
+										} else {
+											// middle section
+											count = 5 * ((nextCell & (1 << (bit - 1))) ? 1 : 0) +
+												5 * ((nextCell & (1 << (bit + 1))) ? 1 : 0) +
+												((aboveCell & (1 << (bit - 1))) ? 1 : 0) +
+												5 * ((aboveCell & (1 << bit)) ? 1 : 0) +
+												((aboveCell & (1 << (bit + 1))) ? 1 : 0) +
+												((belowCell & (1 << (bit - 1))) ? 1 : 0) +
+												5 * ((belowCell & (1 << bit)) ? 1 : 0) +
+												((belowCell & (1 << (bit + 1))) ? 1 : 0);
+										}
+
+										s = 64 + count;
+									} else {
+										// cell is dead
+										s = colourGridRow[cr];
+										if (s >= 64) {
+											s = 63;
+										} else {
+											if (s > 1) {
+												s -= 1;
+											}
+										}
+
+									}
+									colourGridRow[cr] = s;
+									if (s > 1) {
+										tileAlive |= s;
+									}
+									cr += 1;
+								}
+
+								// next row
+								h += 1;
+							}
+
+							// check if the tile was alive (has any cells not completely faded)
+							if (tileAlive) {
+								// update tile flag
+								nextTiles |= (1 << b);
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+
+				// save the tile group
+				colourTileRow[tw] = nextTiles;
+				colourTileHistoryRow[tw] |= nextTiles;
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
+	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTileRainbow = function() {
 		var	/** @type {number} */ h = 0,
 			/** @type {number} */ cr = 0,
@@ -45975,9 +46364,9 @@ This file is part of LifeViewer
 			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
 			/** @type {Uint16Array} */ colourLookup = this.colourLookup16,
 			/** @type {Array<Uint16Array>} */ grid = null,
-			/** @type {Uint16Array} */gridRow = null,
+			/** @type {Uint16Array} */ gridRow = null,
 			/** @type {Array<Uint16Array>} */ tileGrid = null,
-			/** @type {Uint16Array} */tileGridRow = null,
+			/** @type {Uint16Array} */ tileGridRow = null,
 			/** @type {number} */ th = 0,
 			/** @type {number} */ tw = 0,
 			/** @type {number} */ b = 0,
@@ -47408,7 +47797,7 @@ This file is part of LifeViewer
 
 	// compute the transparent target for layers
 	/** @returns {number} */
-	Life.prototype.getTransparentTarget = function(/** @type {number} */ layerTarget, /** @type {number} */i) {
+	Life.prototype.getTransparentTarget = function(/** @type {number} */ layerTarget, /** @type {number} */ i) {
 		var	/** @type {number} */ result = 1;
 
 		// compute the transparent target
@@ -47428,7 +47817,7 @@ This file is part of LifeViewer
 				}
 			}
 		} else {
-			if (this.rainbow || this.isRuleTree) {
+			if (this.cellRenderer === LifeConstants.renderRainbow || this.isRuleTree) {  // TBD rainbow
 				result = 1;
 			} else {
 				result = (i * ((this.aliveMax + 1) / this.layers)) | 0;
@@ -50724,7 +51113,7 @@ This file is part of LifeViewer
 					}
 				}
 			} else {
-				if (this.rainbow) {
+				if (this.cellRenderer === LifeConstants.renderRainbow) {  // TBD rainbow
 					transparentTarget = 1;
 				} else {
 					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
@@ -51178,7 +51567,7 @@ This file is part of LifeViewer
 					}
 				}
 			} else {
-				if (this.rainbow) {
+				if (this.cellRenderer === LifeConstants.renderRainbow) {  // TBD rainbow
 					transparentTarget = 1;
 				} else {
 					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
@@ -51625,7 +52014,7 @@ This file is part of LifeViewer
 					}
 				}
 			} else {
-				if (this.rainbow) {
+				if (this.cellRenderer === LifeConstants.renderRainbow) {  // TBD rainbow
 					transparentTarget = 1;
 				} else {
 					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
@@ -52194,7 +52583,7 @@ This file is part of LifeViewer
 					}
 				}
 			} else {
-				if (this.rainbow) {
+				if (this.cellRenderer === LifeConstants.renderRainbow) {  // TBD rainbow
 					transparentTarget = 1;
 				} else {
 					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;

@@ -2975,7 +2975,7 @@ This file is part of LifeViewer
 				for (y = bottomY; y < bottomY + ry2; y += 1) {
 					counts[y].fill(0, leftX, rightX + 1);
 				}
-	
+
 				// put zeros in left 2*range columns
 				for (y = bottomY + ry2; y <= topY; y += 1) {
 					counts[y].fill(0, leftX, leftX + rx2 + 1);

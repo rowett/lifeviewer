@@ -1,3 +1,7 @@
+Build 1231
+- improved page scan speed
+- reduce height of code boxes with SHOW IN VIEWER links to use less real estate
+
 Build 1229
 - fixed consistency in [R]Investigator Hex and von Neumann neighbourhoods
 

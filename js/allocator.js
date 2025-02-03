@@ -585,4 +585,3 @@ This file is part of LifeViewer
 		// return typed view of matrix
 		return mat;
 	};
-	

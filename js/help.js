@@ -942,7 +942,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "Shift U", "toggle UI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.altKeyText + " U", "toggle autohide UI during playback", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates === -1) {
-			y = this.renderHelpLine(view, view.altKeyText + " W", "toggle rainbow mode", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " W", "cycle render mode", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "D", "toggle cell period map", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift D", "download cell period map", ctx, x, y, height, helpLine);
@@ -1285,6 +1285,9 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.showGenStatsWord, "show generation statistics", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.showInfoBarWord, "show information bar", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.rainbowWord, "use rainbow colours", ctx, x, y, height, helpLine);
+		if (Controller.useWASM) {
+			y = this.renderHelpLine(view, Keywords.neighbourCountWord, "use neighbour count colours", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, Keywords.qualityWord, "use high quality rendering", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
@@ -2101,6 +2104,7 @@ This file is part of LifeViewer
 		view.helpSections[sectionNum] = [view.lineNo, "Cells"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Cells:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Renderer", view.engine.cellRenderer === LifeConstants.renderLongevity ? "Longevity" : view.engine.cellRenderer === LifeConstants.renderRainbow ? "Rainbow" : "Neighbour count", ctx, x, y, height, helpLine);
 		this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
 

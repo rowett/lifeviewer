@@ -430,6 +430,9 @@ This file is part of LifeViewer
 		// rainbow word
 		/** @const {string} */ rainbowWord : "RAINBOW",
 
+		// neighbour count word
+		/** @const {string} */ neighbourCountWord: "NCOUNT",
+
 		// start from
 		/** @const {string} */ startFromWord : "STARTFROM",
 

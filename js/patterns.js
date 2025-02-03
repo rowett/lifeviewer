@@ -6467,11 +6467,12 @@ This file is part of LifeViewer
 		return valid;
 	};
 
-	// decode an RLE string into a pattern
+	// decode an RLE string into a list
 	/** @returns {number} */
-	PatternManager.prototype.decodeRLEString = function(/** @type {Pattern} */ pattern, /** @type {string} */ string, /** @type {boolean} */ save, /** @type {Allocator} */ allocator) {
+	PatternManager.prototype.decodeRLEString = function(/** @type {Pattern} */ pattern, /** @type {string} */ string, /** @type {Array<number>} */ list, /** @type {Allocator} */ allocator) {
 		// index of next character
 		var	/** @type {number} */ index = 0,
+			/** @type {number} */ listIndex = 0,
 
 			// index at end of string (-1 since the string will have an extra space added to it for lookahead)
 			/** @type {number} */ end = string.length - 1,
@@ -6597,6 +6598,12 @@ This file is part of LifeViewer
 
 				// move down required number of rows
 				y += runCount;
+
+				// save the entry
+				list[listIndex] = runCount;
+				list[listIndex + 1] = -1;
+				listIndex += 2;
+
 				runCount = 0;
 
 				// update width
@@ -6606,6 +6613,7 @@ This file is part of LifeViewer
 
 				// reset to start of row
 				x = 0;
+
 				break;
 
 			// end of pattern
@@ -6694,20 +6702,22 @@ This file is part of LifeViewer
 					runCount = 1;
 				}
 
-				// update state used flags and counts if not saving
-				if (!save) {
-					// check if this is the first time the state was seen
-					if (stateCount[stateNum] === 0) {
-						pattern.numUsedStates += 1;
-					}
+				// save the entry
+				list[listIndex] = runCount;
+				list[listIndex + 1] = stateNum;
+				listIndex += 2;
 
-					// count the number of cells in this state
-					stateCount[stateNum] += runCount;
+				// check if this is the first time the state was seen
+				if (stateCount[stateNum] === 0) {
+					pattern.numUsedStates += 1;
+				}
 
-					// save maximum state found
-					if (stateNum >= pattern.numStates) {
-						pattern.numStates = stateNum + 1;
-					}
+				// count the number of cells in this state
+				stateCount[stateNum] += runCount;
+
+				// save maximum state found
+				if (stateNum >= pattern.numStates) {
+					pattern.numStates = stateNum + 1;
 				}
 
 				// always save maximum state found (raw)
@@ -6715,45 +6725,9 @@ This file is part of LifeViewer
 					pattern.maxStateRead = stateNum;
 				}
 
-				// add cells to the row if saving and not state 0
-				if (stateNum > 0 && save) {
-					while (runCount > 0) {
-						// save multi-state cell
-						if (pattern.multiNumStates === -1) {
-							// save cell normally
-							pattern.multiStateMap[y][x] = stateNum;
-						} else {
-							// check for 2 state LTL or HROT
-							if (pattern.multiNumStates === 2) {
-								if (stateNum === 1) {
-									pattern.multiStateMap[y][x] = LifeConstants.aliveStart;
-								} else {
-									pattern.multiStateMap[y][x] = 0;
-								}
-							} else {
-								// check state is valid
-								if (stateNum < pattern.multiNumStates) {
-									pattern.multiStateMap[y][x] = stateNum;
-								} else {
-									pattern.multiStateMap[y][x] = 1;
-								}
-							}
-						}
-
-						// update 2d map if normal state 1, [R]History, [R]Extended or [R]Super odd states, Generations state 1
-						if ((!(pattern.isHistory || pattern.isExtended || pattern.isSuper) && pattern.multiNumStates === -1 && stateNum === 1) || ((pattern.isHistory || pattern.isSuper) && (stateNum & 1)) || (pattern.multiNumStates !== -1 && stateNum === 1)) {
-							pattern.lifeMap[y][x >> 4] |= 1 << (~x & 15);
-						}
-
-						// next cell
-						x += 1;
-						runCount -= 1;
-					}
-				} else {
-					// state 0 or not saving so just skip
-					x += runCount;
-					runCount = 0;
-				}
+				// skip to next section
+				x += runCount;
+				runCount = 0;
 			}
 
 			// check if processing was valid
@@ -6805,43 +6779,132 @@ This file is part of LifeViewer
 			}
 		}
 
-		// check if not saving
-		if (!save) {
-			// ensure pattern is at least one cell big so empty patterns are valid
-			if (width === 0) {
-				// allocate at least one cell for empty patterns
-				width = 1;
-				y = 1;
-			}
-
-			// save width and height
-			pattern.width = width;
-			pattern.height = y;
-
-			// check if small enough to save
-			if (width > this.maxWidth || y > this.maxHeight) {
-				// flag pattern too large
-				pattern.tooBig = true;
-				pattern.patternFormat = "RLE";
-			} else {
-				// allocate 2d cell array
-				pattern.lifeMap = Array.matrix(Type.Uint16, y, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap", false);
-
-				// allocate multi-state array
-				pattern.multiStateMap = Array.matrix(Type.Uint8, y, width, 0, allocator, "Pattern.multiStateMap", false);
-
-				// set decoder used
-				pattern.patternFormat = "RLE";
-			}
+		// ensure pattern is at least one cell big so empty patterns are valid
+		if (width === 0) {
+			// allocate at least one cell for empty patterns
+			width = 1;
+			y = 1;
 		}
+
+		// save width and height
+		pattern.width = width;
+		pattern.height = y;
+
+		// check if small enough to save
+		if (width > this.maxWidth || y > this.maxHeight) {
+			// flag pattern too large
+			pattern.tooBig = true;
+			pattern.patternFormat = "RLE";
+		}
+
+		// set decoder used
+		pattern.patternFormat = "RLE";
 
 		// check if the pattern is valid
 		if (pattern.invalid) {
 			index = -1;
+		} else {
+			// flag pattern valid
+			pattern.lifeMap = [];
 		}
 
 		// return the index
 		return index;
+	};
+
+	// decode a list into a pattern
+	PatternManager.prototype.decodeList = function(/** @type {Pattern} */ pattern, /** @type {Array<number>} */ list, /** @type {Allocator} */ allocator) {
+		// index of next list entry
+		var	/** @type {number} */ index = 0,
+
+			// size of pattern
+			/** @type {number} */ height = pattern.height,
+			/** @type {number} */ width = pattern.width,
+
+			// position in pattern
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+
+			// state number for cell
+			/** @type {number} */ stateNum = 0,
+
+			// run counter
+			/** @type {number} */ runCount = 0,
+
+			// whether to write to bit grid
+			///** @type {boolean} */ writeBit = ((!(pattern.isHistory || pattern.isExtended || pattern.isSuper) && pattern.multiNumStates === -1 && stateNum === 1) || ((pattern.isHistory || pattern.isSuper) && (stateNum & 1)) || (pattern.multiNumStates !== -1 && stateNum === 1)),
+			/** @type {boolean} */ writeBit = !(pattern.isHistory || pattern.isExtended || pattern.isSuper) && pattern.multiNumStates === -1,
+
+			// multistate row
+			/** @type {Uint8Array} */ multiStateRow = null,
+
+			// bit grid row
+			/** @type {Uint16Array} */ lifeMapRow = null;
+
+		// allocate 2d cell array
+		pattern.lifeMap = Array.matrix(Type.Uint16, height, ((width - 1) >> 4) + 1, 0, allocator, "Pattern.lifeMap", false);
+
+		// allocate multi-state array
+		pattern.multiStateMap = Array.matrix(Type.Uint8, height, width, 0, allocator, "Pattern.multiStateMap", false);
+
+		// get start rows
+		multiStateRow = pattern.multiStateMap[y];
+		lifeMapRow = pattern.lifeMap[y];
+
+		// process string until finished
+		while (index < list.length) {
+			runCount = list[index];
+			stateNum = list[index + 1];
+			index += 2;
+
+			// check for end of lines
+			if (stateNum === -1) {
+				x = 0;
+				y += runCount;
+				multiStateRow = pattern.multiStateMap[y];
+				lifeMapRow = pattern.lifeMap[y];
+			} else {
+				// save the cells
+				if (stateNum > 0) {
+					while (runCount > 0) {
+						// save multi-state cell
+						if (pattern.multiNumStates === -1) {
+							// save cell normally
+							multiStateRow[x] = stateNum;
+						} else {
+							// check for 2 state LTL or HROT
+							if (pattern.multiNumStates === 2) {
+								if (stateNum === 1) {
+									multiStateRow[x] = LifeConstants.aliveStart;
+								} else {
+									multiStateRow[x] = 0;
+								}
+							} else {
+								// check state is valid
+								if (stateNum < pattern.multiNumStates) {
+									multiStateRow[x] = stateNum;
+								} else {
+									multiStateRow[x] = 1;
+								}
+							}
+						}
+
+						// update 2d map if normal state 1, [R]History, [R]Extended or [R]Super odd states, Generations state 1
+						if ((writeBit && stateNum === 1) || ((pattern.isHistory || pattern.isSuper) && (stateNum & 1)) || (pattern.multiNumStates !== -1 && stateNum === 1)) {
+							lifeMapRow[x >> 4] |= 1 << (~x & 15);
+						}
+
+						// next cell
+						x += 1;
+						runCount -= 1;
+					}
+				} else {
+					// state 0 or not saving so just skip
+					x += runCount;
+					runCount = 0;
+				}
+			}
+		}
 	};
 
 	// set the pattern originator
@@ -8196,7 +8259,7 @@ This file is part of LifeViewer
 	};
 
 	// decode a Life RLE pattern
-	PatternManager.prototype.decodeRLE = function(/** @type {Pattern} */ pattern, /** @type {string} */ source, /** @type {Allocator} */ allocator) {
+	PatternManager.prototype.decodeRLE = function(/** @type {Pattern} */ pattern, /** @type {string} */ source, /** @type {Allocator} */ allocator, /** @type {boolean} */ checkOnly) {
 		// index in string
 		var	/** @type {number} */ index = 0,
 
@@ -8380,15 +8443,18 @@ This file is part of LifeViewer
 						decoded = true;
 
 						// start of bitmap so attempt to size the pattern
-						j = this.decodeRLEString(pattern, source.substring(index), false, allocator);
+						var list = [];
+						j = this.decodeRLEString(pattern, source.substring(index), list, allocator);
 						if (j !== -1) {
+							index += j;
+
 							// looks valid so check if pattern is too big
-							if (pattern.tooBig) {
-								// pattern too big so skip to process any after comments
-								index += j;
-							} else {
-								// pattern is good so decode the bitmap
-								index += this.decodeRLEString(pattern, source.substring(index), true, allocator);
+							if (!pattern.tooBig) {
+								// if validating the don't decode the states
+								if (!checkOnly) {
+									// pattern is good so decode the bitmap
+									this.decodeList(pattern, list,  allocator);
+								}
 							}
 						}
 					}
@@ -8726,7 +8792,7 @@ This file is part of LifeViewer
 			}
 
 			// clear illegal states if present
-			if (this.illegalState) {
+			if (this.illegalState && !checkOnly) {
 				pattern.numStates = maxStates;
 				this.clearIllegalStates(pattern, maxStates);
 			}
@@ -10220,7 +10286,7 @@ This file is part of LifeViewer
 
 	// add a pattern to the list
 	/** @returns {Pattern} */
-	PatternManager.prototype.create = function(/** @type {string} */ name, /** @type {string} */ source, /** @type {Allocator} */ allocator, /** @type {null|function(Pattern,Array,View):void} */ succeedCallback, /** @type {null|function(Pattern,Array,View):void} */ failCallback, /** @type {Array} */ args, /** @type {View} */ view) {
+	PatternManager.prototype.create = function(/** @type {string} */ name, /** @type {string} */ source, /** @type {Allocator} */ allocator, /** @type {null|function(Pattern,Array,View):void} */ succeedCallback, /** @type {null|function(Pattern,Array,View):void} */ failCallback, /** @type {Array} */ args, /** @type {boolean} */ checkOnly, /** @type {View} */ view) {
 		// create a pattern skeleton
 		var	/** @type {Pattern} */ newPattern = new Pattern(name, this),
 			/** @type {number} */ states = 0,
@@ -10288,7 +10354,7 @@ This file is part of LifeViewer
 				} else {
 					// assume RLE format
 					if (source[0] === "#" || source[0] === "x") {
-						this.decodeRLE(newPattern, source, allocator);
+						this.decodeRLE(newPattern, source, allocator, checkOnly);
 
 						// check if it decoded
 						if (newPattern.lifeMap === null && !newPattern.tooBig && !newPattern.invalid) {
@@ -10304,7 +10370,7 @@ This file is part of LifeViewer
 						}
 					} else {
 						// assume RLE no header
-						this.decodeRLE(newPattern, source, allocator);
+						this.decodeRLE(newPattern, source, allocator, checkOnly);
 						if (newPattern.invalid) {
 							newPattern = null;
 						}

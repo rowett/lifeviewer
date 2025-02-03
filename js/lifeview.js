@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1230,
+		/** @const {number} */ versionBuild : 1231,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -2024,8 +2024,8 @@ This file is part of LifeViewer
 		// alternating gridlines toggle button
 		/** @type {MenuItem} */ this.altGridButton = null;
 
-		// rainbow mode toggle button
-		/** @type {MenuItem} */ this.rainbowButton = null;
+		// render mode list
+		/** @type {MenuItem} */ this.renderList = null;
 
 		// hex cell toggle button
 		/** @type {MenuItem} */ this.hexCellButton = null;
@@ -2367,7 +2367,7 @@ This file is part of LifeViewer
 		/** @type {number} */ this.defaultStep = 1;
 		/** @type {number} */ this.defaultLayers = 1;
 		/** @type {number} */ this.defaultDepth = 0.1;
-		/** @type {boolean} */ this.defaultRainbow = false;
+		/** @type {number} */ this.defaultRenderer = LifeConstants.renderLongevity;
 
 		// whether a theme was requested
 		/** @type {number} */ this.themeRequested = -1;
@@ -2593,7 +2593,7 @@ This file is part of LifeViewer
 
 	// check if a cell is on the grid (and grow grid if needed)
 	/** @returns {Array} */
-	View.prototype.cellOnGrid = function(/** @type {number} */x, /** @type {number} */ y) {
+	View.prototype.cellOnGrid = function(/** @type {number} */ x, /** @type {number} */ y) {
 		var	/** @type {Array} */ result = [true, x, y],
 			/** @type {number} */ wm = this.engine.widthMask,
 			/** @type {number} */ hm = this.engine.heightMask,
@@ -3694,25 +3694,25 @@ This file is part of LifeViewer
 		} else {
 			// check the RLE is valid
 			rle += " ";
-			if (this.manager.decodeRLEString(pattern, rle, false, this.engine.allocator) !== -1) {
-				if (this.manager.decodeRLEString(pattern, rle, true, this.engine.allocator) !== -1) {
-					// convert to cell list
-					for (j = 0; j < pattern.height; j += 1) {
-						patternRow = pattern.multiStateMap[j];
-						for (i = 0; i < pattern.width; i += 1) {
-							state = patternRow[i];
-							// invert state if Generations
-							if (invertForGenerations && state > 0) {
-								state = states - state;
-							}
-							// create (x, y, state) entry in cells array
-							cells[cells.length] = x + i * axx + j * axy;
-							cells[cells.length] = y + i * ayx + j * ayy;
-							cells[cells.length] = state;
+			var /** @type {Array<number>} */ list = [];
+			if (this.manager.decodeRLEString(pattern, rle, list, this.engine.allocator) !== -1) {
+				this.manager.decodeList(pattern, list, this.engine.allocator);
+				// convert to cell list
+				for (j = 0; j < pattern.height; j += 1) {
+					patternRow = pattern.multiStateMap[j];
+					for (i = 0; i < pattern.width; i += 1) {
+						state = patternRow[i];
+						// invert state if Generations
+						if (invertForGenerations && state > 0) {
+							state = states - state;
 						}
+						// create (x, y, state) entry in cells array
+						cells[cells.length] = x + i * axx + j * axy;
+						cells[cells.length] = y + i * ayx + j * ayy;
+						cells[cells.length] = state;
 					}
-					valid = true;
 				}
+				valid = true;
 			}
 		}
 
@@ -7533,7 +7533,7 @@ This file is part of LifeViewer
 		this.labelButton.deleted = shown;
 		this.autoGridButton.deleted = shown;
 		this.altGridButton.deleted = shown;
-		this.rainbowButton.deleted = shown;
+		this.renderList.deleted = shown;
 		this.qualityToggle.deleted = shown;
 		this.integerZoomButton.deleted = shown;
 
@@ -7572,7 +7572,7 @@ This file is part of LifeViewer
 		this.copyWithCommentsButton.locked = shown;
 		this.pasteToSelectionButton.locked = shown || (this.pasteBuffers[this.currentPasteBuffer] === null);
 		this.goToGenButton.locked = !this.executable || this.viewOnly;
-		this.rainbowButton.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isExtended || this.engine.isRuleTree);
+		this.renderList.locked = (this.engine.multiNumStates > 2 || this.engine.isHROT || this.engine.isPCA || this.engine.isLifeHistory || this.engine.isSuper || this.engine.isExtended || this.engine.isRuleTree);
 		this.saveButton.locked = shown;
 		this.fitSelectionButton.locked = shown;
 
@@ -8857,22 +8857,26 @@ This file is part of LifeViewer
 		return [me.autoGrid];
 	};
 
-	// toggle rainbow mode
-	/** @returns {Array<boolean>} */
-	View.prototype.viewRainbowToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	// cycle cell renderer
+	/** @returns {number} */
+	View.prototype.viewRenderList = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		// check if changing
 		if (change) {
-			// toggle rainbow
-			me.engine.rainbow = newValue[0];
+			// set new renderer
+			me.engine.cellRenderer = newValue;
+
 			me.engine.clearHistoryCells();
 			me.engine.createColourIndex();
+
+			// TBD rainbow
+
 			if ((me.engine.counter & 1) === 0) {
 				me.engine.resetColourGridBox(me.engine.grid16);
 			} else {
 				me.engine.resetColourGridBox(me.engine.nextGrid16);
 			}
 		}
-		return [me.engine.rainbow];
+		return me.engine.cellRenderer;
 	};
 
 	// toggle Margolus alternating grid lines
@@ -9147,8 +9151,8 @@ This file is part of LifeViewer
 			numberValue = Math.sqrt(me.defaultDepth);
 			me.depthItem.current = me.viewDepthRange([numberValue, numberValue], true, me);
 
-			// reset rainbow
-			me.rainbowButton.current = this.viewRainbowToggle([this.defaultRainbow], true, me);
+			// reset renderer
+			me.renderList.current = this.viewRenderList(this.defaultRenderer, true, me);
 		}
 	};
 
@@ -9306,7 +9310,7 @@ This file is part of LifeViewer
 				me.engine.setBoundedTiles();
 			}
 
-			// re-convert grid to colours so rainbow on/off works
+			// re-convert grid to colours so rainbow on/off works  // TBD rainbow
 			if (!me.engine.isLifeHistory) {
 				if (me.engine.multiNumStates === -1) {
 					me.engine.resetColourGridBox(me.engine.grid16);
@@ -10496,7 +10500,7 @@ This file is part of LifeViewer
 								me.diedGeneration = -1;
 							}
 
-							// re-convert grid to colours so rainbow on/off works
+							// re-convert grid to colours so rainbow on/off works // TBD rainbow
 							if (me.engine.counter === 0) {
 								if (!me.engine.isLifeHistory) {
 									if (me.engine.multiNumStates === -1) {
@@ -11982,8 +11986,8 @@ This file is part of LifeViewer
 
 		// attempt to build a pattern from the string
 		try {
-			// create a pattern
-			pattern = this.manager.create("", patternText, this.engine.allocator, succeedCallback, failCallback, [], this);
+			// cehck the rule string is a valid pattern
+			pattern = this.manager.create("", patternText, this.engine.allocator, succeedCallback, failCallback, [], true, this);
 		}
 		catch(err) {
 			pattern = null;
@@ -15224,7 +15228,7 @@ This file is part of LifeViewer
 	// handle successful read of system clipboard during paste
 	View.prototype.handleSuccessfulRead = function(/** @type {string} */ text, /** @type {boolean} */ shift, /** @type {boolean} */ evolveStep) {
 		// create a pattern from the text
-		var	/** @type {Pattern} */ pattern = this.manager.create("", text, this.engine.allocator, null, null, null, this),
+		var	/** @type {Pattern} */ pattern = this.manager.create("", text, this.engine.allocator, null, null, null, false, this),
 			/** @type {Uint8Array} */ buffer = null,
 			/** @type {Uint8Array} */ patternRow = null,
 			/** @type {number} */ width = 0,
@@ -18072,9 +18076,16 @@ This file is part of LifeViewer
 		this.labelButton = this.viewMenu.addListItem(this.viewLabelToggle, Menu.middle, -100, 0, 180, 40, ["Annotations"], [this.showLabels], Menu.multi);
 		this.labelButton.toolTip = ["toggle annotations [" + this.altKeyText + " L]"];
 
-		// rainbow button
-		this.rainbowButton = this.viewMenu.addListItem(this.viewRainbowToggle, Menu.middle, 100, 0, 180, 40, ["Rainbow"], [this.engine.rainbow], Menu.multi);
-		this.rainbowButton.toolTip = ["toggle rainbow mode [" + this.altKeyText + " W]"];
+		// render mode button
+		if (Controller.useWASM) {
+			this.renderList = this.viewMenu.addListItem(this.viewRenderList, Menu.middle, 100, 0, 180, 40, ["Default", "Rainbow", "NCount"], this.engine.cellRenderer, Menu.single);
+			this.renderList.toolTip = ["cycle renderer [" + this.altKeyText + " W]", "cycle renderer [" + this.altKeyText + " W]", "cycle renderer [" + this.altKeyText + " W]"];
+			this.renderList.setFont("14px Arial");
+		} else {
+			this.renderList = this.viewMenu.addListItem(this.viewRenderList, Menu.middle, 100, 0, 180, 40, ["Default", "Rainbow"], this.engine.cellRenderer, Menu.single);
+			this.renderList.toolTip = ["cycle renderer [" + this.altKeyText + " W]", "cycle renderer [" + this.altKeyText + " W]"];
+			this.renderList.setFont("18px Arial");
+		}
 
 		// autogrid toggle button
 		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 50, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);
@@ -18944,9 +18955,9 @@ This file is part of LifeViewer
 		// disable icons
 		this.useIcons = false;
 
-		// reset rainbow mode
-		this.engine.rainbow = false;
-		this.defaultRainbow = false;
+		// reset renderer
+		this.engine.cellRenderer = LifeConstants.renderLongevity;
+		this.defaultRenderer = LifeConstants.renderLongevity;
 
 		// reset start from
 		this.startFrom = -1;
@@ -19535,7 +19546,7 @@ This file is part of LifeViewer
 		// attempt to load the pattern
 		this.origDisplayWidth = this.displayWidth;
 		this.origDisplayHeight = this.displayHeight;
-		pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStartFailed, [ignoreThumbnail], this);
+		pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStartFailed, [ignoreThumbnail], false, this);
 		this.lastFailReason = this.manager.failureReason;
 
 		// if the pattern loaded synchronously (i.e. did not need a rule definition from the repository) then complete the setup
@@ -19547,7 +19558,7 @@ This file is part of LifeViewer
 			savedW = this.manager.specifiedWidth;
 			savedH = this.manager.specifiedHeight;
 
-			temp = this.manager.create("", "x=1,y=1,rule=Life\n!", this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], this);
+			temp = this.manager.create("", "x=1,y=1,rule=Life\n!", this.engine.allocator, this.completeStart, this.completeStart, [ignoreThumbnail], false, this);
 			this.completeStart(temp, [ignoreThumbnail], this);
 
 			this.manager.specifiedWidth = savedW;
@@ -20439,10 +20450,10 @@ This file is part of LifeViewer
 			}
 		}
 
-		// check rainbow and remove if not supported
-		if (me.engine.rainbow) {
+		// check render mode and remove if not supported
+		if (me.engine.cellRenderer !== LifeConstants.renderLongevity) {
 			if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree) {
-				me.engine.rainbow = false;
+				me.engine.cellRenderer = LifeConstants.renderLongevity;  // TBD render check UI control
 			}
 		}
 
@@ -20816,8 +20827,8 @@ This file is part of LifeViewer
 		// update grid UI
 		me.gridToggle.current = [me.engine.displayGrid];
 
-		// set rainbow toggle
-		me.rainbowButton.current = [me.engine.rainbow];
+		// set cell render mode
+		me.renderList.current = me.engine.cellRenderer;
 
 		// reset generation
 		me.engine.counter = 0;
@@ -22000,6 +22011,13 @@ This file is part of LifeViewer
 				if (rleItem !== null) {
 					createAnchor(rleItem, textItem);
 				}
+
+				// check whether to limit the height of the text item
+				if (DocConfig.patternSourceMaxHeight > -1) {
+					if (textItem.clientHeight > DocConfig.patternSourceMaxHeight + 26) {
+						textItem.style.height = (DocConfig.patternSourceMaxHeight + 26) + "px";
+					}
+				}
 			}
 		}
 	}
@@ -22026,7 +22044,7 @@ This file is part of LifeViewer
 		var	/** @type {Pattern} */ pattern = null;
 
 		// attempt to create a pattern
-		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem, canvasItem], null);
+		pattern = manager.create("", patternString, allocator, completeIsPattern, completeIsPatternFailed, [patternString, rleItem, textItem, canvasItem], true, null);
 		if (!manager.loadingFromRepository) {
 			if (pattern) {
 				if (pattern.invalid) {

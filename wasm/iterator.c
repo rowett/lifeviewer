@@ -1229,7 +1229,7 @@ void nextGeneration(
 					aboveNextTileRow[tw] |= aboveNextTiles;
 				}
 			}
-		
+
 			// next tile set
 			leftX = currentX + (xSize << 4);
 		}

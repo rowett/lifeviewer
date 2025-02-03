@@ -479,11 +479,16 @@ This file is part of LifeViewer
 						me.menuManager.notification.notify("AutoHide UI " + (me.hideGUI ? "On" : "Off"), 15, 80, 15, true);
 						break;
 
-					// w for toggle rainbow display
+					// w for cycle render mode
 					case 87:
-						// toggle rainbow mode
+						// cycle render mode
 						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree)) {
-							me.rainbowButton.current = me.viewRainbowToggle([!me.engine.rainbow], true, me);
+							me.engine.cellRenderer += 1;
+							if (me.engine.cellRenderer > (Controller.useWASM ? LifeConstants.renderNeighbourCount : LifeConstants.renderRainbow)) {
+								me.engine.cellRenderer = LifeConstants.renderLongevity;
+							}
+
+							me.renderList.current = me.viewRenderList(me.engine.cellRenderer, true, me);
 						}
 						break;
 

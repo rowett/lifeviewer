@@ -110,7 +110,7 @@ This file is part of LifeViewer
 
 	// clear notification
 	TextAlert.prototype.clear = function(/** @type {boolean} */ priority, /** @type {boolean} */ immediately) {
-		var	/** @type {number} */	elapsed = 0;
+		var	/** @type {number} */ elapsed = 0;
 
 		if (priority) {
 			// check if priority message is displayed

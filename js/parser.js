@@ -32,6 +32,8 @@ This file is part of LifeViewer
 
 		// check if the token is a script command
 		switch (tokenString) {
+			case Keywords.rainbowWord:
+			case Keywords.neighbourCountWord:
 			case Keywords.exclusivePlayWord:
 			case Keywords.playTimeWord:
 			case Keywords.ignoreExclusiveWord:
@@ -1393,6 +1395,9 @@ This file is part of LifeViewer
 			// dummy pattern for RLE decoding
 			/** @type {Pattern} */ pattern = new Pattern("decode", view.manager),
 
+			// dummy cell list for RLE decoding
+			/** @type {Array<number>} */ list = [],
+
 			// suppress errors flags
 			suppressErrors = {
 				/** @type {boolean} */ x : false,
@@ -2692,7 +2697,7 @@ This file is part of LifeViewer
 									} else {
 										// concatenate subequent tokens that are valid RLE
 										transToken = scriptReader.peekAtNextToken();
-										while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && view.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
+										while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && view.manager.decodeRLEString(pattern, transToken, list, view.engine.allocator) !== -1) {
 											// consume token
 											scriptReader.getNextToken();
 											// add to rle
@@ -2797,7 +2802,7 @@ This file is part of LifeViewer
 								} else {
 									// concatenate subequent tokens that are valid RLE
 									transToken = scriptReader.peekAtNextToken();
-									while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && view.manager.decodeRLEString(pattern, transToken, false, view.engine.allocator) !== -1) {
+									while (transToken !== "" && !this.isScriptCommand(transToken) && !scriptReader.nextTokenIsNumeric() && view.manager.decodeRLEString(pattern, transToken, list, view.engine.allocator) !== -1) {
 										// consume token
 										scriptReader.getNextToken();
 										// add to rle
@@ -4861,8 +4866,19 @@ This file is part of LifeViewer
 						// rainbow word
 						case Keywords.rainbowWord:
 							if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
-								view.engine.rainbow = true;
-								view.defaultRainbow = true;
+								view.engine.cellRenderer = LifeConstants.renderRainbow;
+								view.defaultRenderer = LifeConstants.renderRainbow;
+							}
+							itemValid = true;
+							break;
+
+						// neighbourhood count word
+						case Keywords.neighbourCountWord:
+							if (Controller.useWASM) {
+								if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
+									view.engine.cellRenderer = LifeConstants.renderNeighbourCount;
+									view.defaultRenderer = LifeConstants.renderNeighbourCount;
+								}
 							}
 							itemValid = true;
 							break;
