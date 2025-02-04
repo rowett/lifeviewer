@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1231,
+		/** @const {number} */ versionBuild : 1232,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4749,6 +4749,8 @@ This file is part of LifeViewer
 	View.prototype.copyPatternTo = function(/** @type {Pattern} */ pattern) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
+			/** @type {number} */ delta = 0,
+			/** @type {number} */ cells = 0,
 
 			// life grid and colour grid
 			/** @type {Array<Uint16Array>} */ grid = this.engine.grid16,
@@ -4970,10 +4972,21 @@ This file is part of LifeViewer
 					// check if clipping is required
 					if (!needsClipping) {
 						// no clipping needed
-						for (x = 0; x < width; x += 1) {
+						x = 0;
+						delta = panX & 15;
+
+						while (x < width - 16) {
+							cells = patternRow[x >> 4];
+							gridRow[(x + panX) >> 4] |= (cells >> delta);
+							gridRow[((x + panX) >> 4) + 1] |= ((cells << (16 - delta)) & 65535);
+							x += 16;
+						}
+
+						while (x < width) {
 							if ((patternRow[x >> 4] & (1 << (~x & 15))) !== 0) {
 								gridRow[(x + panX) >> 4] |= 1 << (~(x + panX) & 15);
 							}
+							x += 1;
 						}
 					} else {
 						// clipping needed

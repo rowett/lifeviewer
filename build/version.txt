@@ -1,3 +1,6 @@
+Build 1232
+- improved pattern load speed
+
 Build 1231
 - improved page scan speed
 - reduce height of code boxes with SHOW IN VIEWER links to use less real estate
