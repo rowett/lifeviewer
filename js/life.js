@@ -14727,20 +14727,31 @@ This file is part of LifeViewer
 		leftX = newLeftX >> (this.tilePower + 4);
 		rightX = newRightX >> (this.tilePower + 4);
 
-		// set the tile grid from the bounding box
-		for (h = bottomY; h <= topY; h += 1) {
-			// get the tile row in the next tile grid since this will be used when shrinking
-			tileRow = nextTileGrid[h];
-			for (w = leftX; w <= rightX; w += 1) {
-				tileRow[w] = -1;
-			}
-		}
 
 		// shrink the tile grid to the pattern
-		if (this.multiNumStates !== -1) {
-			this.shrinkTileGridGenerations();
+		if (this.view.thumbLaunch && !this.view.autoStart) {
+			// set the current tile grid from the bounding box
+			for (h = bottomY; h <= topY; h += 1) {
+				tileRow = tileGrid[h];
+				for (w = leftX; w <= rightX; w += 1) {
+					tileRow[w] = -1;
+				}
+			}
 		} else {
-			this.shrinkTileGrid();
+			// set the next tile grid from the bounding box
+			for (h = bottomY; h <= topY; h += 1) {
+				// get the tile row in the next tile grid since this will be used when shrinking
+				tileRow = nextTileGrid[h];
+				for (w = leftX; w <= rightX; w += 1) {
+					tileRow[w] = -1;
+				}
+			}
+
+			if (this.multiNumStates !== -1) {
+				this.shrinkTileGridGenerations();
+			} else {
+				this.shrinkTileGrid();
+			}
 		}
 
 		// add the overlay grid to the tiles

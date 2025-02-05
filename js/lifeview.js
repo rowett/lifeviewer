@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1232,
+		/** @const {number} */ versionBuild : 1235,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -577,7 +577,9 @@ This file is part of LifeViewer
 		/** @type {boolean} */ wasmEnableNextGenerationGaussian: true,
 		/** @type {boolean} */ wasmEnableNextGenerationWeighted: true,
 		/** @type {boolean} */ wasmEnableNextGenerationRuleLoader: true,
-		/** @type {boolean} */ wasmEnableUpdateGridFromCounts: true
+		/** @type {boolean} */ wasmEnableUpdateGridFromCounts: true,
+
+		/** @type {CanvasRenderingContext2D} */ iconCache: null
 	};
 
 	// frame rate calculation function
@@ -11873,31 +11875,45 @@ This file is part of LifeViewer
 			/** @type {number} */ offset = 0,
 			/** @type {ImageData} */ data = null,
 			/** @type {Uint32Array} */ data32 = null,
-			/** @const {number} */ greyPixel = 0xff707070;
+			/** @const {number} */ greyPixel = 0xff707070,
+			/** @type {HTMLCanvasElement} */ cache = null;
 
 		// check if the icons exist
 		if (icons === null) {
-			// create the icon image
-			icons = this.decode("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");
-		//	icons = this.decode("dYAoERERERISIiIiIiIiJEM1WIZofMZlWId3d3iHd3iYiIiIiIiIh3uIuJi///M5mZMyC0EbBhyUl4KjK22WobTmDU1FnYowAQgxBSlXHn5JaKT5p7jeDIBDMugiAAgSABKlFgQIAoGA8EIEE80EEEQkdAREbIKgUAQwKWOERomkoiqgsecuwaYy0WU24SQ68O+MLBCJEHGFICBKqVussSLKzo2vlgvVAoUFuFk1KkbB8j0Vm9ZTNG1j5Wqcqt3ROjYuMydE2LIKdlmtjNhXiIjOfm650kZ7pa2Z186OtndNW0TpIiXT1tM6WtqiKnTVtdbZW2zp626tvnUVuD13UTqZ1VbjW5Vuc6ut0rdZ1lbtW71vFbzOtrep11b3GhW+RFzr4oK32t+rf52FchXI1yVcnXKVytcs6mdi6qdlXLyUJKMlKSnFDKslWr91T2b24g3PeXV213tbA77c1nf5z8PxzpPnz577nz58+OfPnz11dXVriuicOHGcb3UX7j9+8d/+edJneN9iy2ckdh9FXrGB3X9FXxoeTl7Yvvq2S14xyamWYDAT/////9RPK1xgtLoovbFSUVqD6Qk+XxDAESB19v//14f/+WK7PKS58+fJ3XO8FuXH73zj9d/0mdjm7pnMnaNHYfj/1lvst3pTsvx+6bl3lusZTs/nX1dXV1Kf5/tueWh0dw8XFaPLbKK09P49BRUa9sVBXwMp92PFeNT6O7zXb9XbAD9NttFtFQVokF1dcwHfzqTBgwYLy28FuW3pXY89a2m8nH7qrlelTa9tNAD29s4t2PJeK61SqA+suVTkSBcwgucynZ/NBV1dXu/7Os6xH9/8R07ZsfSL33tlr5VyXqGWV7xevja9tJIL2294fbHaXiujozI4qaswzrhUrXDlr5fudsIN6jfIjUYrUIa5KK7W6HcOnDfyovTem9N6b1oInDl/eC3KhV8v++vcP2tni99iayl/r3itNe1ZBe0pgOXw8V1qnYysI29EbLSd5d09FebKdn8xdXV1dSljF/8jnXujtOOZ9JijctRsG69GtP7799RXtH/KM5Q5PFZ8tK7Dd4qXUlSU6r725z1G34FZaQSCSuGN1eNQ3/Pnz57/Pnz54N6b03pvTvIQ8y3Kr5sgL/+89AbukqNg3XxfitP7799RXtmwgoEoevp5qZTsbbnOCO0/Ksq0iQVsauZTs/58+fPR58+fODBgwUNXV15UtypD97jNdxx3Glak7tVRr2ui32n2Pcd417ip51QrWor3bdl+m//rW3ZqxLR//qLluT//Xv+fPnz0efPnzgwYMF2EK8tyoXz/fv/47q6o53btZ9fF9j/n+9xvbDhxqPvXFlMpUkinBHvrSyLISD/nz589Hnz584MGDBXV1dXXkS3Khm/b/2/L9HR0dluGMY3PqlsVDjYfj9Xbm5p2/LUFMRXNrWCOn3DcOfGVqvrLumIRqallV1klFdmhhXluU/nzj+O33OLhun5Xvr3M7x3cthy44xj0p5qZSpMXGDKYbRINvdEiQL+dDXV28W7yRtZ2lt45eT3dVbjljtZO15t2FHu519XHe9IQcm+0Oe50PKs6mtVQzr2vOodJz3HaP9qSt90dfzQwry3Ktf+f358bm7k1e7+RFn/RXa/4/Q92Fi1xSEH2MPW2SmUqYgkGRPCbREg2hEiQL+dASEjMu/OXpblW7y75vHG9tNt2Wl4143SvtU2VYfj9kVFo7PQbqFK1UtVtzNwvuQ9dzrbr380MK8tyn/jt75/cv/+ral0e2IJlejfa9b6IfWKHt/b04x35tHZTUylS9Mimm6bREg2h4otor+a/BgwYMdatWsO7Q4OmBblOSSLjv7wbbaXPxsMal0FFbH22vtLxodewxvthpZBSKUK7PX2k32o9j+tEuXCUUpKimOW/mvwYMGC7COHmW5VuXfxjv42K1Lo9sQLH69evYQyC7Fm9/2odG+ZxZsIIIIUqU1iliGkzi5ljGN/NfgwYMGOtWrWHWRw8y3Ktixn//v43UY0GN3eErj9p3HUdHLFdJrx/////7jWJq+mRu92+1tNrytdpqfG/mvTem9N6b06qLcp+X//9vy3bdz9HtA8Efz32vHERsAvivn7+1TG+PJRyy5aLKipRmHy+wLIoGkzi5fyovTem9N6bhdXV15M2s7Snsfi+c0fsV/LGjjT5422vFT89Lzz7vqJCrokKKzvy3iswzprpbOoKh2rcuapN2qy2We7+VF6b03pvTeqotyn7exc9OO7FFSaPaReXbee+152nfCdFezG3PRbwTOekmS1Y140oTtmKC+9rKoWkygic95d38qL03pvTem9tXV1dUmz0Gz5yZyyMAAYPJnI38x23l2mTOTjjoAuNLs6JtsMHVz+0S7ZXu0cC0BwxjAAGMAAZrpqwxuG2bDXWmL5e7uVYxOv+fPnz0efPnypgwYMFWlz58+Tri3Kh/bPjj90+rryX3/F5dxr16+872fZCXioYN9LoiXEmyUarJIMTt942Wi0mTuLX68Tz58+e932+zhfjTYo02OKzsskAAG/xWdQ217T/8qzsaXAAAi7Daf57W2nY1Ws86W9SQyhCQAAUlBAAEgAAX/Pnz57/Pnz59a8ufPnydcW5efabLPa73/GvvweQGvXr0GgkGtaaf/SzZIYbIT1BX8xeaM0ZprnVNV1NV1NQaQAAaRU1Qd4v37T2KmqhjAAGNR52Gt27hY09cEskrIAAIqQgACQAAL+VaW5Um+8xXQ+W2fvash9g+9/eyCWMhB/MXV1dXVXrZZVssq2UluTWyuTp9GtldFjZ49LI2aZevS9WsZCD+dSYMGDBdkW5efPH2K74WmHu/mgq6ur1atVFaqK1WX/////////xWqyxvu945VqqfTYcFxFR38qL03pvTem9VSxt419/d9h/Ovq6urqtW9tb21vU9b1yU6CnbLXk7Zow/mvTem9N6b06qWNuLeWdp27y/nQlWrVnNCYAJhaNniuNGzxRjtjtQUbPBURai/mvwYMGC8usc+rs9+T58+e+58+fPfc+fPQVdXV2XPnz38/")
-		}
+			// check if the icon cache exists
+			if (Controller.iconCache) {
+				icons = Controller.iconCache;
+			} else {
+				// create the icon image
+				icons = this.decode("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");
 
-		// re-colour the grid icons
-		data = icons.getImageData(0, 0, icons.canvas.width, icons.canvas.height);
-		data32 = new Uint32Array(data.data.buffer);
+				// re-colour the grid icons
+				data = icons.getImageData(0, 0, icons.canvas.width, icons.canvas.height);
+				data32 = new Uint32Array(data.data.buffer);
 
-		for (i = 0; i < gridIcons.length; i += 1) {
-			for (y = 0; y < h; y += 1) {
-				offset = y * icons.canvas.width + gridIcons[i] * w;
-				for (x = 0; x < w; x += 1) {
-					if (data32[offset + x] !== 0) {
-						data32[offset + x] = greyPixel;
+				for (i = 0; i < gridIcons.length; i += 1) {
+					for (y = 0; y < h; y += 1) {
+						offset = y * icons.canvas.width + gridIcons[i] * w;
+						for (x = 0; x < w; x += 1) {
+							if (data32[offset + x] !== 0) {
+								data32[offset + x] = greyPixel;
+							}
+						}
 					}
 				}
+
+				icons.putImageData(data, 0, 0);
+
+				// create the cache
+				cache = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+				cache.width = icons.canvas.width;
+				cache.height = icons.canvas.height;
+				Controller.iconCache = /** @type {!CanvasRenderingContext2D} */ (cache.getContext("2d"));
+
+				// draw the decoded icons onto the cache
+				Controller.iconCache.drawImage(icons.canvas, 0, 0);
 			}
 		}
-
-		icons.putImageData(data, 0, 0);
 
 		// create the icon manager
 		this.iconManager = new IconManager(icons, context);
@@ -18730,12 +18746,14 @@ This file is part of LifeViewer
 			}
 
 			// setup the 2d drawing context
+			//console.time("setup context");
 			this.mainContext = /** @type {!CanvasRenderingContext2D} */ (this.mainCanvas.getContext("2d", {alpha: false, "willReadFrequently": true}));
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;
 			this.mainContext.imageSmoothingQuality = "high";
 			this.mainContext.fillRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
+			//console.timeEnd("setup context");
 
 			// set the font alignment
 			this.mainContext.textAlign = "left";
@@ -18746,8 +18764,13 @@ This file is part of LifeViewer
 			this.displayHeight = this.mainCanvas.height;
 
 			// initialise life engine
+			//console.time("new engine");
 			this.engine = new Life(this.mainContext, this.displayWidth, this.displayHeight, this.defaultGridWidth, this.defaultGridHeight, this.manager, this);
+			//console.timeEnd("new engine");
+
+			//console.time("init engine");
 			this.engine.initEngine(this.mainContext, this.displayWidth, this.displayHeight);
+			//console.timeEnd("init engine");
 
 			// create the elapsed times buffer
 			this.elapsedTimes = /** @type {!Float32Array} */ (this.engine.allocator.allocate(Type.Float32, ViewConstants.numElapsedTimes, "View.elapsedTimes", false));
@@ -18756,10 +18779,14 @@ This file is part of LifeViewer
 			this.starField = new Stars(ViewConstants.numStars, this.engine.allocator);
 
 			// create the icon manager and icons
+			//console.time("create icons");
 			this.createIcons(this.mainContext);
+			//console.timeEnd("create icons");
 
 			// create the menu manager
+			//console.time("menu manager");
 			this.menuManager = new MenuManager(this.mainCanvas, this.mainContext, "24px Arial", this.iconManager, this, this.gotFocus);
+			//console.timeEnd("menu manager");
 
 			// disable fps display
 			this.menuManager.showTiming = false;
@@ -18768,7 +18795,9 @@ This file is part of LifeViewer
 			this.engine.createColourThemes();
 
 			// create menu
+			//console.time("create menus");
 			this.createMenus();
+			//console.timeEnd("create menus");
 
 			// register mouse wheel event
 			registerEvent(this.mainCanvas, "wheel", function(/** @type {WheelEvent} */ event) {me.wheel(me, event);}, false);
@@ -19559,13 +19588,23 @@ This file is part of LifeViewer
 		// attempt to load the pattern
 		this.origDisplayWidth = this.displayWidth;
 		this.origDisplayHeight = this.displayHeight;
+
+		//console.group("load");
+		//console.time("decodePattern");
 		pattern = this.manager.create("", patternString, this.engine.allocator, this.completeStart, this.completeStartFailed, [ignoreThumbnail], false, this);
+		//console.log(pattern.width, pattern.height);
+		//console.timeEnd("decodePattern");
+
 		this.lastFailReason = this.manager.failureReason;
 
 		// if the pattern loaded synchronously (i.e. did not need a rule definition from the repository) then complete the setup
 		// (otherwise it will happen once the async load is complete)
 		if (!this.manager.loadingFromRepository) {
+			//console.group("completeStart");
+			//console.time("completeStart");
 			this.completeStart(pattern, [ignoreThumbnail], this);
+			//console.timeEnd("completeStart");
+			//console.groupEnd();
 		} else {
 			// create a dummy pattern so view processing completes otherwise window isn't correctly setup
 			savedW = this.manager.specifiedWidth;
@@ -19585,6 +19624,8 @@ This file is part of LifeViewer
 			this.menuManager.notification.clear(false, true);
 			this.menuManager.notification.notify("Loading rule...", 15, 10000, 15, true);
 		}
+
+		//console.groupEnd();
 	};
 
 	// complete pattern start process after lookup failure
@@ -20742,7 +20783,9 @@ This file is part of LifeViewer
 
 		// copy pattern to center of grid
 		if (pattern && !pattern.tooBig) {
+			//console.time("copyPattern");
 			me.copyPatternTo(pattern);
+			//console.timeEnd("copyPattern");
 		}
 
 		// update rule label
@@ -20881,6 +20924,7 @@ This file is part of LifeViewer
 			me.graphDisabled = true;
 			me.popGraph = false;
 		} else {
+			//console.time("resetBoxes");
 			// compute bounding box
 			me.engine.resetBoxes(me.state1Fit);
 
@@ -20891,6 +20935,7 @@ This file is part of LifeViewer
 			if (me.engine.multiNumStates <= 2) {
 				me.engine.resetColourGridBox(me.engine.grid16);
 			}
+			//console.timeEnd("resetBoxes");
 
 			// draw any rle snippets after colour grid conversion (for paste blending modes)
 			me.pasteRLEList();
@@ -20956,8 +21001,12 @@ This file is part of LifeViewer
 			}
 
 			// save state for reset
-			me.engine.saveGrid(me.noHistory, me);
-			me.engine.restoreSavedGrid(me, me.noHistory);
+			//console.time("snapshot");
+			if (!me.thumbLaunch || me.autoStart) {
+				me.engine.saveGrid(me.noHistory, me);
+				me.engine.restoreSavedGrid(me, me.noHistory);
+			}
+			//console.timeEnd("snapshot");
 		}
 
 		// set the performance warning UI control
@@ -21420,6 +21469,8 @@ This file is part of LifeViewer
 			/** @type {View} */ newView = null;
 
 		// check if the viewer already exists
+		//console.group("startView");
+		//console.time("startView");
 		i = 0;
 		while (i < Controller.viewers.length && !newView) {
 			if (Controller.viewers[i][0].tabIndex === canvasItem.tabIndex) {
@@ -21454,7 +21505,11 @@ This file is part of LifeViewer
 			}
 
 			// attach it to the canvas
+			//console.group("attach");
+			//console.time("attach");
 			newView.attachToCanvas(canvasItem);
+			//console.timeEnd("attach");
+			//console.groupEnd();
 
 			// add the view to the list
 			Controller.viewers[Controller.viewers.length] = [canvasItem, newView, Controller.popupWindow];
@@ -21464,11 +21519,17 @@ This file is part of LifeViewer
 			newView.wasmResetPoint = newView.engine.allocator.wasmPointer;
 			console.log("Reset point is " + newView.wasmResetPoint);
 		}
-
 		// load the pattern without ignore thumbnail
 		if (!isInPopup) {
+			//console.group("startViewer");
+			//console.time("startViewer");
 			newView.startViewer(patternString, false);
+			//console.timeEnd("startViewer");
+			//console.groupEnd();
 		}
+
+		//console.timeEnd("startView");
+		//console.groupEnd();
 	}
 
 	// read LifeViewer settings from meta tag if present
@@ -22187,6 +22248,8 @@ This file is part of LifeViewer
 			/** @type {Element} */ button3 = null,
 			/** @type {Element} */ build = null,
 			/** @type {Element} */ canvasElement = null,
+			/** @type {number} */ embeddedReads = 0,
+			/** @type {number} */ popupReads = 0,
 
 			// temporary allocator and pattern manager
 			/** @type {Allocator} */ allocator = WASM.allocator,
@@ -22220,10 +22283,13 @@ This file is part of LifeViewer
 				// check if typedArrays and Canvas are supported
 				if (Supports.typedArrays && textItem) {
 
+					//console.group("read embedded");
 					console.time("read embedded");
 
 					// remove any html tags from the text item and trim
+					//console.time("clean");
 					cleanItem = cleanPattern(textItem);
+					//console.timeEnd("clean");
 
 					// check for multiverse
 					if (DocConfig.multi) {
@@ -22251,6 +22317,8 @@ This file is part of LifeViewer
 					}
 
 					console.timeEnd("read embedded");
+					//console.groupEnd();
+					embeddedReads += 1;
 
 				}
 			} else {
@@ -22276,6 +22344,7 @@ This file is part of LifeViewer
 								isPattern(cleanItem, allocator, manager, rleItem, textItem, null);
 
 								console.timeEnd("read popup");
+								popupReads += 1;
 							}
 						}
 					}
@@ -22340,6 +22409,7 @@ This file is part of LifeViewer
 		}
 
 		console.timeEnd("page scan");
+		console.log(embeddedReads + " embedded and " + popupReads + " popup");
 
 		if (DocConfig.multi) {
 			// switch to overview mode
