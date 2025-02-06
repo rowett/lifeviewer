@@ -76,6 +76,9 @@ This file is part of LifeViewer
 		// x offset when resizing to keep window right edge at a constant position
 		/** @type {number} */ this.resizeDx = 0;
 
+		// whether the window is maximized
+		/** @type {boolean} */ this.maximized = false;
+
 		// register event listeners for element click
 		registerEvent(title, "mousedown", function(/** @type {MouseEvent} */ event) {me.elementMouseDown(me, event);}, false);
 		registerEvent(document, "mousemove", function(/** @type {MouseEvent} */ event) {me.elementMouseMove(me, event);}, false);

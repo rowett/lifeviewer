@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1235,
+		/** @const {number} */ versionBuild : 1237,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -19396,7 +19396,7 @@ This file is part of LifeViewer
 	// scale popup window
 	View.prototype.scalePopup = function() {
 		var	/** @type {number} */ scale = 1,
-			/** @type {number} */ windowWidth = window.innerWidth,
+			/** @type {number} */ windowWidth = document.body.clientWidth,
 			/** @type {number} */ windowHeight = window.innerHeight,
 			/** @type {number} */ displayWidth = this.displayWidth,
 			/** @type {number} */ displayHeight = this.displayHeight + 80;
@@ -19404,12 +19404,19 @@ This file is part of LifeViewer
 		// update the device pixel ratio
 		this.devicePixelRatio = (window.devicePixelRatio ? window.devicePixelRatio : 1);
 
-		// scale width and height
-		displayWidth *= this.devicePixelRatio;
-		displayHeight *= this.devicePixelRatio;
+		// check for maximize
+		if (Controller.popupWindow.maximized) {
+			displayWidth = windowWidth;
+			displayHeight = windowHeight - 34;
+			scale = 1;
+		} else {
+			// scale width and height
+			displayWidth *= this.devicePixelRatio;
+			displayHeight *= this.devicePixelRatio;
+			scale = this.devicePixelRatio;
+		}
 
 		// assume window will fit and scale controls
-		scale = this.devicePixelRatio;
 		this.windowZoom = 1;
 
 		// check window fits on display
@@ -20932,9 +20939,11 @@ This file is part of LifeViewer
 			me.engine.resetHistoryBox();
 
 			// reset the colour grid if not multi-state Generations or HROT rule
+			//console.time("resetColourGridBox");
 			if (me.engine.multiNumStates <= 2) {
 				me.engine.resetColourGridBox(me.engine.grid16);
 			}
+			//console.timeEnd("resetColourGridBox");
 			//console.timeEnd("resetBoxes");
 
 			// draw any rle snippets after colour grid conversion (for paste blending modes)
@@ -20959,7 +20968,9 @@ This file is part of LifeViewer
 			}
 
 			// reset population
+			//console.time("resetPopulationBox");
 			me.engine.resetPopulationBox(me.engine.grid16, me.engine.colourGrid);
+			//console.timeEnd("resetPopulationBox");
 
 			// count non-zero states (excluding dead cells)
 			stateCount = 0;
@@ -21000,9 +21011,9 @@ This file is part of LifeViewer
 				me.engine.setBoundedTiles();
 			}
 
-			// save state for reset
+			// save state for reset unless thumb launch mode and pattern static
 			//console.time("snapshot");
-			if (!me.thumbLaunch || me.autoStart) {
+			if (!me.thumbLaunch || me.autoStart || me.startFrom !== -1 || me.autoIdentify) {
 				me.engine.saveGrid(me.noHistory, me);
 				me.engine.restoreSavedGrid(me, me.noHistory);
 			}
@@ -22087,7 +22098,7 @@ This file is part of LifeViewer
 				}
 
 				// check whether to limit the height of the text item
-				if (DocConfig.patternSourceMaxHeight > -1) {
+				if (DocConfig.patternSourceMaxHeight > -1 && patternString.indexOf("@RULE") === -1) {
 					if (textItem.clientHeight > DocConfig.patternSourceMaxHeight + 26) {
 						textItem.style.height = (DocConfig.patternSourceMaxHeight + 26) + "px";
 					}

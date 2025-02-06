@@ -1,3 +1,9 @@
+Build 1237
+- don't reduce the height of the forum code box if it also contains an @RULE definition
+
+Build 1236
+- hotkey F9 will now maximize/restore the PopUp Viewer window
+
 Build 1235
 - fix crash when decoding invalid @TABLE sections
 

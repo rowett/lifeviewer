@@ -13329,7 +13329,7 @@ This file is part of LifeViewer
 					belowNextTiles = belowNextTileRow[tw];
 					aboveNextTiles = aboveNextTileRow[tw];
 
-					// compute next generation for each set tile
+					// check for cells on the edge of tile boundaries
 					for (b = 15; b >= 0; b -= 1) {
 						// check if this tile needs computing
 						if ((tiles & (1 << b)) !== 0) {
@@ -14728,8 +14728,8 @@ This file is part of LifeViewer
 		rightX = newRightX >> (this.tilePower + 4);
 
 
-		// shrink the tile grid to the pattern
-		if (this.view.thumbLaunch && !this.view.autoStart) {
+		// shrink the tile grid to the pattern unless thumb launch mode and the pattern is static
+		if (this.view.thumbLaunch && !this.view.autoStart && this.view.startFrom !== -1 && !this.view.autoIdentify) {
 			// set the current tile grid from the bounding box
 			for (h = bottomY; h <= topY; h += 1) {
 				tileRow = tileGrid[h];
