@@ -128,7 +128,7 @@ This file is part of LifeViewer
 
 	// reset the allocator
 	Allocator.prototype.reset = function(/** @type {number} */ pointer) {
-		console.log("Allocator reset to " + pointer);
+		//console.log("Allocator reset to " + pointer);
 		this.wasmPointer = pointer;
 		this.allocations = [];
 		this.numAllocs = 0;
@@ -298,12 +298,12 @@ This file is part of LifeViewer
 	Allocator.prototype.typedMemory = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {boolean} */ wasmHeap, /** @type {boolean} */ atTop) {
 		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null,
 			/** @type {number} */ size = elements * Type.sizeInBytes(type),
-			/** @type {number} */ where = this.wasmPointer;
+			/** @type {number} */ where = (this.wasmPointer >>> 0);
 
 		// check if allocation at top of heap required
 		if (atTop) {
 			// allocate from top of memory 16 byte aligned
-			where = (this.wasmMemTop - size) & ~15;
+			where = ((this.wasmMemTop - size) & ~15) >>> 0;
 
 			// update top of memory pointer
 			this.wasmMemTop = where;

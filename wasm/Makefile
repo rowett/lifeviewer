@@ -37,7 +37,8 @@ SETTINGS = -s INITIAL_MEMORY=1024MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="
 	'_create2x2ColourGridSuper', '_create4x4ColourGridSuper', '_create8x8ColourGridSuper', \
 	'_create16x16ColourGridSuper', '_create32x32ColourGridSuper', \
 	'_create2x2ColourGrid', '_create4x4ColourGrid', '_create8x8ColourGrid', \
-	'_create16x16ColourGrid', '_create32x32ColourGrid']"
+	'_create16x16ColourGrid', '_create32x32ColourGrid', \
+	'_resetColourGridNormal', '_resetPopulationBit', '_resetBoxesBit', '_shrinkTileGrid']"
 
 # Repository base
 REPO = /mnt/c/Users/crowe/Documents/GitHub/lifeviewer

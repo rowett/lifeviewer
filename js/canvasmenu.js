@@ -3682,6 +3682,8 @@ This file is part of LifeViewer
 		if (Controller.useWASM) {
 			var beta1 = "LifeViewer Pro";
 			var beta2 = "Alpha release";
+			var beta3 = Controller.pageScanTime.toFixed(1) + "ms";
+
 			oc.font = ((16 * xScale) | 0) + "px Arial";
 
 			oc.fillStyle = "black";
@@ -3690,6 +3692,12 @@ This file is part of LifeViewer
 			oc.fillStyle = "white";
 			oc.fillText(beta1, 2 * xScale, 120 * yScale);
 			oc.fillText(beta2, 2 * xScale, 140 * yScale);
+
+			oc.font = ((12 * xScale) | 0) + "px Arial";
+			oc.fillStyle = "black";
+			oc.fillText(beta3, 3 * xScale, (160 + 1) * yScale);
+			oc.fillStyle = "white";
+			oc.fillText(beta3, 2 * xScale, 160 * yScale);
 		}
 
 		// mark that event processed

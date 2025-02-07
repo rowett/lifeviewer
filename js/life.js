@@ -9734,6 +9734,30 @@ This file is part of LifeViewer
 
 	// reset population for grid region
 	Life.prototype.resetPopulationBox = function(/** @type {Array<Uint16Array>} */ grid16, /** @type {Array<Uint8Array>} */ colourGrid) {
+		if (Controller.useWASM && Controller.wasmEnableResetPopulation && this.view.wasmEnabled) {
+			// check for multi-state rules
+			if (this.isHROT || this.isPCA || this.isRuleTree || this.isExtended || this.isNone) {
+				this.resetPopulationBoxJS(grid16, colourGrid);
+			} else {
+				this.population = WASM.resetPopulationBit(
+					grid16.whole.byteOffset | 0,
+					grid16[0].length | 0,
+					this.zoomBox.leftX | 0,
+					this.zoomBox.bottomY | 0,
+					this.zoomBox.rightX | 0,
+					this.zoomBox.topY | 0
+				);
+
+				this.birth = 0;
+				this.deaths = 0;
+			}
+		} else {
+			this.resetPopulationBoxJS(grid16, colourGrid);
+		}
+	};
+
+	// reset population for grid region - Javascript version
+	Life.prototype.resetPopulationBoxJS = function(/** @type {Array<Uint16Array>} */ grid16, /** @type {Array<Uint8Array>} */ colourGrid) {
 		var	/** @type {number} */ h = 0,
 			/** @type {number} */ w = 0,
 			/** @type {Uint8Array} */ nextColourRow = null,
@@ -10159,7 +10183,24 @@ This file is part of LifeViewer
 	Life.prototype.resetColourGridBox = function(/** @type {Array<Uint16Array>} */ grid) {
 		switch (this.cellRenderer) {
 			case LifeConstants.renderLongevity:
-				this.resetColourGridBoxNormal(grid);
+				if (Controller.useWASM && Controller.wasmEnableResetColourGrid && this.view.wasmEnabled) {
+					// ignore for PCA, RuleTree and HROT rules
+					if (!(this.isPCA || this.isRuleTree || this.isHROT)) {
+						WASM.resetColourGridNormal(
+							this.grid16.whole.byteOffset | 0,
+							this.grid16[0].length | 0,
+							this.colourGrid.whole.byteOffset | 0,
+							this.colourGrid[0].length | 0,
+							LifeConstants.aliveStart | 0,
+							this.zoomBox.leftX | 0,
+							this.zoomBox.bottomY | 0,
+							this.zoomBox.rightX | 0,
+							this.zoomBox.topY | 0
+						);
+					}
+				} else {
+					this.resetColourGridBoxNormal(grid);
+				}
 				break;
 
 			case LifeConstants.renderRainbow:
@@ -10304,6 +10345,7 @@ This file is part of LifeViewer
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ cr = 0,
+			/** @type {number} */ pixels = 0,
 			/** @type {Array<Uint32Array>} */ colourGrid32 = this.colourGrid32,
 			/** @type {Uint32Array} */ colourReset32 = new Uint32Array(this.colourReset.buffer, this.colourReset.byteOffset, this.colourReset.length / 4),
 			/** @type {Uint16Array} */ gridRow = null,
@@ -10317,7 +10359,7 @@ This file is part of LifeViewer
 			/** @type {number} */ topY = zoomBox.topY,
 			/** @type {number} */ bottomY = zoomBox.bottomY;
 
-		// ignore for PCA rules
+		// ignore for PCA, RuleTree and HROT rules
 		if (!(this.isPCA || this.isRuleTree || this.isHROT)) {
 			// set the colour grid from the grid
 			for (y = bottomY; y <= topY; y += 1) {
@@ -10327,23 +10369,35 @@ This file is part of LifeViewer
 				//cr = (leftX << 4);
 				cr = (leftX << 2);
 				for (x = leftX; x <= rightX; x += 1) {
-					// get first 8 bits
-					rowOffset = (gridRow[x] >> 8) << 1;
+					pixels = gridRow[x];
+					if (pixels) {
+						// get first 8 bits
+						rowOffset = (pixels >> 8) << 1;
 
-					// copy 8 pixels
-					colourRow32[cr] = colourReset32[rowOffset];
-					cr += 1;
-					colourRow32[cr] = colourReset32[rowOffset + 1];
-					cr += 1;
+						// copy 8 pixels
+						colourRow32[cr] = colourReset32[rowOffset];
+						cr += 1;
+						colourRow32[cr] = colourReset32[rowOffset + 1];
+						cr += 1;
 
-					// get second 8 bits
-					rowOffset = (gridRow[x] & 255) << 1;
+						// get second 8 bits
+						rowOffset = (pixels & 255) << 1;
 
-					// copy 8 pixels
-					colourRow32[cr] = colourReset32[rowOffset];
-					cr += 1;
-					colourRow32[cr] = colourReset32[rowOffset + 1];
-					cr += 1;
+						// copy 8 pixels
+						colourRow32[cr] = colourReset32[rowOffset];
+						cr += 1;
+						colourRow32[cr] = colourReset32[rowOffset + 1];
+						cr += 1;
+					} else {
+						colourRow32[cr] = 0;
+						cr += 1;
+						colourRow32[cr] = 0;
+						cr += 1;
+						colourRow32[cr] = 0;
+						cr += 1;
+						colourRow32[cr] = 0;
+						cr += 1;
+					}
 				}
 			}
 		}
@@ -13234,6 +13288,39 @@ This file is part of LifeViewer
 
 	// shrink the tile grid to the pattern
 	Life.prototype.shrinkTileGrid = function() {
+		if (Controller.useWASM && Controller.wasmEnableShrinkTileGrid && this.view.wasmEnabled) {
+			WASM.shrinkTileGrid(
+				this.grid16.whole.byteOffset | 0,
+				this.grid16[0].length | 0,
+				this.nextTileGrid.whole.byteOffset | 0,
+				this.tileGrid.whole.byteOffset | 0,
+				this.tileGrid[0].length | 0,
+				this.tileGrid.whole.byteLength | 0,
+				this.isTriangular ? 49152 : 32768,
+				this.isTriangular ? 3 : 1,
+				this.tileY | 0,
+				this.tileX  |0,
+				this.tileRows | 0,
+				this.tileCols | 0,
+				this.blankTileRow.byteOffset | 0,
+				this.blankTileRow.length | 0,
+				LifeConstants.bottomRightSet | 0,
+				LifeConstants.bottomSet | 0,
+				LifeConstants.topRightSet | 0,
+				LifeConstants.topSet | 0,
+				LifeConstants.bottomLeftSet | 0,
+				LifeConstants.topLeftSet | 0,
+				LifeConstants.leftSet | 0,
+				LifeConstants.rightSet | 0,
+				this.width | 0
+			);
+		} else {
+			this.shrinkTileGridJS();
+		}
+	};
+
+	// shrink the tile grid to the pattern - Javascript version
+	Life.prototype.shrinkTileGridJS = function() {
 		var	/** @type {number} */ h = 0,
 			/** @type {number} */ b = 0,
 			/** @type {number} */ output = 0,
@@ -14443,8 +14530,77 @@ This file is part of LifeViewer
 		}
 	};
 
-	// create bounding box from current state
 	Life.prototype.resetBoxes = function(/** @type {boolean} */ state1Fit) {
+		var	/** @type {Array<Uint16Array>} */ grid16,
+			/** @type {Array<Uint16Array>} */ tileGrid,
+			/** @type {Array<Uint16Array>} */ nextTileGrid,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {number} */ newBottomY = 0,
+			/** @type {number} */ newLeftX = 0,
+			/** @type {number} */ newTopY = 0,
+			/** @type {number} */ newRightX = 0;
+
+		if (Controller.useWASM && Controller.wasmEnableResetBoxes && this.view.wasmEnabled) {
+			if (this.multiNumStates === -1 && this.overlayGrid === null) {
+				if ((this.counter & 1) !== 0) {
+					grid16 = this.nextGrid16;
+					tileGrid = this.nextTileGrid;
+					nextTileGrid = this.tileGrid;
+				} else {
+					grid16 = this.grid16;
+					tileGrid = this.tileGrid;
+					nextTileGrid = this.nextTileGrid;
+				}
+
+				WASM.resetBoxesBit(
+					grid16.whole.byteOffset | 0,
+					grid16[0].length | 0,
+					tileGrid.whole.byteOffset | 0,
+					nextTileGrid.whole.byteOffset | 0,
+					tileGrid[0].length | 0,
+					this.columnOccupied16.byteOffset | 0,
+					this.columnOccupied16.length | 0,
+					this.rowOccupied16.byteOffset | 0,
+					this.rowOccupied16.length | 0,
+					this.width | 0,
+					this.height | 0,
+					this.tilePower | 0,
+					(this.view.thumbLaunch && !this.view.autoStart && this.view.startFrom === -1 && !this.view.autoIdentify) ? 1 : 0,
+					this.sharedBuffer.byteOffset | 0
+				);
+
+				// get the new bounding box
+				newLeftX = this.sharedBuffer[0];
+				newBottomY = this.sharedBuffer[1];
+				newRightX = this.sharedBuffer[2];
+				newTopY = this.sharedBuffer[3];
+
+				zoomBox.leftX = newLeftX;
+				zoomBox.bottomY = newBottomY;
+				zoomBox.rightX = newRightX;
+				zoomBox.topY = newTopY;
+
+				// shrink the tile grid to the pattern unless thumb launch mode and the pattern is static
+				if (!(this.view.thumbLaunch && !this.view.autoStart && this.view.startFrom === -1 && !this.view.autoIdentify)) {
+					this.shrinkTileGrid();
+				}
+
+				// copy tile grid to the next tile grid
+				Array.copy(tileGrid, nextTileGrid);
+
+				// copy to the colour grids
+				Array.copy(tileGrid, this.colourTileGrid);
+				Array.copy(tileGrid, this.colourTileHistoryGrid);
+			} else {
+				this.resetBoxesJS(state1Fit);
+			}
+		} else {
+			this.resetBoxesJS(state1Fit);
+		}
+	};
+
+	// create bounding box from current state - Javascript version
+	Life.prototype.resetBoxesJS = function(/** @type {boolean} */ state1Fit) {
 		var	/** @type {number} */ w = 0,
 			/** @type {number} */ h = 0,
 			/** @type {number} */ input = 0,
@@ -14726,7 +14882,6 @@ This file is part of LifeViewer
 		topY = newTopY >> this.tilePower;
 		leftX = newLeftX >> (this.tilePower + 4);
 		rightX = newRightX >> (this.tilePower + 4);
-
 
 		// shrink the tile grid to the pattern unless thumb launch mode and the pattern is static
 		if (this.view.thumbLaunch && !this.view.autoStart && this.view.startFrom !== -1 && !this.view.autoIdentify) {

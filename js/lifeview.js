@@ -327,7 +327,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1237,
+		/** @const {number} */ versionBuild : 1238,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -578,8 +578,14 @@ This file is part of LifeViewer
 		/** @type {boolean} */ wasmEnableNextGenerationWeighted: true,
 		/** @type {boolean} */ wasmEnableNextGenerationRuleLoader: true,
 		/** @type {boolean} */ wasmEnableUpdateGridFromCounts: true,
+		/** @type {boolean} */ wasmEnableResetColourGrid: true,
+		/** @type {boolean} */ wasmEnableResetPopulation: true,
+		/** @type {boolean} */ wasmEnableResetBoxes: true,
+		/** @type {boolean} */ wasmEnableShrinkTileGrid: true,
 
-		/** @type {CanvasRenderingContext2D} */ iconCache: null
+		/** @type {CanvasRenderingContext2D} */ iconCache: null,
+
+		/** @type {number} */ pageScanTime: 0
 	};
 
 	// frame rate calculation function
@@ -20933,7 +20939,9 @@ This file is part of LifeViewer
 		} else {
 			//console.time("resetBoxes");
 			// compute bounding box
+			//console.time("resetBoxes");
 			me.engine.resetBoxes(me.state1Fit);
+			//console.timeEnd("resetBoxes");
 
 			// reset history box
 			me.engine.resetHistoryBox();
@@ -21528,8 +21536,9 @@ This file is part of LifeViewer
 
 		if (Controller.useWASM) {
 			newView.wasmResetPoint = newView.engine.allocator.wasmPointer;
-			console.log("Reset point is " + newView.wasmResetPoint);
+			//console.log("Reset point is " + newView.wasmResetPoint);
 		}
+
 		// load the pattern without ignore thumbnail
 		if (!isInPopup) {
 			//console.group("startViewer");
@@ -22261,6 +22270,7 @@ This file is part of LifeViewer
 			/** @type {Element} */ canvasElement = null,
 			/** @type {number} */ embeddedReads = 0,
 			/** @type {number} */ popupReads = 0,
+			/** @type {number} */ scanTime = performance.now(),
 
 			// temporary allocator and pattern manager
 			/** @type {Allocator} */ allocator = WASM.allocator,
@@ -22431,6 +22441,9 @@ This file is part of LifeViewer
 		}
 
 		console.groupEnd();
+
+		// save page scan time
+		Controller.pageScanTime = performance.now() - scanTime;
 	};
 
 	// boot LifeViewer

@@ -98,6 +98,10 @@ var WASM = {
 	renderGridClipNoRotate: null,
 	renderOverlayNoClipNoRotate: null,
 	renderOverlayClipNoRotate: null,
+	resetColourGridNormal: null,
+	resetPopulationBit: null,
+	resetBoxesBit: null,
+	shrinkTileGrid: null,
 	memory: null,
 	allocator: null
 };
