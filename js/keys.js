@@ -2240,6 +2240,7 @@ This file is part of LifeViewer
 			// f8 to toggle state number display
 			case 119:
 				if (shiftKey) {
+					// shift f8 to toggle y direction
 					if (!me.yDirectionButton.locked) {
 						me.yDirectionButton.current = me.viewYDirectionToggle([!me.yUp], true, me);
 						me.menuManager.notification.notify("Y Direction " + (me.yUp ? "Up" : "Down"), 15, 40, 15, true);
@@ -2254,9 +2255,17 @@ This file is part of LifeViewer
 
 			// f9 to toggle popup window maximize
 			case 120:
-				if (Controller.popupWindow) {
-					Controller.popupWindow.maximized = !Controller.popupWindow.maximized;
-					Controller.popupWindow.resizeWindow(Controller.popupWindow);
+				if (shiftKey) {
+					// shift f9 to toggle safe mode
+					if (!me.safeModeButton.locked) {
+						me.safeModeButton.current = me.viewSafeModeToggle([!me.safeMode], true, me);
+						me.menuManager.notification.notify("Safe Mode " + (me.safeMode ? "On" : "Off"), 15, 40, 15, true);
+					}
+				} else {
+					if (Controller.popupWindow) {
+						Controller.popupWindow.maximized = !Controller.popupWindow.maximized;
+						Controller.popupWindow.resizeWindow(Controller.popupWindow);
+					}
 				}
 				break;
 

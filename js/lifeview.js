@@ -78,6 +78,9 @@ This file is part of LifeViewer
 		// y coordinate direction setting name
 		/** @const {string} */ ySettingName : "yDirection",
 
+		// safe mode setting name
+		/** @const {string} */ safeModeSettingName : "safeMode",
+
 		// default speed setting name
 		/** @const {string} */ defaultSpeedSettingName : "defaultSpeed",
 
@@ -327,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1238,
+		/** @const {number} */ versionBuild : 1240,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -585,7 +588,50 @@ This file is part of LifeViewer
 
 		/** @type {CanvasRenderingContext2D} */ iconCache: null,
 
-		/** @type {number} */ pageScanTime: 0
+		/** @type {number} */ pageScanTime: 0,
+		/** @type {string} */ wasmError: ""
+	};
+
+	// save boolean setting
+	Controller.saveBooleanSetting = function(/** @type {string} */ name, /** @type {boolean} */ value) {
+		var	/** @type {string} */ strValue = value ? "1" : "0";
+
+		localStorage.setItem(ViewConstants.settingsPrefix + name, strValue);
+	};
+
+	// load boolean setting
+	/** @returns {boolean} */
+	Controller.loadBooleanSetting = function(/** @type {string} */ name) {
+		var	/** @type {boolean} */ result = false,
+			/** @type {string} */ setting = localStorage.getItem(ViewConstants.settingsPrefix + name);
+
+		if (setting !== null) {
+			if (setting === "1") {
+				result = true;
+			}
+		}
+
+		return result;
+	};
+
+	// save integer setting
+	Controller.saveIntegerSetting = function(/** @type {string} */ name, /** @type {number} */ value) {
+		var	/** @type {string} */ strValue = String(value);
+
+		localStorage.setItem(ViewConstants.settingsPrefix + name, strValue);
+	};
+
+	// load integer setting
+	/** @returns {number} */
+	Controller.loadIntegerSetting = function(/** @type {string} */ name) {
+		var	/** @type {number} */ result = 0,
+			/** @type {string} */ setting = localStorage.getItem(ViewConstants.settingsPrefix + name);
+
+		if (setting !== null) {
+			result = Number(setting);
+		}
+
+		return result;
 	};
 
 	// frame rate calculation function
@@ -889,6 +935,9 @@ This file is part of LifeViewer
 
 		// y coordinate direction
 		/** @type {boolean} */ this.yUp = false;
+
+		// safe mode
+		/** @type {boolean} */ this.safeMode = false;
 
 		// pinch touch start locations
 		/** @type {number} */ this.pinchStartX1 = 0;
@@ -2080,6 +2129,9 @@ This file is part of LifeViewer
 		// state number button
 		/** @type {MenuItem} */ this.stateNumberButton = null;
 
+		// safe mode button
+		/** @type {MenuItem} */ this.safeModeButton = null;
+
 		// toggle WASM engine button
 		/** @type {MenuItem} */ this.wasmEngineButton = null;
 
@@ -2428,48 +2480,6 @@ This file is part of LifeViewer
 		// pen colour for drawing
 		/** @type {number} */ this.penColour = -1;
 	}
-
-	// save boolean setting
-	View.prototype.saveBooleanSetting = function(/** @type {string} */ name, /** @type {boolean} */ value) {
-		var	/** @type {string} */ strValue = value ? "1" : "0";
-
-		localStorage.setItem(ViewConstants.settingsPrefix + name, strValue);
-	};
-
-	// load boolean setting
-	/** @returns {boolean} */
-	View.prototype.loadBooleanSetting = function(/** @type {string} */ name) {
-		var	/** @type {boolean} */ result = false,
-			/** @type {string} */ setting = localStorage.getItem(ViewConstants.settingsPrefix + name);
-
-		if (setting !== null) {
-			if (setting === "1") {
-				result = true;
-			}
-		}
-
-		return result;
-	};
-
-	// save integer setting
-	View.prototype.saveIntegerSetting = function(/** @type {string} */ name, /** @type {number} */ value) {
-		var	/** @type {string} */ strValue = String(value);
-
-		localStorage.setItem(ViewConstants.settingsPrefix + name, strValue);
-	};
-
-	// load boolean setting
-	/** @returns {number} */
-	View.prototype.loadIntegerSetting = function(/** @type {string} */ name) {
-		var	/** @type {number} */ result = 0,
-			/** @type {string} */ setting = localStorage.getItem(ViewConstants.settingsPrefix + name);
-
-		if (setting !== null) {
-			result = Number(setting);
-		}
-
-		return result;
-	};
 
 	// check if a string is a Theme state name
 	/** @returns {boolean} */
@@ -7540,6 +7550,7 @@ This file is part of LifeViewer
 		this.fastLookupButton.deleted = shown;
 		this.fastLookupButton.locked = !this.engine.isRuleTree || (this.engine.isRuleTree && !this.engine.ruleLoaderLookupAvailable());
 		this.stateNumberButton.deleted = shown;
+		this.safeModeButton.deleted = shown;
 		if (Controller.useWASM) {
 			this.wasmEngineButton.deleted = shown;
 		}
@@ -8746,10 +8757,10 @@ This file is part of LifeViewer
 		// check if changing
 		if (change) {
 			me.defaultSpeedSet = newValue[0];
-			me.saveBooleanSetting(ViewConstants.defaultSpeedSettingName, me.defaultSpeedSet);
+			Controller.saveBooleanSetting(ViewConstants.defaultSpeedSettingName, me.defaultSpeedSet);
 			if (me.defaultSpeedSet) {
 				// read the speed from the setting
-				speed = me.loadIntegerSetting(ViewConstants.defaultSpeedValueSettingName)
+				speed = Controller.loadIntegerSetting(ViewConstants.defaultSpeedValueSettingName)
 			} else {
 				// use the default
 				speed = ViewConstants.defaultRefreshRate;
@@ -8772,10 +8783,22 @@ This file is part of LifeViewer
 	// save default speed
 	View.prototype.saveDefaultSpeedPressed = function(/** @type {View} */ me) {
 		// save the new speed
-		me.saveIntegerSetting(ViewConstants.defaultSpeedValueSettingName, me.gensPerStep * me.genSpeed);
+		Controller.saveIntegerSetting(ViewConstants.defaultSpeedValueSettingName, me.gensPerStep * me.genSpeed);
 
 		// enable use save default speed setting
 		me.defaultSpeedToggle.current = me.viewDefaultSpeedToggle([true], true, me);
+	};
+
+	// toggle safe mode
+	/** @returns {Array<boolean>} */
+	View.prototype.viewSafeModeToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		// check if changing
+		if (change) {
+			me.safeMode = newValue[0];
+			Controller.saveBooleanSetting(ViewConstants.safeModeSettingName, me.safeMode);
+		}
+
+		return [me.safeMode];
 	};
 
 	// toggle y direction
@@ -8784,7 +8807,7 @@ This file is part of LifeViewer
 		// check if changing
 		if (change) {
 			me.yUp = newValue[0];
-			me.saveBooleanSetting(ViewConstants.ySettingName, me.yUp);
+			Controller.saveBooleanSetting(ViewConstants.ySettingName, me.yUp);
 		}
 
 		return [me.yUp];
@@ -18416,40 +18439,48 @@ This file is part of LifeViewer
 		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 100, 25, 150, 40, "Advanced");
 		this.infoButton.toolTip = "advanced settings and actions";
 
+		// toggle WASM engine button
+		i = 0;
+		if (Controller.useWASM) {
+			this.wasmEngineButton = this.viewMenu.addListItem(this.viewEngineToggle, Menu.middle, -100, 100, 180, 40, ["WASM Engine"], [this.wasmEnabled], Menu.multi);
+			this.wasmEngineButton.toolTip = ["toggle WASM engine [" + this.altKeyText + "`]"];
+			
+			// set button position offset
+			i = -25;
+		}
+
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -75, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -75 + i, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display [T]"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -75, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -75 + i, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details [Shift T]"];
 
 		// relative toggle button
-		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -25, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
+		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -25 + i, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
 		this.relativeToggle.toolTip = ["toggle absolute/relative generation display [Shift G]"];
 
 		// y coordinate direction button
-		this.yDirectionButton = this.viewMenu.addListItem(this.viewYDirectionToggle, Menu.middle, 100, -25, 180, 40, ["Y Direction"], [this.yUp], Menu.multi);
+		this.yDirectionButton = this.viewMenu.addListItem(this.viewYDirectionToggle, Menu.middle, 100, -25 + i, 180, 40, ["Y Direction"], [this.yUp], Menu.multi);
 		this.yDirectionButton.toolTip = ["toggle y coordinate direction [F9]"];
 
 		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 25, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 25 + i, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
 
 		// fast lookup toggle button
-		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 25, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
+		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 25 + i, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
 		this.fastLookupButton.toolTip = ["toggle fast lookup [F7]"];
 
 		// state number toggle button
-		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 75, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
+		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 75 + i, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
 		this.stateNumberButton.toolTip = ["toggle state number display [F8]"];
 
-		// toggle WASM engine button
-		if (Controller.useWASM) {
-			this.wasmEngineButton = this.viewMenu.addListItem(this.viewEngineToggle, Menu.middle, 100, 75, 180, 40, ["WASM Engine"], [this.wasmEnabled], Menu.multi);
-			this.wasmEngineButton.toolTip = ["toggle WASM engine [" + this.altKeyText + "`]"];
-		}
-
+		// toggle safe mode
+		this.safeModeButton = this.viewMenu.addListItem(this.viewSafeModeToggle, Menu.middle, 100, 75 + i, 180, 40, ["Safe Mode"], [this.safeMode], Menu.multi);
+		this.safeModeButton.toolTip = ["toggle safe mode [Shift F9]"];
+		
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
 		this.backButton.toolTip = "back to previous menu [Backspace]";
@@ -19135,8 +19166,15 @@ This file is part of LifeViewer
 	View.prototype.switchOffThumbnail = function() {
 		// check for launch mode
 		if (this.thumbLaunch) {
-			// launch the standalone viewer
-			updateViewer(this.element);
+			// check if thumb launch disabled by safe mode
+			if (this.menuManager.disableLaunch) {
+				if (!this.noCopy) {
+					this.copyRLE(this);
+				}
+			} else {
+				// launch the standalone viewer
+				updateViewer(this.element);
+			}
 
 			// mark this canvas as not having focus so future taps launch thumbnails
 			this.menuManager.hasFocus = false;
@@ -19561,8 +19599,9 @@ This file is part of LifeViewer
 		this.menuManager.timingManager.reset();
 
 		// read settings
-		this.yUp = this.loadBooleanSetting(ViewConstants.ySettingName);
-		this.defaultSpeedSet = this.loadBooleanSetting(ViewConstants.defaultSpeedSettingName);
+		this.yUp = Controller.loadBooleanSetting(ViewConstants.ySettingName);
+		this.safeMode = Controller.loadBooleanSetting(ViewConstants.safeModeSettingName);
+		this.defaultSpeedSet = Controller.loadBooleanSetting(ViewConstants.defaultSpeedSettingName);
 		this.defaultSpeedToggle.current = [this.defaultSpeedSet];
 
 		// reset playback speed
@@ -19573,7 +19612,7 @@ This file is part of LifeViewer
 
 		// check if default playback speed has been overridden
 		if (this.defaultSpeedSet) {
-			speed = this.loadIntegerSetting(ViewConstants.defaultSpeedValueSettingName)
+			speed = Controller.loadIntegerSetting(ViewConstants.defaultSpeedValueSettingName)
 			this.setDefaultSpeed(speed);
 		}
 
@@ -21470,11 +21509,17 @@ This file is part of LifeViewer
 		// set the y direction UI control
 		me.yDirectionButton.current = [me.yUp];
 
+		// set the safe mode UI control
+		me.safeModeButton.current = [me.safeMode];
+
 		// set the icons control
 		me.iconToggle.current = me.viewIconList([me.useIcons], true, me);
 
 		// check for chrome bug
 		me.checkForChromeBug();
+
+		// disable thumb launch if in safe mode and pattern size is MAXGRIDSIZE 14
+		me.menuManager.disableLaunch = me.safeMode && (me.engine.maxGridSize === (1 << ViewConstants.maxGridPower));
 	};
 
 	// start a viewer
@@ -22270,7 +22315,9 @@ This file is part of LifeViewer
 			/** @type {Element} */ canvasElement = null,
 			/** @type {number} */ embeddedReads = 0,
 			/** @type {number} */ popupReads = 0,
+			/** @type {number} */ unsafe = 0,
 			/** @type {number} */ scanTime = performance.now(),
+			/** @type {boolean} */ safeMode = Controller.loadBooleanSetting(ViewConstants.safeModeSettingName),
 
 			// temporary allocator and pattern manager
 			/** @type {Allocator} */ allocator = WASM.allocator,
@@ -22284,6 +22331,7 @@ This file is part of LifeViewer
 		// initialise the aliases
 		AliasManager.init();
 
+		// check for safe mode
 		// search for rle divs
 		for (i = 0; i < divList.length; i += 1) {
 			// get the next div
@@ -22355,15 +22403,20 @@ This file is part of LifeViewer
 
 								console.time("read popup");
 
-								// remove any html tags from the text item and trim
-								cleanItem = cleanPattern(textItem);
-
-								// null the anchor so we can tell if it gets created
-								anchorItem = null;
-
-								// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
-								isPattern(cleanItem, allocator, manager, rleItem, textItem, null);
-
+								// check for safe mode
+								if (safeMode && textItem.innerHTML.indexOf(" " + Keywords.maxGridSizeWord + " 14") !== -1) {
+									unsafe += 1;
+								} else {
+									// remove any html tags from the text item and trim
+									cleanItem = cleanPattern(textItem);
+	
+									// null the anchor so we can tell if it gets created
+									anchorItem = null;
+	
+									// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
+									isPattern(cleanItem, allocator, manager, rleItem, textItem, null);
+								}
+	
 								console.timeEnd("read popup");
 								popupReads += 1;
 							}
@@ -22430,7 +22483,7 @@ This file is part of LifeViewer
 		}
 
 		console.timeEnd("page scan");
-		console.log(embeddedReads + " embedded and " + popupReads + " popup");
+		console.log(embeddedReads + " embedded and " + popupReads + " popup (" + unsafe + " unsafe)");
 
 		if (DocConfig.multi) {
 			// switch to overview mode
@@ -22484,10 +22537,11 @@ This file is part of LifeViewer
 			WASM.memory = result.instance.exports.memory;
 
 			// output stats
-			console.log("WASM instantiated: " + count + " functions (" + wasmBuffer.length + " bytes), " + (WASM.memory.buffer.byteLength >> 20) + "Mb heap, time " + (performance.now() - startTime).toFixed(1) + "ms");
+			console.log("WebAssembly instantiated: " + count + " functions (" + wasmBuffer.length + " bytes), " + (WASM.memory.buffer.byteLength >> 20) + "Mb heap, time " + (performance.now() - startTime).toFixed(1) + "ms");
 		})
 		.catch(e => {  // handle errors during instantiation
-			console.error("Error instantiating WebAssembly:", e);
+			console.error("Error instantiating WebAssembly: ", e);
+			Controller.wasmError = String(e)
 			Controller.useWASM = false;
 			Controller.wasmTiming = false;
 		});

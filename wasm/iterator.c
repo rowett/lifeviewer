@@ -430,7 +430,9 @@ void resetBoxesBit(
 	uint32_t *shared
 ) {
 	// bounding box
-	int32_t bottomY, topY, leftX, rightX;
+	int32_t bottomY = height;
+	int32_t topY = -1;
+	int32_t leftX, rightX;
 
 	// width in 16 bit chunks
 	const int32_t w16 = width >> 4;
@@ -463,14 +465,25 @@ void resetBoxesBit(
 		}
 
 		// check if the row was alive
-		rowOccupied16[h >> 4] |= rowAlive;
-		gridAlive |= rowAlive;
+		if (rowAlive) {
+			if (h < bottomY) {
+				bottomY = h;
+			}
+			if (h > topY) {
+				topY = h;
+			}
+			gridAlive |= rowAlive;
+		}
 	}
 
 	// check if there were any cells
 	if (gridAlive) {
 		// update the bounding box
-		uint32_t *nextShared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+		(void) updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
+
+		// use rows calculated above
+		shared[1] = bottomY;
+		shared[3] = topY;
 	} else {
 		// set the box to the middle
 		shared[0] = width >> 1;

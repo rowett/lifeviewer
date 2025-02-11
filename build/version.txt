@@ -1,3 +1,12 @@
+Build 1240
+- added Safe Mode which helps on low memory devices
+	- toggle with Settings>Advanced>Safe Mode (hotkey Shift F9)
+		- this setting is saved for the current browser on the current device
+	- will not add SHOW IN VIEWER link when pattern uses MAXGRIDSIZE 14
+	- will not Launch Thumbnail when pattern uses MAXGRIDSIZE 14
+		- instead, RLE can be copied by clicking on the Thumbnail
+			- this can be disabled with [[ NOCOPY ]]
+
 Build 1238
 - WASM acceleration of pattern load functions
 

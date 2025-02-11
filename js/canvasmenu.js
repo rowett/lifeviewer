@@ -373,7 +373,7 @@ This file is part of LifeViewer
 		}
 
 		// update the priority message
-		if (!this.menuManager.thumbnail || this.priorityMessage === "Expand" || this.priorityMessage === "Launch") {
+		if (!this.menuManager.thumbnail || this.priorityMessage === "Expand" || this.priorityMessage === "Launch" || this.priorityMessage === "Copy") {
 			if (this.updateNotification(this.priorityMessage, this.priorityAppear, this.priorityHold, this.priorityDisappear, this.priorityStart, (this.notificationYOffset * yScale), true)) {
 				this.priorityMessage = "";
 			}
@@ -2522,6 +2522,9 @@ This file is part of LifeViewer
 		var	/** @type {MenuManager} */ me = this,
 			/** @type {number} */ i = 0;
 
+		// whether thumblaunch disabled 
+		/** @type {boolean} */ this.disableLaunch = false;
+
 		// window zoom
 		/** @type {number} */ this.windowZoom = 1;
 
@@ -3698,6 +3701,14 @@ This file is part of LifeViewer
 			oc.fillText(beta3, 3 * xScale, (160 + 1) * yScale);
 			oc.fillStyle = "white";
 			oc.fillText(beta3, 2 * xScale, 160 * yScale);
+		} else {
+			if (Controller.wasmError !== "") {
+				oc.font = ((16 * xScale) | 0) + "px Arial";
+				oc.fillStyle = "black";
+				oc.fillText(Controller.wasmError, 3 * xScale, (120 + 1) * yScale);
+				oc.fillStyle = "white";
+				oc.fillText(Controller.wasmError, 2 * xScale, 120 * yScale);
+			}
 		}
 
 		// mark that event processed
@@ -4188,7 +4199,14 @@ This file is part of LifeViewer
 				} else {
 					if (me.thumbnail) {
 						if (me.thumbLaunch) {
-							me.notification.notify("Launch", 15, 3600, 15, true);
+							// check if thumb launch is available (could have been disabled by safe mode)
+							if (me.disableLaunch) {
+								if (!me.noCopy) {
+									me.notification.notify("Copy", 15, 3600, 15, true);
+								}
+							} else {
+								me.notification.notify("Launch", 15, 3600, 15, true);
+							}
 						} else {
 							me.notification.notify("Expand", 15, 3600, 15, true);
 						}
