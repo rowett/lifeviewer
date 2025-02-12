@@ -19133,6 +19133,41 @@ This file is part of LifeViewer
 		}
 	};
 
+	// clear all but bottom line for Wolfram rules
+	Life.prototype.clearAltWolfram = function() {
+		var	/** @type {Array<Uint16Array>} */ grid = null,
+			/** @type {Uint16Array} */ gridRow = null,
+			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
+			/** @type {number} */ leftX = zoomBox.leftX >> 4,
+			/** @type {number} */ rightX = zoomBox.rightX >> 4,
+			/** @type {number} */ bottomY = zoomBox.bottomY,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ cells = 0,
+			/** @type {number} */ delta = 0,
+			/** @type {Uint8Array} */ bitCounts = this.bitCounts16;
+
+		if (this.counter & 1) {
+			grid = this.grid16;
+		} else {
+			grid = this.nextGrid16;
+		}
+
+		// get the bottom row
+		gridRow = grid[bottomY];
+
+		// clear any alive cells and adjust population
+		for (x = leftX; x <= rightX; x += 1) {
+			cells = gridRow[x];
+			if (cells) {
+				delta += bitCounts[cells];
+				gridRow[x] = 0;
+			}
+		}
+
+		this.population -= delta;
+		this.deaths += delta;
+	};
+
 	// compute the next generation with or without statistics
 	Life.prototype.processNextGen = function(/** @type {boolean} */ noHistory) {
 		var	/** @type {BoundingBox} */ zoomBox = this.zoomBox,
@@ -19185,6 +19220,11 @@ This file is part of LifeViewer
 							// process bit grid for [R]Standard, [R]History and [R]Super - but not for [R]Extended
 							if (!this.isExtended) {
 								this.nextGenerationTile();
+
+								// for alternating wolfram rules need to clear all but the bottom line
+								if (this.altSpecified && this.wolframRule !== -1) {
+									this.clearAltWolfram();
+								}
 							}
 						}
 					}

@@ -1,3 +1,7 @@
+Build 1241
+- fixed alternating Wolfram rules
+	- only the bottom row is kept alive since the alternating rules will adjust earlier rows
+
 Build 1240
 - added Safe Mode which helps on low memory devices
 	- toggle with Settings>Advanced>Safe Mode (hotkey Shift F9)

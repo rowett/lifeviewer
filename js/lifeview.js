@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1240,
+		/** @const {number} */ versionBuild : 1241,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
