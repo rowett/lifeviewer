@@ -686,6 +686,8 @@ void convertToPens2(
 						cells = wasm_v128_or(cells, wasm_i32x4_shuffle(cells, cells, 1, 0, 3, 2));
 						cells = wasm_v128_or(cells, wasm_i32x4_shuffle(cells, cells, 2, 3, 0, 1));
 						tileAlive |= wasm_u32x4_extract_lane(cells, 0);
+					} else {
+						wasm_v128_store(colourRow, zero);
 					}
 
 					h++;

@@ -10268,10 +10268,10 @@ This file is part of LifeViewer
 			case LifeConstants.renderLongevity:
 				if (Controller.useWASM && Controller.wasmEnableResetColourGrid && this.view.wasmEnabled) {
 					// ignore for PCA, RuleTree and HROT rules
-					if (!(this.isPCA || this.isRuleTree || this.isHROT)) {
+					if (!(this.isPCA || this.isRuleTree || this.isHROT)) {  // TBD where does this go?
 						WASM.resetColourGridNormal(
-							this.grid16.whole.byteOffset | 0,
-							this.grid16[0].length | 0,
+							grid.whole.byteOffset | 0,
+							grid[0].length | 0,
 							this.colourGrid.whole.byteOffset | 0,
 							this.colourGrid[0].length | 0,
 							LifeConstants.aliveStart | 0,
@@ -10295,7 +10295,7 @@ This file is part of LifeViewer
 				this.convertToPensTileNeighbourCount();
 				break;
 
-			case LifeConstants.render2:  // TBD rainbow
+			case LifeConstants.render2:
 				this.resetColourGridBoxNormal(grid);
 				break;
 		}
@@ -11415,9 +11415,11 @@ This file is part of LifeViewer
 			} else {
 				pixelColours[i] = ((r * brightness) << 24) | ((g * brightness) << 16) | ((b * brightness) << 8) | alpha;
 			}
+
 			r += incs[inc][0] * amount;
 			g += incs[inc][1] * amount;
 			b += incs[inc][2] * amount;
+
 			s += 1;
 			if (s === steps) {
 				s = 0;
@@ -11493,6 +11495,7 @@ This file is part of LifeViewer
 			/** @type {number} */ steps = 240 / 6,
 			/** @type {number} */ inc = 0,
 			/** @type {number} */ amount = (240 / steps),
+			/** @type {Array<number>} */ temp = [],
 			/** @type {Array<Array<number>>} */ incs = [[0, 1, 0], [-1, 0, 0], [0, 0, 1], [0, -1, 0], [1, 0, 0], [0, 0, -1]],
 			/** @type {Uint8Array} */ redChannel = this.redChannel,
 			/** @type {Uint8Array} */ greenChannel = this.greenChannel,
@@ -11501,46 +11504,6 @@ This file is part of LifeViewer
 			/** @type {boolean} */ needStrings = (this.isHex && !this.forceRectangles) || (this.isTriangular && !this.forceRectangles),
 			/** @type {number} */ gridLineRaw = this.gridLineRaw,
 			/** @type {number} */ gridLineBoldRaw = this.gridLineBoldRaw;
-
-		// create rainbow colours
-		for (i = 1; i <= 240; i += 1) {
-			if (this.littleEndian) {
-				pixelColours[i] = (alpha << 24) | ((b * brightness) << 16) | ((g * brightness) << 8) | (r * brightness);
-			} else {
-				pixelColours[i] = ((r * brightness) << 24) | ((g * brightness) << 16) | ((b * brightness) << 8) | alpha;
-			}
-			r += incs[inc][0] * amount;
-			g += incs[inc][1] * amount;
-			b += incs[inc][2] * amount;
-			s += 1;
-			if (s === steps) {
-				s = 0;
-				inc += 1;
-			}
-		}
-
-		// spread across colours 64 to 127 to match renderer
-		for (i = 0; i < 128; i += 1) {
-			s = ((i + 1) * 240 / 128) | 0;
-			pixelColours[i] = pixelColours[s];
-		}
-
-		// move to start at 64 and create colour strings if needed for hexagons or triangles
-		for (i = 127; i >= 0; i -= 1) {
-			pixelColours[i + 64] = pixelColours[i];
-			if (needStrings) {
-				if (this.littleEndian) {
-					r = pixelColours[i] & 255;
-					g = (pixelColours[i] >> 8) & 255;
-					b = (pixelColours[i] >> 16) & 255;
-				} else {
-					r = (pixelColours[i] >> 24);
-					g = (pixelColours[i] >> 16) & 255;
-					b = (pixelColours[i] >> 8) & 255;
-				}
-				colourStrings[i + 64] = "#" + (0x1000000 + ((r << 16) + (g << 8) + b)).toString(16).substring(1);
-			}
-		}
 
 		// create background colour
 		if (this.littleEndian) {
@@ -11593,18 +11556,32 @@ This file is part of LifeViewer
 			}
 		}
 
-		var temp = [];
+		// get the 24 required
 		for (i = 0; i < 25; i += 1) {
 			s = ((i + 1) * 240 / 25) | 0;
 
 			temp[i] = pixelColours[s - 1];
 		}
+
+		// move them starting at the alive index
 		for (i = 0; i < 25; i += 1) {
 			pixelColours[64 + i] = temp[i];
 		}
 
-		for (i = 63; i > 0; i -= 1) {
-			pixelColours[i] = (255 << 24) | (((i * 1) + 47) << 16);
+		// create the colour strings for hexagons or triangles if required
+		if (needStrings) {
+			for (i = 64; i < 64 + 25; i += 1) {
+				if (this.littleEndian) {
+					r = pixelColours[i] & 255;
+					g = (pixelColours[i] >> 8) & 255;
+					b = (pixelColours[i] >> 16) & 255;
+				} else {
+					r = (pixelColours[i] >> 24);
+					g = (pixelColours[i] >> 16) & 255;
+					b = (pixelColours[i] >> 8) & 255;
+				}
+				colourStrings[i + 64] = "#" + (0x1000000 + ((r << 16) + (g << 8) + b)).toString(16).substring(1);
+			}
 		}
 	};
 
@@ -30101,7 +30078,7 @@ This file is part of LifeViewer
 								this.tileX | 0,
 								this.tileRows | 0,
 								this.tileCols | 0,
-								this.nextGrid.whole.byteOffset | 0,
+								this.nextGrid16.whole.byteOffset | 0,
 								this.nextTileGrid.whole.byteOffset | 0,
 								this.colourGrid[0].length | 0
 							);
@@ -30114,7 +30091,7 @@ This file is part of LifeViewer
 								this.tileX | 0,
 								this.tileRows | 0,
 								this.tileCols | 0,
-								this.grid.whole.byteOffset | 0,
+								this.grid16.whole.byteOffset | 0,
 								this.tileGrid.whole.byteOffset | 0,
 								this.colourGrid[0].length | 0
 							);
@@ -30173,7 +30150,7 @@ This file is part of LifeViewer
 								this.tileX | 0,
 								this.tileRows | 0,
 								this.tileCols | 0,
-								this.nextGrid.whole.byteOffset | 0,
+								this.nextGrid16.whole.byteOffset | 0,
 								this.nextTileGrid.whole.byteOffset | 0,
 								this.colourGrid[0].length | 0
 							);
@@ -30186,7 +30163,7 @@ This file is part of LifeViewer
 								this.tileX | 0,
 								this.tileRows | 0,
 								this.tileCols | 0,
-								this.grid.whole.byteOffset | 0,
+								this.grid16.whole.byteOffset | 0,
 								this.tileGrid.whole.byteOffset | 0,
 								this.colourGrid[0].length | 0
 							);
@@ -47037,47 +47014,57 @@ This file is part of LifeViewer
 
 								// process each 16bit chunk (16 cells) along the row
 								nextCell = gridRow[leftX];
+								if (nextCell) {
+									// lookup next colour
+									value16 = colourLookup[((nextCell & 49152) >> 7) | ((h + cr + cr) & 127)];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
 
-								// lookup next colour
-								value16 = colourLookup[((nextCell & 49152) >> 7) | ((h + cr + cr) & 127)];
-								tileAlive |= value16;
-								colourGridRow16[cr] = value16;
-								cr += 1;
+									value16 = colourLookup[((nextCell & 12288) >> 5) | ((h + cr + cr) & 127)];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
 
-								value16 = colourLookup[((nextCell & 12288) >> 5) | ((h + cr + cr) & 127)];
-								tileAlive |= value16;
-								colourGridRow16[cr] = value16;
-								cr += 1;
+									value16 = colourLookup[((nextCell & 3072) >> 3) | ((h + cr + cr) & 127)];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
 
-								value16 = colourLookup[((nextCell & 3072) >> 3) | ((h + cr + cr) & 127)];
-								tileAlive |= value16;
-								colourGridRow16[cr] = value16;
-								cr += 1;
+									value16 = colourLookup[((nextCell & 768) >> 1) | ((h + cr + cr) & 127)];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
 
-								value16 = colourLookup[((nextCell & 768) >> 1) | ((h + cr + cr) & 127)];
-								tileAlive |= value16;
-								colourGridRow16[cr] = value16;
-								cr += 1;
+									value16 = colourLookup[((nextCell & 192) << 1) | ((h + cr + cr) & 127)];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
 
-								value16 = colourLookup[((nextCell & 192) << 1) | ((h + cr + cr) & 127)];
-								tileAlive |= value16;
-								colourGridRow16[cr] = value16;
-								cr += 1;
+									value16 = colourLookup[((nextCell & 48) << 3) | ((h + cr + cr) & 127)];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
 
-								value16 = colourLookup[((nextCell & 48) << 3) | ((h + cr + cr) & 127)];
-								tileAlive |= value16;
-								colourGridRow16[cr] = value16;
-								cr += 1;
+									value16 = colourLookup[((nextCell & 12) << 5) | ((h + cr + cr) & 127)];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
 
-								value16 = colourLookup[((nextCell & 12) << 5) | ((h + cr + cr) & 127)];
-								tileAlive |= value16;
-								colourGridRow16[cr] = value16;
-								cr += 1;
-
-								value16 = colourLookup[((nextCell & 3) << 7) | ((h + cr + cr) & 127)];
-								tileAlive |= value16;
-								colourGridRow16[cr] = value16;
-								// cr += 1 - no need for final increments they will be reset next row
+									value16 = colourLookup[((nextCell & 3) << 7) | ((h + cr + cr) & 127)];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									// cr += 1 - no need for final increments they will be reset next row
+								} else {
+									colourGridRow16[cr] = 0;
+									colourGridRow16[cr + 1] = 0;
+									colourGridRow16[cr + 2] = 0;
+									colourGridRow16[cr + 3] = 0;
+									colourGridRow16[cr + 4] = 0;
+									colourGridRow16[cr + 5] = 0;
+									colourGridRow16[cr + 6] = 0;
+									colourGridRow16[cr + 7] = 0;
+								}
 
 								// next row
 								h += 1;

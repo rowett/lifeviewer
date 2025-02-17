@@ -9352,7 +9352,7 @@ This file is part of LifeViewer
 				me.engine.setBoundedTiles();
 			}
 
-			// re-convert grid to colours so rainbow on/off works  // TBD rainbow
+			// re-convert grid to colours for cell shader
 			if (!me.engine.isLifeHistory) {
 				if (me.engine.multiNumStates === -1) {
 					me.engine.resetColourGridBox(me.engine.grid16);
@@ -10542,7 +10542,7 @@ This file is part of LifeViewer
 								me.diedGeneration = -1;
 							}
 
-							// re-convert grid to colours so rainbow on/off works // TBD rainbow
+							// re-convert grid to colours for cell shader
 							if (me.engine.counter === 0) {
 								if (!me.engine.isLifeHistory) {
 									if (me.engine.multiNumStates === -1) {
