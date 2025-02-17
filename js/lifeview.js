@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1241,
+		/** @const {number} */ versionBuild : 1242,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -8911,8 +8911,6 @@ This file is part of LifeViewer
 
 			me.engine.clearHistoryCells();
 			me.engine.createColourIndex();
-
-			// TBD rainbow
 
 			if ((me.engine.counter & 1) === 0) {
 				me.engine.resetColourGridBox(me.engine.grid16);
@@ -18135,15 +18133,9 @@ This file is part of LifeViewer
 		this.labelButton.toolTip = ["toggle annotations [" + this.altKeyText + " L]"];
 
 		// render mode button
-		if (Controller.useWASM) {
-			this.renderList = this.viewMenu.addListItem(this.viewRenderList, Menu.middle, 100, 0, 180, 40, ["Default", "Rainbow", "NCount"], this.engine.cellRenderer, Menu.single);
-			this.renderList.toolTip = ["cycle renderer [" + this.altKeyText + " W]", "cycle renderer [" + this.altKeyText + " W]", "cycle renderer [" + this.altKeyText + " W]"];
-			this.renderList.setFont("14px Arial");
-		} else {
-			this.renderList = this.viewMenu.addListItem(this.viewRenderList, Menu.middle, 100, 0, 180, 40, ["Default", "Rainbow"], this.engine.cellRenderer, Menu.single);
-			this.renderList.toolTip = ["cycle renderer [" + this.altKeyText + " W]", "cycle renderer [" + this.altKeyText + " W]"];
-			this.renderList.setFont("18px Arial");
-		}
+		this.renderList = this.viewMenu.addListItem(this.viewRenderList, Menu.middle, 100, 0, 180, 40, ["Age", "Rbw", "Nbr", "Bas"], this.engine.cellRenderer, Menu.single);
+		this.renderList.toolTip = ["cell age shader [" + this.altKeyText + " W]", "rainbow shader [" + this.altKeyText + " W]", "neighbour count shader [" + this.altKeyText + " W]", "basic shader [" + this.altKeyText + " W]"];
+		this.renderList.setFont("18px Arial");
 
 		// autogrid toggle button
 		this.autoGridButton = this.viewMenu.addListItem(this.viewAutoGridToggle, Menu.middle, -100, 50, 180, 40, ["Auto GridLines"], [this.autoGrid], Menu.multi);

@@ -20,7 +20,7 @@ SETTINGS = -s INITIAL_MEMORY=1536MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="
 	'_nextGenerationSaltireN', '_nextGenerationHashN', '_nextGenerationCrossN', '_nextGenerationCornerEdgeN', \
 	'_updateGridFromCountsN', '_cumulativeVNCountsN', '_cumulativeMooreCountsN', '_nextGenerationHROTVNN', '_nextGenerationHROTMooreN', \
 	'_clearTopAndLeft', '_wrapTorusHROT', '_clearHROTOutside', \
-	'_nextGeneration', '_nextGenerationGenerations', '_convertToPens', \
+	'_nextGeneration', '_nextGenerationGenerations', '_convertToPens2', '_convertToPensAge', '_convertToPensNeighbours', \
 	'_nextGenerationSuperMoore', '_nextGenerationSuperHex', '_nextGenerationSuperVN', \
 	'_nextGenerationInvestigatorMoore', '_nextGenerationInvestigatorHex', '_nextGenerationInvestigatorVN', \
 	'_nextGenerationRuleTreeMoore', '_nextGenerationRuleTreeMoorePartial4', \

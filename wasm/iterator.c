@@ -3,7 +3,9 @@
 // See: https://emscripten.org/docs/porting/simd.html#webassembly-simd-intrinsics
 //
 // Iterators
-//	convertToPens (Life-like)
+//	convertToPens2 (Life-like)
+//	convertToPensAge (Life-like)
+//	convertToPensNeighbours (Life-like)
 //	nextGeneration (Life-like)
 //	nextGenerationGenerations (Generations)
 //	nextGenerationSuperMoore (Super, Moore)
@@ -603,8 +605,119 @@ void resetColourGridNormal(
 
 
 EMSCRIPTEN_KEEPALIVE
-// update the pens from the grid for cell history and longevity
-void convertToPens(
+// update the pens from the grid using alive or dead
+void convertToPens2(
+	uint8_t *const colourGrid,
+	uint16_t *const colourTileHistoryGrid,
+	uint16_t *const colourTileGrid,
+	const int32_t tileY,
+	const int32_t tileX,
+	const int32_t tileRows,
+	const int32_t tileCols,
+	uint16_t *const grid,
+	uint16_t *const tileGrid,
+	const int32_t colourGridWidth
+) {
+	uint32_t bottomY = 0, topY = tileY;
+	uint32_t tileRowOffset = 0;
+
+	const uint32_t xSize = tileX >> 1;
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	const uint32_t tileGridWidth = colourGridWidth >> 8;
+	const uint32_t gridWidth = colourGridWidth >> 4;
+
+	const v128_t zero = wasm_u8x16_splat(0);				// zero
+	const v128_t penBaseSet = wasm_u8x16_splat(64);			// base pen color for newly set cells
+	const v128_t mask = wasm_u64x2_splat(0x0102040810204080);	// mask to isolate cell bits
+
+	// find each occupied tile
+	for (int32_t th = 0; th < tileRows; th++) {
+		uint32_t leftX = 0;
+
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group
+			uint16_t tiles = tileGrid[tw + tileRowOffset] | colourTileGrid[tw + tileRowOffset];
+			uint16_t nextTiles = 0;
+
+			// process each tile in the tile group
+			while (tiles) {
+				// get the next tile
+				uint32_t b = 31 - __builtin_clz(tiles);
+				tiles &= ~(1 << b);
+
+				uint32_t currentX = leftX + xSize * (15 - b);
+				uint32_t tileAlive = 0;
+
+				const uint32_t colourRowOffset = (th << 4) * colourGridWidth;
+				const uint32_t gridRowOffset = (th << 4) * gridWidth;
+
+				uint32_t cr = currentX << 4;
+				uint8_t *colourRow = colourGrid + cr + colourRowOffset;
+				uint16_t *gridRow = grid + currentX + gridRowOffset;
+
+				uint32_t h = bottomY;
+				while (h < topY) {
+					uint32_t nextCell = *gridRow;
+					if (nextCell) {
+						// expand the 16 bits into 16 lanes with a zero bit = 0 and a one bit = 255
+
+						// splat the upper and lower cell 8 bits across lanes
+						// cells stores the lower 8 bits in the first byte and the upper in the second byte
+						v128_t lower = wasm_u8x16_splat(nextCell >> 8);
+						v128_t cells = wasm_u8x16_splat(nextCell & 0xff);
+
+						// combine upper and lower into a single 128-bit vector
+						cells = wasm_v8x16_shuffle(lower, cells, 0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23);
+
+						// apply the bitmask to isolate individual bits in each lane
+						cells = wasm_v128_and(cells, mask);
+
+						// test for zero or non-zero in each lane to create 0 or 255
+						cells = wasm_u8x16_gt(cells, zero);
+
+						// convert to 64 alive, 0 dead
+						cells = wasm_v128_and(cells, penBaseSet);
+
+						// store updated pens back to memory
+						wasm_v128_store(colourRow, cells);
+
+						// update the tile alive flags
+						cells = wasm_v128_or(cells, wasm_i32x4_shuffle(cells, cells, 1, 0, 3, 2));
+						cells = wasm_v128_or(cells, wasm_i32x4_shuffle(cells, cells, 2, 3, 0, 1));
+						tileAlive |= wasm_u32x4_extract_lane(cells, 0);
+					}
+
+					h++;
+					colourRow += colourGridWidth;
+					gridRow += gridWidth;
+				}
+
+				// if any pens were alive then the tile is alive
+				if (tileAlive) {
+					nextTiles |= (1 << b);
+				}
+			}
+
+			// save updated tiles
+			colourTileGrid[tw + tileRowOffset] = nextTiles;
+			colourTileHistoryGrid[tw + tileRowOffset] |= nextTiles;
+
+			// next tile group
+			leftX += xSize << 4;
+		}
+
+		// next tile row
+		bottomY += tileY;
+		topY += tileY;
+		tileRowOffset += tileGridWidth;
+	}
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// update the pens from the grid using cell age
+void convertToPensAge(
 	uint8_t *const colourGrid,
 	uint16_t *const colourTileHistoryGrid,
 	uint16_t *const colourTileGrid,
@@ -689,7 +802,7 @@ void convertToPens(
 					//	pens >= 64 increment to 127
 
 					// increment the alive lanes and set dead lanes to 64
-					v128_t pensAlive = wasm_v128_bitselect(wasm_u8x16_add_sat(pens, increment), penBaseSet, pensIfAlive);
+					v128_t pensAlive = wasm_v128_bitselect(wasm_i8x16_add(pens, increment), penBaseSet, pensIfAlive);
 
 					// ensure increment didn't go above the maximum value of 127
 					pensAlive = wasm_u8x16_min(pensAlive, penMaxSet);
@@ -721,6 +834,220 @@ void convertToPens(
 					pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 1, 0, 3, 2));
 					pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 2, 3, 0, 1));
 					tileAlive |= wasm_u32x4_extract_lane(pens, 0);
+
+					h++;
+					colourRow += colourGridWidth;
+					gridRow += gridWidth;
+				}
+
+				// if any pens were > 1 then the tile is alive
+				if (tileAlive & 0xfefefefe) {
+					nextTiles |= (1 << b);
+				}
+			}
+
+			// save updated tiles
+			colourTileGrid[tw + tileRowOffset] = nextTiles;
+			colourTileHistoryGrid[tw + tileRowOffset] |= nextTiles;
+
+			// next tile group
+			leftX += xSize << 4;
+		}
+
+		// next tile row
+		bottomY += tileY;
+		topY += tileY;
+		tileRowOffset += tileGridWidth;
+	}
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+// update the pens from the grid using neighbour count
+void convertToPensNeighbours(
+	uint8_t *const colourGrid,
+	uint16_t *const colourTileHistoryGrid,
+	uint16_t *const colourTileGrid,
+	const int32_t tileY,
+	const int32_t tileX,
+	const int32_t tileRows,
+	const int32_t tileCols,
+	uint16_t *const grid,
+	uint16_t *const tileGrid,
+	const int32_t colourGridWidth
+) {
+	uint32_t bottomY = 0, topY = tileY;
+	uint32_t tileRowOffset = 0;
+
+	const uint32_t xSize = tileX >> 1;
+	const uint32_t tileCols16 = tileCols >> 4;
+
+	const uint32_t tileGridWidth = colourGridWidth >> 8;
+	const uint32_t gridWidth = colourGridWidth >> 4;
+
+	const v128_t zeroVec = wasm_u8x16_splat(0);				// zero
+	const v128_t oneVec = wasm_u8x16_splat(1);				// one
+	const v128_t penBaseSet = wasm_u8x16_splat(64);				// base pen color for newly set cells
+	const v128_t maskVec = wasm_u64x2_splat(0x0102040810204080);	// mask to isolate cell bits
+	const v128_t leftVec = wasm_u8x16_make(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 15);
+	const v128_t rightVec = wasm_u8x16_make(0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+
+	// find each occupied tile
+	for (int32_t th = 0; th < tileRows; th++) {
+		uint32_t leftX = 0;
+
+		for (uint32_t tw = 0; tw < tileCols16; tw++) {
+			// get the next tile group
+			uint16_t tiles = tileGrid[tw + tileRowOffset] | colourTileGrid[tw + tileRowOffset];
+			uint16_t nextTiles = 0;
+
+			// process each tile in the tile group
+			while (tiles) {
+				// get the next tile
+				uint32_t b = 31 - __builtin_clz(tiles);
+				tiles &= ~(1 << b);
+
+				uint32_t currentX = leftX + xSize * (15 - b);
+				uint32_t tileAlive = 0;
+
+				const uint32_t colourRowOffset = (th << 4) * colourGridWidth;
+				const uint32_t gridRowOffset = (th << 4) * gridWidth;
+
+				uint32_t cr = currentX << 4;
+				uint8_t *colourRow = colourGrid + cr + colourRowOffset;
+				uint16_t *gridRow = grid + currentX + gridRowOffset;
+
+				uint32_t h = bottomY;
+
+				// vectors
+				v128_t aboveVec;
+				v128_t midVec;
+				v128_t belowVec;
+				v128_t lower;
+				v128_t cells;
+				v128_t aliveCells;
+				v128_t pens;
+
+				while (h < topY) {
+					uint32_t midCells = *gridRow;
+
+					if (midCells) {
+						// expand the 16 bits into 16 lanes with a zero bit = 0 and a one bit = 255
+						// splat the upper and lower cell 8 bits across lanes
+						// cells stores the lower 8 bits in the first byte and the upper in the second byte
+						lower = wasm_u8x16_splat(midCells >> 8);
+						cells = wasm_u8x16_splat(midCells & 0xff);
+	
+						// combine upper and lower into a single 128-bit vector
+						cells = wasm_v8x16_shuffle(lower, cells, 0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23);
+	
+						// apply the bitmask to isolate individual bits in each lane
+						cells = wasm_v128_and(cells, maskVec);
+	
+						// test for zero or non-zero in each lane to create 0 or 255
+						aliveCells = wasm_u8x16_gt(cells, zeroVec);
+	
+						// get middle row as 0 or 1 in each lane
+						midVec = wasm_v128_and(aliveCells, oneVec);
+
+						// get above lanes
+						uint32_t aboveCells = *(gridRow - gridWidth);
+						lower = wasm_u8x16_splat(aboveCells >> 8);
+						cells = wasm_u8x16_splat(aboveCells & 0xff);
+						cells = wasm_v8x16_shuffle(lower, cells, 0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23);
+						cells = wasm_v128_and(cells, maskVec);
+						cells = wasm_u8x16_gt(cells, zeroVec);
+						aboveVec = wasm_v128_and(cells, oneVec);
+
+						// get below lanes
+						uint32_t belowCells = *(gridRow + gridWidth);
+						lower = wasm_u8x16_splat(belowCells >> 8);
+						cells = wasm_u8x16_splat(belowCells & 0xff);
+						cells = wasm_v8x16_shuffle(lower, cells, 0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23);
+						cells = wasm_v128_and(cells, maskVec);
+						cells = wasm_u8x16_gt(cells, zeroVec);
+						belowVec = wasm_v128_and(cells, oneVec);
+
+						// get x5 versions: v5 = v + (v << 2)
+						v128_t above5Vec = wasm_i8x16_add(aboveVec, wasm_i8x16_shl(aboveVec, 2));
+						v128_t mid5Vec = wasm_i8x16_add(midVec, wasm_i8x16_shl(midVec, 2));
+						v128_t below5Vec = wasm_i8x16_add(belowVec, wasm_i8x16_shl(belowVec, 2));
+	
+						// apply the following weighted neighbourhood
+						// 1 5 1
+						// 5 0 5
+						// 1 5 1
+	
+						// above row = shifted one lane left + shifted one lane right + lane x 5
+						aboveVec = wasm_i8x16_add(
+							wasm_i8x16_swizzle(aboveVec, leftVec),
+							wasm_i8x16_swizzle(aboveVec, rightVec)
+						);
+						aboveVec = wasm_i8x16_add(aboveVec, above5Vec);
+	
+						// middle row = shifted one lane left x 5 + shifted one lane right x 5
+						midVec = wasm_i8x16_add(
+							wasm_i8x16_swizzle(mid5Vec, leftVec),
+							wasm_i8x16_swizzle(mid5Vec, rightVec)
+						);
+
+						// below row = shifted one lane left + shiftged one lane right + lane x 5
+						belowVec = wasm_i8x16_add(
+							wasm_i8x16_swizzle(belowVec, leftVec),
+							wasm_i8x16_swizzle(belowVec, rightVec)
+						);
+						belowVec = wasm_i8x16_add(belowVec, below5Vec);
+
+						// add the three rows
+						pens = wasm_i8x16_add(aboveVec, midVec);
+						pens = wasm_i8x16_add(pens, belowVec);
+
+						// add the constant
+						pens = wasm_i8x16_add(pens, penBaseSet);
+
+						// now remove any dead cells
+						pens = wasm_v128_bitselect(pens, zeroVec, aliveCells);
+
+						// handle left hand side
+						if (midCells & 32768) {
+							// get the existing sum from the left lane
+							uint8_t sum = wasm_u8x16_extract_lane(pens, 0);
+
+							// subtract the middle column values
+							sum -= (aboveCells >> 15) + 5 * (midCells >> 15) + (belowCells >> 15);
+
+							// add the values from the right hand column of the tile to the left
+							sum += (*(gridRow - gridWidth - 1) & 1) + 5 * (*(gridRow - 1) & 1) + (*(gridRow + gridWidth - 1) & 1);
+
+							// update the left lane
+							pens = wasm_u8x16_replace_lane(pens, 0, sum);
+						}
+
+						// handle right hand side
+						if (midCells & 1) {
+							// get the existing sum from the right lane
+							uint8_t sum = wasm_u8x16_extract_lane(pens, 15);
+
+							// subtract the middle column values
+							sum -= (aboveCells & 1) + 5 * (midCells & 1) + (belowCells & 1);
+
+							// add the values from the left hand column of the tile to the right
+							sum += (*(gridRow - gridWidth + 1) >> 15) + (*(gridRow + 1) >> 15) * 5 + (*(gridRow + gridWidth + 1) >> 15);
+
+							// update the right lane
+							pens = wasm_u8x16_replace_lane(pens, 15, sum);
+						}
+
+						// store updated pens back to memory
+						wasm_v128_store(colourRow, pens);
+
+						// update the tile alive flags
+						pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 1, 0, 3, 2));
+						pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 2, 3, 0, 1));
+						tileAlive |= wasm_u32x4_extract_lane(pens, 0);
+					} else {
+						wasm_v128_store(colourRow, zeroVec);
+					}
 
 					h++;
 					colourRow += colourGridWidth;

@@ -29,6 +29,7 @@ This file is part of LifeViewer
 		/** @const {number} */ renderLongevity : 0,
 		/** @const {number} */ renderRainbow : 1,
 		/** @const {number} */ renderNeighbourCount : 2,
+		/** @const {number} */ render2 : 3,
 
 		// state modes
 		/** @const {number} */ mode2 : 0,
@@ -7714,6 +7715,75 @@ This file is part of LifeViewer
 		return rle;
 	};
 
+	// return the weighted neighbour count
+	/** @returns {number} */
+	Life.prototype.neighbourCount = function(/** @type {number} */ x, /** @type {number} */ y) {
+		var	/** @type {number} */ result = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ top = colourGrid[y - 1],
+			/** @type {Uint8Array} */ mid = colourGrid[y],
+			/** @type {Uint8Array} */ bot = colourGrid[y + 1],
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+		
+		result = 64 + (top[x - 1] >= aliveStart ? 1 : 0) + (top[x] >= aliveStart ? 5 : 0) + (top[x + 1] >= aliveStart ? 1 : 0) + (mid[x - 1] >= aliveStart ? 5 : 0) + (mid[x + 1] >= aliveStart ? 5 : 0) + (bot[x - 1] >= aliveStart ? 1 : 0) + (bot[x] >= aliveStart ? 5 : 0) + (bot[x + 1] >= aliveStart ? 1 : 0);
+
+		return result;
+	};
+
+	// update neighbour counts around the given cell
+	Life.prototype.updateNeighbourCounts = function(/** @type {number} */ x, /** @type {number} */ y) {
+		var	/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ row = null;
+
+		// top row
+		y -= 1;
+		row = colourGrid[y];
+
+		if (row[x - 1] >= this.aliveStart) {
+			row[x - 1] = this.neighbourCount(x - 1, y);
+		}
+
+		if (row[x] >= this.aliveStart) {
+			row[x] = this.neighbourCount(x, y);
+		}
+
+		if (row[x + 1] >= this.aliveStart) {
+			row[x + 1] = this.neighbourCount(x + 1, y);
+		}
+
+		// middle row
+		y += 1;
+		row = colourGrid[y];
+
+		if (row[x - 1] >= this.aliveStart) {
+			row[x - 1] = this.neighbourCount(x - 1, y);
+		}
+
+		if (row[x] >= this.aliveStart) {
+			row[x] = this.neighbourCount(x, y);
+		}
+
+		if (row[x + 1] >= this.aliveStart) {
+			row[x + 1] = this.neighbourCount(x + 1, y);
+		}
+
+		// bottom row
+		y += 1;
+		row = colourGrid[y];
+
+		if (row[x - 1] >= this.aliveStart) {
+			row[x - 1] = this.neighbourCount(x - 1, y);
+		}
+
+		if (row[x] >= this.aliveStart) {
+			row[x] = this.neighbourCount(x, y);
+		}
+
+		if (row[x + 1] >= this.aliveStart) {
+			row[x + 1] = this.neighbourCount(x + 1, y);
+		}
+	};
+
 	// set state (2 state patterns without bounded grid or [R]History)
 	/** @returns {number} */
 	Life.prototype.setState2 = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
@@ -7816,7 +7886,12 @@ This file is part of LifeViewer
 						break;
 
 					case LifeConstants.renderNeighbourCount:
-						colourGrid[y][x] = this.aliveStart;  // TBD rainbow
+						colourGrid[y][x] = this.aliveStart;
+						this.updateNeighbourCounts(x, y);
+						break;
+
+					case LifeConstants.render2:
+						colourGrid[y][x] = this.aliveStart;
 						break;
 				}
 
@@ -7887,6 +7962,10 @@ This file is part of LifeViewer
 					colourGrid[y][x] = this.unoccupied;
 				} else {
 					colourGrid[y][x] = this.deadStart;
+				}
+
+				if (this.cellRenderer === LifeConstants.renderNeighbourCount) {
+					this.updateNeighbourCounts(x, y);
 				}
 
 				// update tile grids
@@ -8384,8 +8463,8 @@ This file is part of LifeViewer
 						colourGrid[y][x] = ((x + y) & 127) + 64;
 					} else {
 						if (this.cellRenderer === LifeConstants.renderNeighbourCount) {
-							// TBD rainbow
 							colourGrid[y][x] = this.aliveStart;
+							this.updateNeighbourCounts(x, y);
 						} else {
 							if (this.isExtended || this.isSuper) {
 								colourGrid[y][x] = state;
@@ -8472,6 +8551,10 @@ This file is part of LifeViewer
 						} else {
 							colourGrid[y][x] = this.deadStart;
 						}
+					}
+
+					if (this.cellRenderer === LifeConstants.renderNeighbourCount) {
+						this.updateNeighbourCounts(x, y);
 					}
 
 					// update tile grids
@@ -10208,7 +10291,12 @@ This file is part of LifeViewer
 				break;
 
 			case LifeConstants.renderNeighbourCount:
-				this.resetColourGridBoxNormal(grid);  // TBD rainbow
+				this.resetColourGridBoxNormal(grid);
+				this.convertToPensTileNeighbourCount();
+				break;
+
+			case LifeConstants.render2:  // TBD rainbow
+				this.resetColourGridBoxNormal(grid);
 				break;
 		}
 	};
@@ -10839,9 +10927,24 @@ This file is part of LifeViewer
 				break;
 
 			case LifeConstants.renderNeighbourCount:
-				// TBD rainbow
+				// use the regular index for reset
+				this.createColourIndexRegular();
+				break;
+
+			case LifeConstants.render2:
+				this.createColourIndex2();
 				break;
 		}
+	};
+
+	// create basic colour index
+	Life.prototype.createColourIndex2 = function() {
+		var	/** @type {Uint16Array} */ colourLookup = this.colourLookup16;
+
+		colourLookup[0] = 0;
+		colourLookup[1] = (64 << 8);
+		colourLookup[2] = 64;
+		colourLookup[3] = (64 << 8) | 64;
 	};
 
 	// create rainbow colour index
@@ -11274,9 +11377,13 @@ This file is part of LifeViewer
 				break;
 
 			case LifeConstants.renderNeighbourCount:
-				// TBD rainbow
+				this.createPixelColoursNeighbourCount(brightness);
 				break;
 
+			case LifeConstants.render2:
+				// use normal pixel colours
+				this.createPixelColoursNormal(brightness);
+				break;
 		}
 	};
 
@@ -29979,59 +30086,120 @@ This file is part of LifeViewer
 	Life.prototype.convertToPensTile = function() {
 		var	/** @type {number} */ timing = performance.now();
 
-		// ignore if rule is none, PCA, RuleTable, Super or Extended
-		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper || this.isExtended)) {
-			// ignore Generations
-			if (this.multiNumStates === -1) {
-				switch (this.cellRenderer) {
-					case LifeConstants.renderLongevity:
-						// use regular converter
-						if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
-							if ((this.counter & 1) !== 0) {
-								WASM.convertToPens(
-									this.colourGrid.whole.byteOffset | 0,
-									this.colourTileHistoryGrid.whole.byteOffset | 0,
-									this.colourTileGrid.whole.byteOffset | 0,
-									this.tileY | 0,
-									this.tileX | 0,
-									this.tileRows | 0,
-									this.tileCols | 0,
-									this.nextGrid.whole.byteOffset | 0,
-									this.nextTileGrid.whole.byteOffset | 0,
-									this.colourGrid[0].length | 0
-								);
-							} else {
-								WASM.convertToPens(
-									this.colourGrid.whole.byteOffset | 0,
-									this.colourTileHistoryGrid.whole.byteOffset | 0,
-									this.colourTileGrid.whole.byteOffset | 0,
-									this.tileY | 0,
-									this.tileX | 0,
-									this.tileRows | 0,
-									this.tileCols | 0,
-									this.grid.whole.byteOffset | 0,
-									this.tileGrid.whole.byteOffset | 0,
-									this.colourGrid[0].length | 0
-								);
-							}
+		// ignore if rule is none, PCA, RuleTable, Super, Extended or Generations
+		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper || this.isExtended || this.multiNumStates !== -1)) {
+			switch (this.cellRenderer) {
+				case LifeConstants.renderLongevity:
+					// use regular converter
+					if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
+						if ((this.counter & 1) !== 0) {
+							WASM.convertToPensAge(
+								this.colourGrid.whole.byteOffset | 0,
+								this.colourTileHistoryGrid.whole.byteOffset | 0,
+								this.colourTileGrid.whole.byteOffset | 0,
+								this.tileY | 0,
+								this.tileX | 0,
+								this.tileRows | 0,
+								this.tileCols | 0,
+								this.nextGrid.whole.byteOffset | 0,
+								this.nextTileGrid.whole.byteOffset | 0,
+								this.colourGrid[0].length | 0
+							);
 						} else {
-							this.convertToPensTileRegular();
+							WASM.convertToPensAge(
+								this.colourGrid.whole.byteOffset | 0,
+								this.colourTileHistoryGrid.whole.byteOffset | 0,
+								this.colourTileGrid.whole.byteOffset | 0,
+								this.tileY | 0,
+								this.tileX | 0,
+								this.tileRows | 0,
+								this.tileCols | 0,
+								this.grid.whole.byteOffset | 0,
+								this.tileGrid.whole.byteOffset | 0,
+								this.colourGrid[0].length | 0
+							);
 						}
+					} else {
+						this.convertToPensTileRegular();
+					}
+					break;
 
-						timing = performance.now() - timing;
-						if (Controller.wasmTiming) {
-							this.view.menuManager.updateTimingItem("convertToPens", timing, Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled);
+				case LifeConstants.renderRainbow:
+					this.convertToPensTileRainbow();
+					break;
+
+				case LifeConstants.renderNeighbourCount:
+					if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
+						if ((this.counter & 1) !== 0) {
+							WASM.convertToPensNeighbours(
+								this.colourGrid.whole.byteOffset | 0,
+								this.colourTileHistoryGrid.whole.byteOffset | 0,
+								this.colourTileGrid.whole.byteOffset | 0,
+								this.tileY | 0,
+								this.tileX | 0,
+								this.tileRows | 0,
+								this.tileCols | 0,
+								this.nextGrid16.whole.byteOffset | 0,
+								this.nextTileGrid.whole.byteOffset | 0,
+								this.colourGrid[0].length | 0
+							);
+						} else {
+							WASM.convertToPensNeighbours(
+								this.colourGrid.whole.byteOffset | 0,
+								this.colourTileHistoryGrid.whole.byteOffset | 0,
+								this.colourTileGrid.whole.byteOffset | 0,
+								this.tileY | 0,
+								this.tileX | 0,
+								this.tileRows | 0,
+								this.tileCols | 0,
+								this.grid16.whole.byteOffset | 0,
+								this.tileGrid.whole.byteOffset | 0,
+								this.colourGrid[0].length | 0
+							);
 						}
-						break;
+					} else {
+						this.convertToPensTileNeighbourCount();
+					}
+					break;
 
-					case LifeConstants.renderRainbow:
-						this.convertToPensTileRainbow();
-						break;
+				case LifeConstants.render2:
+					if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
+						if ((this.counter & 1) !== 0) {
+							WASM.convertToPens2(
+								this.colourGrid.whole.byteOffset | 0,
+								this.colourTileHistoryGrid.whole.byteOffset | 0,
+								this.colourTileGrid.whole.byteOffset | 0,
+								this.tileY | 0,
+								this.tileX | 0,
+								this.tileRows | 0,
+								this.tileCols | 0,
+								this.nextGrid.whole.byteOffset | 0,
+								this.nextTileGrid.whole.byteOffset | 0,
+								this.colourGrid[0].length | 0
+							);
+						} else {
+							WASM.convertToPens2(
+								this.colourGrid.whole.byteOffset | 0,
+								this.colourTileHistoryGrid.whole.byteOffset | 0,
+								this.colourTileGrid.whole.byteOffset | 0,
+								this.tileY | 0,
+								this.tileX | 0,
+								this.tileRows | 0,
+								this.tileCols | 0,
+								this.grid.whole.byteOffset | 0,
+								this.tileGrid.whole.byteOffset | 0,
+								this.colourGrid[0].length | 0
+							);
+						}
+					} else {
+						this.convertToPensTile2();
+					}
+					break;
+			}
 
-					case LifeConstants.renderNeighbourCount:
-						// TBD rainbow
-						break;
-				}
+			timing = performance.now() - timing;
+			if (Controller.wasmTiming) {
+				this.view.menuManager.updateTimingItem("convertToPens", timing, Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled);
 			}
 
 			// clear ecaping gliders if enabled
@@ -46169,7 +46337,7 @@ This file is part of LifeViewer
 		zoomBox.topY = zTopY;
 	};
 
-	// convert life grid region to pens using tiles
+	// convert life grid region to pens using cell age
 	Life.prototype.convertToPensTileRegular = function() {
 		var	/** @type {number} */ h = 0,
 			/** @type {number} */ cr = 0,
@@ -46344,10 +46512,196 @@ This file is part of LifeViewer
 		}
 	};
 
-	// convert life grid region to pens using tiles
+	// convert life grid region to pens using alive/dead
+	Life.prototype.convertToPensTile2 = function() {
+		var	/** @type {number} */ h = 0,
+			/** @type {number} */ cr = 0,
+			/** @type {number} */ nextCell = 0,
+			/** @type {Uint16Array} */ colourLookup = this.colourLookup16,
+			/** @type {Array<Uint16Array>} */ colourGrid16 = this.colourGrid16,
+			/** @type {number} */ value16 = 0,
+			/** @type {Uint16Array} */ colourGridRow16 = null,
+			/** @type {Uint16Array} */ colourTileRow = null,
+			/** @type {Uint16Array} */ colourTileHistoryRow = null,
+			/** @type {Array<Uint16Array>} */ colourTileHistoryGrid = this.colourTileHistoryGrid,
+			/** @type {Array<Uint16Array>} */ colourTileGrid = this.colourTileGrid,
+			/** @type {Array<Uint16Array>} */ grid = null,
+			/** @type {Uint16Array} */ gridRow = null,
+			/** @type {Array<Uint16Array>} */ tileGrid = null,
+			/** @type {Uint16Array} */ tileGridRow = null,
+			/** @type {number} */ th = 0,
+			/** @type {number} */ tw = 0,
+			/** @type {number} */ b = 0,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ topY = 0,
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ tiles = 0,
+			/** @type {number} */ nextTiles = 0,
+
+			// whether the tile is alive
+			/** @type {number} */ tileAlive = 0,
+
+			// set tile height
+			/** @type {number} */ ySize = this.tileY,
+
+			// tile width (in 16bit chunks)
+			/** @type {number} */ xSize = this.tileX >> 1,
+
+			// tile rows
+			/** @type {number} */ tileRows = this.tileRows,
+
+			// tile columns in 16 bit values
+			/** @type {number} */ tileCols16 = this.tileCols >> 4,
+
+			// starting and ending tile row
+			/** @type {number} */ tileStartRow = 0,
+			/** @type {number} */ tileEndRow = tileRows;
+
+		// select the correct grid
+		if ((this.counter & 1) !== 0) {
+			grid = this.nextGrid16;
+			tileGrid = this.nextTileGrid;
+		} else {
+			grid = this.grid16;
+			tileGrid = this.tileGrid;
+		}
+
+		// check start and end row are in range
+		if (tileStartRow < 0) {
+			tileStartRow = 0;
+		}
+		if (tileEndRow > tileRows) {
+			tileEndRow = tileRows;
+		}
+
+		// set the initial tile row
+		bottomY = tileStartRow << this.tilePower;
+		topY = bottomY + ySize;
+
+		// scan each row of tiles
+		for (th = tileStartRow; th < tileEndRow; th += 1) {
+			// set initial tile column
+			leftX = 0;
+
+			// get the tile row and colour tile rows
+			tileGridRow = tileGrid[th];
+			colourTileRow = colourTileGrid[th];
+			colourTileHistoryRow = colourTileHistoryGrid[th];
+
+			// scan each set of tiles
+			for (tw = 0; tw < tileCols16; tw += 1) {
+				// get the next tile group (16 tiles)
+				tiles = tileGridRow[tw] | colourTileRow[tw];
+				nextTiles = 0;
+
+				// check if any are occupied
+				if (tiles) {
+					// compute next colour for each tile in the set
+					for (b = 15; b >= 0; b -= 1) {
+						// check if this tile is occupied
+						if ((tiles & (1 << b)) !== 0) {
+							// flag nothing alive in the tile
+							tileAlive = 0;
+
+							// process each row
+							h = bottomY;
+							while (h < topY) {
+								// get the grid and colour grid row
+								gridRow = grid[h];
+								colourGridRow16 = colourGrid16[h];
+
+								// get correct starting colour index
+								cr = (leftX << 3);
+
+								// process each 16bit chunk (16 cells) along the row
+								nextCell = gridRow[leftX];
+								if (nextCell) {
+									// lookup next colour
+									value16 = colourLookup[(nextCell >> 14) & 3];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
+
+									value16 = colourLookup[(nextCell >> 12) & 3];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
+
+									value16 = colourLookup[(nextCell >> 10) & 3];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
+
+									value16 = colourLookup[(nextCell >> 8) & 3];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
+
+									value16 = colourLookup[(nextCell >> 6) & 3];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
+
+									value16 = colourLookup[(nextCell >> 4) & 3];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
+
+									value16 = colourLookup[(nextCell >> 2) & 3];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									cr += 1;
+
+									value16 = colourLookup[nextCell & 3];
+									tileAlive |= value16;
+									colourGridRow16[cr] = value16;
+									// cr += 1 - no need for final increments they will be reset next row
+								} else {
+									colourGridRow16[cr] = 0;
+									colourGridRow16[cr + 1] = 0;
+									colourGridRow16[cr + 2] = 0;
+									colourGridRow16[cr + 3] = 0;
+									colourGridRow16[cr + 4] = 0;
+									colourGridRow16[cr + 5] = 0;
+									colourGridRow16[cr + 6] = 0;
+									colourGridRow16[cr + 7] = 0;
+								}
+
+								// next row
+								h += 1;
+							}
+
+							// check if the tile was alive
+							if (tileAlive !== 0) {
+								// update tile flag
+								nextTiles |= (1 << b);
+							}
+						}
+
+						// next tile columns
+						leftX += xSize;
+					}
+				} else {
+					// skip tile set
+					leftX += xSize << 4;
+				}
+
+				// save the tile group
+				colourTileRow[tw] = nextTiles;
+				colourTileHistoryRow[tw] |= nextTiles;
+			}
+
+			// next tile row
+			bottomY += ySize;
+			topY += ySize;
+		}
+	};
+
+	// convert life grid region to pens using neighbour count
 	Life.prototype.convertToPensTileNeighbourCount = function() {
 		var	/** @type {number} */ h = 0,
 			/** @type {number} */ cr = 0,
+			/** @type {number} */ s = 0,
 			/** @type {number} */ nextCell = 0,
 			/** @type {number} */ aboveCell = 0,
 			/** @type {number} */ belowCell = 0,
@@ -46373,6 +46727,8 @@ This file is part of LifeViewer
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ tiles = 0,
 			/** @type {number} */ nextTiles = 0,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {number} */ count = 0,
 
 			// whether the tile is alive
 			/** @type {number} */ tileAlive = 0,
@@ -46455,75 +46811,97 @@ This file is part of LifeViewer
 
 								// get next 16 cells
 								nextCell = gridRow[leftX];
-								aboveCell = aboveRow[leftX];
-								belowCell = belowRow[leftX];
+								if (nextCell) {
+									aboveCell = aboveRow[leftX];
+									belowCell = belowRow[leftX];
 
-								var count = 0;
-								for (bit = 15; bit >= 0; bit -= 1) {
-									// check if the cell is alive
-									var s;
+									count = 0;
+									bit = 15;
 
+									// process left cell
 									if ((nextCell & (1 << bit)) !== 0) {
-										// calculate the number of neighbours
-										if (bit === 15) {
-											// handle left edge
-											var leftTop = aboveRow[leftX - 1] & 1;
-											var leftMid = gridRow[leftX - 1] & 1;
-											var leftBottom = belowRow[leftX - 1] & 1;
+										// handle left edge
+										var leftTop = aboveRow[leftX - 1] & 1;
+										var leftMid = gridRow[leftX - 1] & 1;
+										var leftBottom = belowRow[leftX - 1] & 1;
 
-											count = 5 * ((nextCell & (1 << (bit - 1))) ? 1 : 0) +
-												5 * leftMid +
-												((aboveCell & (1 << (bit - 1))) ? 1 : 0) +
-												5 * ((aboveCell & (1 << bit)) ? 1 : 0) +
-												leftTop +
-												((belowCell & (1 << (bit - 1))) ? 1 : 0) +
-												5 * ((belowCell & (1 << bit)) ? 1 : 0) +
-												leftBottom;
+										count = 5 * ((nextCell & (1 << (bit - 1))) ? 1 : 0) +
+											5 * leftMid +
+											((aboveCell & (1 << (bit - 1))) ? 1 : 0) +
+											5 * ((aboveCell & (1 << bit)) ? 1 : 0) +
+											leftTop +
+											((belowCell & (1 << (bit - 1))) ? 1 : 0) +
+											5 * ((belowCell & (1 << bit)) ? 1 : 0) +
+											leftBottom;
 
-										} else if (bit === 0) {
-											// handle right edge
-											var rightTop = aboveRow[leftX + 1] >> 15;
-											var rightMid = gridRow[leftX + 1] >> 15;
-											var rightBottom = belowRow[leftX + 1] >> 15;
-
-											count = 5 * rightMid +
-												5 * ((nextCell & (1 << (bit + 1))) ? 1 : 0) +
-												rightTop +
-												5 * ((aboveCell & (1 << bit)) ? 1 : 0) +
-												((aboveCell & (1 << (bit + 1))) ? 1 : 0) +
-												rightBottom +
-												5 * ((belowCell & (1 << bit)) ? 1 : 0) +
-												((belowCell & (1 << (bit + 1))) ? 1 : 0);
-										} else {
-											// middle section
-											count = 5 * ((nextCell & (1 << (bit - 1))) ? 1 : 0) +
-												5 * ((nextCell & (1 << (bit + 1))) ? 1 : 0) +
-												((aboveCell & (1 << (bit - 1))) ? 1 : 0) +
-												5 * ((aboveCell & (1 << bit)) ? 1 : 0) +
-												((aboveCell & (1 << (bit + 1))) ? 1 : 0) +
-												((belowCell & (1 << (bit - 1))) ? 1 : 0) +
-												5 * ((belowCell & (1 << bit)) ? 1 : 0) +
-												((belowCell & (1 << (bit + 1))) ? 1 : 0);
-										}
-
-										s = 64 + count;
+										s = aliveStart + count;
+										tileAlive |= s;
 									} else {
 										// cell is dead
-										s = colourGridRow[cr];
-										if (s >= 64) {
-											s = 63;
+										s = 0;
+									}
+
+									colourGridRow[cr] = s;
+									cr += 1;
+
+									// process middle bits
+									for (bit = 14; bit >= 1; bit -= 1) {
+										// check if the cell is alive
+										if ((nextCell & (1 << bit)) !== 0) {
+											// calculate the number of neighbours
+											count = 5 * ((nextCell & (1 << (bit - 1))) ? 1 : 0) +
+												5 * ((nextCell & (1 << (bit + 1))) ? 1 : 0) +
+												((aboveCell & (1 << (bit - 1))) ? 1 : 0) +
+												5 * ((aboveCell & (1 << bit)) ? 1 : 0) +
+												((aboveCell & (1 << (bit + 1))) ? 1 : 0) +
+												((belowCell & (1 << (bit - 1))) ? 1 : 0) +
+												5 * ((belowCell & (1 << bit)) ? 1 : 0) +
+												((belowCell & (1 << (bit + 1))) ? 1 : 0);
+
+											s = aliveStart + count;
+											tileAlive |= s;
 										} else {
-											if (s > 1) {
-												s -= 1;
-											}
+											// cell is dead
+											s = 0;
 										}
 
+										colourGridRow[cr] = s;
+										cr += 1;
 									}
-									colourGridRow[cr] = s;
-									if (s > 1) {
+
+									// process right cell
+									if ((nextCell & (1 << bit)) !== 0) {
+										// handle right edge
+										var rightTop = aboveRow[leftX + 1] >> 15;
+										var rightMid = gridRow[leftX + 1] >> 15;
+										var rightBottom = belowRow[leftX + 1] >> 15;
+
+										count = 5 * rightMid +
+											5 * ((nextCell & (1 << (bit + 1))) ? 1 : 0) +
+											rightTop +
+											5 * ((aboveCell & (1 << bit)) ? 1 : 0) +
+											((aboveCell & (1 << (bit + 1))) ? 1 : 0) +
+											rightBottom +
+											5 * ((belowCell & (1 << bit)) ? 1 : 0) +
+											((belowCell & (1 << (bit + 1))) ? 1 : 0);
+
+										s = aliveStart + count;
 										tileAlive |= s;
+									} else {
+										// cell is dead
+										s = 0;
 									}
+
+									colourGridRow[cr] = s;
 									cr += 1;
+								} else {
+									for (bit = 0; bit < 4; bit += 1) {
+										colourGridRow[cr] = 0;
+										colourGridRow[cr + 1] = 0;
+										colourGridRow[cr + 2] = 0;
+										colourGridRow[cr + 3] = 0;
+										cr += 4;
+									}
 								}
 
 								// next row
@@ -46556,7 +46934,7 @@ This file is part of LifeViewer
 		}
 	};
 
-	// convert life grid region to pens using tiles
+	// convert life grid region to pens using cell position
 	Life.prototype.convertToPensTileRainbow = function() {
 		var	/** @type {number} */ h = 0,
 			/** @type {number} */ cr = 0,

@@ -1,3 +1,21 @@
+Build 1242
+- added Cell Shaders that control how cells are coloured for Life-like patterns
+	- there are now four shaders which determine the cell colour:
+		- Cell Age (default)
+			- determined by cell longevity and history
+		- Rainbow
+			- based on the cell position on the grid
+		- Neighbour Count
+			- calculated from the number of neighbours
+		- Basic
+			- one colour when alive and another when dead
+	- the shader can be set via the UI:
+		- Settings>Display>Age|Rain|Nbr|Bas
+		- hotkey Alt-W will cycle through the shaders
+	- or set with script commands:
+		- [[ RAINBOW ]], [[ NEIGHBOUR ]], [[ BASIC ]]
+	- note: switching away from the Cell Age shader resets cell history and longevity
+
 Build 1241
 - fixed alternating Wolfram rules
 	- only the bottom row is kept alive since the alternating rules will adjust earlier rows

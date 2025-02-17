@@ -3807,7 +3807,7 @@ void updateGridFromCounts2(
 			//	pens >= 64 increment to 127
 
 			// increment the alive lanes and set dead lanes to 64
-			v128_t pensAlive = wasm_v128_bitselect(wasm_u8x16_add_sat(pens, increment), penBaseSet, pensIfAlive);
+			v128_t pensAlive = wasm_v128_bitselect(wasm_i8x16_add(pens, increment), penBaseSet, pensIfAlive);
 
 			// ensure increment didn't go above the maximum value of 127
 			pensAlive = wasm_u8x16_min(pensAlive, penMaxSet);
@@ -4563,7 +4563,7 @@ void nextGenerationHROTMoore2(
 			//	pens >= 64 increment to 127
 
 			// increment the alive lanes and set dead lanes to 64
-			v128_t pensAlive = wasm_v128_bitselect(wasm_u8x16_add_sat(pens, increment), penBaseSet, pensIfAlive);
+			v128_t pensAlive = wasm_v128_bitselect(wasm_i8x16_add(pens, increment), penBaseSet, pensIfAlive);
 
 			// ensure increment didn't go above the maximum value of 127
 			pensAlive = wasm_u8x16_min(pensAlive, penMaxSet);

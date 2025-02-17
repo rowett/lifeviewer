@@ -942,7 +942,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "Shift U", "toggle UI", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.altKeyText + " U", "toggle autohide UI during playback", ctx, x, y, height, helpLine);
 		if (view.engine.multiNumStates === -1) {
-			y = this.renderHelpLine(view, view.altKeyText + " W", "cycle render mode", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, view.altKeyText + " W", "cycle cell shader", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "D", "toggle cell period map", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift D", "download cell period map", ctx, x, y, height, helpLine);
@@ -1287,9 +1287,9 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.showGenStatsWord, "show generation statistics", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.showInfoBarWord, "show information bar", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.rainbowWord, "use rainbow colours", ctx, x, y, height, helpLine);
-		if (Controller.useWASM) {
-			y = this.renderHelpLine(view, Keywords.neighbourCountWord, "use neighbour count colours", ctx, x, y, height, helpLine);
-		}
+		y = this.renderHelpLine(view, Keywords.basicWord, "use alive and dead colours", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.neighborCountWord, "use neighbour count colours", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.neighbourCountWord, "same as " + Keywords.neighborCountWord, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.qualityWord, "use high quality rendering", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 

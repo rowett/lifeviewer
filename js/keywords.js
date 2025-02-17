@@ -431,7 +431,13 @@ This file is part of LifeViewer
 		/** @const {string} */ rainbowWord : "RAINBOW",
 
 		// neighbour count word
-		/** @const {string} */ neighbourCountWord: "NCOUNT",
+		/** @const {string} */ neighbourCountWord: "NEIGHBOUR",
+
+		// neighbour count word us spelling
+		/** @const {string} */ neighborCountWord: "NEIGHBOR",
+
+		// basic word
+		/** @const {string} */ basicWord: "BASIC",
 
 		// start from
 		/** @const {string} */ startFromWord : "STARTFROM",

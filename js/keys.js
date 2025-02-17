@@ -232,6 +232,7 @@ This file is part of LifeViewer
 			/** @type {boolean} */ ctrlKey = event.ctrlKey,
 			/** @type {boolean} */ metaKey = event.metaKey,
 			/** @type {boolean} */ altKey = event.altKey,
+			/** @type {string} */ title = "",
 
 			// value for changes
 			/** @type {number} */ value = 0;
@@ -484,11 +485,29 @@ This file is part of LifeViewer
 						// cycle render mode
 						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree)) {
 							me.engine.cellRenderer += 1;
-							if (me.engine.cellRenderer > (Controller.useWASM ? LifeConstants.renderNeighbourCount : LifeConstants.renderRainbow)) {
+							if (me.engine.cellRenderer > LifeConstants.render2) {
 								me.engine.cellRenderer = LifeConstants.renderLongevity;
+							}
+							switch (me.engine.cellRenderer) {
+								case LifeConstants.renderLongevity:
+									title = "Cell Age";
+									break;
+
+								case LifeConstants.renderNeighbourCount:
+									title = "Neighbour Count";
+									break;
+
+								case LifeConstants.renderRainbow:
+									title = "Rainbow";
+									break;
+
+								case LifeConstants.render2:
+									title = "Basic";
+									break;
 							}
 
 							me.renderList.current = me.viewRenderList(me.engine.cellRenderer, true, me);
+							me.menuManager.notification.notify(title + " Shader", 15, 80, 15, true);
 						}
 						break;
 
