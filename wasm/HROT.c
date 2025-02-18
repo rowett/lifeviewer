@@ -3836,7 +3836,7 @@ void updateGridFromCounts2(
 			wasm_v128_store(colourRow + x, pens);
 
 			// update columns used if cells are occupied and/or cells are alive
-			v128_t cellsOccupied = wasm_u8x16_ge(pens, penMinClear);
+			v128_t cellsOccupied = wasm_u8x16_gt(pens, penMinClear);
 			v128_t cellsAlive = wasm_u8x16_ge(pens, penBaseSet);
 
 			// update the population from the cells alive bitmask population count
@@ -4592,7 +4592,7 @@ void nextGenerationHROTMoore2(
 			wasm_v128_store(colourRow, pens);
 
 			// update columns used if cells are occupied and/or cells are alive
-			v128_t cellsOccupied = wasm_u8x16_ge(pens, penMinClear);
+			v128_t cellsOccupied = wasm_u8x16_gt(pens, penMinClear);
 			v128_t cellsAlive = wasm_u8x16_ge(pens, penBaseSet);
 
 			// update the population from the cells alive bitmask population count
@@ -4602,10 +4602,10 @@ void nextGenerationHROTMoore2(
 			v128_t columnsUsed = wasm_v128_load(colUsed + x);
 
 			// create a mask with 1 for each occupied cell
-			v128_t deadMinCols = wasm_v128_bitselect(one, zero, cellsOccupied);
+			v128_t deadMinCols = wasm_v128_and(cellsOccupied, one);
 
 			// create a mask with 2 for each alive cell
-			v128_t aliveStartCols = wasm_v128_bitselect(two, zero, cellsAlive);
+			v128_t aliveStartCols = wasm_v128_and(cellsAlive, two);
 
 			// OR the masks into the columns used flags
 			columnsUsed = wasm_v128_or(columnsUsed, deadMinCols);
@@ -4622,7 +4622,6 @@ void nextGenerationHROTMoore2(
 					liveRowAlive = true;
 				}
 			}
-
 
 			// next column
 			colourRow += 16;

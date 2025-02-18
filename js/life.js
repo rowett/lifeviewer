@@ -5222,7 +5222,7 @@ This file is part of LifeViewer
 		// compute strict volatility
 		if (computeStrict) {
 			// set any cell that was alive to maximum period
-			var t = performance.now();
+			//var t = performance.now();
 
 			for (cy = 0; cy < boxHeight; cy += 1) {
 				// get the next row offsets
@@ -5236,8 +5236,8 @@ This file is part of LifeViewer
 				}
 			}
 
-			t = performance.now() - t;
-			console.log("alive->max", t.toFixed(2));
+			//t = performance.now() - t;
+			//console.log("alive->max", t.toFixed(2));
 
 			// calculate the factors of the period (subperiods)
 			this.computeCellFactors(cellPeriod, period, frames, cellCounts, boxWidth, boxHeight, bitFrameIn16Bits, bitRowIn16Bits, bitStart);
@@ -5247,7 +5247,7 @@ This file is part of LifeViewer
 			//t = performance.now();
 
 			// count up the subperiod populations
-			t = performance.now();
+			//t = performance.now();
 			for (cy = 0; cy < boxHeight; cy += 1) {
 				row = cy * boxWidth;
 				for (cx = 0; cx < boxWidth; cx += 1) {
@@ -5257,8 +5257,8 @@ This file is part of LifeViewer
 					}
 				}
 			}
-			t = performance.now() - t;
-			console.log("subperiod count", t.toFixed(2));
+			//t = performance.now() - t;
+			//console.log("subperiod count", t.toFixed(2));
 
 			// for [R]History and [R]Super add state 6 cells to map and for [R]Extended add state 3 cells
 			if (isOscillator) {
@@ -11566,6 +11566,88 @@ This file is part of LifeViewer
 		// move them starting at the alive index
 		for (i = 0; i < 25; i += 1) {
 			pixelColours[64 + i] = temp[i];
+		}
+
+		// check theme
+		switch (this.colourTheme) {
+			case 0: // Mono
+				for (i = 0; i < 25; i += 1) {
+					var j = (i * 6) + 105;
+					pixelColours[64 + i] = (255 << 24) | (j << 16) | (j << 8) | j;
+				}
+				break;
+
+			case 2: // Fire
+				pixelColours[64] = 0xff000033;
+				pixelColours[64 + 4] = 0xff003399;
+				pixelColours[64 + 8] = 0xff0055ff;
+				pixelColours[64 + 12] = 0xff00ffff;
+				pixelColours[64 + 16] = 0xffffffff;
+				pixelColours[64 + 20] = 0xffccffff;
+				pixelColours[64 + 24] = 0xffccffff;
+				for (i = 1; i < 4; i += 1) {
+					pixelColours[64 + i] = pixelColours[64];
+					pixelColours[68 + i] = pixelColours[68];
+					pixelColours[72 + i] = pixelColours[72];
+					pixelColours[76 + i] = pixelColours[76];
+					pixelColours[80 + i] = pixelColours[80];
+					pixelColours[84 + i] = pixelColours[84];
+				}
+				break;
+
+			case 3: // Poison
+				pixelColours[64] = 0xff660033;
+				pixelColours[64 + 4] = 0xffff4400;
+				pixelColours[64 + 8] = 0xffffff00;
+				pixelColours[64 + 12] = 0xffff00ff;
+				pixelColours[64 + 16] = 0xffff66ff;
+				pixelColours[64 + 20] = 0xffffffff;
+				pixelColours[64 + 24] = 0xffffffff;
+				for (i = 1; i < 4; i += 1) {
+					pixelColours[64 + i] = pixelColours[64];
+					pixelColours[68 + i] = pixelColours[68];
+					pixelColours[72 + i] = pixelColours[72];
+					pixelColours[76 + i] = pixelColours[76];
+					pixelColours[80 + i] = pixelColours[80];
+					pixelColours[84 + i] = pixelColours[84];
+				}
+				break;
+
+			case 4: // Yellow
+				pixelColours[64] = 0xff331100;
+				pixelColours[64 + 4] = 0xff664400;
+				pixelColours[64 + 8] = 0xff00ff00;
+				pixelColours[64 + 12] = 0xff00ffff;
+				pixelColours[64 + 16] = 0xff00aaff;
+				pixelColours[64 + 20] = 0xffffffff;
+				pixelColours[64 + 24] = 0xffffffff;
+				for (i = 1; i < 4; i += 1) {
+					pixelColours[64 + i] = pixelColours[64];
+					pixelColours[68 + i] = pixelColours[68];
+					pixelColours[72 + i] = pixelColours[72];
+					pixelColours[76 + i] = pixelColours[76];
+					pixelColours[80 + i] = pixelColours[80];
+					pixelColours[84 + i] = pixelColours[84];
+				}
+				break;
+
+			case 5:
+				pixelColours[64] = 0xffaa0000;
+				pixelColours[64 + 4] = 0xff00aa00;
+				pixelColours[64 + 8] = 0xff00aaaa;
+				pixelColours[64 + 12] = 0xff0077ff;
+				pixelColours[64 + 16] = 0xff0000ff;
+				pixelColours[64 + 20] = 0xffffffff;
+				pixelColours[64 + 24] = 0xffffffff;
+				for (i = 1; i < 4; i += 1) {
+					pixelColours[64 + i] = pixelColours[64];
+					pixelColours[68 + i] = pixelColours[68];
+					pixelColours[72 + i] = pixelColours[72];
+					pixelColours[76 + i] = pixelColours[76];
+					pixelColours[80 + i] = pixelColours[80];
+					pixelColours[84 + i] = pixelColours[84];
+				}
+				break;
 		}
 
 		// create the colour strings for hexagons or triangles if required

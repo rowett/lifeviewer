@@ -114,6 +114,12 @@ void updateOccupancyStrict(
 				frameBits |= bit;
 			}
 			bit >>= 1;
+			if (bit == 0) {
+				bit = bitStart;
+				*frameRow = frameBits;
+				frameRow++;
+				frameBits = 0;
+			}
 			colourRow++;
 			x++;
 		}
@@ -205,6 +211,12 @@ void updateOccupancyStrictSuperOrRuleLoader(
 				frameBits |= bit;
 			}
 			bit >>= 1;
+			if (bit == 0) {
+				bit = bitStart;
+				*frameRow = frameBits;
+				frameRow++;
+				frameBits = 0;
+			}
 			colourRow++;
 			x++;
 		}

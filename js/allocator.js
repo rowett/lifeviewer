@@ -399,7 +399,7 @@ This file is part of LifeViewer
 				alert("Illegal type specified to allocator.typedMemory for " + name + ": " + type);
 			}
 		} catch(e) {
-			alert("Failed to allocate " + elements + " element " + Type.typeName(type) + " array for " + name + "\n\n" + e);
+			alert(ViewConstants.externalViewerTitle + " is out of memory\n\nFailed to allocate " + elements + " element " + Type.typeName(type) + " array for " + name + "\n\n" + e);
 		}
 
 		// if the allocation succeeded for the WASM heap then update the heap pointer

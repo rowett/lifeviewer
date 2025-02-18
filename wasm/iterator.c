@@ -28,6 +28,9 @@
 //	resetBoxesBit (Life-like)
 //	shrinkTileGrid (Life-like)
 
+// TODO:
+//	check grid boundaries in convertToPensNeighbours
+
 /*
 This file is part of LifeViewer
  Copyright (C) 2015-2025 Chris Rowett
