@@ -3560,7 +3560,7 @@ void nextGenerationHROTVNN(
 			// update the cell
 			*colourRow = state;
 
-			if (state > 0) {
+			if (state > minDeadState) {
 				colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
 				if (jpmincol < minX) {
 					minX = jpmincol;
@@ -4075,7 +4075,7 @@ void updateGridFromCountsN(
 			*(colourRow + x) = state;
 
 			// update columns used if cell is alive
-			if (state > 0) {
+			if (state > minDeadState) {
 				rowOccupied = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 				if (x < minX) {
@@ -4274,7 +4274,7 @@ void updateGridFromCountsN(
 			*(colourRow + x) = state;
 
 			// update columns used if cell is alive
-			if (state > 0) {
+			if (state > minDeadState) {
 				rowOccupied = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 				if (x < minX) {
@@ -4821,7 +4821,7 @@ void nextGenerationHROTMooreN(
 			// update the cell
 			*colourRow = state;
 
-			if (state > 0) {
+			if (state > minDeadState) {
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 				if (x < minX) {
 					minX = x;
@@ -5121,7 +5121,7 @@ void nextGenerationHROTMooreN(
 			// update the cell
 			*colourRow = state;
 
-			if (state > 0) {
+			if (state > minDeadState) {
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 				if (x < minX) {
 					minX = x;

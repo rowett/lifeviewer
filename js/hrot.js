@@ -711,7 +711,7 @@ This file is part of LifeViewer
 					colourRow[x] = state;
 
 					// update bounding box columns
-					if (state > 0) {
+					if (state > minDeadState) {
 						rowAlive = true;
 						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 						if (x < minX) {
@@ -938,7 +938,7 @@ This file is part of LifeViewer
 					colourRow[x] = state;
 
 					// update bounding box columns
-					if (state > 0) {
+					if (state > minDeadState) {
 						rowAlive = true;
 						colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 						if (x < minX) {
@@ -5746,7 +5746,7 @@ This file is part of LifeViewer
 
 			// update the cell
 			colourGrid[bottomY][leftX] = state;
-			if (state > 0) {
+			if (state > minDeadState) {
 				minX = leftX;
 				maxX = leftX;
 				minY = bottomY;
@@ -5822,7 +5822,7 @@ This file is part of LifeViewer
 
 					// update the cell
 					colourRow[x] = state;
-					if (state > 0) {
+					if (state > minDeadState) {
 						if (x < minX) {
 							minX = x;
 						}
@@ -5877,7 +5877,7 @@ This file is part of LifeViewer
 
 					// update the cell
 					colourRow[x] = state;
-					if (state > 0) {
+					if (state > minDeadState) {
 						if (x < minX) {
 							minX = x;
 						}
@@ -5967,7 +5967,7 @@ This file is part of LifeViewer
 
 					// update the cell
 					colourGrid[y][leftX] = state;
-					if (state > 0) {
+					if (state > minDeadState) {
 						if (y < minY) {
 							minY = y;
 						}
@@ -6022,7 +6022,7 @@ This file is part of LifeViewer
 
 					// update the cell
 					colourGrid[y][leftX] = state;
-					if (state > 0) {
+					if (state > minDeadState) {
 						if (y < minY) {
 							minY = y;
 						}
@@ -6158,7 +6158,7 @@ This file is part of LifeViewer
 
 							// update the cell
 							colourRow[x] = state;
-							if (state > 0) {
+							if (state > minDeadState) {
 								colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 								if (x < minX) {
 									minX = x;
@@ -6218,7 +6218,7 @@ This file is part of LifeViewer
 
 							// update the cell
 							colourRow[x] = state;
-							if (state > 0) {
+							if (state > minDeadState) {
 								colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 								if (x < minX) {
 									minX = x;
@@ -6447,7 +6447,7 @@ This file is part of LifeViewer
 
 								// update the cell
 								colourRow[jpmincol] = state;
-								if (state > 0) {
+								if (state > minDeadState) {
 									colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
 									if (jpmincol < minX) {
 										minX = jpmincol;
@@ -6505,7 +6505,7 @@ This file is part of LifeViewer
 
 								// update the cell
 								colourRow[jpmincol] = state;
-								if (state > 0) {
+								if (state > minDeadState) {
 									colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
 									if (jpmincol < minX) {
 										minX = jpmincol;

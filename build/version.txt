@@ -15,6 +15,7 @@ Build 1242
 	- or set with script commands:
 		- [[ RAINBOW ]], [[ NEIGHBOUR ]], [[ BASIC ]]
 	- note: switching away from the Cell Age shader resets cell history and longevity
+- fixed HROT multi-state rules including fully faded dead cells in the bounding box
 
 Build 1241
 - fixed alternating Wolfram rules
