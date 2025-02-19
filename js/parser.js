@@ -4877,22 +4877,18 @@ This file is part of LifeViewer
 						// neighbourhood count word
 						case Keywords.neighbourCountWord:
 						case Keywords.neigborCountWord:
-							if (Controller.useWASM) {
-								if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
-									view.engine.cellRenderer = LifeConstants.renderNeighbourCount;
-									view.defaultRenderer = LifeConstants.renderNeighbourCount;
-								}
+							if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
+								view.engine.cellRenderer = LifeConstants.renderNeighbourCount;
+								view.defaultRenderer = LifeConstants.renderNeighbourCount;
 							}
 							itemValid = true;
 							break;
 
 						// basic word
 						case Keywords.basicWord:
-							if (Controller.useWASM) {
-								if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
-									view.engine.cellRenderer = LifeConstants.render2;
-									view.defaultRenderer = LifeConstants.render2;
-								}
+							if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
+								view.engine.cellRenderer = LifeConstants.render2;
+								view.defaultRenderer = LifeConstants.render2;
 							}
 							itemValid = true;
 							break;

@@ -15083,7 +15083,7 @@ This file is part of LifeViewer
 				}
 
 				// check if the pattern can move
-				if (leftX + xOff + dx >= bLeftX && rightX + xOff + dx <= bRightX && bottomY + yOff + dy >= bBottomY && topY + yOff + dy <= bTopY) {
+				if (leftX + xOff + dx > bLeftX && rightX + xOff + dx < bRightX && bottomY + yOff + dy > bBottomY && topY + yOff + dy < bTopY) {
 					// cut pattern in selection to internal buffer
 					me.pasteBuffers[ViewConstants.numPasteBuffers] = null;
 					me.cutSelection(me, ViewConstants.numPasteBuffers, false, true);

@@ -16,6 +16,9 @@ Build 1242
 		- [[ RAINBOW ]], [[ NEIGHBOUR ]], [[ BASIC ]]
 	- note: switching away from the Cell Age shader resets cell history and longevity
 - fixed HROT multi-state rules including fully faded dead cells in the bounding box
+- fixed Nudge Selection going into the bounded grid border
+- fixed Triangular Cell Period Map size
+- fixed Cell Period Map legend background for >2 columns
 
 Build 1241
 - fixed alternating Wolfram rules

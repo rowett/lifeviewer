@@ -2106,7 +2106,7 @@ This file is part of LifeViewer
 		view.helpSections[sectionNum] = [view.lineNo, "Cells"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Cells:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Renderer", view.engine.cellRenderer === LifeConstants.renderLongevity ? "Longevity" : view.engine.cellRenderer === LifeConstants.renderRainbow ? "Rainbow" : "Neighbour count", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shader", view.engine.cellRenderer === LifeConstants.renderLongevity ? "Cell Age" : view.engine.cellRenderer === LifeConstants.renderRainbow ? "Rainbow" : view.engine.cellRenderer === LifeConstants.renderNeighbourCount ? "Neighbour count" : "Basic", ctx, x, y, height, helpLine);
 		this.renderColourBox(view, view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0], ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Background", this.rgbString(view.engine.redChannel[0], view.engine.greenChannel[0], view.engine.blueChannel[0]), ctx, x, y, height, helpLine);
 

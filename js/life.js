@@ -3547,11 +3547,12 @@ This file is part of LifeViewer
 			/** @type {number} */ cellBorderSize = this.cellBorderSize,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ testY = 0,
+			/** @type {number} */ legendCols = 1,
 			/** @type {number} */ alpha = label.bgAlpha,
 			/** @type {string} */ fgCol = label.fgCol,
 			/** @type {string} */ bgCol = label.bgCol,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
-			/** @type {boolean} */ twoCols = false,
 			/** @type {number} */ maxLabelWidth = 0,
 			/** @type {number} */ legendBorder = displayScale * 40,
 			/** @type {number} */ yFactor = this.getYFactor();
@@ -3580,14 +3581,14 @@ This file is part of LifeViewer
 		leftX = ((this.displayWidth - x) / 2);
 		bottomY = ((this.displayHeight - y) / 2);
 		ctx.translate(this.displayWidth >> 1, this.displayHeight >> 1);
-		if (yFactor > 1) {
+		if (yFactor > 1 && y * yFactor > height - 160) {
 			ctx.scale(s / yFactor, s);
 		} else {
 			ctx.scale(s, s * yFactor);
 		}
 
 		// use image smoothing for scales below 1 pixel per cell
-		if (s < 1 || s * yFactor <= 1) {
+		if (s < 1 || s * yFactor <= 1 || s / yFactor < 1) {
 			ctx.imageSmoothingEnabled = true;
 		} else {
 			ctx.imageSmoothingEnabled = false;
@@ -3633,18 +3634,29 @@ This file is part of LifeViewer
 		}
 
 		// check if the legend fits in one column
-		bottomY = (this.displayHeight - (numCols + 2) * rowSize) / 2;
-		if (bottomY <= legendBorder) {
+		testY = legendBorder;
+		y = 0;
+		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
+			p = this.popSubPeriod[x];
+			if (p > 0) {
+				if ((testY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
+					y = 0;
+					legendCols += 1;
+				}
+				y += 1;
+			}
+		}
+
+		if (legendCols > 1) {
 			bottomY = legendBorder;
-			twoCols = true;
 		}
 
 		// draw the legend box
 		ctx.globalAlpha = alpha;
 		ctx.fillStyle = bgCol;
 
-		if (twoCols) {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 8 * displayScale) * 2, this.displayHeight - legendBorder * 3 + rowSize);
+		if (legendCols > 1) {
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 8 * displayScale) * legendCols, this.displayHeight - legendBorder * 3 + rowSize);
 		} else {
 			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, (numCols + 2) * rowSize + 3 * displayScale);
 		}
