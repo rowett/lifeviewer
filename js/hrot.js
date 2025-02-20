@@ -229,9 +229,13 @@ This file is part of LifeViewer
 
 		// copy the weighted states if specified
 		if (weightedStates) {
-			this.weightedStates = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, weightedStates.length, "HROT.weightedStates", Controller.useWASM));
-			for (i = 0; i < weightedStates.length; i += 1) {
-				this.weightedStates[i] = weightedStates[i];
+			if (weightedStates.length > 0) {
+				this.weightedStates = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, weightedStates.length, "HROT.weightedStates", Controller.useWASM));
+				for (i = 0; i < weightedStates.length; i += 1) {
+					this.weightedStates[i] = weightedStates[i];
+				}
+			} else {
+				this.weightedStates = null;
 			}
 		} else {
 			this.weightedStates = null;

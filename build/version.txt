@@ -1,3 +1,6 @@
+Build 1249
+- fixed HROT/LtL weighted neighbourhoods
+
 Build 1248
 - fix support for RuleTables without transitions
 
