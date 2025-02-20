@@ -1,3 +1,6 @@
+Build 1246
+- after page load scroll to the anchor location if one was provided in the URL
+
 Build 1245
 - fixed HROT/LtL clashing with the Basic shader
 - improved the error message when patterns contain invalid characters

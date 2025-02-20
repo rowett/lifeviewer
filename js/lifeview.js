@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1245,
+		/** @const {number} */ versionBuild : 1246,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -22489,6 +22489,16 @@ This file is part of LifeViewer
 		}
 
 		console.groupEnd();
+
+		// scroll to target element if the URL had a hash (since LifeViewer may have adjusted the window contents)
+		if (window.location.hash) {
+			console.log(window.location.hash);
+			const targetID = window.location.hash.substring(1);
+			const targetElement = document.getElementById(targetID);
+			if (targetElement) {
+				targetElement.scrollIntoView();
+			}
+		}
 
 		// save page scan time
 		Controller.pageScanTime = performance.now() - scanTime;
