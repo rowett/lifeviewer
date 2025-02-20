@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1246,
+		/** @const {number} */ versionBuild : 1248,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -9353,12 +9353,8 @@ This file is part of LifeViewer
 			}
 
 			// re-convert grid to colours for cell shader
-			if (!me.engine.isLifeHistory) {
-				if (me.engine.multiNumStates === -1) {
-					me.engine.resetColourGridBox(me.engine.grid16);
-				} else {
-					me.engine.convertToPensTile();
-				}
+			if (!me.engine.isLifeHistory && me.engine.multiNumStates === -1) {
+				me.engine.resetColourGridBox(me.engine.grid16);
 			}
 		}
 
@@ -10544,12 +10540,8 @@ This file is part of LifeViewer
 
 							// re-convert grid to colours for cell shader
 							if (me.engine.counter === 0) {
-								if (!me.engine.isLifeHistory) {
-									if (me.engine.multiNumStates === -1) {
-										me.engine.resetColourGridBox(me.engine.grid16);
-									} else {
-										me.engine.convertToPensTile();
-									}
+								if (!me.engine.isLifeHistory && me.engine.multiNumStates === -1) {
+									me.engine.resetColourGridBox(me.engine.grid16);
 								}
 							}
 						}

@@ -422,21 +422,19 @@ This file is part of LifeViewer
 
 		//console.log("allocate(" + Type.typeName(type) + ", " + elements + ", " + name + (wasmHeap ? (", WASM " + String(this.wasmPointer)) : ")"));
 
-		if (elements > 0) {
-			// get typed block of memory
-			result = this.typedMemory(type, elements, name, wasmHeap, false);
+		// get typed block of memory
+		result = this.typedMemory(type, elements, name, wasmHeap, false);
 
-			// check if allocation succeeded
-			if (result) {
-				if (wasmHeap) {
-					// clear the memory block
-					result.fill(0);
+		// check if allocation succeeded
+		if (result) {
+			if (wasmHeap) {
+				// clear the memory block
+				result.fill(0);
 
-					//console.log(name, elements + " x " + Type.typeName(type) + " @ " + result.byteOffset, " used: " + (result.byteOffset >> 20) + "Mb (" + ((100 * result.byteOffset) / WASM.memory.buffer.byteLength).toFixed(1) + "%)");
-					name = "* " + name;
-				}
-				this.saveAllocationInfo(type, elements, name, result.byteOffset);
+				//console.log(name, elements + " x " + Type.typeName(type) + " @ " + result.byteOffset, " used: " + (result.byteOffset >> 20) + "Mb (" + ((100 * result.byteOffset) / WASM.memory.buffer.byteLength).toFixed(1) + "%)");
+				name = "* " + name;
 			}
+				this.saveAllocationInfo(type, elements, name, result.byteOffset);
 		}
 
 		// return memory
@@ -448,20 +446,18 @@ This file is part of LifeViewer
 	Allocator.prototype.allocateTop = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {boolean} */ wasmHeap) {
 		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
 
-		if (elements > 0) {
-			// get typed block of memory
-			result = this.typedMemory(type, elements, name, wasmHeap, true);
+		// get typed block of memory
+		result = this.typedMemory(type, elements, name, wasmHeap, true);
 
-			// check if allocation succeeded
-			if (result) {
-				if (wasmHeap) {
-					// clear the memory block
-					result.fill(0);
+		// check if allocation succeeded
+		if (result) {
+			if (wasmHeap) {
+				// clear the memory block
+				result.fill(0);
 
-					name = "^ " + name;
-				}
-				this.saveAllocationInfo(type, elements, name, result.byteOffset);
+				name = "^ " + name;
 			}
+			this.saveAllocationInfo(type, elements, name, result.byteOffset);
 		}
 
 		// return memory

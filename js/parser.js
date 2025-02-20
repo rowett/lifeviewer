@@ -3247,9 +3247,12 @@ This file is part of LifeViewer
 
 								// check it is in range
 								if (numberValue >= 0 && numberValue <= view.maxHistoryStates) {
-									view.historyStates = numberValue;
+									// ensure at least one history state for [R]History
+									if (!(numberValue === 0 && view.engine.isLifeHistory)) {
+										view.historyStates = numberValue;
 
-									itemValid = true;
+										itemValid = true;
+									}
 								}
 							}
 							break;

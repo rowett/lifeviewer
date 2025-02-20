@@ -1,3 +1,10 @@
+Build 1248
+- fix support for RuleTables without transitions
+
+Build 1247
+- fix Step Back running KILLGLIDERS for HROT/LtL rules
+- ensure HISTORYSTATES is > 0 for [R]History patterns
+
 Build 1246
 - after page load scroll to the anchor location if one was provided in the URL
 

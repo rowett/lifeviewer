@@ -9806,12 +9806,6 @@ This file is part of LifeViewer
 			}
 		}
 
-		// check there is a transition table
-		if (transitionTable.length === 0) {
-			this.failureReason = "missing transitions";
-			valid = false;
-		}
-
 		// check if decoded successfully
 		if (valid) {
 			if (pattern.allocator === null) {
