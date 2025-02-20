@@ -32,6 +32,7 @@ This file is part of LifeViewer
 
 		// check if the token is a script command
 		switch (tokenString) {
+			case Keywords.shaderWord:
 			case Keywords.rainbowWord:
 			case Keywords.neighbourCountWord:
 			case Keywords.neighborCountWord:
@@ -4865,21 +4866,53 @@ This file is part of LifeViewer
 							}
 							break;
 
+						// shader word
+						case Keywords.shaderWord:
+							// get the shader type
+							peekToken = scriptReader.peekAtNextToken().toUpperCase();
+							if (peekToken == Keywords.rainbowWord || peekToken == Keywords.neighborCountWord || peekToken == Keywords.neighbourCountWord || peekToken == Keywords.basicWord) {
+								// valid so eat the token
+								scriptReader.getNextToken();
+
+								if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
+									switch (peekToken) {
+										case Keywords.rainbowWord:
+											view.engine.cellRenderer = LifeConstants.shaderRainbow;
+											view.defaultRenderer = LifeConstants.shaderRainbow;
+											break;
+	
+										case Keywords.neighborCountWord:
+										case Keywords.neighbourCountWord:
+											view.engine.cellRenderer = LifeConstants.shaderNeighbourCount;
+											view.defaultRenderer = LifeConstants.shaderNeighbourCount;
+											break;
+	
+										case Keywords.basicWord:
+											view.engine.cellRenderer = LifeConstants.shaderBasic;
+											view.defaultRenderer = LifeConstants.shaderBasic;
+											break;
+									}
+
+								}
+								itemValid = true;
+							}
+							break;
+
 						// rainbow word
 						case Keywords.rainbowWord:
 							if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
-								view.engine.cellRenderer = LifeConstants.renderRainbow;
-								view.defaultRenderer = LifeConstants.renderRainbow;
+								view.engine.cellRenderer = LifeConstants.shaderRainbow;
+								view.defaultRenderer = LifeConstants.shaderRainbow;
 							}
 							itemValid = true;
 							break;
 
 						// neighbourhood count word
 						case Keywords.neighbourCountWord:
-						case Keywords.neigborCountWord:
+						case Keywords.neighborCountWord:
 							if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
-								view.engine.cellRenderer = LifeConstants.renderNeighbourCount;
-								view.defaultRenderer = LifeConstants.renderNeighbourCount;
+								view.engine.cellRenderer = LifeConstants.shaderNeighbourCount;
+								view.defaultRenderer = LifeConstants.shaderNeighbourCount;
 							}
 							itemValid = true;
 							break;
@@ -4887,8 +4920,8 @@ This file is part of LifeViewer
 						// basic word
 						case Keywords.basicWord:
 							if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
-								view.engine.cellRenderer = LifeConstants.render2;
-								view.defaultRenderer = LifeConstants.render2;
+								view.engine.cellRenderer = LifeConstants.shaderBasic;
+								view.defaultRenderer = LifeConstants.shaderBasic;
 							}
 							itemValid = true;
 							break;

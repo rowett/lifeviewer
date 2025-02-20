@@ -1,3 +1,18 @@
+Build 1245
+- fixed HROT/LtL clashing with the Basic shader
+- improved the error message when patterns contain invalid characters
+
+Build 1244
+- added script command [[ SHADER shader ]] to set the Cell Shader
+	- shader is one of RAINBOW, NEIGHBOUR, NEIGHBOR or BASIC
+- re-enabled [[ KILLGLIDERS ]] for HROT/LtL range 1 rules
+- reordered Shader buttons
+- fixed an issue with the Basic shader on pattern reset when in Cell Age mode
+
+Build 1243
+- automatically use the Basic shader in place of Cell Age shader when the current Theme has no history
+- fixed [[ NEIGHBOR ]] keyword being ignored
+
 Build 1242
 - added Cell Shaders that control how cells are coloured for Life-like patterns
 	- there are now four shaders which determine the cell colour:

@@ -6803,6 +6803,8 @@ This file is part of LifeViewer
 		// check if the pattern is valid
 		if (pattern.invalid) {
 			index = -1;
+			pattern.isSuper = false;
+			pattern.isNiemiec = false;
 		} else {
 			// flag pattern valid
 			pattern.lifeMap = [];

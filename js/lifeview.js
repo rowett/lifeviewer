@@ -330,7 +330,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1242,
+		/** @const {number} */ versionBuild : 1245,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -2427,7 +2427,7 @@ This file is part of LifeViewer
 		/** @type {number} */ this.defaultStep = 1;
 		/** @type {number} */ this.defaultLayers = 1;
 		/** @type {number} */ this.defaultDepth = 0.1;
-		/** @type {number} */ this.defaultRenderer = LifeConstants.renderLongevity;
+		/** @type {number} */ this.defaultRenderer = LifeConstants.shaderCellAge;
 
 		// whether a theme was requested
 		/** @type {number} */ this.themeRequested = -1;
@@ -18133,8 +18133,8 @@ This file is part of LifeViewer
 		this.labelButton.toolTip = ["toggle annotations [" + this.altKeyText + " L]"];
 
 		// render mode button
-		this.renderList = this.viewMenu.addListItem(this.viewRenderList, Menu.middle, 100, 0, 180, 40, ["Age", "Rbw", "Nbr", "Bas"], this.engine.cellRenderer, Menu.single);
-		this.renderList.toolTip = ["cell age shader [" + this.altKeyText + " W]", "rainbow shader [" + this.altKeyText + " W]", "neighbour count shader [" + this.altKeyText + " W]", "basic shader [" + this.altKeyText + " W]"];
+		this.renderList = this.viewMenu.addListItem(this.viewRenderList, Menu.middle, 100, 0, 180, 40, ["Bas", "Age", "Rbw", "Nbr"], this.engine.cellRenderer, Menu.single);
+		this.renderList.toolTip = ["basic shader [" + this.altKeyText + " W]", "cell age shader [" + this.altKeyText + " W]", "rainbow shader [" + this.altKeyText + " W]", "neighbour count shader [" + this.altKeyText + " W]"];
 		this.renderList.setFont("18px Arial");
 
 		// autogrid toggle button
@@ -19027,8 +19027,8 @@ This file is part of LifeViewer
 		this.useIcons = false;
 
 		// reset renderer
-		this.engine.cellRenderer = LifeConstants.renderLongevity;
-		this.defaultRenderer = LifeConstants.renderLongevity;
+		this.engine.cellRenderer = LifeConstants.shaderCellAge;
+		this.defaultRenderer = LifeConstants.shaderCellAge;
 
 		// reset start from
 		this.startFrom = -1;
@@ -20549,9 +20549,9 @@ This file is part of LifeViewer
 		}
 
 		// check render mode and remove if not supported
-		if (me.engine.cellRenderer !== LifeConstants.renderLongevity) {
+		if (me.engine.cellRenderer !== LifeConstants.shaderCellAge) {
 			if (me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree) {
-				me.engine.cellRenderer = LifeConstants.renderLongevity;  // TBD render check UI control
+				me.engine.cellRenderer = LifeConstants.shaderCellAge;
 			}
 		}
 
@@ -20650,6 +20650,9 @@ This file is part of LifeViewer
 
 		// process any rle snippet evolution
 		if (me.isEvolution) {
+			// set the colour theme
+			me.setColourTheme(me.themeRequested);
+
 			// create the colour index
 			me.engine.createColourIndex();
 
@@ -20826,7 +20829,7 @@ This file is part of LifeViewer
 		}
 
 		// copy pattern to center of grid
-		if (pattern && !pattern.tooBig) {
+		if (pattern && !pattern.tooBig && pattern.lifeMap) {
 			//console.time("copyPattern");
 			me.copyPatternTo(pattern);
 			//console.timeEnd("copyPattern");
@@ -20889,11 +20892,11 @@ This file is part of LifeViewer
 			}
 		}
 
+		// setup the colour theme (must happen before createColourIndex)
+		me.setColourTheme(me.themeRequested);
+
 		// create the colour index
 		me.engine.createColourIndex();
-
-		// setup the colour theme
-		me.setColourTheme(me.themeRequested);
 
 		// copy custom colours to engine
 		me.engine.customColours = me.customColours;

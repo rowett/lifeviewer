@@ -485,23 +485,23 @@ This file is part of LifeViewer
 						// cycle render mode
 						if (!(me.engine.multiNumStates > 2 || me.engine.isHROT || me.engine.isPCA || me.engine.isLifeHistory || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree)) {
 							me.engine.cellRenderer += 1;
-							if (me.engine.cellRenderer > LifeConstants.render2) {
-								me.engine.cellRenderer = LifeConstants.renderLongevity;
+							if (me.engine.cellRenderer > LifeConstants.shaderNeighbourCount) {
+								me.engine.cellRenderer = LifeConstants.shaderBasic;
 							}
 							switch (me.engine.cellRenderer) {
-								case LifeConstants.renderLongevity:
+								case LifeConstants.shaderCellAge:
 									title = "Cell Age";
 									break;
 
-								case LifeConstants.renderNeighbourCount:
+								case LifeConstants.shaderNeighbourCount:
 									title = "Neighbour Count";
 									break;
 
-								case LifeConstants.renderRainbow:
+								case LifeConstants.shaderRainbow:
 									title = "Rainbow";
 									break;
 
-								case LifeConstants.render2:
+								case LifeConstants.shaderBasic:
 									title = "Basic";
 									break;
 							}

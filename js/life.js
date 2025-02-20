@@ -25,11 +25,11 @@ This file is part of LifeViewer
 		// how long to show notification before Identify phase 2 begins
 		/** @const {number} */ identifyNotificationDuration : 15,
 
-		// render modes for 2-state Life-like patterns
-		/** @const {number} */ renderLongevity : 0,
-		/** @const {number} */ renderRainbow : 1,
-		/** @const {number} */ renderNeighbourCount : 2,
-		/** @const {number} */ render2 : 3,
+		// cell shader modes for 2-state Life-like patterns
+		/** @const {number} */ shaderBasic : 0,
+		/** @const {number} */ shaderCellAge : 1,
+		/** @const {number} */ shaderRainbow : 2,
+		/** @const {number} */ shaderNeighbourCount : 3,
 
 		// state modes
 		/** @const {number} */ mode2 : 0,
@@ -527,7 +527,7 @@ This file is part of LifeViewer
 		/** @type {Array} */ this.potentialClears = [];
 
 		// 2-state renderer
-		/** @type {number} */ this.cellRenderer = LifeConstants.renderLongevity;
+		/** @type {number} */ this.cellRenderer = LifeConstants.shaderCellAge;
 
 		// whether to draw grid
 		/** @type {boolean} */ this.doDrawGrid = true;
@@ -7889,20 +7889,20 @@ This file is part of LifeViewer
 
 				// set cell
 				switch (this.cellRenderer) {
-					case LifeConstants.renderLongevity:
+					case LifeConstants.shaderCellAge:
 						colourGrid[y][x] = this.aliveStart;
 						break;
 
-					case LifeConstants.renderRainbow:
+					case LifeConstants.shaderRainbow:
 						colourGrid[y][x] = ((x + y) & 127) + 64;
 						break;
 
-					case LifeConstants.renderNeighbourCount:
+					case LifeConstants.shaderNeighbourCount:
 						colourGrid[y][x] = this.aliveStart;
 						this.updateNeighbourCounts(x, y);
 						break;
 
-					case LifeConstants.render2:
+					case LifeConstants.shaderBasic:
 						colourGrid[y][x] = this.aliveStart;
 						break;
 				}
@@ -7976,7 +7976,7 @@ This file is part of LifeViewer
 					colourGrid[y][x] = this.deadStart;
 				}
 
-				if (this.cellRenderer === LifeConstants.renderNeighbourCount) {
+				if (this.cellRenderer === LifeConstants.shaderNeighbourCount) {
 					this.updateNeighbourCounts(x, y);
 				}
 
@@ -8471,10 +8471,10 @@ This file is part of LifeViewer
 					}
 
 					// set cell
-					if (this.cellRenderer === LifeConstants.renderRainbow) {
+					if (this.cellRenderer === LifeConstants.shaderRainbow) {
 						colourGrid[y][x] = ((x + y) & 127) + 64;
 					} else {
-						if (this.cellRenderer === LifeConstants.renderNeighbourCount) {
+						if (this.cellRenderer === LifeConstants.shaderNeighbourCount) {
 							colourGrid[y][x] = this.aliveStart;
 							this.updateNeighbourCounts(x, y);
 						} else {
@@ -8565,7 +8565,7 @@ This file is part of LifeViewer
 						}
 					}
 
-					if (this.cellRenderer === LifeConstants.renderNeighbourCount) {
+					if (this.cellRenderer === LifeConstants.shaderNeighbourCount) {
 						this.updateNeighbourCounts(x, y);
 					}
 
@@ -10276,11 +10276,10 @@ This file is part of LifeViewer
 
 	// reset the colour grid from the grid
 	Life.prototype.resetColourGridBox = function(/** @type {Array<Uint16Array>} */ grid) {
-		switch (this.cellRenderer) {
-			case LifeConstants.renderLongevity:
-				if (Controller.useWASM && Controller.wasmEnableResetColourGrid && this.view.wasmEnabled) {
-					// ignore for PCA, RuleTree and HROT rules
-					if (!(this.isPCA || this.isRuleTree || this.isHROT)) {  // TBD where does this go?
+		if (!(this.isPCA || this.isRuleTree || this.isHROT)) {
+			switch (this.cellRenderer) {
+				case LifeConstants.shaderCellAge:
+					if (Controller.useWASM && Controller.wasmEnableResetColourGrid && this.view.wasmEnabled) {
 						WASM.resetColourGridNormal(
 							grid.whole.byteOffset | 0,
 							grid[0].length | 0,
@@ -10292,24 +10291,24 @@ This file is part of LifeViewer
 							this.zoomBox.rightX | 0,
 							this.zoomBox.topY | 0
 						);
+					} else {
+						this.resetColourGridBoxNormal(grid);
 					}
-				} else {
+					break;
+
+				case LifeConstants.shaderRainbow:
+					this.resetColourGridBoxRainbow(grid);
+					break;
+
+				case LifeConstants.shaderNeighbourCount:
 					this.resetColourGridBoxNormal(grid);
-				}
-				break;
+					this.convertToPensTileNeighbourCount();
+					break;
 
-			case LifeConstants.renderRainbow:
-				this.resetColourGridBoxRainbow(grid);
-				break;
-
-			case LifeConstants.renderNeighbourCount:
-				this.resetColourGridBoxNormal(grid);
-				this.convertToPensTileNeighbourCount();
-				break;
-
-			case LifeConstants.render2:
-				this.resetColourGridBoxNormal(grid);
-				break;
+				case LifeConstants.shaderBasic:
+					this.resetColourGridBoxNormal(grid);
+					break;
+			}
 		}
 	};
 
@@ -10929,21 +10928,27 @@ This file is part of LifeViewer
 
 	// create the colour index
 	Life.prototype.createColourIndex = function() {
-		switch (this.cellRenderer) {
-			case LifeConstants.renderLongevity:
+		var	/** @type {number} */ shader = this.cellRenderer;
+
+		if (shader === LifeConstants.shaderCellAge && !this.themes[this.colourTheme].hasHistory(this.isLifeHistory) && !this.isHROT) {
+			shader = LifeConstants.shaderBasic;
+		}
+
+		switch (shader) {
+			case LifeConstants.shaderCellAge:
 				this.createColourIndexRegular();
 				break;
 
-			case LifeConstants.renderRainbow:
+			case LifeConstants.shaderRainbow:
 				this.createColourIndexRainbow();
 				break;
 
-			case LifeConstants.renderNeighbourCount:
+			case LifeConstants.shaderNeighbourCount:
 				// use the regular index for reset
 				this.createColourIndexRegular();
 				break;
 
-			case LifeConstants.render2:
+			case LifeConstants.shaderBasic:
 				this.createColourIndex2();
 				break;
 		}
@@ -11380,19 +11385,19 @@ This file is part of LifeViewer
 		this.pixelColours.fill(0xffffffff);
 
 		switch (this.cellRenderer) {
-			case LifeConstants.renderLongevity:
+			case LifeConstants.shaderCellAge:
 				this.createPixelColoursNormal(brightness);
 				break;
 
-			case LifeConstants.renderRainbow:
+			case LifeConstants.shaderRainbow:
 				this.createPixelColoursRainbow(brightness);
 				break;
 
-			case LifeConstants.renderNeighbourCount:
+			case LifeConstants.shaderNeighbourCount:
 				this.createPixelColoursNeighbourCount(brightness);
 				break;
 
-			case LifeConstants.render2:
+			case LifeConstants.shaderBasic:
 				// use normal pixel colours
 				this.createPixelColoursNormal(brightness);
 				break;
@@ -30155,13 +30160,19 @@ This file is part of LifeViewer
 
 	// convert life grid region to pens using tiles
 	Life.prototype.convertToPensTile = function() {
-		var	/** @type {number} */ timing = performance.now();
+		var	/** @type {number} */ timing = performance.now(),
+			/** @type {number} */ shader = this.cellRenderer;
 
 		// ignore if rule is none, PCA, RuleTable, Super, Extended or Generations
 		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper || this.isExtended || this.multiNumStates !== -1)) {
-			switch (this.cellRenderer) {
-				case LifeConstants.renderLongevity:
-					// use regular converter
+			// if using the Cell Age shader and the current Theme has no history then use the Basic shader since it is faster
+			if (shader === LifeConstants.shaderCellAge && !this.themes[this.colourTheme].hasHistory(this.isLifeHistory)) {
+				shader = LifeConstants.shaderBasic;
+			}
+
+			switch (shader) {
+				case LifeConstants.shaderCellAge:
+					// use Cell Age converter
 					if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
 						if ((this.counter & 1) !== 0) {
 							WASM.convertToPensAge(
@@ -30195,11 +30206,11 @@ This file is part of LifeViewer
 					}
 					break;
 
-				case LifeConstants.renderRainbow:
+				case LifeConstants.shaderRainbow:
 					this.convertToPensTileRainbow();
 					break;
 
-				case LifeConstants.renderNeighbourCount:
+				case LifeConstants.shaderNeighbourCount:
 					if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
 						if ((this.counter & 1) !== 0) {
 							WASM.convertToPensNeighbours(
@@ -30233,7 +30244,7 @@ This file is part of LifeViewer
 					}
 					break;
 
-				case LifeConstants.render2:
+				case LifeConstants.shaderBasic:
 					if (Controller.useWASM && Controller.wasmEnableConvertToPens && this.view.wasmEnabled) {
 						if ((this.counter & 1) !== 0) {
 							WASM.convertToPens2(
@@ -30277,6 +30288,10 @@ This file is part of LifeViewer
 			if (this.clearGliders) {
 				this.clearEscapingGliders();
 			}
+		}
+
+		if (this.clearGliders && this.isHROT && this.HROT.xrange === 1) {
+			this.clearEscapingGliders();
 		}
 	};
 
@@ -48482,7 +48497,7 @@ This file is part of LifeViewer
 				}
 			}
 		} else {
-			if (this.cellRenderer === LifeConstants.renderRainbow || this.isRuleTree) {  // TBD rainbow
+			if (this.cellRenderer === LifeConstants.shaderRainbow || this.isRuleTree) {  // TBD rainbow
 				result = 1;
 			} else {
 				result = (i * ((this.aliveMax + 1) / this.layers)) | 0;
@@ -51778,7 +51793,7 @@ This file is part of LifeViewer
 					}
 				}
 			} else {
-				if (this.cellRenderer === LifeConstants.renderRainbow) {  // TBD rainbow
+				if (this.cellRenderer === LifeConstants.shaderRainbow) {  // TBD rainbow
 					transparentTarget = 1;
 				} else {
 					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
@@ -52232,7 +52247,7 @@ This file is part of LifeViewer
 					}
 				}
 			} else {
-				if (this.cellRenderer === LifeConstants.renderRainbow) {  // TBD rainbow
+				if (this.cellRenderer === LifeConstants.shaderRainbow) {  // TBD rainbow
 					transparentTarget = 1;
 				} else {
 					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
@@ -52679,7 +52694,7 @@ This file is part of LifeViewer
 					}
 				}
 			} else {
-				if (this.cellRenderer === LifeConstants.renderRainbow) {  // TBD rainbow
+				if (this.cellRenderer === LifeConstants.shaderRainbow) {  // TBD rainbow
 					transparentTarget = 1;
 				} else {
 					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;
@@ -53248,7 +53263,7 @@ This file is part of LifeViewer
 					}
 				}
 			} else {
-				if (this.cellRenderer === LifeConstants.renderRainbow) {  // TBD rainbow
+				if (this.cellRenderer === LifeConstants.shaderRainbow) {  // TBD rainbow
 					transparentTarget = 1;
 				} else {
 					transparentTarget = (i * ((this.aliveMax + 1) / this.layers)) | 0;

@@ -427,6 +427,9 @@ This file is part of LifeViewer
 		// theme
 		/** @const {string} */ themeWord : "THEME",
 
+		// shader
+		/** @const {string} */ shaderWord : "SHADER",
+
 		// rainbow word
 		/** @const {string} */ rainbowWord : "RAINBOW",
 
