@@ -3670,8 +3670,11 @@ void updateGridFromCounts2(
 	const v128_t increment = wasm_u8x16_splat(1);			// increment/iecrement by 1
 
 	// compute the rest of the grid
-	const int32_t alignedStart = (leftX - xrange + 15) & ~15;
+	int32_t alignedStart = (leftX - xrange + 15) & ~15;
 	const int32_t alignedEnd = (rightX + xrange) & ~15;
+	if (alignedStart > rightX + xrange) {
+		alignedStart = rightX + xrange + 1;
+	}
 
 	int32_t leftMost, rightMost;
 
@@ -4018,8 +4021,11 @@ void updateGridFromCountsN(
 	uint32_t deaths = 0;
 
 	// compute the rest of the grid
-	const int32_t alignedStart = (leftX - xrange + 15) & ~15;
+	int32_t alignedStart = (leftX - xrange + 15) & ~15;
 	const int32_t alignedEnd = (rightX + xrange) & ~15;
+	if (alignedStart > rightX + xrange) {
+		alignedStart = rightX + xrange + 1;
+	}
 
 	const v128_t oneVec = wasm_u8x16_splat(1);				// one
 	const v128_t twoVec = wasm_u8x16_splat(2);				// two
@@ -4386,7 +4392,10 @@ void nextGenerationHROTMoore2(
 	const uint32_t colourRowOffset = colourGridWidth - (rightX - leftXp1 + 1);
 
 	uint32_t alignedStart = (leftXp1 + 15) & ~15;
-	uint32_t alignedEnd = rightX & ~15;
+	const uint32_t alignedEnd = rightX & ~15;
+	if (alignedStart > rightX) {
+		alignedStart = rightX + 1;
+	}
 
 	for (uint32_t y = bottomY + 1; y <= topY; y++) {
 		uint16_t *colourTileRow = colourTileHistoryGrid + (y >> 4) * colourTileGridWidth;
@@ -4771,7 +4780,10 @@ void nextGenerationHROTMooreN(
 	const uint32_t colourRowOffset = colourGridWidth - (rightX - leftXp1 + 1);
 
 	uint32_t alignedStart = (leftXp1 + 15) & ~15;
-	uint32_t alignedEnd = rightX & ~15;
+	const uint32_t alignedEnd = rightX & ~15;
+	if (alignedStart > rightX + xrange) {
+		alignedStart = rightX + xrange + 1;
+	}
 
 	for (uint32_t y = bottomY + 1; y <= topY; y++) {
 		uint16_t *colourTileRow = colourTileHistoryGrid + (y >> 4) * colourTileGridWidth;

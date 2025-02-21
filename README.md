@@ -42,10 +42,10 @@ LifeViewer supports several different pattern formats, rules and neighbourhoods,
 Topic|Supported
 -----|---------
 Pattern formats|RLE, Life 1.06, Life 1.05, Cells
-Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate, Margolus, PCA, RuleTable (@TABLE, @TREE and @COLORS), Weighted
+Rules|Wolfram, Totalistic, Generations, Isotropic Non-Totalistic, MAP, Larger than Life, HROT, Alternate, Margolus, PCA, RuleTable, Weighted, [R]History, [R]Investigator, [R]Super
 Bounded Grid|Plane, Torus, Klein, Cross-Surface, Sphere
-States|2 to 256 states, [R]History, Niemiec, Generations
-Neighbourhoods|Moore, Hexagonal, Von Neumann, Triangular, 1D, Circular, Cross, L2, Saltire, Star, Checkerboard, Hash, Tripod, Asterisk, Custom
+States|2 to 256 states
+Neighbourhoods|Moore, Hexagonal, Von Neumann, Triangular, 1D, Circular, Cross, L2, Saltire, Star, Checkerboard, Aligned Checkerboard, Hash, Tripod, Asterisk, Custom, Weighted
 
 ## How do I use it?
 * [Build](#how-do-i-build-it) the plugin file **lv-plugin.js**.

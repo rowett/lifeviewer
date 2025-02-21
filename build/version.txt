@@ -1,3 +1,7 @@
+Build 1251
+- fix KILLGLIDERS with [R]History clearing marked states
+- fixed missing Cell Frequency Map entry
+
 Build 1250
 - added Cell Frequency Map to Identify results
 	- hotkey E will cycle between Identify results, Cell Period Table, Cell Period Map and Cell Frequency Map

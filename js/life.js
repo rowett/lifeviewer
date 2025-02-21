@@ -3449,10 +3449,14 @@ This file is part of LifeViewer
 		}
 
 		// make colours for the unique cell counts
-		periodCols[0] = "#000000";
-		for (y = 0; y < numCols - 1; y += 1) {
+		for (y = 0; y < numCols; y += 1) {
 			hue = Math.floor(360 * (y / numCols));
-			periodCols[y + 1] = "hsl(" + hue + ",100%," + (70 - (y & 3) * 12) + "%)";
+			periodCols[y] = "hsl(" + hue + ",100%," + (70 - (y & 3) * 12) + "%)";
+		}
+
+		// make the first colour black if there are cells with zero count
+		if (uniqueCounts[0] === 0) {
+			periodCols[0] = "#000000";
 		}
 
 		// convert colours into RGB
@@ -4121,7 +4125,7 @@ This file is part of LifeViewer
 		// check if the legend fits in one column
 		testY = legendBorder;
 		y = 0;
-		for (x = uniqueCounts.length - 1; x > 0; x -= 1) {
+		for (x = uniqueCounts.length - 1; x >= 0; x -= 1) {
 			if ((testY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
 				y = 0;
 				legendCols += 1;
@@ -4142,14 +4146,14 @@ This file is part of LifeViewer
 		if (legendCols > 1) {
 			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 8 * displayScale) * legendCols, this.displayHeight - legendBorder * 3 + rowSize);
 		} else {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, (uniqueCounts.length - 1) * rowSize + 3 * displayScale);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, uniqueCounts.length * rowSize + 3 * displayScale);
 		}
 		ctx.globalAlpha = 1;
 
 		// draw each legend entry
 		y = 0;
 
-		for (x = uniqueCounts.length - 1; x > 0; x -= 1) {
+		for (x = uniqueCounts.length - 1; x >= 0; x -= 1) {
 			if ((bottomY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
 				y = 0;
 				leftX += boxSize + maxLabelWidth + 8 * displayScale;
@@ -15990,7 +15994,9 @@ This file is part of LifeViewer
 							if (state === 3 || state === 5) {
 								this.setState(x + xc, y + yc, 4, false);
 							} else {
-								this.setState(x + xc, y + yc, 0, false);
+								if (state & 1) {
+									this.setState(x + xc, y + yc, 0, false);
+								}
 							}
 							this.deaths += 1;
 						}
@@ -20005,7 +20011,7 @@ This file is part of LifeViewer
 					this.doShrink();
 
 					// notify user
-					this.view.menuManager.notification.notify("Cells deleted after hitting boundary", 15, 120, 15, true);
+					this.view.menuManager.notification.notify("Cells killed after hitting boundary", 15, 120, 15, true);
 				}
 			}
 		}
