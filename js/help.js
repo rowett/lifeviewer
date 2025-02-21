@@ -944,9 +944,8 @@ This file is part of LifeViewer
 		if (view.engine.multiNumStates === -1) {
 			y = this.renderHelpLine(view, view.altKeyText + " W", "cycle cell shader", ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "D", "toggle cell period map", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift D", "download cell period map", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "E", "toggle cell period table", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "D", "download cell map", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "E", "cycle identify results display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F8", "toggle cell state display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift F8", "toggle y coordinate direction", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F9", "toggle popup window maximize", ctx, x, y, height, helpLine);

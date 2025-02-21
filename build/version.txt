@@ -1,3 +1,9 @@
+Build 1250
+- added Cell Frequency Map to Identify results
+	- hotkey E will cycle between Identify results, Cell Period Table, Cell Period Map and Cell Frequency Map
+	- hotkey D will download the Cell Period Map or Cell Frequency Map as an image when displayed
+- fixed cells disappearing sometimes when changing Themes
+
 Build 1249
 - fixed HROT/LtL weighted neighbourhoods
 

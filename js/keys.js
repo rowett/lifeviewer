@@ -816,7 +816,7 @@ This file is part of LifeViewer
 				}
 				break;
 
-			// d for show cell period map or toggle states display
+			// d for download cell map or toggle states display
 			case 68:
 				// check for ctrl
 				if (ctrlKey) {
@@ -824,18 +824,8 @@ This file is part of LifeViewer
 					me.statesToggle.current = me.toggleStates([!me.showStates], true, me);
 					me.menuManager.notification.notify("States Display " + (me.showStates ? "On" : "Off"), 15, 80, 15, true);
 				} else {
-					// check for shift
-					if (shiftKey) {
-						me.downloadCellPeriodMap(me);
-					} else {
-						// show cell period map
-						if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
-							if (me.periodMapDisplayed === 2) {
-								me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
-							} else {
-								me.identifyStrictToggle.current = me.toggleCellPeriodMap(2, true, me);
-							}
-						}
+					if (!me.identifySaveCellMapButton.locked) {
+						me.downloadCellMap(me);
 					}
 				}
 				break;
@@ -858,11 +848,11 @@ This file is part of LifeViewer
 						} else {
 							// show cell period table
 							if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
-								if (me.periodMapDisplayed === 1) {
-									me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
-								} else {
-									me.identifyStrictToggle.current = me.toggleCellPeriodMap(1, true, me);
+								me.identifyDisplayMode += 1;
+								if (me.identifyDisplayMode > ViewConstants.identifyDisplayFrequencyMap) {
+									me.identifyDisplayMode = ViewConstants.identifyDisplayResults;
 								}
+								me.identifyStrictToggle.current = me.toggleCellPeriodMap(me.identifyDisplayMode, true, me);
 							}
 						}
 					}

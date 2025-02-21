@@ -463,6 +463,14 @@ This file is part of LifeViewer
 		/** @type {number} */ this.cellBorderSize = 1;
 		/** @type {number} */ this.cellPeriodState6 = 0;
 
+		// canvas for cell frequency map
+		/** @type {HTMLCanvasElement} */ this.cellFrequencyCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
+		this.cellFrequencyCanvas.width = 1;
+		this.cellFrequencyCanvas.height = 1;
+		/** @type {CanvasRenderingContext2D} */ this.cellFrequencyContext = /** @type {!CanvasRenderingContext2D} */ (this.cellFrequencyCanvas.getContext("2d", {"willReadFrequently": true}));
+		/** @type {Array<number>} */ this.cellFrequencyRGB = [];
+		/** @type {Uint32Array} */ this.cellFrequencyCounts = null;
+
 		// identify temporary results
 		/** @type {string} */ this.identifyMessage = "";
 		/** @type {number} */ this.identifyI = 0;
@@ -511,6 +519,9 @@ This file is part of LifeViewer
 
 		// oscillator rotor population
 		/** @type {number} */ this.popRotor = 0;
+
+		// oscillator unique cell counts
+		/** @type {Uint32Array} */ this.uniqueCellCounts = null;
 
 		// identify start and elapsed time
 		this.identifyStartTime = 0;
@@ -3336,6 +3347,321 @@ This file is part of LifeViewer
 		this.createTableRowNumbers(label);
 	};
 
+	// create cell frequency map
+	Life.prototype.createCellFrequencyMap = function(/** @type {Uint32Array} */ cellCounts) {
+		var	/** @type {number} */ numCols = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ row = 0,
+			/** @type {number} */ row2 = 0,
+			/** @type {number} */ p = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ hue = 0,
+			/** @type {number} */ red = 0,
+			/** @type {number} */ green = 0,
+			/** @type {number} */ blue = 0,
+			/** @type {string} */ rgbString = "",
+			/** @type {number} */ pixCol = 0,
+			/** @type {number} */ gridCol = 0xff505050,
+			/** @type {number} */ boundedCol = 0xff808080,
+			/** @type {number} */ cellBorderSize = this.cellBorderSize,
+			/** @type {number} */ gridBorderSize = 0,
+			/** @type {number} */ cellSize = 0,
+			/** @type {number} */ rowWidth = 0,
+			/** @type {number} */ colHeight = 0,
+			/** @type {Array} */ periodCols = [],
+			/** @type {boolean} */ drawGrid = false,
+			/** @type {ImageData} */ data = null,
+			/** @type {Uint32Array} */ data32 = null,
+			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
+			/** @type {number} */ legendWidth = 50,
+			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
+			/** @type {number} */ height = this.displayHeight - (displayScale * 90),
+			/** @type {number} */ offset = 0,
+			/** @type {number} */ vy = 0,
+			/** @type {number} */ vo = 0,
+			/** @type {number} */ sx = 0,
+			/** @type {number} */ ex = 0,
+			/** @type {number} */ inc = 0,
+			/** @type {number} */ xPos = 0,
+			/** @type {Uint32Array} */ sortedCounts = new Uint32Array(cellCounts),
+			/** @type {Array<number>} */ uniqueCounts = [],
+			/** @type {number} */ cellPeriodWidth = this.origCellPeriodWidth;
+
+		// adjust the colours based on endian
+		if (!this.littleEndian) {
+			gridCol = 0x505050ff;
+			boundedCol = 0x808080ff;
+		}
+
+		// check for hex cells
+		if (this.isHex) {
+			cellPeriodWidth += Math.ceil(this.cellPeriodHeight / 2);
+		}
+
+		// default to large cell size
+		this.cellPeriodCellSize = 8;
+		cellSize = this.cellPeriodCellSize;
+
+		// determine the image scale to select cell borders
+		x = width / ((cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
+		y = height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize);
+		if (x > y) {
+			s = y;
+		} else {
+			s = x;
+		}
+
+		// make cells integer width and enable grid if scale > 1
+		if (s >= 1) {
+			s |= 0;
+			drawGrid = true;
+
+			// add an extra line at the right and the bottom to complete the grid
+			gridBorderSize = 1;
+		} else {
+			// switch to smaller cell size
+			this.cellPeriodCellSize = 1;
+			cellSize = 1;
+		}
+
+		// get the unique cell counts from the sorted cell counts list
+		sortedCounts.sort();
+		x = sortedCounts[0];
+		for (i = 1; i < sortedCounts.length; i += 1) {
+			y = sortedCounts[i];
+			if (x !== y) {
+				uniqueCounts[uniqueCounts.length] = x;
+				x = y;
+			}
+		}
+		uniqueCounts[uniqueCounts.length] = y;
+		numCols = uniqueCounts.length;
+
+		// save the unique cell counts
+		this.uniqueCellCounts = new Uint32Array(uniqueCounts);
+
+		var index = {};
+		for (i = 0; i < uniqueCounts.length; i += 1) {
+			index[uniqueCounts[i]] = i;
+		}
+
+		// make colours for the unique cell counts
+		periodCols[0] = "#000000";
+		for (y = 0; y < numCols - 1; y += 1) {
+			hue = Math.floor(360 * (y / numCols));
+			periodCols[y + 1] = "hsl(" + hue + ",100%," + (70 - (y & 3) * 12) + "%)";
+		}
+
+		// convert colours into RGB
+		x = 0;
+		for (x = 0; x < numCols; x += 1) {
+			this.cellFrequencyContext.fillStyle = periodCols[x];
+			rgbString = /** @type {!string} */ (this.cellFrequencyContext.fillStyle);
+			red = parseInt(rgbString.substring(1, 3), 16);
+			green = parseInt(rgbString.substring(3, 5), 16);
+			blue = parseInt(rgbString.substring(5, 7), 16);
+			if (this.littleEndian) {
+				this.cellFrequencyRGB[x] = (255 << 24) | (blue << 16) | (green << 8) | red;
+			} else {
+				this.cellFrequencyRGB[x] = (red << 24) | (green << 16) | (blue << 8) | 255;
+			}
+		}
+
+		// resize the image and canvas to fix the period map with "cellSize" cells
+		rowWidth = cellSize * (cellPeriodWidth + cellBorderSize + cellBorderSize) + gridBorderSize;
+		if (this.isHex) {
+			if ((this.cellPeriodHeight & 1) === 0) {
+				rowWidth += cellSize / 2;
+			}
+		}
+		rowWidth |= 0;
+		colHeight = cellSize * (this.cellPeriodHeight + cellBorderSize + cellBorderSize) + gridBorderSize;
+		this.cellFrequencyCanvas.width = rowWidth;
+		this.cellFrequencyCanvas.height = colHeight;
+
+		// clear the canvas
+		this.cellFrequencyContext.fillStyle = "rgba(0,0,0,0)"; //"black";
+		this.cellFrequencyContext.fillRect(0, 0, this.cellFrequencyCanvas.width, this.cellFrequencyCanvas.height);
+
+		// get the pixel data
+		data = this.cellFrequencyContext.getImageData(0, 0, this.cellFrequencyCanvas.width, this.cellFrequencyCanvas.height);
+		data32 = new Uint32Array(data.data.buffer);
+
+		// check for hex grid
+		if (this.isHex) {
+			// set the offset for drawing
+			inc = -cellSize / 2;
+			offset = (this.cellPeriodHeight >> 1) * cellSize - inc;
+			if ((this.cellPeriodHeight & 1) === 0) {
+				offset += inc;
+			}
+		}
+
+		// draw the cells
+		for (y = 0; y < this.cellPeriodHeight; y += 1) {
+			for (x = 0; x < this.origCellPeriodWidth; x += 1) {
+				p = cellCounts[y * this.origCellPeriodWidth + x];
+				pixCol = this.cellFrequencyRGB[index[p]];
+				for (cy = 0; cy < cellSize; cy += 1) {
+					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth + ((x + cellBorderSize) * cellSize) + offset;
+					for (cx = 0; cx < cellSize; cx += 1) {
+						data32[(row + cx) | 0] = pixCol;
+					}
+				}
+			}
+			offset += inc;
+		}
+
+		// draw the bounded grid if required
+		if (this.boundedGridType !== -1) {
+			// use bounded grid colour
+			pixCol = boundedCol;
+		} else  {
+			// draw border of black cells
+			pixCol = 0xff000000;
+		}
+
+		// check for hex grid
+		if (this.isHex) {
+			// set the offset for drawing
+			inc = -cellSize / 2;
+			offset = (this.cellPeriodHeight >> 1) * cellSize - inc;
+			if ((this.cellPeriodHeight & 1) === 0) {
+				offset += inc;
+			}
+		}
+
+		// draw the bounded grid or border cells
+		y = 0;
+		offset -= inc;
+		for (cy = 0; cy < cellSize; cy += 1) {
+			// draw top row
+			row = cy * rowWidth + offset;
+			for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
+				data32[row + x] = pixCol;
+			}
+
+			// draw bottom row
+			row += (this.cellPeriodHeight + 1) * cellSize * rowWidth - offset;
+			for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
+				data32[row + x] = pixCol;
+			}
+		}
+		offset += inc;
+
+		for (y = 0; y < this.cellPeriodHeight; y += 1) {
+			for (cy = 0; cy < cellSize; cy += 1) {
+				row = ((y + cellBorderSize) * cellSize + cy) * rowWidth + offset;
+				row2 = row + cellSize * (this.origCellPeriodWidth + 1);
+				for (cx = 0; cx < cellSize; cx += 1) {
+					data32[row + cx] = pixCol;
+					data32[row2 + cx] = pixCol;
+				}
+			}
+			offset += inc;
+		}
+
+		// draw the grid if required
+		if (drawGrid) {
+			// check for hex grid
+			if (this.isHex) {
+				// set the offset for drawing
+				offset = (this.cellPeriodHeight >> 1) * cellSize - inc + cellSize;
+				if ((this.cellPeriodHeight & 1) === 0) {
+					offset += inc;
+				}
+			}
+
+			// draw the grid
+			for (y = -1; y <= this.cellPeriodHeight + 1; y += 1) {
+				offset += inc;
+				row = ((y + cellBorderSize) * cellSize) * rowWidth;
+				for (x = offset; x < (this.origCellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1 + offset; x += 1) {
+					if (x >= 0) {
+						data32[row + x] = gridCol;
+					}
+				}
+				if (this.isHex) {
+					for (cx = 0; cx < -inc; cx += 1) {
+						if (x + cx < rowWidth) {
+							data32[row + x + cx] = gridCol;
+						}
+					}
+				}
+			}
+
+			sx = -1;
+			ex = this.origCellPeriodWidth + 1;
+			if (this.isHex) {
+				offset = (this.cellPeriodHeight >> 1) * cellSize - inc;
+				sx += 1;
+				ex += 1;
+				if ((this.cellPeriodHeight & 1) === 0) {
+					offset += inc;
+				}
+			}
+
+			for (x = sx; x <= ex; x += 1) {
+				vy = 0;
+				vo = offset;
+				for (y = 0; y < (this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize; y += 1) {
+					if ((vy % cellSize) === 0) {
+						vo +=inc;
+					}
+					vy += 1;
+
+					xPos = ((x + cellBorderSize) * cellSize) + vo;
+					if (xPos >= 0 && xPos < this.cellPeriodCanvas.width) {
+						data32[(y * rowWidth) + xPos] = gridCol;
+					}
+				}
+			}
+		} else {
+			// draw a border
+			if (this.isHex) {
+				offset = colHeight >> 1;
+				inc = -0.5;
+			}
+			ex = 0;
+
+			row = rowWidth * (colHeight - 1);
+			for (x = 0; x < rowWidth - offset; x += 1) {
+				data32[x + offset] = gridCol;
+				data32[x + row] = gridCol;
+			}
+
+			for (y = 0; y < colHeight; y += 1) {
+				data32[y * rowWidth + (offset | 0)] = gridCol;
+				data32[y * rowWidth + rowWidth - 1 + (ex | 0)] = gridCol;
+				offset += inc;
+				ex += inc;
+			}
+		}
+
+		for (x = 0; x < numCols; x += 1) {
+			pixCol = this.cellFrequencyRGB[x];
+			if (this.littleEndian) {
+				red = pixCol & 255;
+				green = (pixCol >> 8) & 255;
+				blue = (pixCol >> 16) & 255;
+			} else {
+				red = pixCol >> 24;
+				green = (pixCol >> 16) & 255;
+				blue = (pixCol >> 8) & 255;
+			}
+			this.cellFrequencyRGB[x] = (red << 16) | (green << 8) | blue;
+		}
+
+		// update the image
+		this.cellFrequencyContext.putImageData(data, 0, 0);
+
+		// save the cell period size
+		this.cellPeriodWidth = cellPeriodWidth;
+	};
+
 	// draw a right justified string
 	/** @returns {number} */
 	Life.prototype.drawRightString = function(/** @type {string} */ txt, /** @type {number} */ fieldWidth, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ offset) {
@@ -3649,6 +3975,8 @@ This file is part of LifeViewer
 
 		if (legendCols > 1) {
 			bottomY = legendBorder;
+		} else {
+			bottomY = (this.displayHeight - (testY + (y - 1) * rowSize + 2 + (1 * displayScale))) >> 1;
 		}
 
 		// draw the legend box
@@ -3694,7 +4022,7 @@ This file is part of LifeViewer
 			if (p > 0) {
 				if ((bottomY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
 					y = 0;
-					leftX += boxSize + maxLabelWidth + 10 * displayScale;
+					leftX += boxSize + maxLabelWidth + 8 * displayScale;
 				}
 
 				// draw colour
@@ -3711,6 +4039,135 @@ This file is part of LifeViewer
 
 				y += 1;
 			}
+		}
+	};
+
+	// draw cell frequency map
+	Life.prototype.drawCellFrequencyMap = function(/** @type {MenuItem} */ label) {
+		var	/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ p = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
+			/** @type {number} */ legendWidth = 50 * displayScale,
+			/** @type {number} */ rowSize = 15 * displayScale,
+			/** @type {number} */ colSize = 16 * displayScale,
+			/** @type {number} */ boxSize = (rowSize * 0.7) | 0,
+			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
+			/** @type {number} */ height = this.displayHeight - (displayScale * 90),
+			/** @type {number} */ cellSize = this.cellPeriodCellSize,
+			/** @type {number} */ cellBorderSize = this.cellBorderSize,
+			/** @type {number} */ leftX = 0,
+			/** @type {number} */ bottomY = 0,
+			/** @type {number} */ testY = 0,
+			/** @type {number} */ legendCols = 1,
+			/** @type {number} */ alpha = label.bgAlpha,
+			/** @type {string} */ fgCol = label.fgCol,
+			/** @type {string} */ bgCol = label.bgCol,
+			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
+			/** @type {number} */ maxLabelWidth = 0,
+			/** @type {number} */ legendBorder = displayScale * 40,
+			/** @type {Uint32Array} */ uniqueCounts = this.uniqueCellCounts,
+			/** @type {number} */ yFactor = this.getYFactor();
+
+		// scale the image to fit
+		x = width / ((this.cellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize);
+		y = height / ((this.cellPeriodHeight + cellBorderSize + cellBorderSize) * cellSize);
+
+		if (x > y) {
+			s = y;
+		} else {
+			s = x;
+		}
+
+		// make cells integer width if scale >= 1
+		if (s >= 1) {
+			s |= 0;
+		}
+
+		// recompute size based on scale factor
+		x = this.cellFrequencyCanvas.width * s;
+		y = this.cellFrequencyCanvas.height * s;
+
+		// render the map centered on the display
+		ctx.save();
+		leftX = ((this.displayWidth - x) / 2);
+		bottomY = ((this.displayHeight - y) / 2);
+		ctx.translate(this.displayWidth >> 1, this.displayHeight >> 1);
+		if (yFactor > 1 && y * yFactor > height - 160) {
+			ctx.scale(s / yFactor, s);
+		} else {
+			ctx.scale(s, s * yFactor);
+		}
+
+		// use image smoothing for scales below 1 pixel per cell
+		if (s < 1 || s * yFactor <= 1 || s / yFactor < 1) {
+			ctx.imageSmoothingEnabled = true;
+		} else {
+			ctx.imageSmoothingEnabled = false;
+		}
+		ctx.drawImage(this.cellFrequencyCanvas, -(this.cellFrequencyCanvas.width >> 1), -(this.cellFrequencyCanvas.height >> 1));
+		ctx.imageSmoothingEnabled = false;
+		ctx.restore();
+
+		// draw the legend
+		leftX = 55 * displayScale;
+		bottomY = 180 * displayScale;
+		ctx.font = ((11 * displayScale) | 0) + "px Arial";
+
+		// set the box width to the longest unique cell count value
+		maxLabelWidth = ctx.measureText(String(uniqueCounts[uniqueCounts.length - 1]) + " ").width;
+
+		// check if the legend fits in one column
+		testY = legendBorder;
+		y = 0;
+		for (x = uniqueCounts.length - 1; x > 0; x -= 1) {
+			if ((testY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
+				y = 0;
+				legendCols += 1;
+			}
+			y += 1;
+		}
+
+		if (legendCols > 1) {
+			bottomY = legendBorder;
+		} else {
+			bottomY = (this.displayHeight - (testY + (y - 1) * rowSize + 2 + (1 * displayScale))) >> 1;
+		}
+
+		// draw the legend box
+		ctx.globalAlpha = alpha;
+		ctx.fillStyle = bgCol;
+
+		if (legendCols > 1) {
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 8 * displayScale) * legendCols, this.displayHeight - legendBorder * 3 + rowSize);
+		} else {
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, (uniqueCounts.length - 1) * rowSize + 3 * displayScale);
+		}
+		ctx.globalAlpha = 1;
+
+		// draw each legend entry
+		y = 0;
+
+		for (x = uniqueCounts.length - 1; x > 0; x -= 1) {
+			if ((bottomY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
+				y = 0;
+				leftX += boxSize + maxLabelWidth + 8 * displayScale;
+			}
+
+			// draw colour
+			ctx.fillStyle = this.view.menuManager.bgCol;
+			ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2 + (1 * displayScale), boxSize, boxSize);
+			ctx.fillStyle = "#" + ("000000" + this.cellFrequencyRGB[x].toString(16)).slice(-6);
+			ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize + (1 * displayScale), boxSize, boxSize);
+
+			// draw period
+			ctx.fillStyle = bgCol;
+			ctx.fillText(String(uniqueCounts[x]), leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+			ctx.fillStyle = fgCol;
+			ctx.fillText(String(uniqueCounts[x]), leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+
+			y += 1;
 		}
 	};
 
@@ -5298,9 +5755,11 @@ This file is part of LifeViewer
 			this.cellPeriodWidth = boxWidth;
 			this.origCellPeriodWidth = boxWidth;
 			this.cellPeriodHeight = boxHeight;
+			this.cellFrequencyCounts = cellCounts;
 
 			// create the cell period map
 			this.createCellPeriodMap(view.identifyBannerLabel, view);
+			this.createCellFrequencyMap(cellCounts);
 		} else {
 			this.popSubPeriod = null;
 		}
@@ -10850,6 +11309,7 @@ This file is part of LifeViewer
 
 		// save the theme
 		this.colourTheme = theme;
+		this.createColourIndex();
 
 		// set current point to the target
 		this.aliveColCurrent.set(this.aliveColTarget);
