@@ -4136,7 +4136,7 @@ This file is part of LifeViewer
 					extra = 1;
 				}
 				// 4 bits per digit plus zero entry
-				list = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, (numDigits << 2) + 1 + extra, allocName, false));
+				list = /** @type {!Uint8Array} */ (allocator.allocate(Type.Uint8, (numDigits << 2) + 1 + extra, allocName, Controller.useWASM));
 
 				// populate array
 				j = 0;
@@ -4150,13 +4150,13 @@ This file is part of LifeViewer
 				while (i >= 0) {
 					hexValue = this.hexCharacters.indexOf(rule[this.index - numDigits + i]);
 					i -= 1;
-					list[j] = hexValue & 1;
+					list[j] = (hexValue & 1) * 255;
 					j += 1;
-					list[j] = (hexValue >> 1) & 1;
+					list[j] = ((hexValue >> 1) & 1) * 255;
 					j += 1;
-					list[j] = (hexValue >> 2) & 1;
+					list[j] = ((hexValue >> 2) & 1) * 255;
 					j += 1;
-					list[j] = (hexValue >> 3) & 1;
+					list[j] = ((hexValue >> 3) & 1) * 255;
 					j += 1;
 				}
 

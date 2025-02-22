@@ -1,3 +1,10 @@
+Build 1253
+- disable [[ AUTOIDENTIFY ]] in [[ THUMBLAUNCH ]] viewers
+
+Build 1252
+- fixed decoder for lifelib HROT hex format rules
+- [[ NOREPORT ]] will now suppress "Cells killed after hitting boundary" notification
+
 Build 1251
 - fix KILLGLIDERS with [R]History clearing marked states
 - fixed missing Cell Frequency Map entry

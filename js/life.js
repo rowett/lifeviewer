@@ -20011,7 +20011,9 @@ This file is part of LifeViewer
 					this.doShrink();
 
 					// notify user
-					this.view.menuManager.notification.notify("Cells killed after hitting boundary", 15, 120, 15, true);
+					if (this.view.genNotifications) {
+						this.view.menuManager.notification.notify("Cells killed after hitting boundary", 15, 120, 15, true);
+					}
 				}
 			}
 		}

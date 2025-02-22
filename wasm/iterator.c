@@ -748,7 +748,7 @@ void convertToPensAge(
 	const v128_t penMaxSet = wasm_u8x16_splat(127);			// maximum pen color for set cells after increment
 	const v128_t penBaseClear = wasm_u8x16_splat(63);		// base pen color for newly cleared cells
 	const v128_t penMinClear = wasm_u8x16_splat(1);			// minimum pen color for cleared cells after decrement
-	const v128_t increment = wasm_u8x16_splat(1);			// increment/iecrement by 1
+	const v128_t increment = wasm_u8x16_splat(1);			// increment/decrement by 1
 	const v128_t mask = wasm_u64x2_splat(0x0102040810204080);	// mask to isolate cell bits
 
 	// find each occupied tile

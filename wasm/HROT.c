@@ -3667,7 +3667,7 @@ void updateGridFromCounts2(
 	const v128_t penMaxSet = wasm_u8x16_splat(127);			// maximum pen color for set cells after increment
 	const v128_t penBaseClear = wasm_u8x16_splat(63);		// base pen color for newly cleared cells
 	const v128_t penMinClear = wasm_u8x16_splat(1);			// minimum pen color for cleared cells after decrement
-	const v128_t increment = wasm_u8x16_splat(1);			// increment/iecrement by 1
+	const v128_t increment = wasm_u8x16_splat(1);			// increment/decrement by 1
 
 	// compute the rest of the grid
 	int32_t alignedStart = (leftX - xrange + 15) & ~15;
@@ -4383,7 +4383,7 @@ void nextGenerationHROTMoore2(
 	const v128_t penMaxSet = wasm_u8x16_splat(127);			// maximum pen color for set cells after increment
 	const v128_t penBaseClear = wasm_u8x16_splat(63);		// base pen color for newly cleared cells
 	const v128_t penMinClear = wasm_u8x16_splat(1);			// minimum pen color for cleared cells after decrement
-	const v128_t increment = wasm_u8x16_splat(1);			// increment/iecrement by 1
+	const v128_t increment = wasm_u8x16_splat(1);			// increment/decrement by 1
 
 	// compute the rest of the grid
 	int32_t *countRowYpr = counts + (bottomY + 1 + yrange) * countsWidth;

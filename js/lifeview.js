@@ -326,9 +326,6 @@ This file is part of LifeViewer
 		/** @const {number} */ perfMin : 0,
 		/** @const {number} */ perfMax : 16,
 
-		// whether colour theme has colour history
-		/** @const {boolean} */ colourHistory : false,
-
 		// error notification duration in ms
 		/** @const {number} */ errorDuration : 1800,
 
@@ -336,7 +333,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1251,
+		/** @const {number} */ versionBuild : 1253,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -20862,7 +20859,9 @@ This file is part of LifeViewer
 		}
 
 		// add the neighbourhood
-		me.ruleLabel.toolTip += "\n" + me.getNeighbourhoodName();
+		if (me.patternRuleName !== "") {
+			me.ruleLabel.toolTip += "\n" + me.getNeighbourhoodName();
+		}
 
 		// setup oscillator search
 		me.resultsDisplayed = false;
@@ -21255,7 +21254,7 @@ This file is part of LifeViewer
 		}
 
 		// check whether autoidentify required
-		if (me.autoIdentify) {
+		if (me.autoIdentify && !me.thumbLaunch) {
 			me.identifyPressed(me);
 		}
 
