@@ -468,6 +468,7 @@ This file is part of LifeViewer
 		this.cellFrequencyCanvas.width = 1;
 		this.cellFrequencyCanvas.height = 1;
 		/** @type {CanvasRenderingContext2D} */ this.cellFrequencyContext = /** @type {!CanvasRenderingContext2D} */ (this.cellFrequencyCanvas.getContext("2d", {"willReadFrequently": true}));
+		/** @type {number} */ this.cellFrequencyNumCols = 0;
 		/** @type {Array<number>} */ this.cellFrequencyRGB = [];
 		/** @type {Uint32Array} */ this.cellFrequencyCounts = null;
 
@@ -522,6 +523,12 @@ This file is part of LifeViewer
 
 		// oscillator unique cell counts
 		/** @type {Uint32Array} */ this.uniqueCellCounts = null;
+
+		// oscillator unique cell counts count (count of number of cells with each unique count)
+		/** @type {Uint32Array} */ this.uniqueCellCountsCounts = null;
+
+		// total number of cells
+		/** @type {number} */ this.cellCountsTotal = 0;
 
 		// identify start and elapsed time
 		this.identifyStartTime = 0;
@@ -3013,7 +3020,7 @@ This file is part of LifeViewer
 	};
 
 	// create cell period map
-	Life.prototype.createCellPeriodMap = function(/** @type {MenuItem} */ label, /** @type {View} */ view) {
+	Life.prototype.createCellPeriodMap = function(/** @type {View} */ view) {
 		var	/** @type {number} */ numCols = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -3344,11 +3351,10 @@ This file is part of LifeViewer
 
 		// create the table row values for page up and page down
 		view.setResultsPosition();
-		this.createTableRowNumbers(label);
 	};
 
 	// create cell frequency map
-	Life.prototype.createCellFrequencyMap = function(/** @type {Uint32Array} */ cellCounts) {
+	Life.prototype.createCellFrequencyMap = function(/** @type {Uint32Array} */ cellCounts, /** @type {number} */ period) {
 		var	/** @type {number} */ numCols = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
@@ -3386,6 +3392,7 @@ This file is part of LifeViewer
 			/** @type {number} */ ex = 0,
 			/** @type {number} */ inc = 0,
 			/** @type {number} */ xPos = 0,
+			/** @type {Object} */ index = {},
 			/** @type {Uint32Array} */ sortedCounts = new Uint32Array(cellCounts),
 			/** @type {Array<number>} */ uniqueCounts = [],
 			/** @type {number} */ cellPeriodWidth = this.origCellPeriodWidth;
@@ -3443,25 +3450,34 @@ This file is part of LifeViewer
 		// save the unique cell counts
 		this.uniqueCellCounts = new Uint32Array(uniqueCounts);
 
-		var index = {};
-		for (i = 0; i < uniqueCounts.length; i += 1) {
-			index[uniqueCounts[i]] = i;
+		x = 0;
+		if (uniqueCounts[x] === 0) {
+			periodCols[x] = "#000000";
+			x += 1;
+		}
+
+		y = uniqueCounts.length - 1;
+		if (uniqueCounts[y] === period) {
+			periodCols[y] = "rgb(168, 168, 168)";
+			y -= 1;
 		}
 
 		// make colours for the unique cell counts
-		for (y = 0; y < numCols; y += 1) {
-			hue = Math.floor(360 * (y / numCols));
-			periodCols[y] = "hsl(" + hue + ",100%," + (70 - (y & 3) * 12) + "%)";
+		for (i = x; i <= y; i += 1) {
+			hue = Math.floor(360 * ((i - x) / (y - x + 1)));
+			periodCols[i] = "hsl(" + hue + ",100%," + (70 - ((i - x) & 3) * 12) + "%)";
 		}
 
-		// make the first colour black if there are cells with zero count
-		if (uniqueCounts[0] === 0) {
-			periodCols[0] = "#000000";
+		// create a colour for state 6 cells if present
+		if (this.cellPeriodState6) {
+			periodCols[-1] = "rgb(96,96,96)";
+			x = -1;
+		} else {
+			x = 0;
 		}
 
 		// convert colours into RGB
-		x = 0;
-		for (x = 0; x < numCols; x += 1) {
+		while (x < numCols) {
 			this.cellFrequencyContext.fillStyle = periodCols[x];
 			rgbString = /** @type {!string} */ (this.cellFrequencyContext.fillStyle);
 			red = parseInt(rgbString.substring(1, 3), 16);
@@ -3472,8 +3488,29 @@ This file is part of LifeViewer
 			} else {
 				this.cellFrequencyRGB[x] = (red << 24) | (green << 16) | (blue << 8) | 255;
 			}
+
+			x += 1;
 		}
 
+		// create the reverse lookup index
+		for (i = 0; i < uniqueCounts.length; i += 1) {
+			index[uniqueCounts[i]] = i;
+		}
+
+		// allocate the unique cell counts counts
+		this.uniqueCellCountsCounts = new Uint32Array(uniqueCounts.length);
+
+		// create the cell counts counts data
+		for (i = 0; i < cellCounts.length; i += 1) {
+			this.uniqueCellCountsCounts[index[cellCounts[i]]] += 1;
+		}
+
+		x = 0;
+		for (i = 0; i < this.uniqueCellCountsCounts.length; i += 1) {
+			x += this.uniqueCellCountsCounts[i];
+		}
+		this.cellCountsTotal = x;
+		// make the first colour black if there are cells with zero count
 		// resize the image and canvas to fix the period map with "cellSize" cells
 		rowWidth = cellSize * (cellPeriodWidth + cellBorderSize + cellBorderSize) + gridBorderSize;
 		if (this.isHex) {
@@ -3507,8 +3544,13 @@ This file is part of LifeViewer
 		// draw the cells
 		for (y = 0; y < this.cellPeriodHeight; y += 1) {
 			for (x = 0; x < this.origCellPeriodWidth; x += 1) {
-				p = cellCounts[y * this.origCellPeriodWidth + x];
-				pixCol = this.cellFrequencyRGB[index[p]];
+				if (this.cellPeriodState6 && this.cellPeriod[y * this.origCellPeriodWidth + x] === -1){
+					pixCol = this.cellFrequencyRGB[-1];
+				} else {
+					p = cellCounts[y * this.origCellPeriodWidth + x];
+					pixCol = this.cellFrequencyRGB[index[p]];
+				}
+
 				for (cy = 0; cy < cellSize; cy += 1) {
 					row = ((y + cellBorderSize) * cellSize + cy) * rowWidth + ((x + cellBorderSize) * cellSize) + offset;
 					for (cx = 0; cx < cellSize; cx += 1) {
@@ -3645,7 +3687,14 @@ This file is part of LifeViewer
 			}
 		}
 
-		for (x = 0; x < numCols; x += 1) {
+		// convert RGB array
+		if (this.cellPeriodState6) {
+			x = -1;
+		} else {
+			x = 0;
+		}
+
+		while (x < numCols) {
 			pixCol = this.cellFrequencyRGB[x];
 			if (this.littleEndian) {
 				red = pixCol & 255;
@@ -3657,6 +3706,8 @@ This file is part of LifeViewer
 				blue = (pixCol >> 8) & 255;
 			}
 			this.cellFrequencyRGB[x] = (red << 16) | (green << 8) | blue;
+			
+			x += 1;
 		}
 
 		// update the image
@@ -3664,6 +3715,7 @@ This file is part of LifeViewer
 
 		// save the cell period size
 		this.cellPeriodWidth = cellPeriodWidth;
+		this.cellFrequencyNumCols = numCols;
 	};
 
 	// draw a right justified string
@@ -3683,7 +3735,7 @@ This file is part of LifeViewer
 	};
 
 	// create period table start and end row numbers
-	Life.prototype.createTableRowNumbers = function(/** @type {MenuItem} */ label) {
+	Life.prototype.createPeriodTableRowNumbers = function(/** @type {MenuItem} */ label) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
 			/** @type {number} */ rowHeight = 24 * displayScale,
@@ -3708,24 +3760,53 @@ This file is part of LifeViewer
 		} else {
 			this.tableMaxRow = 0;
 		}
+
+		// go to top
+		this.tableStartRow = 0;
 	};
 
-	// home on the cell period table
-	Life.prototype.cellPeriodTableHome = function() {
+	// create frequency table start and end row numbers
+	Life.prototype.createFrequencyTableRowNumbers = function(/** @type {MenuItem} */ label) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
+			/** @type {number} */ rowHeight = 24 * displayScale,
+			/** @type {number} */ startY = label.relY + label.height,
+			/** @type {number} */ numRows = 0,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ y = startY;
+
+		// get number of table rows
+		numRows = this.uniqueCellCounts.length;
+
+		// see if the table would be off the bottom of the display (add 1 for the column headings)
+		y = startY + (rowHeight >> 1) + ((numRows + 1) * rowHeight);
+
+		if (y > this.displayHeight - 80 * displayScale) {
+			this.tableMaxRow = numRows - 1;
+		} else {
+			this.tableMaxRow = 0;
+		}
+
+		// go to top
+		this.tableStartRow = 0;
+	};
+
+	// home on the cell table
+	Life.prototype.cellTableHome = function() {
 		if (this.tableMaxRow !== 0) {
 			this.tableStartRow = 0;
 		}
 	};
 
-	// end of the cell period table
-	Life.prototype.cellPeriodTableEnd = function() {
+	// end of the cell table
+	Life.prototype.cellTableEnd = function() {
 		if (this.tableMaxRow !== 0) {
-			this.tableStartRow = this.tableMaxRow;
+			this.tableStartRow = this.tableMaxRow - this.tablePageSize;
 		}
 	};
 
-	// page up on the cell period table
-	Life.prototype.cellPeriodTablePageUp = function() {
+	// page up on the cell table
+	Life.prototype.cellTablePageUp = function() {
 		if (this.tableStartRow > 0) {
 			this.tableStartRow -= this.tablePageSize;
 			if (this.tableStartRow < 0) {
@@ -3734,12 +3815,12 @@ This file is part of LifeViewer
 		}
 	};
 
-	// page up on the cell period table
-	Life.prototype.cellPeriodTablePageDown = function() {
-		if (this.tableStartRow < this.tableMaxRow) {
+	// page up on the cell table
+	Life.prototype.cellTablePageDown = function() {
+		if (this.tableStartRow < this.tableMaxRow - this.tablePageSize) {
 			this.tableStartRow += this.tablePageSize;
-			if (this.tableStartRow > this.tableMaxRow) {
-				this.tableStartRow = this.tableMaxRow;
+			if (this.tableStartRow > this.tableMaxRow - this.tablePageSize) {
+				this.tableStartRow = this.tableMaxRow - this.tablePageSize;
 			}
 		}
 	};
@@ -3846,6 +3927,107 @@ This file is part of LifeViewer
 					ctx.fillStyle = this.view.menuManager.bgCol;
 					ctx.fillRect(leftX + (boxSize >> 1) + 2, y + offset + 2, boxSize, boxSize);
 					ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[i].toString(16)).slice(-6);
+					ctx.fillRect(leftX + (boxSize >> 1), y + offset, boxSize, boxSize);
+					y += rowHeight;
+				}
+				itemNum += 1;
+			}
+		}
+
+		// set the page size
+		if (this.tableStartRow === 0) {
+			this.tablePageSize = maxItem - 1;
+		}
+	};
+
+	// draw cell frequency table under and in the style of the supplied label
+	Life.prototype.drawCellFrequencyTable = function(/** @type {MenuItem} */ label) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ j = 0,
+			/** @type {number} */ itemNum = 0,
+			/** @type {number} */ maxItem = 0,
+			/** @type {number} */ value = 0,
+			/** @type {number} */ offset = 2,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
+			/** @type {number} */ startY = label.y + label.height,
+			/** @type {number} */ width = label.width,
+			/** @type {number} */ alpha = label.bgAlpha,
+			/** @type {string} */ bgCol = label.bgCol,
+			/** @type {string} */ fgCol = label.fgCol,
+			/** @type {number} */ y = startY,
+			/** @type {number} */ rowHeight = 24 * displayScale,
+			/** @type {number} */ boxSize = 16 * displayScale,
+			/** @type {number} */ numCols = this.cellFrequencyNumCols,
+			/** @type {number} */ fieldWidth = (width >> 2) - 1,
+			/** @type {number} */ leftX = (this.displayWidth - width) >> 1,
+			/** @type {CanvasRenderingContext2D} */ ctx = this.context;
+
+		// draw background
+		ctx.fillStyle = bgCol;
+		ctx.globalAlpha = alpha;
+
+		// calculate the height of the table including the column header row
+		y = rowHeight;
+		for (i = numCols - 1; i >= 0; i -= 1) {
+			if (y + startY < this.displayHeight - 80 * displayScale) {
+				y += rowHeight;
+			}
+		}
+		ctx.fillRect(leftX, startY, width, y);
+
+		// draw shadow and then text
+		ctx.font = ((20 * displayScale) | 0) + "px Arial";
+		ctx.globalAlpha = 1;
+		ctx.fillStyle = bgCol;
+		y = startY + (rowHeight >> 1);
+
+		for (j = 0; j < 2; j += 1) {
+			// draw the table header
+			x = leftX;
+			x = this.drawRightString("Frequency", fieldWidth, x, y, offset);
+			x = this.drawRightString("Count", fieldWidth, x, y, offset);
+			x = this.drawRightString("% Total", fieldWidth, x, y, offset);
+			y += rowHeight;
+
+			// draw the table rows
+			itemNum = 0;
+
+			for (i = numCols - 1; i >= 0; i -= 1) {
+				value = this.uniqueCellCounts[i];
+				if (y < this.displayHeight - 80 * displayScale) {
+					if (itemNum >= (this.tableStartRow | 0)) {
+						// draw row data
+						x = leftX;
+						x = this.drawRightString(String(value), fieldWidth, x, y, offset);
+						x = this.drawRightString(String(this.uniqueCellCountsCounts[i]), fieldWidth, x, y, offset);
+						x = this.drawRightString(String((100 * this.uniqueCellCountsCounts[i] / this.cellCountsTotal).toFixed(2)) + "%", fieldWidth, x, y, offset);
+						y += rowHeight;
+					}
+					itemNum += 1;
+				}
+			}
+
+			// switch to drawing text
+			y = startY + (rowHeight >> 1);
+			offset = 0;
+			ctx.fillStyle = fgCol;
+		}
+
+		// draw the legend
+		maxItem = itemNum;
+		itemNum = 0;
+		offset = ((28 * displayScale) >> 1);
+		for (i = numCols - 1; i >= 0; i -= 1) {
+			value = this.cellFrequencyCounts[i];
+			if (itemNum < maxItem) {
+				if (itemNum >= (this.tableStartRow | 0)) {
+					x = leftX;
+
+					// draw box
+					ctx.fillStyle = this.view.menuManager.bgCol;
+					ctx.fillRect(leftX + (boxSize >> 1) + 2, y + offset + 2, boxSize, boxSize);
+					ctx.fillStyle = "#" + ("000000" + this.cellFrequencyRGB[i].toString(16)).slice(-6);
 					ctx.fillRect(leftX + (boxSize >> 1), y + offset, boxSize, boxSize);
 					y += rowHeight;
 				}
@@ -4065,6 +4247,7 @@ This file is part of LifeViewer
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ testY = 0,
 			/** @type {number} */ legendCols = 1,
+			/** @type {number} */ numCols = 0,
 			/** @type {number} */ alpha = label.bgAlpha,
 			/** @type {string} */ fgCol = label.fgCol,
 			/** @type {string} */ bgCol = label.bgCol,
@@ -4121,11 +4304,26 @@ This file is part of LifeViewer
 
 		// set the box width to the longest unique cell count value
 		maxLabelWidth = ctx.measureText(String(uniqueCounts[uniqueCounts.length - 1]) + " ").width;
+		if (this.cellPeriodState6) {
+			if (this.isExtended) {
+				y = ctx.measureText(LifeConstants.state3Label + " ").width;
+			} else {
+				y = ctx.measureText(LifeConstants.state6Label + " ").width;
+			}
+			if (y > maxLabelWidth) {
+				maxLabelWidth = y;
+			}
+		}
 
 		// check if the legend fits in one column
+		numCols = uniqueCounts.length;
+		if (this.cellPeriodState6) {
+			numCols += 1;
+		}
+
 		testY = legendBorder;
 		y = 0;
-		for (x = uniqueCounts.length - 1; x >= 0; x -= 1) {
+		for (x = numCols - 1; x >= 0; x -= 1) {
 			if ((testY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
 				y = 0;
 				legendCols += 1;
@@ -4146,14 +4344,39 @@ This file is part of LifeViewer
 		if (legendCols > 1) {
 			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 8 * displayScale) * legendCols, this.displayHeight - legendBorder * 3 + rowSize);
 		} else {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, uniqueCounts.length * rowSize + 3 * displayScale);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, numCols * rowSize + 3 * displayScale);
 		}
 		ctx.globalAlpha = 1;
 
 		// draw each legend entry
 		y = 0;
 
-		for (x = uniqueCounts.length - 1; x >= 0; x -= 1) {
+		// check for state 6 cells
+		if (this.cellPeriodState6) {
+			// draw colour
+			ctx.fillStyle = this.view.menuManager.bgCol;
+			ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2, boxSize, boxSize);
+			ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[-1].toString(16)).slice(-6);
+			ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize, boxSize, boxSize);
+
+			// draw period
+			if (this.isExtended) {
+				ctx.fillStyle = bgCol;
+				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+				ctx.fillStyle = fgCol;
+				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+			} else {
+				ctx.fillStyle = bgCol;
+				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+				ctx.fillStyle = fgCol;
+				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+			}
+
+			y += 1;
+			numCols -= 1;
+		}
+
+		for (x = numCols - 1; x >= 0; x -= 1) {
 			if ((bottomY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
 				y = 0;
 				leftX += boxSize + maxLabelWidth + 8 * displayScale;
@@ -5762,8 +5985,8 @@ This file is part of LifeViewer
 			this.cellFrequencyCounts = cellCounts;
 
 			// create the cell period map
-			this.createCellPeriodMap(view.identifyBannerLabel, view);
-			this.createCellFrequencyMap(cellCounts);
+			this.createCellPeriodMap(view);
+			this.createCellFrequencyMap(cellCounts, period);
 		} else {
 			this.popSubPeriod = null;
 		}

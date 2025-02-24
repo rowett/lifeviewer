@@ -1,3 +1,14 @@
+Build 1254
+- fixed Save Pattern removing new lines
+- improved Identify output for Oscillators:
+	- you can select a display mode (hotkey E to cycle):
+		- results (summary data): Res button
+		- periods (cell periods): Per button
+		- frequencies (cell frequencies): Frq button
+	- you can select a display type (hotkey Alt E to cycle):
+		- table (display as a table): Tbl button
+		- map (display as a cell map): Map button
+
 Build 1253
 - disable [[ AUTOIDENTIFY ]] in [[ THUMBLAUNCH ]] viewers
 

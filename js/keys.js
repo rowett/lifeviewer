@@ -359,6 +359,18 @@ This file is part of LifeViewer
 						}
 						break;
 
+					// e for toggle identify display type
+					case 69:
+						// toggle identify display type (table or map)
+						if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
+							me.identifyDisplayType += 1;
+							if (me.identifyDisplayType > ViewConstants.identifyDisplayMap) {
+								me.identifyDisplayType = ViewConstants.identifyDisplayTable;
+							}
+							me.identifyTypeToggle.current = me.toggleIdentifyDisplayType(me.identifyDisplayType, true, me);
+						}
+						break;
+
 					// g for convert to [R]Super
 					case 71:
 						if (me.engine.isLifeHistory || me.engine.multiNumStates === -1) {
@@ -830,7 +842,7 @@ This file is part of LifeViewer
 				}
 				break;
 
-			// e for show cell period table
+			// e for toggle identify display mode
 			case 69:
 				// check for Help
 				if (me.displayHelp !== 0 && (!(me.engine.isNone || me.engine.isSuper || me.engine.isExtended || me.engine.isRuleTree))) {
@@ -846,13 +858,13 @@ This file is part of LifeViewer
 							me.saveDefaultSpeedPressed(me);
 							me.menuManager.notification.notify("Default speed saved as " + me.genSpeed * me.gensPerStep + "gps", 15, 120, 15, true);
 						} else {
-							// show cell period table
+							// toggle identify display mode
 							if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
 								me.identifyDisplayMode += 1;
-								if (me.identifyDisplayMode > ViewConstants.identifyDisplayFrequencyMap) {
+								if (me.identifyDisplayMode > ViewConstants.identifyDisplayFrequency) {
 									me.identifyDisplayMode = ViewConstants.identifyDisplayResults;
 								}
-								me.identifyStrictToggle.current = me.toggleCellPeriodMap(me.identifyDisplayMode, true, me);
+								me.identifyModeToggle.current = me.toggleIdentifyDisplayMode(me.identifyDisplayMode, true, me);
 							}
 						}
 					}

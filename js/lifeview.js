@@ -74,9 +74,12 @@ This file is part of LifeViewer
 	ViewConstants = {
 		// identify display modes
 		/** @const {number} */ identifyDisplayResults : 0,
-		/** @const {number} */ identifyDisplayTable : 1,
-		/** @const {number} */ identifyDisplayPeriodMap : 2,
-		/** @const {number} */ identifyDisplayFrequencyMap : 3,
+		/** @const {number} */ identifyDisplayPeriod: 1,
+		/** @const {number} */ identifyDisplayFrequency : 2,
+
+		// identify display type
+		/** @const {number} */ identifyDisplayTable : 0,
+		/** @const {number} */ identifyDisplayMap : 1,
 
 		// settings prefix
 		/** @const {string} */ settingsPrefix : "LV",
@@ -333,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1253,
+		/** @const {number} */ versionBuild : 1254,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -998,8 +1001,11 @@ This file is part of LifeViewer
 		// refresh rate
 		/** @type {number} */ this.refreshRate = Controller.refreshRate;
 
-		// identify display mode (results, table, period map or frequency map)
+		// identify display mode (results, periods or frequencies)
 		/** @type {number} */ this.identifyDisplayMode = ViewConstants.identifyDisplayResults;
+
+		// identify display type for periods or frequencies
+		/** @type {number} */ this.identifyDisplayType = ViewConstants.identifyDisplayTable;
 
 		// last failure reason from PatternManager
 		/** @type {string} */ this.lastFailReason = "";
@@ -2112,7 +2118,7 @@ This file is part of LifeViewer
 		/** @type {MenuItem} */ this.identifyCloseButton = null;
 
 		// strict volatility toggle
-		/** @type {MenuItem} */ this.identifyStrictToggle = null;
+		/** @type {MenuItem} */ this.identifyModeToggle = null;
 
 		// save button for identify cell map
 		/** @type {MenuItem} */ this.identifySaveCellMapButton = null;
@@ -4745,7 +4751,7 @@ This file is part of LifeViewer
 
 	// download cell period map
 	View.prototype.downloadCellMap = function(/** @type {View} */ me) {
-		var	/** @type {HTMLCanvasElement} */ cellCanvas = me.identifyDisplayMode === ViewConstants.identifyDisplayPeriodMap ? me.engine.cellPeriodCanvas : me.engine.cellFrequencyCanvas;
+		var	/** @type {HTMLCanvasElement} */ cellCanvas = me.identifyDisplayMode === ViewConstants.identifyDisplayPeriod ? me.engine.cellPeriodCanvas : me.engine.cellFrequencyCanvas;
 
 		// create a link
 		if (me.lastIdentifyType !== "Oscillator") {
@@ -6071,15 +6077,18 @@ This file is part of LifeViewer
 		// close button at same height as banner
 		this.identifyCloseButton.setY(y - 48);
 
-		// cell period map toggle
-		this.identifyStrictToggle.setY(y - 48 + 45);
+		// identify display mode toggle
+		this.identifyModeToggle.setY(y - 48 + 45);
+
+		// identify display type toggle
+		this.identifyTypeToggle.setY(y - 48 + 170);
 
 		// save cell period map button
-		this.identifySaveCellMapButton.setY(y - 48 + 210);
+		this.identifySaveCellMapButton.setY(y - 48 + 255);
 
 		// page up and down buttons
-		this.identifyPageUpButton.setY(y - 48 + 255);
-		this.identifyPageDownButton.setY(y - 48 + 300);
+		this.identifyPageUpButton.setY(y - 48 + 300);
+		this.identifyPageDownButton.setY(y - 48 + 345);
 
 		// cells
 		this.identifyCellsLabel.setPosition(Menu.north, x, y);
@@ -7154,19 +7163,24 @@ This file is part of LifeViewer
 			// don't display if Help, Errors or Settings open
 			if (me.displayHelp === 0 && me.displayErrors === 0 && me.navToggle.current[0] === false) {
 				switch (me.identifyDisplayMode) {
-					case ViewConstants.identifyDisplayTable:
-						// draw cell period table below the main banner
-						me.engine.drawCellPeriodTable(me.identifyBannerLabel);
+					case ViewConstants.identifyDisplayPeriod:
+						if (me.identifyDisplayType === ViewConstants.identifyDisplayTable) {
+							// draw cell period table below the main banner
+							me.engine.drawCellPeriodTable(me.identifyBannerLabel);
+						} else {
+							// draw cell period map
+							me.engine.drawCellPeriodMap(me.identifyBannerLabel);
+						}
 						break;
 
-					case ViewConstants.identifyDisplayPeriodMap:
-						// draw cell period map
-						me.engine.drawCellPeriodMap(me.identifyBannerLabel);
-						break;
-
-					case ViewConstants.identifyDisplayFrequencyMap:
-						// draw cell frequncy map
-						me.engine.drawCellFrequencyMap(me.identifyBannerLabel);
+					case ViewConstants.identifyDisplayFrequency:
+						if (me.identifyDisplayType === ViewConstants.identifyDisplayTable) {
+							// draw cell period frequency below the main banner
+							me.engine.drawCellFrequencyTable(me.identifyBannerLabel);
+						} else {
+							// draw cell frequency map
+							me.engine.drawCellFrequencyMap(me.identifyBannerLabel);
+						}
 						break;
 				}
 			}
@@ -7406,12 +7420,13 @@ This file is part of LifeViewer
 		this.identifyCloseButton.deleted = hide || !this.resultsDisplayed || settingsMenuOpen;
 
 		// identify cell period display and save buttons
-		this.identifyStrictToggle.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
+		this.identifyModeToggle.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
+		this.identifyTypeToggle.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
 		this.identifySaveCellMapButton.deleted = hide || !this.resultsDisplayed || this.engine.cellPeriod === null || settingsMenuOpen;
-		this.identifySaveCellMapButton.locked = !(this.identifyDisplayMode === ViewConstants.identifyDisplayPeriodMap || this.identifyDisplayMode === ViewConstants.identifyDisplayFrequencyMap);
+		this.identifySaveCellMapButton.locked = !(this.identifyDisplayMode !== ViewConstants.identifyDisplayResults && this.identifyDisplayType === ViewConstants.identifyDisplayMap);
 
 		// identify results
-		shown = shown || (this.identifyDisplayMode === ViewConstants.identifyDisplayPeriodMap || this.identifyDisplayMode === ViewConstants.identifyDisplayFrequencyMap);
+		shown = shown || !(this.identifyDisplayMode === ViewConstants.identifyDisplayResults || this.identifyDisplayType === ViewConstants.identifyDisplayTable);
 		this.identifyBannerLabel.deleted = shown;
 		shown = shown || this.identifyDisplayMode !== ViewConstants.identifyDisplayResults;
 		this.identifyCellsLabel.deleted = shown;
@@ -7438,13 +7453,13 @@ This file is part of LifeViewer
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
 		// identify page up and down buttons
-		shown = hide || !this.resultsDisplayed || (this.identifyDisplayMode !== ViewConstants.identifyDisplayTable || this.engine.tableMaxRow === 0 || settingsMenuOpen);
+		shown = hide || !this.resultsDisplayed || (!((this.identifyDisplayMode === ViewConstants.identifyDisplayPeriod || this.identifyDisplayMode === ViewConstants.identifyDisplayFrequency) && this.identifyDisplayType === ViewConstants.identifyDisplayTable) || this.engine.tableMaxRow === 0 || settingsMenuOpen);
 		this.identifyPageUpButton.deleted = shown;
 		this.identifyPageDownButton.deleted = shown;
 
 		// lock page up and down buttons
 		this.identifyPageUpButton.locked = (this.engine.tableStartRow === 0);
-		this.identifyPageDownButton.locked = (this.engine.tableStartRow === this.engine.tableMaxRow);
+		this.identifyPageDownButton.locked = (this.engine.tableStartRow >= this.engine.tableMaxRow - this.engine.tablePageSize);
 
 		// undo and redo buttons
 		this.redoButton.locked = (this.editNum === this.numEdits);
@@ -10943,8 +10958,8 @@ This file is part of LifeViewer
 			if (me.engine.tableStartRow < 0) {
 				me.engine.tableStartRow = 0;
 			}
-			if (me.engine.tableStartRow > me.engine.tableMaxRow) {
-				me.engine.tableStartRow = me.engine.tableMaxRow;
+			if (me.engine.tableStartRow > me.engine.tableMaxRow - me.engine.tablePageSize) {
+				me.engine.tableStartRow = me.engine.tableMaxRow - me.engine.tablePageSize;
 			}
 		}
 	};
@@ -11413,8 +11428,8 @@ This file is part of LifeViewer
 						if (me.displayErrors) {
 							me.dragErrors(me, y);
 						} else {
-							// check if Cell Period Table displayed
-							if (me.resultsDisplayed && me.identifyDisplayMode === ViewConstants.identifyDisplayTable && me.engine.tableMaxRow !== 0) {
+							// check if Cell Period Table or Cell Frequency Table are displayed
+							if (me.resultsDisplayed && ((me.identifyDisplayMode === ViewConstants.identifyDisplayPeriod || me.identifyDisplayMode === ViewConstants.identifyDisplayFrequency) && me.identifyDisplayType === ViewConstants.identifyDisplayTable) && me.engine.tableMaxRow !== 0) {
 								me.dragTable(me, y);
 							} else {
 								// check if panning
@@ -13641,22 +13656,22 @@ This file is part of LifeViewer
 
 	// identify page up button
 	View.prototype.identifyPageUpPressed = function(/** @type {View} */ me) {
-		me.engine.cellPeriodTablePageUp();
+		me.engine.cellTablePageUp();
 	};
 
 	// identify page down button
 	View.prototype.identifyPageDownPressed = function(/** @type {View} */ me) {
-		me.engine.cellPeriodTablePageDown();
+		me.engine.cellTablePageDown();
 	};
 
 	// identify home
 	View.prototype.identifyHomePressed = function(/** @type {View} */ me) {
-		me.engine.cellPeriodTableHome();
+		me.engine.cellTableHome();
 	};
 
 	// identify end
 	View.prototype.identifyEndPressed = function(/** @type {View} */ me) {
-		me.engine.cellPeriodTableEnd();
+		me.engine.cellTableEnd();
 	};
 
 	// display last identify results
@@ -13679,7 +13694,7 @@ This file is part of LifeViewer
 
 			// show results
 			me.engine.tableStartRow = 0;
-			me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
+			me.identifyModeToggle.current = me.toggleIdentifyDisplayType(0, true, me);
 			me.resultsDisplayed = true;
 		}
 	};
@@ -16654,7 +16669,7 @@ This file is part of LifeViewer
 		me.viewMenu.locked = false;
 
 		// set results to summary
-		me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
+		me.identifyModeToggle.current = me.toggleIdentifyDisplayType(0, true, me);
 	};
 
 	// save image button pressed
@@ -16850,14 +16865,39 @@ This file is part of LifeViewer
 		return [me.showStates];
 	};
 
-	// cell period map display
+	// update identify display
+	View.prototype.updateIdentifyDisplay = function() {
+		if (this.identifyDisplayType === ViewConstants.identifyDisplayTable) {
+			if (this.identifyDisplayMode === ViewConstants.identifyDisplayPeriod) {
+				this.engine.createPeriodTableRowNumbers(this.identifyBannerLabel);
+			} else {
+				if (this.identifyDisplayMode === ViewConstants.identifyDisplayFrequency) {
+					this.engine.createFrequencyTableRowNumbers(this.identifyBannerLabel);
+				}
+			}
+		}
+	};
+
+	// identify display mode
 	/** @return {number} */
-	View.prototype.toggleCellPeriodMap = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+	View.prototype.toggleIdentifyDisplayMode = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.identifyDisplayMode = newValue;
+			me.updateIdentifyDisplay();
 		}
 
 		return me.identifyDisplayMode;
+	};
+
+	// identify display type
+	/** @return {number} */
+	View.prototype.toggleIdentifyDisplayType = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		if (change) {
+			me.identifyDisplayType = newValue;
+			me.updateIdentifyDisplay();
+		}
+
+		return me.identifyDisplayType;
 	};
 
 	// pick toggle
@@ -17524,8 +17564,9 @@ This file is part of LifeViewer
 	// save the current rle to the source document node
 	View.prototype.saveCurrentRLE = function(/** @type {View} */ me) {
 		// don't use alias names since it makes it less compatible with other CA simulators
-		me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
-		me.element.value = me.element.innerHTML;
+		//me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
+		//me.element.value = me.element.innerHTML;
+		me.element.value = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
 	};
 
 	// replace the current rle with the given text
@@ -18310,11 +18351,16 @@ This file is part of LifeViewer
 		this.identifyCloseButton = this.viewMenu.addButtonItem(this.identifyClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
 		this.identifyCloseButton.toolTip = "close results [Esc]";
 
-		// identify strict toggle
-		this.identifyStrictToggle = this.viewMenu.addListItem(this.toggleCellPeriodMap, Menu.northEast, -40, 45, 40, 160, ["Res", "Tbl", "Per", "Frq"], this.identifyDisplayMode, Menu.single);
-		this.identifyStrictToggle.toolTip = ["show Identify results [Shift F6]", "cell period table [E]", "cell period map [E]", "cell frequency map [E]"];
-		this.identifyStrictToggle.setFont("15px Arial");
-		this.identifyStrictToggle.textOrientation = Menu.horizontal;
+		// identify results display mode
+		this.identifyModeToggle = this.viewMenu.addListItem(this.toggleIdentifyDisplayMode, Menu.northEast, -40, 45, 40, 120, ["Res", "Per", "Frq"], this.identifyDisplayMode, Menu.single);
+		this.identifyModeToggle.toolTip = ["show Identify results [Shift F6]", "cell periods [E]", "cell frequencies [E]"];
+		this.identifyModeToggle.setFont("15px Arial");
+		this.identifyModeToggle.textOrientation = Menu.horizontal;
+
+		this.identifyTypeToggle = this.viewMenu.addListItem(this.toggleIdentifyDisplayType, Menu.northEast, -40, 45, 40, 80, ["Tbl", "Map"], this.identifyDisplayType, Menu.single);
+		this.identifyTypeToggle.toolTip = ["table [" + this.altKeyText + " E]", "map [" + this.altKeyText + " E]"];
+		this.identifyTypeToggle.setFont("15px Arial");
+		this.identifyTypeToggle.textOrientation = Menu.horizontal;
 
 		// identify save cell period map
 		this.identifySaveCellMapButton = this.viewMenu.addButtonItem(this.identifySavePressed, Menu.northEast, -40, 45, 40, 40, "");
@@ -19253,8 +19299,8 @@ This file is part of LifeViewer
 
 		// resize the cell period map if available
 		if (!(this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "") && (this.engine.popSubPeriod !== null)) {
-			this.engine.createCellPeriodMap(this.identifyBannerLabel, this);
-			this.engine.createCellFrequencyMap(this.engine.cellFrequencyCounts);
+			this.engine.createCellPeriodMap(this);
+			this.engine.createCellFrequencyMap(this.engine.cellFrequencyCounts, this.engine.identifyPeriod);
 		}
 
 		// if AutoFit is enabled then fit zoom
@@ -21499,7 +21545,7 @@ This file is part of LifeViewer
 		}
 
 		// clear cell period display toggle
-		me.identifyStrictToggle.current = me.toggleCellPeriodMap(0, true, me);
+		me.identifyModeToggle.current = me.toggleIdentifyDisplayType(0, true, me);
 
 		// disable population graph if rule is 'none'
 		if (me.engine.isNone) {

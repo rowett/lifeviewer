@@ -1844,6 +1844,16 @@ This file is part of LifeViewer
 							}
 						}
 					}
+
+					y = this.renderHelpLine(view, "  Frequency", "    Count\t% Total\t\tColour", ctx, x, y, height, helpLine);
+					for (i = view.engine.cellFrequencyNumCols - 1; i >= 0; i -= 1) {
+						value = view.engine.uniqueCellCounts[i];
+						this.renderColourBox(view, view.engine.cellFrequencyRGB[i] >> 16, (view.engine.cellFrequencyRGB[i] >> 8) & 255, view.engine.cellFrequencyRGB[i] & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						colourValue = this.rgbString(view.engine.cellFrequencyRGB[i] >> 16, (view.engine.cellFrequencyRGB[i] >> 8) & 255, view.engine.cellFrequencyRGB[i] & 255).trim();
+						j = view.engine.uniqueCellCountsCounts[i];
+						y = this.renderHelpLine(view, "  " + value, "    " + j + "\t" + ((100 * j) / view.engine.cellCountsTotal).toFixed(2) +"%\t\t" + colourValue, ctx, x, y, height, helpLine);
+					}
+
 					if (view.engine.cellPeriodState6) {
 						this.renderColourBox(view, 0x60, 0x60, 0x60, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						if (view.engine.isExtended) {
