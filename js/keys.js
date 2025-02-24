@@ -361,11 +361,11 @@ This file is part of LifeViewer
 
 					// e for toggle identify display type
 					case 69:
-						// toggle identify display type (table or map)
+						// toggle identify display type (period or frequency)
 						if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
 							me.identifyDisplayType += 1;
-							if (me.identifyDisplayType > ViewConstants.identifyDisplayMap) {
-								me.identifyDisplayType = ViewConstants.identifyDisplayTable;
+							if (me.identifyDisplayType > ViewConstants.identifyDisplayFrequency) {
+								me.identifyDisplayType = ViewConstants.identifyDisplayPeriod;
 							}
 							me.identifyTypeToggle.current = me.toggleIdentifyDisplayType(me.identifyDisplayType, true, me);
 						}
@@ -861,7 +861,7 @@ This file is part of LifeViewer
 							// toggle identify display mode
 							if (me.lastIdentifyType === "Oscillator" && me.engine.cellPeriod !== null) {
 								me.identifyDisplayMode += 1;
-								if (me.identifyDisplayMode > ViewConstants.identifyDisplayFrequency) {
+								if (me.identifyDisplayMode > ViewConstants.identifyDisplayMap) {
 									me.identifyDisplayMode = ViewConstants.identifyDisplayResults;
 								}
 								me.identifyModeToggle.current = me.toggleIdentifyDisplayMode(me.identifyDisplayMode, true, me);

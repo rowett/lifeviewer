@@ -1,3 +1,6 @@
+Build 1255
+- fixed Identify results UI issues
+
 Build 1254
 - fixed Save Pattern removing new lines
 - improved Identify output for Oscillators:
