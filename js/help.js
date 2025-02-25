@@ -946,6 +946,7 @@ This file is part of LifeViewer
 		}
 		y = this.renderHelpLine(view, "D", "download cell map", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "E", "cycle identify results display", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.altKeyText + " E", "cycle identify results type", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F8", "toggle cell state display", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift F8", "toggle y coordinate direction", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "F9", "toggle popup window maximize", ctx, x, y, height, helpLine);

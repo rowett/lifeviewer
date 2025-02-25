@@ -1,3 +1,7 @@
+Build 1256
+- fixed Identify results tooltips
+- fixed Save Pattern on forum
+
 Build 1255
 - fixed Identify results UI issues
 

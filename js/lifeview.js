@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1255,
+		/** @const {number} */ versionBuild : 1256,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -17564,9 +17564,10 @@ This file is part of LifeViewer
 	// save the current rle to the source document node
 	View.prototype.saveCurrentRLE = function(/** @type {View} */ me) {
 		// don't use alias names since it makes it less compatible with other CA simulators
-		//me.element.innerHTML = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
-		//me.element.value = me.element.innerHTML;
-		me.element.value = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
+		var	/** @type {string} */ rle = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
+
+		me.element.innerHTML = rle.replace(/\n/g, "<br>");
+		me.element.value = rle;
 	};
 
 	// replace the current rle with the given text
@@ -18353,12 +18354,12 @@ This file is part of LifeViewer
 
 		// identify results display mode
 		this.identifyModeToggle = this.viewMenu.addListItem(this.toggleIdentifyDisplayMode, Menu.northEast, -40, 45, 40, 120, ["Res", "Tbl", "Map"], this.identifyDisplayMode, Menu.single);
-		this.identifyModeToggle.toolTip = ["show Identify results [Shift F6]", "table [" + this.altKeyText + " E]", "map [" + this.altKeyText + " E]"];
+		this.identifyModeToggle.toolTip = ["show Identify results [Shift F6]", "table [E]", "map [E]"];
 		this.identifyModeToggle.setFont("15px Arial");
 		this.identifyModeToggle.textOrientation = Menu.horizontal;
 
 		this.identifyTypeToggle = this.viewMenu.addListItem(this.toggleIdentifyDisplayType, Menu.northEast, -40, 45, 40, 80, ["Per", "Frq"], this.identifyDisplayType, Menu.single);
-		this.identifyTypeToggle.toolTip = ["cell periods [E]", "cell frequencies [E]"];
+		this.identifyTypeToggle.toolTip = ["cell periods [" + this.altKeyText + " E]", "cell frequencies [" + this.altKeyText + " E]"];
 		this.identifyTypeToggle.setFont("15px Arial");
 		this.identifyTypeToggle.textOrientation = Menu.horizontal;
 
