@@ -18353,12 +18353,12 @@ This file is part of LifeViewer
 
 		// identify results display mode
 		this.identifyModeToggle = this.viewMenu.addListItem(this.toggleIdentifyDisplayMode, Menu.northEast, -40, 45, 40, 120, ["Res", "Tbl", "Map"], this.identifyDisplayMode, Menu.single);
-		this.identifyModeToggle.toolTip = ["show Identify results [Shift F6]", "cell periods [E]", "cell frequencies [E]"];
+		this.identifyModeToggle.toolTip = ["show Identify results [Shift F6]", "table [" + this.altKeyText + " E]", "map [" + this.altKeyText + " E]"];
 		this.identifyModeToggle.setFont("15px Arial");
 		this.identifyModeToggle.textOrientation = Menu.horizontal;
 
 		this.identifyTypeToggle = this.viewMenu.addListItem(this.toggleIdentifyDisplayType, Menu.northEast, -40, 45, 40, 80, ["Per", "Frq"], this.identifyDisplayType, Menu.single);
-		this.identifyTypeToggle.toolTip = ["table [" + this.altKeyText + " E]", "map [" + this.altKeyText + " E]"];
+		this.identifyTypeToggle.toolTip = ["cell periods [E]", "cell frequencies [E]"];
 		this.identifyTypeToggle.setFont("15px Arial");
 		this.identifyTypeToggle.textOrientation = Menu.horizontal;
 
