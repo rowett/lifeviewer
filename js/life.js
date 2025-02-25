@@ -3110,8 +3110,8 @@ This file is part of LifeViewer
 		y = 0;
 		for (x = 2; x < this.popSubPeriod.length - 1; x += 1) {
 			if (this.popSubPeriod[x] > 0) {
-				//hue = Math.floor(360 * (y / numCols));
-				hue = (y * 17) % 360;
+				hue = Math.floor(360 * (y / numCols));
+				//hue = (y * 17) % 360;
 				periodCols[x] = "hsl(" + hue + ",100%," + (70 - (y & 3) * 12) + "%)";
 				y += 1;
 			}
