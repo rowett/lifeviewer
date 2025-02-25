@@ -3499,22 +3499,15 @@ This file is part of LifeViewer
 			cellSize = 1;
 		}
 
-		// count the subperiods excluding period 1 and oscillator period
-		numCols = 0;
-		for (x = 2; x < this.popSubPeriod.length - 1; x += 1) {
-			if (this.popSubPeriod[x] > 0) {
-				numCols += 1;
-			}
-		}
-		this.cellPeriodNumCols = numCols;
-
-		// find existing periods excluding period 1 and oscillator period
+		// find subperiods excluding period 1 and oscillator period
 		const subperiodIndices = [];
 		for (let i = 2; i < this.popSubPeriod.length - 1; ++i) {
 			if (this.popSubPeriod[i] > 0) {
 				subperiodIndices.push(i);
 			}
 		}
+		numCols = subperiodIndices.length;
+		this.cellPeriodNumCols = numCols;
 
 		// set predefined colours where available
 		const subperiodColours = [
