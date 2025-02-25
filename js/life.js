@@ -3544,8 +3544,8 @@ This file is part of LifeViewer
 		}
 
 		// generate colours for the rest
-		for (let i = 0; i < subperiodColours.length - subperiodColours.length; ++i) {
-			hue = Math.floor(360 * (y / numCols));
+		for (let i = 0; i < subperiodIndices.length - subperiodColours.length; ++i) {
+			hue = Math.floor(360 * (i / numCols));
 			periodCols[subperiodIndices[i]] = "hsl(" + hue + ",100%," + (70 - (i & 3) * 12) + "%)";
 		}
 
