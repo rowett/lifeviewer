@@ -3510,11 +3510,12 @@ This file is part of LifeViewer
 
 		// find existing periods excluding period 1 and oscillator period
 		const subperiodIndices = [];
-		for (let i = 2; x < this.popSubPeriod.length - 1; ++i) {
+		for (let i = 2; i < this.popSubPeriod.length - 1; ++i) {
 			if (this.popSubPeriod[i] > 0) {
 				subperiodIndices.push(i);
 			}
 		}
+		console.log(subperiodIndices);
 
 		// set predefined colours where available
 		const subperiodColours = [
