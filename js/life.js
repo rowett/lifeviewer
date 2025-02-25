@@ -3508,14 +3508,45 @@ This file is part of LifeViewer
 		}
 		this.cellPeriodNumCols = numCols;
 
-		// make colours for the subperiods excluding period 1 and oscillator period
-		y = 0;
-		for (x = 2; x < this.popSubPeriod.length - 1; x += 1) {
-			if (this.popSubPeriod[x] > 0) {
-				hue = Math.floor(360 * (y / numCols));
-				periodCols[x] = "hsl(" + hue + ",100%," + (70 - (y & 3) * 12) + "%)";
-				y += 1;
+		// find existing periods excluding period 1 and oscillator period
+		const subperiodIndices = [];
+		for (let i = 2; x < this.popSubPeriod.length - 1; ++i) {
+			if (this.popSubPeriod[i] > 0) {
+				subperiodIndices.push(i);
 			}
+		}
+
+		// set predefined colours where available
+		const subperiodColours = [
+			"#1C92CD",
+			"#0AB87B",
+			"#E86075",
+			"#F8F290",
+			"#BA4117",
+			"#D91E9B",
+			"#BEF0E9",
+			"#428C28",
+			"#6F1044",
+			"#76ADF4",
+			"#2D5963",
+			"#D9B790",
+			"#80FF80",
+			"#9090FF",
+			"#C0C000",
+			"#80FFFF",
+			"#FFC0FF",
+			"#FFC0C0",
+			"#FFFF00",
+			"#FF8000",
+		];
+		for (let i = 0; i < subperiodColours.length && i < subperiodIndices.length; ++i) {
+			periodCols[subperiodIndices[subperiodIndices.length - 1 - i]] = subperiodColours[i];
+		}
+
+		// generate colours for the rest
+		for (let i = 0; i < subperiodColours.length - subperiodColours.length; ++i) {
+			hue = Math.floor(360 * (y / numCols));
+			periodCols[subperiodIndices[i]] = "hsl(" + hue + ",100%," + (70 - (i & 3) * 12) + "%)";
 		}
 
 		// set colours for period 1 and oscillator period
