@@ -3515,7 +3515,6 @@ This file is part of LifeViewer
 				subperiodIndices.push(i);
 			}
 		}
-		console.log(subperiodIndices);
 
 		// set predefined colours where available
 		const subperiodColours = [
