@@ -8,7 +8,7 @@ CC = emcc
 CFLAGS = --no-entry -msimd128 -O3 -Wall -Wextra
 
 # WebAssembly settings (heap size, standalone output, exported functions)
-SETTINGS = -s INITIAL_MEMORY=1536MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="[ \
+SETTINGS = -s INITIAL_MEMORY=1792MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="[ \
 	'_nextGenerationWeightedStates2', '_nextGenerationWeighted2', '_nextGenerationGaussian2', '_nextGenerationCustom2', \
 	'_nextGenerationTriangular2', '_nextGenerationTripod2', '_nextGenerationAsterisk2', '_nextGenerationHexagonal2', \
 	'_nextGenerationShaped2', '_nextGenerationCheckerboard2', '_nextGenerationAlignedCheckerboard2', '_nextGenerationStar2', \

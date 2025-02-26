@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1257,
+		/** @const {number} */ versionBuild : 1258,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3460,7 +3460,7 @@ This file is part of LifeViewer
 		if (this.engine.isMargolus) {
 			itemName = "Margolus";
 		} else {
-			if (this.engine.wolframRule !== -1) {
+			if (this.engine.wolframRule !== -1 || this.manager.wolframEmulation) {
 				itemName = "1D";
 			} else {
 				if (this.engine.patternDisplayMode) {
@@ -6479,7 +6479,7 @@ This file is part of LifeViewer
 						this.scrollErrorsDown(this, (-mouseZoom / 125) * 3);
 					}
 				} else {
-					if (this.resultsDisplayed && (this.identifyDisplayMode === ViewConstants.identifyDisplayTable) && this.engine.tableMaxRow !== 0) {
+					if (this.resultsDisplayed && (this.identifyDisplayMode !== ViewConstants.identifyDisplayResults) && this.engine.tableMaxRow !== 0) {
 						this.wheelTable(mouseZoom);
 					} else {
 						// update the zoom if controls not locked
@@ -7457,7 +7457,7 @@ This file is part of LifeViewer
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
 		// identify page up and down buttons
-		shown = hide || !this.resultsDisplayed || (this.identifyDisplayMode !== ViewConstants.identifyDisplayTable) || this.engine.tableMaxRow === 0 || settingsMenuOpen;
+		shown = hide || !this.resultsDisplayed || (this.identifyDisplayMode === ViewConstants.identifyDisplayResults) || this.engine.tableMaxRow === 0 || settingsMenuOpen;
 		this.identifyPageUpButton.deleted = shown;
 		this.identifyPageDownButton.deleted = shown;
 
@@ -11445,7 +11445,7 @@ This file is part of LifeViewer
 							me.dragErrors(me, y);
 						} else {
 							// check if Cell Period Table or Cell Frequency Table are displayed
-							if (me.resultsDisplayed && (me.identifyDisplayMode === ViewConstants.identifyDisplayTable) && me.engine.tableMaxRow !== 0) {
+							if (me.resultsDisplayed && (me.identifyDisplayMode !== ViewConstants.identifyDisplayResults) && me.engine.tableMaxRow !== 0) {
 								me.dragTable(me, y);
 							} else {
 								// check if panning
@@ -16887,7 +16887,7 @@ This file is part of LifeViewer
 
 	// update identify display
 	View.prototype.updateIdentifyDisplay = function() {
-		if (this.identifyDisplayMode === ViewConstants.identifyDisplayTable) {
+		if (this.identifyDisplayMode !== ViewConstants.identifyDisplayResults) {
 			if (this.identifyDisplayType === ViewConstants.identifyDisplayPeriod) {
 				this.engine.createPeriodTableRowNumbers(this.identifyBannerLabel);
 			} else {
@@ -17589,9 +17589,15 @@ This file is part of LifeViewer
 	// save the current rle to the source document node
 	View.prototype.saveCurrentRLE = function(/** @type {View} */ me) {
 		// don't use alias names since it makes it less compatible with other CA simulators
-		var	/** @type {string} */ rle = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
+		var	/** @type {string} */ rle = "";
+		
+		// get the pattern as an RLE string
+		rle = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
 
+		//  write as HTML
 		me.element.innerHTML = rle.replace(/\n/g, "<br>");
+
+		// write as text
 		me.element.value = rle;
 	};
 

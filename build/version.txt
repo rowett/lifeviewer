@@ -1,3 +1,10 @@
+Build 1258
+- Cell Period Map and Cell Frequency Map legends are now scrollable
+- fixed Identify not detecting Mod for [R]Investigator oscillators
+- fixed rendering choice when Quality enabled and Tilt is non-zero
+- fixed HROT pattern size on Save
+- fixed Cell Map border for Hex oscillators
+
 Build 1257
 - mouse wheel will now scroll Identify Table results
 - setting Identify results type (Period or Frequency) will automatically select Map when Results are displayed

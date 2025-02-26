@@ -2385,7 +2385,7 @@ This file is part of LifeViewer
 								hash = (hash * factor) ^ x;
 								hash = (hash * factor) ^ state;
 							} else {
-								if (this.isRuleTree) {
+								if (this.isRuleTree || this.isExtended) {
 									// update the hash value
 									hash = (hash * factor) ^ y;
 									hash = (hash * factor) ^ x;
@@ -2668,7 +2668,7 @@ This file is part of LifeViewer
 	/** @returns {number} */
 	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ trans = 0,
-			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree && !this.isLifeHistory),
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
 			/** @type {number} */ hash = 0,
 			/** @type {number} */ i = 0,
 			/** @type {boolean} */ valid = true,
@@ -3302,7 +3302,11 @@ This file is part of LifeViewer
 				offset = colHeight >> 1;
 				inc = -0.5;
 			}
+
 			ex = 0;
+			if ((this.cellPeriodHeight & 1) !== 0) {
+				ex += inc;
+			}
 
 			row = rowWidth * (colHeight - 1);
 			for (x = 0; x < rowWidth - offset; x += 1) {
@@ -3671,7 +3675,11 @@ This file is part of LifeViewer
 				offset = colHeight >> 1;
 				inc = -0.5;
 			}
+
 			ex = 0;
+			if ((this.cellPeriodHeight & 1) !== 0) {
+				ex += inc;
+			}
 
 			row = rowWidth * (colHeight - 1);
 			for (x = 0; x < rowWidth - offset; x += 1) {
@@ -3706,7 +3714,7 @@ This file is part of LifeViewer
 				blue = (pixCol >> 8) & 255;
 			}
 			this.cellFrequencyRGB[x] = (red << 16) | (green << 8) | blue;
-			
+
 			x += 1;
 		}
 
@@ -3745,20 +3753,22 @@ This file is part of LifeViewer
 			/** @type {number} */ y = startY;
 
 		// count number of table rows
-		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
-			value = this.popSubPeriod[i];
-			if (value > 0) {
-				numRows += 1;
+		if (this.popSubPeriod) {
+			for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
+				value = this.popSubPeriod[i];
+				if (value > 0) {
+					numRows += 1;
+				}
 			}
-		}
 
-		// see if the table would be off the bottom of the display (add 1 for the column headings)
-		y = startY + (rowHeight >> 1) + ((numRows + 1) * rowHeight);
+			// see if the table would be off the bottom of the display (add 1 for the column headings)
+			y = startY + (rowHeight >> 1) + ((numRows + 1) * rowHeight);
 
-		if (y > this.displayHeight - 80 * displayScale) {
-			this.tableMaxRow = numRows - 1;
-		} else {
-			this.tableMaxRow = 0;
+			if (y > this.displayHeight - 2 * 80 * displayScale) {
+				this.tableMaxRow = numRows - 1;
+			} else {
+				this.tableMaxRow = 0;
+			}
 		}
 
 		// go to top
@@ -3767,24 +3777,24 @@ This file is part of LifeViewer
 
 	// create frequency table start and end row numbers
 	Life.prototype.createFrequencyTableRowNumbers = function(/** @type {MenuItem} */ label) {
-		var	/** @type {number} */ i = 0,
-			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
+		var	/** @type {number} */ displayScale = this.view.viewMenu.xScale,
 			/** @type {number} */ rowHeight = 24 * displayScale,
 			/** @type {number} */ startY = label.relY + label.height,
 			/** @type {number} */ numRows = 0,
-			/** @type {number} */ value = 0,
 			/** @type {number} */ y = startY;
 
 		// get number of table rows
-		numRows = this.uniqueCellCounts.length;
+		if (this.uniqueCellCounts) {
+			numRows = this.uniqueCellCounts.length;
 
-		// see if the table would be off the bottom of the display (add 1 for the column headings)
-		y = startY + (rowHeight >> 1) + ((numRows + 1) * rowHeight);
+			// see if the table would be off the bottom of the display (add 1 for the column headings)
+			y = startY + (rowHeight >> 1) + ((numRows + 1) * rowHeight);
 
-		if (y > this.displayHeight - 80 * displayScale) {
-			this.tableMaxRow = numRows - 1;
-		} else {
-			this.tableMaxRow = 0;
+			if (y > this.displayHeight - 2 * 80 * displayScale) {
+				this.tableMaxRow = numRows - 1;
+			} else {
+				this.tableMaxRow = 0;
+			}
 		}
 
 		// go to top
@@ -4060,13 +4070,14 @@ This file is part of LifeViewer
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ testY = 0,
+			/** @type {number} */ itemNum = 0,
 			/** @type {number} */ legendCols = 1,
 			/** @type {number} */ alpha = label.bgAlpha,
 			/** @type {string} */ fgCol = label.fgCol,
 			/** @type {string} */ bgCol = label.bgCol,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
 			/** @type {number} */ maxLabelWidth = 0,
-			/** @type {number} */ legendBorder = displayScale * 40,
+			/** @type {number} */ legendBorder = displayScale * 80,
 			/** @type {number} */ yFactor = this.getYFactor();
 
 		// scale the image to fit
@@ -4170,7 +4181,7 @@ This file is part of LifeViewer
 		ctx.fillStyle = bgCol;
 
 		if (legendCols > 1) {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 8 * displayScale) * legendCols, this.displayHeight - legendBorder * 3 + rowSize);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, this.displayHeight - legendBorder * 2 + rowSize / 2);
 		} else {
 			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, (numCols + 2) * rowSize + 3 * displayScale);
 		}
@@ -4178,53 +4189,58 @@ This file is part of LifeViewer
 
 		// draw each legend entry
 		y = 0;
+		itemNum = 0;
 
 		// check for state 6 cells
-		if (this.cellPeriodState6) {
+		if (this.cellPeriodState6 && itemNum >= (this.tableStartRow | 0)) {
 			// draw colour
 			ctx.fillStyle = this.view.menuManager.bgCol;
-			ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2, boxSize, boxSize);
+			ctx.fillRect(leftX - legendWidth + 2, bottomY + y + 2, boxSize, boxSize);
 			ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[-1].toString(16)).slice(-6);
-			ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize, boxSize, boxSize);
+			ctx.fillRect(leftX - legendWidth, bottomY + y, boxSize, boxSize);
 
 			// draw period
 			if (this.isExtended) {
 				ctx.fillStyle = bgCol;
-				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize + 2, bottomY + y + 2 + (7 * displayScale));
 				ctx.fillStyle = fgCol;
-				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize, bottomY + y + (7 * displayScale));
 			} else {
 				ctx.fillStyle = bgCol;
-				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize + 2, bottomY + y + 2 + (7 * displayScale));
 				ctx.fillStyle = fgCol;
-				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize, bottomY + y + (7 * displayScale));
 			}
 
-			y += 1;
+			y += rowSize;
+			itemNum += 1;
 		}
 
 		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
 			p = this.popSubPeriod[x];
-			if (p > 0) {
-				if ((bottomY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
-					y = 0;
-					leftX += boxSize + maxLabelWidth + 8 * displayScale;
+			if (p > 0 && y < this.displayHeight - 2 * legendBorder * displayScale) {
+				if (itemNum >= (this.tableStartRow | 0)) {
+					// draw colour
+					ctx.fillStyle = this.view.menuManager.bgCol;
+					ctx.fillRect(leftX - legendWidth + 2, bottomY + y + 2 + (1 * displayScale), boxSize, boxSize);
+					ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[x].toString(16)).slice(-6);
+					ctx.fillRect(leftX - legendWidth, bottomY + y + (1 * displayScale), boxSize, boxSize);
+
+					// draw period
+					ctx.fillStyle = bgCol;
+					ctx.fillText(String(x), leftX - legendWidth + colSize + 2, bottomY + y + 2 + (7 * displayScale));
+					ctx.fillStyle = fgCol;
+					ctx.fillText(String(x), leftX - legendWidth + colSize, bottomY + y + (7 * displayScale));
+
+					y += rowSize;
 				}
-
-				// draw colour
-				ctx.fillStyle = this.view.menuManager.bgCol;
-				ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2 + (1 * displayScale), boxSize, boxSize);
-				ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[x].toString(16)).slice(-6);
-				ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize + (1 * displayScale), boxSize, boxSize);
-
-				// draw period
-				ctx.fillStyle = bgCol;
-				ctx.fillText(String(x), leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
-				ctx.fillStyle = fgCol;
-				ctx.fillText(String(x), leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
-
-				y += 1;
+				itemNum += 1;
 			}
+		}
+
+		// set the page size
+		if (this.tableStartRow === 0) {
+			this.tablePageSize = itemNum - 1;
 		}
 	};
 
@@ -4232,7 +4248,6 @@ This file is part of LifeViewer
 	Life.prototype.drawCellFrequencyMap = function(/** @type {MenuItem} */ label) {
 		var	/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
-			/** @type {number} */ p = 0,
 			/** @type {number} */ s = 0,
 			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
 			/** @type {number} */ legendWidth = 50 * displayScale,
@@ -4246,6 +4261,7 @@ This file is part of LifeViewer
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
 			/** @type {number} */ testY = 0,
+			/** @type {number} */ itemNum = 0,
 			/** @type {number} */ legendCols = 1,
 			/** @type {number} */ numCols = 0,
 			/** @type {number} */ alpha = label.bgAlpha,
@@ -4253,7 +4269,7 @@ This file is part of LifeViewer
 			/** @type {string} */ bgCol = label.bgCol,
 			/** @type {CanvasRenderingContext2D} */ ctx = this.context,
 			/** @type {number} */ maxLabelWidth = 0,
-			/** @type {number} */ legendBorder = displayScale * 40,
+			/** @type {number} */ legendBorder = displayScale * 80,
 			/** @type {Uint32Array} */ uniqueCounts = this.uniqueCellCounts,
 			/** @type {number} */ yFactor = this.getYFactor();
 
@@ -4342,7 +4358,7 @@ This file is part of LifeViewer
 		ctx.fillStyle = bgCol;
 
 		if (legendCols > 1) {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, (boxSize + maxLabelWidth + 8 * displayScale) * legendCols, this.displayHeight - legendBorder * 3 + rowSize);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, this.displayHeight - legendBorder * 2 + rowSize / 2);
 		} else {
 			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, numCols * rowSize + 3 * displayScale);
 		}
@@ -4350,51 +4366,58 @@ This file is part of LifeViewer
 
 		// draw each legend entry
 		y = 0;
+		itemNum = 0;
 
 		// check for state 6 cells
 		if (this.cellPeriodState6) {
 			// draw colour
 			ctx.fillStyle = this.view.menuManager.bgCol;
-			ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2, boxSize, boxSize);
+			ctx.fillRect(leftX - legendWidth + 2, bottomY + y + 2, boxSize, boxSize);
 			ctx.fillStyle = "#" + ("000000" + this.cellPeriodRGB[-1].toString(16)).slice(-6);
-			ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize, boxSize, boxSize);
+			ctx.fillRect(leftX - legendWidth, bottomY + y, boxSize, boxSize);
 
 			// draw period
 			if (this.isExtended) {
 				ctx.fillStyle = bgCol;
-				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize + 2, bottomY + y + 2 + (7 * displayScale));
 				ctx.fillStyle = fgCol;
-				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+				ctx.fillText(LifeConstants.state3Label, leftX - legendWidth + colSize, bottomY + y + (7 * displayScale));
 			} else {
 				ctx.fillStyle = bgCol;
-				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
+				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize + 2, bottomY + y + 2 + (7 * displayScale));
 				ctx.fillStyle = fgCol;
-				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
+				ctx.fillText(LifeConstants.state6Label, leftX - legendWidth + colSize, bottomY + y + (7 * displayScale));
 			}
 
-			y += 1;
+			y += rowSize;
+			itemNum += 1;
 			numCols -= 1;
 		}
 
 		for (x = numCols - 1; x >= 0; x -= 1) {
-			if ((bottomY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
-				y = 0;
-				leftX += boxSize + maxLabelWidth + 8 * displayScale;
+			if (y < this.displayHeight - 2 * legendBorder * displayScale) {
+				if (itemNum >= (this.tableStartRow | 0)) {
+					// draw colour
+					ctx.fillStyle = this.view.menuManager.bgCol;
+					ctx.fillRect(leftX - legendWidth + 2, bottomY + y + 2 + (1 * displayScale), boxSize, boxSize);
+					ctx.fillStyle = "#" + ("000000" + this.cellFrequencyRGB[x].toString(16)).slice(-6);
+					ctx.fillRect(leftX - legendWidth, bottomY + y + (1 * displayScale), boxSize, boxSize);
+
+					// draw period
+					ctx.fillStyle = bgCol;
+					ctx.fillText(String(uniqueCounts[x]), leftX - legendWidth + colSize + 2, bottomY + y + 2 + (7 * displayScale));
+					ctx.fillStyle = fgCol;
+					ctx.fillText(String(uniqueCounts[x]), leftX - legendWidth + colSize, bottomY + y + (7 * displayScale));
+
+					y += rowSize;
+				}
+				itemNum += 1;
 			}
+		}
 
-			// draw colour
-			ctx.fillStyle = this.view.menuManager.bgCol;
-			ctx.fillRect(leftX - legendWidth + 2, bottomY + y * rowSize + 2 + (1 * displayScale), boxSize, boxSize);
-			ctx.fillStyle = "#" + ("000000" + this.cellFrequencyRGB[x].toString(16)).slice(-6);
-			ctx.fillRect(leftX - legendWidth, bottomY + y * rowSize + (1 * displayScale), boxSize, boxSize);
-
-			// draw period
-			ctx.fillStyle = bgCol;
-			ctx.fillText(String(uniqueCounts[x]), leftX - legendWidth + colSize + 2, bottomY + y * rowSize + 2 + (7 * displayScale));
-			ctx.fillStyle = fgCol;
-			ctx.fillText(String(uniqueCounts[x]), leftX - legendWidth + colSize, bottomY + y * rowSize + (7 * displayScale));
-
-			y += 1;
+		// set the page size
+		if (this.tableStartRow === 0) {
+			this.tablePageSize = itemNum - 1;
 		}
 	};
 
@@ -8422,7 +8445,7 @@ This file is part of LifeViewer
 			/** @type {Uint8Array} */ mid = colourGrid[y],
 			/** @type {Uint8Array} */ bot = colourGrid[y + 1],
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
-		
+
 		result = 64 + (top[x - 1] >= aliveStart ? 1 : 0) + (top[x] >= aliveStart ? 5 : 0) + (top[x + 1] >= aliveStart ? 1 : 0) + (mid[x - 1] >= aliveStart ? 5 : 0) + (mid[x + 1] >= aliveStart ? 5 : 0) + (bot[x - 1] >= aliveStart ? 1 : 0) + (bot[x] >= aliveStart ? 5 : 0) + (bot[x + 1] >= aliveStart ? 1 : 0);
 
 		return result;
@@ -15262,7 +15285,7 @@ This file is part of LifeViewer
 			columnOccupied16.fill(0);
 
 			// check for Generations or HROT
-			if (this.multiNumStates !== -1) {
+			if (this.isHROT && this.multiNumStates === 2) {
 				// check each row
 				for (h = 0; h < height; h += 1) {
 					colourGridRow = colourGrid[h];
@@ -15272,7 +15295,7 @@ This file is part of LifeViewer
 
 					// check each column
 					for (w = 0; w < width; w += 1) {
-						input = colourGridRow[w];
+						input = colourGridRow[w] & 64;
 						rowAlive |= input;
 
 						if (input) {
@@ -15296,49 +15319,84 @@ This file is part of LifeViewer
 					}
 				}
 			} else {
-				// check each row
-				for (h = 0; h < height; h += 1) {
-					gridRow16 = grid16[h];
+				if (this.multiNumStates !== -1) {
+					// check each row
+					for (h = 0; h < height; h += 1) {
+						colourGridRow = colourGrid[h];
+	
+						// flag nothing in the row
+						rowAlive = 0;
+	
+						// check each column
+						for (w = 0; w < width; w += 1) {
+							input = colourGridRow[w];
+							rowAlive |= input;
+	
+							if (input) {
+								if (w < newLeftX) {
+									newLeftX = w;
+								}
+								if (w > newRightX) {
+									newRightX = w;
+								}
+							}
+						}
+	
+						// check if the row was alive
+						if (rowAlive) {
+							if (h < newBottomY) {
+								newBottomY = h;
+							}
+							if (h > newTopY) {
+								newTopY = h;
+							}
+						}
+					}
+				} else {
+					// check each row
+					for (h = 0; h < height; h += 1) {
+						gridRow16 = grid16[h];
+	
+						// flag nothing alive in the row
+						rowAlive = 0;
+	
+						// check each column
+						for (w = 0; w < w16; w += 1) {
+							// update row alive flag
+							input = gridRow16[w];
+							rowAlive |= input;
+	
+							// update the column alive flag
+							columnOccupied16[w] |= input;
+						}
+	
+						// check if the row was alive
+						if (rowAlive) {
+							if (h < newBottomY) {
+								newBottomY = h;
+							}
+							if (h > newTopY) {
+								newTopY = h;
+							}
+						}
+					}
 
-					// flag nothing alive in the row
-					rowAlive = 0;
-
-					// check each column
+					// check the width of the box
 					for (w = 0; w < w16; w += 1) {
-						// update row alive flag
-						input = gridRow16[w];
-						rowAlive |= input;
-
-						// update the column alive flag
-						columnOccupied16[w] |= input;
-					}
-
-					// check if the row was alive
-					if (rowAlive) {
-						if (h < newBottomY) {
-							newBottomY = h;
-						}
-						if (h > newTopY) {
-							newTopY = h;
+						if (columnOccupied16[w]) {
+							if (w < newLeftX) {
+								newLeftX = w;
+							}
+							if (w > newRightX) {
+								newRightX = w;
+							}
 						}
 					}
+	
+					// convert new width to pixels
+					newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
+					newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
 				}
-
-				// check the width of the box
-				for (w = 0; w < w16; w += 1) {
-					if (columnOccupied16[w]) {
-						if (w < newLeftX) {
-							newLeftX = w;
-						}
-						if (w > newRightX) {
-							newRightX = w;
-						}
-					}
-				}
-
-				// convert new width to pixels
-				newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
-				newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
 			}
 
 			// ensure the box is not blank
@@ -15381,10 +15439,12 @@ This file is part of LifeViewer
 			}
 
 			// save new grid box
-			zoomBox.topY = newTopY;
-			zoomBox.bottomY = newBottomY;
-			zoomBox.leftX = newLeftX;
-			zoomBox.rightX = newRightX;
+			if (!(this.isHROT && this.multiNumStates === 2)) {
+				zoomBox.topY = newTopY;
+				zoomBox.bottomY = newBottomY;
+				zoomBox.leftX = newLeftX;
+				zoomBox.rightX = newRightX;
+			}
 
 			// copy to HROT alive state box
 			HROTBox.topY = newTopY;
@@ -16269,8 +16329,10 @@ This file is part of LifeViewer
 			/** @type {number} */ yc = 0,
 			/** @type {number} */ xFound = 0,
 			/** @type {number} */ yFound = 0,
-			/** @type {number} */ xLim = 0,
-			/** @type {number} */ yLim = 0,
+			/** @type {number} */ minX = 0,
+			/** @type {number} */ minY = 0,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ maxY = 0,
 			/** @type {number} */ dx2 = dx + dx,
 			/** @type {number} */ dy2 = dy + dy,
 			/** @type {number} */ dx3 = dx2 + dx,
@@ -16315,10 +16377,13 @@ This file is part of LifeViewer
 			yc = y + 3 + dy;
 			xc += dx;
 			yc += dy;
-			xLim = dx < 0 ? leftX - 1 : rightX + 1;
-			yLim = dy < 0 ? bottomY - 1: topY + 1;
+			minX = leftX + Math.abs(dx) * 4;
+			maxX = rightX - Math.abs(dx) * 4;
+			minY = bottomY + Math.abs(dx) * 4;
+			maxY = topY - Math.abs(dx) * 4;
 			found = false;
-			while (!found && !(xc === xLim || yc === yLim)) {
+
+			while (!found && !(xc < minX || xc > maxX || yc < minY || yc > maxY)) {
 				colourRow = colourGrid[yc];
 
 				/* TBD debug search area
@@ -50927,7 +50992,7 @@ This file is part of LifeViewer
 					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
 					// render with clipping and no rotation
-					if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1) {
+					if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1 && this.tilt === 0) {
 						this.createPixelColours(1);
 						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 					} else {
@@ -50980,7 +51045,7 @@ This file is part of LifeViewer
 					this.renderGridProjectionIcons(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
 					// render with no clipping and rotation
-					if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1) {
+					if (this.pretty && !this.isHex && this.camZoom >= 1 && this.layers === 1 && this.tilt === 0) {
 						this.createPixelColours(1);
 						this.renderGridProjectionPretty(bottomGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 					} else {
@@ -54192,7 +54257,7 @@ This file is part of LifeViewer
 			// check angle
 			if (this.camAngle === 0) {
 				// render with clipping and no rotation
-				if (this.pretty && this.camZoom >= 1 && this.layers === 1) {
+				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && this.tilt === 0) {
 					this.createPixelColours(1);
 					this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
@@ -54245,7 +54310,7 @@ This file is part of LifeViewer
 			// check angle
 			if (this.camAngle === 0) {
 				// render with no clipping and no rotation
-				if (this.pretty && this.camZoom >= 1 && this.layers === 1) {
+				if (this.pretty && this.camZoom >= 1 && this.layers === 1 && this.tilt === 0) {
 					this.createPixelColours(1);
 					this.renderGridOverlayProjectionPretty(bottomGrid, layersGrid, boundLeft, boundBottom, boundRight, boundTop, drawingSnow, drawingStars);
 				} else {
