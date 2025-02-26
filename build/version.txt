@@ -1,3 +1,8 @@
+Build 1257
+- mouse wheel will now scroll Identify Table results
+- setting Identify results type (Period or Frequency) will automatically select Map when Results are displayed
+- fixed Identify not resetting UI
+
 Build 1256
 - fixed Identify results tooltips
 - fixed Save Pattern on forum

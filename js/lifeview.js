@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1256,
+		/** @const {number} */ versionBuild : 1257,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6479,11 +6479,15 @@ This file is part of LifeViewer
 						this.scrollErrorsDown(this, (-mouseZoom / 125) * 3);
 					}
 				} else {
-					// update the zoom if controls not locked
-					if (!(this.controlsLocked || this.zoomItem.locked)) {
-						zoomValue = this.zoomItem.current[0];
-						mouseZoom = (mouseZoom / 125) * 0.05;
-						this.adjustZoomPosition(zoomValue, mouseZoom);
+					if (this.resultsDisplayed && (this.identifyDisplayMode === ViewConstants.identifyDisplayTable) && this.engine.tableMaxRow !== 0) {
+						this.wheelTable(mouseZoom);
+					} else {
+						// update the zoom if controls not locked
+						if (!(this.controlsLocked || this.zoomItem.locked)) {
+							zoomValue = this.zoomItem.current[0];
+							mouseZoom = (mouseZoom / 125) * 0.05;
+							this.adjustZoomPosition(zoomValue, mouseZoom);
+						}
 					}
 				}
 			}
@@ -10947,7 +10951,19 @@ This file is part of LifeViewer
 		}
 	};
 
-	// drag period cell table
+	// mouse wheel cell table
+	View.prototype.wheelTable = function(/** @type {number} */ amount) {
+		// scroll period map
+		this.engine.tableStartRow -= Math.sign(amount) * 3;
+		if (this.engine.tableStartRow < 0) {
+			this.engine.tableStartRow = 0;
+		}
+		if (this.engine.tableStartRow > this.engine.tableMaxRow - this.engine.tablePageSize) {
+			this.engine.tableStartRow = this.engine.tableMaxRow - this.engine.tablePageSize;
+		}
+	};
+
+	// drag cell table
 	View.prototype.dragTable = function(/** @type {View} */ me, /** @type {number} */ y) {
 		// compute the movement
 		var	/** @type {number} */ dy = ((me.lastDragY - y) / (24 * this.viewMenu.xScale));
@@ -13692,9 +13708,12 @@ This file is part of LifeViewer
 				me.menuManager.toggleRequired = true;
 			}
 
+			// reset identify type and mode (type must be first otherwise mode switches to Map as Period is set)
+			me.identifyTypeToggle.current = me.toggleIdentifyDisplayType(ViewConstants.identifyDisplayPeriod, true, me);
+			me.identifyModeToggle.current = me.toggleIdentifyDisplayMode(ViewConstants.identifyDisplayResults, true, me);
+
 			// show results
 			me.engine.tableStartRow = 0;
-			me.identifyModeToggle.current = me.toggleIdentifyDisplayType(0, true, me);
 			me.resultsDisplayed = true;
 		}
 	};
@@ -16656,6 +16675,10 @@ This file is part of LifeViewer
 			}
 		}
 
+		// reset identify type and mode (type must be first otherwise mode switches to Map as Period is set)
+		me.identifyTypeToggle.current = me.toggleIdentifyDisplayType(ViewConstants.identifyDisplayPeriod, true, me);
+		me.identifyModeToggle.current = me.toggleIdentifyDisplayMode(ViewConstants.identifyDisplayResults, true, me);
+
 		// initialize search
 		me.engine.initSearch(me.identify);
 
@@ -16667,9 +16690,6 @@ This file is part of LifeViewer
 		me.backPressed(me);
 		me.menuManager.toggleRequired = true;
 		me.viewMenu.locked = false;
-
-		// set results to summary
-		me.identifyModeToggle.current = me.toggleIdentifyDisplayType(0, true, me);
 	};
 
 	// save image button pressed
@@ -16894,6 +16914,11 @@ This file is part of LifeViewer
 	View.prototype.toggleIdentifyDisplayType = function(/** @type {number} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
 		if (change) {
 			me.identifyDisplayType = newValue;
+
+			// if the mode is Results then switch to Map
+			if (me.identifyDisplayMode === ViewConstants.identifyDisplayResults) {
+				me.identifyModeToggle.current = me.toggleIdentifyDisplayMode(ViewConstants.identifyDisplayMap, true, me);
+			}
 			me.updateIdentifyDisplay();
 		}
 
@@ -19809,9 +19834,9 @@ This file is part of LifeViewer
 			me.starField.starColour = new Colour(255, 255, 255);
 		}
 
-		// reset identify display mode and type
-		me.identifyModeToggle.current = me.toggleIdentifyDisplayMode(ViewConstants.identifyDisplayResults, true, me);
+		// reset identify type and mode (type must be first otherwise mode switches to Map as Period is set)
 		me.identifyTypeToggle.current = me.toggleIdentifyDisplayType(ViewConstants.identifyDisplayPeriod, true, me);
+		me.identifyModeToggle.current = me.toggleIdentifyDisplayMode(ViewConstants.identifyDisplayResults, true, me);
 
 		// disable HROT non-deterministic mode
 		me.engine.HROT.useRandom = false;
@@ -21548,9 +21573,6 @@ This file is part of LifeViewer
 			me.engine.createColours();
 			me.engine.isNone = savedNone;
 		}
-
-		// clear cell period display toggle
-		me.identifyModeToggle.current = me.toggleIdentifyDisplayType(0, true, me);
 
 		// disable population graph if rule is 'none'
 		if (me.engine.isNone) {
