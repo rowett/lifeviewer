@@ -1916,7 +1916,7 @@ This file is part of LifeViewer
 				this.occMap[1] = LifeConstants.cellHasChanged;
 				this.occMap[2] = LifeConstants.cellHasChanged;
 				this.occMap[64] = LifeConstants.cellHasChanged;
-				this.occMap[65] = LifeConstants.cellWasDead;
+				this.occMap[65] = LifeConstants.cellWasAlive;
 				this.occMap[66] = LifeConstants.cellHasChanged;
 
 				// get start time
@@ -4878,7 +4878,7 @@ This file is part of LifeViewer
 		var	/** @type {boolean} */ twoState = ((this.multiNumStates === -1) || (this.isHROT && this.multiNumStates === 2)),
 			/** @type {number} */ i = 0,
 			/** @type {Uint16Array} */ mergedMap = this.occMergedTileMap.whole,
-			/** @type {Uint16Array} */ colourMap = this.colourTileGrid.whole,
+			/** @type {Uint16Array} */ colourMap = this.colourTileHistoryGrid.whole,
 			/** @type {Uint16Array} */ occMap = this.occTileMap.whole;
 
 		if (twoState) {
@@ -5753,6 +5753,7 @@ This file is part of LifeViewer
 
 			//console.log("memory", bitFrameIn16Bits * period, ((100 * bitFrameIn16Bits * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
 		}
+
 
 		// if not computing strict volatility then use other method for rotor and stator
 		if (!computeStrict) {

@@ -1,3 +1,6 @@
+Build 1260
+- fixed Identify oscillator rotor and stator calculation when not calculating strict volatility
+
 Build 1259
 - fixed Identify not detecting Mod for [R]History oscillators
 - fixed showing AliveRamp in Help when AGESTATES is zero
