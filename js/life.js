@@ -2668,7 +2668,7 @@ This file is part of LifeViewer
 	/** @returns {number} */
 	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ trans = 0,
-			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
+			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !(this.isRuleTree || this.isLifeHistory)),
 			/** @type {number} */ hash = 0,
 			/** @type {number} */ i = 0,
 			/** @type {boolean} */ valid = true,
@@ -21617,7 +21617,7 @@ This file is part of LifeViewer
 			/** @type {number} */ heightMask = this.heightMask,
 
 			// alive state
-			/** @type {number} */ alive = this.multiNumStates + this.historyStates,
+			/** @type {number} */ alive = this.multiNumStates + this.historyStates - 1,
 			/** @type {number} */ dead = 0,
 
 			// boundary cell radius
@@ -21899,7 +21899,7 @@ This file is part of LifeViewer
 			/** @type {number} */ yrange = this.HROT.yrange * 2 + 1,
 
 			// alive and dead states
-			/** @type {number} */ alive = (this.multiNumStates > 2 ? 1 : LifeConstants.aliveStart),
+			/** @type {number} */ alive = (this.multiNumStates > 2 ? this.multiNumStates + this.historyStates - 1 : LifeConstants.aliveStart),
 
 			// counters
 			/** @type {number} */ x = 0,

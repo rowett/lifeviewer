@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1258,
+		/** @const {number} */ versionBuild : 1259,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7457,7 +7457,7 @@ This file is part of LifeViewer
 		this.identifyVolatilityValueLabel.deleted = shown || (this.lastIdentifyType !== "Oscillator");
 
 		// identify page up and down buttons
-		shown = hide || !this.resultsDisplayed || (this.identifyDisplayMode === ViewConstants.identifyDisplayResults) || this.engine.tableMaxRow === 0 || settingsMenuOpen;
+		shown = hide || !this.resultsDisplayed || (this.identifyDisplayMode === ViewConstants.identifyDisplayResults) || (this.engine.tableMaxRow === 0 ? true : this.engine.tableMaxRow <= this.engine.tablePageSize) || settingsMenuOpen;
 		this.identifyPageUpButton.deleted = shown;
 		this.identifyPageDownButton.deleted = shown;
 

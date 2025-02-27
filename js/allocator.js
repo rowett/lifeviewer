@@ -518,18 +518,20 @@ This file is part of LifeViewer
 		// save reference to the whole array
 		mat.whole = whole;
 
-		// create rows if they are not empty
-		if (n > 0) {
-			while (i < m) {
-				// create views of the rows
-				mat[i] = allocator.typedView(whole, type, n, i * n, name);
-				i += 1;
-			}
+		// create rows if they are not empty and allocation succeeded
+		if (whole) {
+			if (n > 0) {
+				while (i < m) {
+					// create views of the rows
+					mat[i] = allocator.typedView(whole, type, n, i * n, name);
+					i += 1;
+				}
 
-			// check whether to fill with an initial value
-			if (initial !== 0) {
-				// fill the array with the initial value
-				whole.fill(initial);
+				// check whether to fill with an initial value
+				if (initial !== 0) {
+					// fill the array with the initial value
+					whole.fill(initial);
+				}
 			}
 		}
 

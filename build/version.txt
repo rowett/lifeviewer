@@ -1,3 +1,9 @@
+Build 1259
+- fixed Identify not detecting Mod for [R]History oscillators
+- fixed showing AliveRamp in Help when AGESTATES is zero
+- fixed displaying both greyed out Identify results page up and down buttons
+- fixed HROT/LtL multi-state patterns not being cleared when they hit the grid boundary
+
 Build 1258
 - Cell Period Map and Cell Frequency Map legends are now scrollable
 - fixed Identify not detecting Mod for [R]Investigator oscillators
