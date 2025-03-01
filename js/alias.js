@@ -591,6 +591,7 @@ This file is part of LifeViewer
 		a.push(["1d110", "MAPLy0PDw"]);
 		a.push(["AllShips", "MAPAAD//w"]);
 		a.push(["HybridViewW110", "MAPPzz//A"]);
+		a.push(["Sierpinski", "MAPT48PDw"]);
 
 		// add non-isotropic hexagonal aliases
 		s.push("NINT Hex");
@@ -604,6 +605,7 @@ This file is part of LifeViewer
 		a.push(["BLAHTWOCELLGUN", "MAPAMB/vwAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
 		a.push(["cloverleafsim", "MAPAAD//zAwPz8AAP//MDA/PwAA//8AAP//AAD//wAA//8AAD8/AAD//wAAPz8AAP//wMD//wAA///AwP//AAD//w"]);
 		a.push(["FoxLife", "MAPARYXfhZofugWaH7oaIFoxBZofuhogOiAaIFoxIAAgAAWaH7oaIFoxGiA6ICAAIAAaIFoxIAAgACAAIAAAAAAAA"]);
+		a.push(["loopy", "MAPACD/JSDI//8AAL+/AAB//wAA/f+AgP//AAB//xCA//8IAP//AAD//wAA//8AAH//AAL//wCA//8AAvv7AAL//w"]);
 		a.push(["MaxPeriod_2x2k2", "MAPADC9vyIA/f8AAH//AAD//wCA//+AAP//AID/fwAA//8AAH//AAB//wAA//8AAP//AAD//4AA//8AAP//AAD//w"]);
 		a.push(["movingdiagonal", "MAPAAAAAAAAAAD//wAA//8AAAAAAAAAAAAA//8AAP//AAAAAAAAAAAAAP//AAD//wAAAAAAAAAAAAD//wAA//8AAA"]);
 		a.push(["MovingStrings", "MAPARH+/wMT//8BEf7/AxP//wER/v8DE///AREAAAMTAAABEf7/AxP//wER/v8DE///AREAAAMTAAABEQAAAxMAAA"]);
@@ -617,6 +619,7 @@ This file is part of LifeViewer
 		a.push(["rules6", "MAPAgl/+0Ug/fVAIv/9AADdPwDi9/uAQft5qIDtlQgA/b8gAP//AAD//wAQv/8AAP7+AhD/+gAA/f8EAv//AID//w"]);
 		a.push(["SemiFelineLife", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaICatGiA6ICAAIAAaICatIAAgACAAIAAAAAAAA"]);
 		a.push(["Simple_Weird_Ships", "MAPABHs/wMA//8AAP//AAD//wAA/38AAP//AAD//wAA//8AAP//gAD//wAA//8AAP//AAD//wAA//8AAP//AAD//w"]);
+		a.push(["Snowflakes (MCell)", "MAPBTBogCKlgABMQ4AUYkgAACWogADgtwAAEpgAABwzAABMOIAAGUgGAO0FAAAVpQAAEkYAAMIzAAClRQCADbeASA"]);
 		a.push(["Socrates", "MAPARYXfhZofugWaH7oaIDogBZofuhogOiAaIDogIAAgAAWaH7oaIDogGiA6ICAAIAAaIDogIAAg00IAmSocrateg"]);
 		a.push(["x-rule", "MAPBSB64CCTqARFBImEADAGBSCTgICTSIAAADCFCSTAAAANAMEUBCKEBchCE00YAE3IACSFACCIQQDIIF4UIIAGSA"]);
 		a.push(["water", "MAPABAbrwAA//8AQltdAAD+/8Aa/f8AAP//YgD//wAA//8AAP//QAD//wBA//8AAP/fAgD3+wKA//8AIPZ/AAD//w"]);
