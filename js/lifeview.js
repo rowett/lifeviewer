@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1260,
+		/** @const {number} */ versionBuild : 1266,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3037,11 +3037,8 @@ This file is part of LifeViewer
 
 		// search for undo records at or before specified generation
 		while (i >= 0 && !found) {
-			if (this.editList[i].gen <= gen) {
-				// check for multi-step
-				if (this.editList[i].action === "advance outside" || this.editList[i].action === "advance selection") {
-					i -= 1;
-				}
+			record = this.editList[i];
+			if (record.gen <= gen) {
 				found = true;
 			} else {
 				i -= 1;
@@ -5409,6 +5406,16 @@ This file is part of LifeViewer
 				this.panX = Math.round((this.engine.width) / 2) + this.xOffset;
 				this.panY = Math.round((this.engine.height) / 2) + this.yOffset;
 			} else {
+				if (this.engine.boundedGridWidth !== 0 && specifiedWidth > this.engine.boundedGridWidth) {
+					specifiedWidth = this.engine.boundedGridWidth;
+				}
+				if (this.engine.boundedGridHeight !== 0 && specifiedHeight > this.engine.boundedGridHeight) {
+					specifiedHeight = this.engine.boundedGridHeight;
+				}
+				if (specifiedWidth < width || specifiedHeight < height) {
+					specifiedWidth = this.engine.boundedGridWidth;
+					specifiedHeight = this.engine.boundedGridHeight;
+				}
 				this.panX = Math.round((this.engine.width - specifiedWidth) / 2);
 				this.panY = Math.round((this.engine.height - specifiedHeight) / 2);
 			}
@@ -10566,6 +10573,15 @@ This file is part of LifeViewer
 							// run from start to previous generation
 							me.runTo(me.engine.counter - me.gensPerStep);
 
+							if (me.editNum > 0) {
+								var record = me.editList[me.editNum - 1];
+
+								if (record.action === "advance outside" || record.action === "advance selection") {
+									me.pasteRaw(me.editList[me.editNum - 3].editCells, true);
+									me.editNum -= 3;
+								}
+							}
+
 							// check if population was zero and is now non-zero after step back
 							if (numChanged === 0 && me.engine.population > 0) {
 								// reset died generation since cells are alive now
@@ -14694,6 +14710,7 @@ This file is part of LifeViewer
 				// step
 				me.engine.nextGeneration(me.noHistory);
 				me.engine.convertToPensTile();
+				me.fixedPointCounter = me.engine.counter * me.refreshRate;
 				me.engine.saveSnapshotIfNeeded(me);
 				me.afterEdit("");
 
@@ -14777,11 +14794,18 @@ This file is part of LifeViewer
 				// shrink needed
 				me.engine.shrinkNeeded = true;
 				me.engine.doShrink();
+
+				// restore selection box
+				box.leftX = origX1;
+				box.rightX = origX2;
+				box.bottomY = origY1;
+				box.topY = origY2;
 				me.afterEdit("advance selection");
 
 				// step
 				me.engine.nextGeneration(me.noHistory);
 				me.engine.convertToPensTile();
+				me.fixedPointCounter = me.engine.counter * me.refreshRate;
 				me.engine.saveSnapshotIfNeeded(me);
 				me.afterEdit("");
 
@@ -19523,78 +19547,80 @@ This file is part of LifeViewer
 			/** @type {number} */ displayWidth = this.displayWidth,
 			/** @type {number} */ displayHeight = this.displayHeight + 80;
 
-		// update the device pixel ratio
-		this.devicePixelRatio = (window.devicePixelRatio ? window.devicePixelRatio : 1);
+		if (Controller.popupWindow) {
+			// update the device pixel ratio
+			this.devicePixelRatio = (window.devicePixelRatio ? window.devicePixelRatio : 1);
 
-		// check for maximize
-		if (Controller.popupWindow.maximized) {
-			displayWidth = windowWidth;
-			displayHeight = windowHeight - 34;
-			scale = 1;
-		} else {
-			// scale width and height
-			displayWidth *= this.devicePixelRatio;
-			displayHeight *= this.devicePixelRatio;
-			scale = this.devicePixelRatio;
-		}
-
-		// assume window will fit and scale controls
-		this.windowZoom = 1;
-
-		// check window fits on display
-		if (displayWidth > windowWidth || displayHeight > windowHeight) {
-			// find the maximum x or y scaling factor for the window to fit
-			scale = displayWidth / windowWidth;
-			if (displayHeight / windowHeight > scale) {
-				scale = displayHeight / windowHeight;
-			}
-
-			// apply the scaling factor
-			displayWidth /= scale;
-			displayHeight = this.displayHeight * this.devicePixelRatio / scale;
-
-			// see how much window is larger than original size and scale controls and fonts
-			scale = displayWidth / this.displayWidth;
-			if (displayHeight / this.displayHeight < scale) {
-				scale = displayHeight / this.displayHeight;
-			}
-
-			// check if the window size is above minimum
-			if (displayWidth < ViewConstants.minViewerWidth || displayHeight < ViewConstants.minViewerHeight) {
-				scale = displayWidth / ViewConstants.minViewerWidth;
-				if  (displayHeight / ViewConstants.minViewerHeight < scale) {
-					scale = displayHeight / ViewConstants.minViewerHeight;
-				}
-				displayWidth /= scale;
-				displayHeight /= scale;
-				this.windowZoom = scale;
+			// check for maximize
+			if (Controller.popupWindow.maximized) {
+				displayWidth = windowWidth;
+				displayHeight = windowHeight - 34;
 				scale = 1;
+			} else {
+				// scale width and height
+				displayWidth *= this.devicePixelRatio;
+				displayHeight *= this.devicePixelRatio;
+				scale = this.devicePixelRatio;
 			}
-		}
 
-		// ensure width is a multiple of 8 and height is an integer
-		this.displayWidth = displayWidth & ~7;
-		this.displayHeight = displayHeight | 0;
+			// assume window will fit and scale controls
+			this.windowZoom = 1;
 
-		// update menu manager zoom
-		this.menuManager.windowZoom = this.windowZoom;
-		Controller.popupWindow.windowZoom = this.windowZoom;
+			// check window fits on display
+			if (displayWidth > windowWidth || displayHeight > windowHeight) {
+				// find the maximum x or y scaling factor for the window to fit
+				scale = displayWidth / windowWidth;
+				if (displayHeight / windowHeight > scale) {
+					scale = displayHeight / windowHeight;
+				}
 
-		// resize the menu controls
-		this.viewMenu.resizeControls(scale);
+				// apply the scaling factor
+				displayWidth /= scale;
+				displayHeight = this.displayHeight * this.devicePixelRatio / scale;
 
-		// resize the icons
-		this.iconManager.setScale(scale);
+				// see how much window is larger than original size and scale controls and fonts
+				scale = displayWidth / this.displayWidth;
+				if (displayHeight / this.displayHeight < scale) {
+					scale = displayHeight / this.displayHeight;
+				}
 
-		// resize the help fonts
-		this.helpFontSize = (18 * scale) | 0;
-		this.helpFixedFont = this.helpFontSize + "px " + ViewConstants.fixedFontFamily;
-		this.helpVariableFont = this.helpFontSize + "px " + ViewConstants.variableFontFamily;
-		this.clearHelpCache();
+				// check if the window size is above minimum
+				if (displayWidth < ViewConstants.minViewerWidth || displayHeight < ViewConstants.minViewerHeight) {
+					scale = displayWidth / ViewConstants.minViewerWidth;
+					if  (displayHeight / ViewConstants.minViewerHeight < scale) {
+						scale = displayHeight / ViewConstants.minViewerHeight;
+					}
+					displayWidth /= scale;
+					displayHeight /= scale;
+					this.windowZoom = scale;
+					scale = 1;
+				}
+			}
 
-		// check if popup width has changed
-		if (this.displayWidth !== this.lastPopupWidth) {
-			this.popupWidthChanged = true;
+			// ensure width is a multiple of 8 and height is an integer
+			this.displayWidth = displayWidth & ~7;
+			this.displayHeight = displayHeight | 0;
+
+			// update menu manager zoom
+			this.menuManager.windowZoom = this.windowZoom;
+			Controller.popupWindow.windowZoom = this.windowZoom;
+
+			// resize the menu controls
+			this.viewMenu.resizeControls(scale);
+
+			// resize the icons
+			this.iconManager.setScale(scale);
+
+			// resize the help fonts
+			this.helpFontSize = (18 * scale) | 0;
+			this.helpFixedFont = this.helpFontSize + "px " + ViewConstants.fixedFontFamily;
+			this.helpVariableFont = this.helpFontSize + "px " + ViewConstants.variableFontFamily;
+			this.clearHelpCache();
+
+			// check if popup width has changed
+			if (this.displayWidth !== this.lastPopupWidth) {
+				this.popupWidthChanged = true;
+			}
 		}
 	};
 
@@ -19763,6 +19789,10 @@ This file is part of LifeViewer
 		// add the pattern comments to the args
 		args[args.length] = pattern.title;
 		args[args.length] = pattern.numStates;
+
+		me.displayWidth = me.origDisplayWidth;
+		me.displayHeight = me.origDisplayHeight;
+
 		me.manager.failureReason = me.lastFailReason;
 		me.manager.executable = true;
 		me.completeStart(null, args, me);
@@ -20660,7 +20690,8 @@ This file is part of LifeViewer
 		if (me.isInPopup) {
 			me.origDisplayWidth = me.displayWidth;
 			me.origDisplayHeight = me.displayHeight;
-			me.scalePopup();
+			me.popupWidthChanged = true;
+			Controller.popupWindow.resizeWindow(Controller.popupWindow);
 		}
 
 		// if pattern is too big and has no paste commands then generate error

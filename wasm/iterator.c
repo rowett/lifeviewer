@@ -1219,15 +1219,17 @@ void nextGenerationGenerations(
 						uint32_t aliveBits = wasm_i8x16_bitmask(wasm_i8x16_gt(newColourVec, deadStateVec));
 
 						// compute the left and right most occupied cell
-						uint32_t leftMost = 31 - __builtin_clz(aliveBits);
-						uint32_t rightMost = __builtin_ctz(aliveBits);
+						if (aliveBits) {
+							uint32_t leftMost = 31 - __builtin_clz(aliveBits);
+							uint32_t rightMost = __builtin_ctz(aliveBits);
 
-						// update the min and max X
-						if ((currentX << 4) + rightMost < newLeftX) {
-							newLeftX = (currentX << 4) + rightMost;
-						}
-						if ((currentX << 4) + leftMost > newRightX) {
-							newRightX = (currentX << 4) + leftMost;
+							// update the min and max X
+							if ((currentX << 4) + rightMost < newLeftX) {
+								newLeftX = (currentX << 4) + rightMost;
+							}
+							if ((currentX << 4) + leftMost > newRightX) {
+								newRightX = (currentX << 4) + leftMost;
+							}
 						}
 
 						if (h < newBottomY) {

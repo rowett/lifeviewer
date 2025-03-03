@@ -3486,7 +3486,9 @@ This file is part of LifeViewer
 		}
 
 		// update total time
-		this.loadTotal += (1000 / (newWork + newMenu));
+		if (newWork + newMenu > 0) {
+			this.loadTotal += (1000 / (newWork + newMenu));
+		}
 		this.loadCount += 1;
 
 		// draw the timing statistics if enabled

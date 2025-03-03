@@ -592,7 +592,7 @@ This file is part of LifeViewer
 						}
 					} else {
 						// this cell is alive
-						if (count >= 0 && survivalList[count] === 0) {
+						if (count < 0 || survivalList[count] === 0) {
 							// check for immunity
 							if (myRand.random() >= immunityChances[count]) {
 								// this cell survives
@@ -850,7 +850,7 @@ This file is part of LifeViewer
 						}
 					} else {
 						// this cell is alive
-						if (count >= 0 && survivalList[count] === 0) {
+						if (count < 0 || survivalList[count] === 0) {
 							// cell does not survive
 							deaths += 1;
 						} else {

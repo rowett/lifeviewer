@@ -361,13 +361,18 @@ This file is part of LifeViewer
 
 	// check if theme has colour history
 	/** @returns {boolean} */
-	Theme.prototype.hasHistory = function(/** @type {boolean} */ isLifeHistory) {
+	Theme.prototype.hasHistory = function(/** @type {boolean} */ isLifeHistory, /** @type {View} */ view) {
 		var	/** @type {boolean} */ result = true;
 
 		// always return true if the pattern is [R]History since history states are saved in RLE
 		if (!isLifeHistory) {
 			// check if the alive start and end colour are the same, the dead start and end colour are the same and the dead and unoccupied colour are the same
 			if ((this.aliveRange.startColour.isSameColour(this.aliveRange.endColour)) && (this.deadRange.startColour.isSameColour(this.deadRange.endColour)) && (this.deadRange.startColour.isSameColour(this.unoccupied))) {
+				result = false;
+			}
+
+			// check if there are ALIVESTATES and HISTORYSTATES are both 0
+			if (view.historyStates === 0 && view.aliveStates === 0) {
 				result = false;
 			}
 		}
@@ -3441,13 +3446,18 @@ This file is part of LifeViewer
 		// get the unique cell counts from the sorted cell counts list
 		sortedCounts.sort();
 		x = sortedCounts[0];
-		for (i = 1; i < sortedCounts.length; i += 1) {
-			y = sortedCounts[i];
-			if (x !== y) {
-				uniqueCounts[uniqueCounts.length] = x;
-				x = y;
+		if (sortedCounts.length > 1) {
+			for (i = 1; i < sortedCounts.length; i += 1) {
+				y = sortedCounts[i];
+				if (x !== y) {
+					uniqueCounts[uniqueCounts.length] = x;
+					x = y;
+				}
 			}
+		} else {
+			y = x;
 		}
+
 		uniqueCounts[uniqueCounts.length] = y;
 		numCols = uniqueCounts.length;
 
@@ -11641,7 +11651,7 @@ This file is part of LifeViewer
 	Life.prototype.createColourIndex = function() {
 		var	/** @type {number} */ shader = this.cellRenderer;
 
-		if (shader === LifeConstants.shaderCellAge && !this.themes[this.colourTheme].hasHistory(this.isLifeHistory) && !this.isHROT) {
+		if (shader === LifeConstants.shaderCellAge && !this.themes[this.colourTheme].hasHistory(this.isLifeHistory, this.view) && !this.isHROT) {
 			shader = LifeConstants.shaderBasic;
 		}
 
@@ -17963,7 +17973,7 @@ This file is part of LifeViewer
 			for (i = 0; i < height; i += 1) {
 				// copy left column to right of right
 				sourceY = bottomY + i;
-				destY = bottomY + ((((i + vertShift) % height) + height) % height);
+				destY = bottomY + ((((i - vertShift) % height) + height) % height);
 
 				// check if cell set
 				state = grid[sourceY][leftX];
@@ -21619,7 +21629,8 @@ This file is part of LifeViewer
 
 			// alive state
 			/** @type {number} */ alive = this.multiNumStates + this.historyStates - 1,
-			/** @type {number} */ dead = 0,
+			// dying state for Generations
+			/** @type {number} */ dyingState = this.multiNumStates + this.historyStates - 2,
 
 			// boundary cell radius
 			/** @type {number} */ radius = this.removePatternRadius,
@@ -21634,7 +21645,7 @@ This file is part of LifeViewer
 
 		// remove the cell
 		if (colourGrid[y][x] === alive) {
-			colourGrid[y][x] = dead;
+			colourGrid[y][x] = dyingState;
 			cleared += 1;
 		}
 
@@ -21668,7 +21679,7 @@ This file is part of LifeViewer
 						// check if cell set
 						if (colourRow[tx] === alive) {
 							// remove the cell
-							colourRow[tx] = dead;
+							colourRow[tx] = dyingState;
 							cleared += 1;
 
 							// stack the cell
@@ -30923,7 +30934,7 @@ This file is part of LifeViewer
 		// ignore if rule is none, PCA, RuleTable, Super, Extended or Generations
 		if (!(this.isNone || this.isPCA || this.isRuleTree || this.isSuper || this.isExtended || this.multiNumStates !== -1)) {
 			// if using the Cell Age shader and the current Theme has no history then use the Basic shader since it is faster
-			if (shader === LifeConstants.shaderCellAge && !this.themes[this.colourTheme].hasHistory(this.isLifeHistory)) {
+			if (shader === LifeConstants.shaderCellAge && !this.themes[this.colourTheme].hasHistory(this.isLifeHistory, this.view)) {
 				shader = LifeConstants.shaderBasic;
 			}
 

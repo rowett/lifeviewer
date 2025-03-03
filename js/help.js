@@ -2119,7 +2119,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "", "Cells:", ctx, x, y, height, helpLine);
 		switch (view.engine.cellRenderer) {
 			case LifeConstants.shaderCellAge:
-				if (!view.engine.themes[view.engine.colourTheme].hasHistory(view.engine.isLifeHistory)) {
+				if (!view.engine.themes[view.engine.colourTheme].hasHistory(view.engine.isLifeHistory, view)) {
 					itemName = "Basic";
 				} else {
 					itemName = "Cell Age";
@@ -2238,7 +2238,7 @@ This file is part of LifeViewer
 						y = this.renderHelpLine(view, "Alive", this.rgbObjectString(theme.aliveRange.startColour), ctx, x, y, height, helpLine);
 
 						// check if there is a ramp between alive start and end and there are age states
-						if (this.aliveStates > 0) {
+						if (view.aliveStates > 0 && view.engine.themes[view.engine.colourTheme].hasHistory(view.engine.isLifeHistory, view) && !(view.engine.cellRenderer === LifeConstants.shaderBasic))  {
 							if (theme.aliveRange.startColour.red !== theme.aliveRange.endColour.red || theme.aliveRange.startColour.green !== theme.aliveRange.endColour.green || theme.aliveRange.startColour.blue !== theme.aliveRange.endColour.blue) {
 								this.renderColourBox(view, theme.aliveRange.endColour.red, theme.aliveRange.endColour.green, theme.aliveRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 								y = this.renderHelpLine(view, "AliveRamp", this.rgbObjectString(theme.aliveRange.endColour), ctx, x, y, height, helpLine);
@@ -2249,7 +2249,7 @@ This file is part of LifeViewer
 					}
 
 					// if there are no history states don't draw dead states
-					if (view.historyStates > 0) {
+					if (view.historyStates > 0 && view.engine.themes[view.engine.colourTheme].hasHistory(view.engine.isLifeHistory, view) && !(view.engine.cellRenderer === LifeConstants.shaderBasic)) {
 						this.renderColourBox(view, theme.deadRange.endColour.red, theme.deadRange.endColour.green, theme.deadRange.endColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						y = this.renderHelpLine(view, "Dead", this.rgbObjectString(theme.deadRange.endColour), ctx, x, y, height, helpLine);
 

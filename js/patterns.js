@@ -8112,8 +8112,8 @@ This file is part of LifeViewer
 		if (survivals[maxn + 1]) {
 			// B0 with Smax: rule -> NOT(reverse(bits))
 			for (i = 0; i <= maxn; i += 1) {
-				tempB[i] = 1 - survivals[maxn - i + 1];
-				tempS[i + 1] = 1 - births[maxn - i];
+				tempB[i] = 255 - survivals[maxn - i + 1];
+				tempS[i + 1] = 255 - births[maxn - i];
 			}
 			for (i = 0; i <= maxn; i += 1) {
 				births[i] = tempB[i];
@@ -10471,7 +10471,11 @@ This file is part of LifeViewer
 			if (this.failureReason !== "" && !this.tooBig && !this.illegalState && newPattern.ruleName !== "") {
 				// check for alternating rules
 				if (newPattern.ruleName.indexOf(this.altRuleSeparator) !== -1 && this.failureReason !== "Only one alternate allowed") {
-					this.failureReason = "Alternating RuleLoader rules are not supported";
+					if (newPattern.isHROT) {
+						this.failureReason = "Alternating HROT rules are not supported";
+					} else {
+						this.failureReason = "Alternating RuleLoader rules are not supported";
+					}
 				} else {
 					newPattern.originalFailure = this.failureReason;
 					newPattern.originalRuleName = newPattern.ruleName;

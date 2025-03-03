@@ -1,3 +1,26 @@
+Build 1266
+- fixed PopUp window size after pattern failed to load due to invalid rule
+- fixed survival calculation for Weighted states rules with negative counts
+- fixed Help>Info>Cells for Basic shader
+
+Build 1265
+- fixed pattern positioning in Bounded Grids
+
+Build 1264
+- fixed Inf when using [[ TIME ]] command
+- fixed AutoFit for Generations patterns on Pro
+
+Build 1263
+- fixed Cell Frequency Maps with only one Frequency
+
+Build 1262
+- fixed Torus with vertical shift for multi-state rules
+- fixed HROT/LtL 2-state rules with B0
+
+Build 1261
+- use Basic Shader if AGESTATES and HISTORYSTATES are both zero
+- fixed cell state for cells killed by grid boundary for multistate HROT/LtL patterns
+
 Build 1260
 - fixed Identify oscillator rotor and stator calculation when not calculating strict volatility
 
