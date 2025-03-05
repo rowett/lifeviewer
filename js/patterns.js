@@ -10472,7 +10472,7 @@ This file is part of LifeViewer
 				// check for alternating rules
 				if (newPattern.ruleName.indexOf(this.altRuleSeparator) !== -1 && this.failureReason !== "Only one alternate allowed") {
 					if (newPattern.isHROT) {
-						this.failureReason = "Alternating HROT rules are not supported";
+						this.failureReason = "Alternating HROT rules with B0 are not supported";
 					} else {
 						this.failureReason = "Alternating RuleLoader rules are not supported";
 					}

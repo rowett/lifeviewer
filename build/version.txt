@@ -1,3 +1,13 @@
+Build 1268
+- fixed PCA killed cells state and statistics
+- worked around compiler optimizer bug for [R]Super WASM
+
+Build 1267
+- fixed error message for alternating HROT rules using B0
+- fixed PCA pattern cells not being killed when they reach the grid boundary
+- work in progress fixes to Select All
+- work in progress fixes to Step Back with Advance Selection or Advance Outside
+
 Build 1266
 - fixed PopUp window size after pattern failed to load due to invalid rule
 - fixed survival calculation for Weighted states rules with negative counts

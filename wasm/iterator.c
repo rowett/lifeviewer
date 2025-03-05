@@ -2105,7 +2105,7 @@ void nextGenerationSuperMoore(
 	uint32_t deaths,
 	uint32_t *shared
 ) {
-	uint32_t c, e;
+	uint32_t c, e, value;
 	uint32_t ccol, rcol;
 	int32_t calc;
 
@@ -2244,41 +2244,29 @@ void nextGenerationSuperMoore(
 						lcol = ccol;
 						ccol = rcol;
 						rcol = (1 << e) | (1 << *belowRow) | (1 << *aboveRow);
-						uint32_t value = c;
+						value = c;
 
 						// typemask has a bit set per state in the neighbouring cells
 						typeMask = lcol | ccol | rcol;
 
 						// handle state 6
 						bool process = true;
+
 						if (typeMask & (1 << 6)) {
 							process = false;
-							if (c == 7 || c == 8 || c >= 13) {
+
+							if (c == 1) {
+								value = 2;
+							} else if (c == 3 || c == 5) {
+								value = 9;
+							} else if (c == 7 || c == 8 || c >= 13) {
 								value = 0;
+							} else if (c == 9) {
+								value = 10;
+							} else if (c == 11) {
+								value = 12;
 							} else {
-								switch (c) {
-									case 1:
-										value = 2;
-										break;
-
-									case 3:
-									case 5:
-										value = 4;
-										break;
-
-									case 9:
-										value = 10;
-										break;
-
-									case 11:
-										value = 12;
-										break;
-
-									default:
-										// not handled here so process below
-										process = true;
-										break;
-								}
+								process = true;
 							}
 
 							// clear cell in bit grid
@@ -2630,34 +2618,22 @@ void nextGenerationSuperHex(
 
 						// handle state 6
 						bool process = true;
+
 						if (typeMask & (1 << 6)) {
 							process = false;
-							if (c == 7 || c == 8 || c >= 13) {
+
+							if (c == 1) {
+								value = 2;
+							} else if (c == 3 || c == 5) {
+								value = 9;
+							} else if (c == 7 || c == 8 || c >= 13) {
 								value = 0;
+							} else if (c == 9) {
+								value = 10;
+							} else if (c == 11) {
+								value = 12;
 							} else {
-								switch (c) {
-									case 1:
-										value = 2;
-										break;
-
-									case 3:
-									case 5:
-										value = 4;
-										break;
-
-									case 9:
-										value = 10;
-										break;
-
-									case 11:
-										value = 12;
-										break;
-
-									default:
-										// not handled here so process below
-										process = true;
-										break;
-								}
+								process = true;
 							}
 
 							// clear cell in bit grid
@@ -3016,32 +2992,19 @@ void nextGenerationSuperVN(
 						bool process = true;
 						if (typeMask & (1 << 6)) {
 							process = false;
-							if (c == 7 || c == 8 || c >= 13) {
+
+							if (c == 1) {
+								value = 2;
+							} else if (c == 3 || c == 5) {
+								value = 9;
+							} else if (c == 7 || c == 8 || c >= 13) {
 								value = 0;
+							} else if (c == 9) {
+								value = 10;
+							} else if (c == 11) {
+								value = 12;
 							} else {
-								switch (c) {
-									case 1:
-										value = 2;
-										break;
-
-									case 3:
-									case 5:
-										value = 4;
-										break;
-
-									case 9:
-										value = 10;
-										break;
-
-									case 11:
-										value = 12;
-										break;
-
-									default:
-										// not handled here so process below
-										process = true;
-										break;
-								}
+								process = true;
 							}
 
 							// clear cell in bit grid

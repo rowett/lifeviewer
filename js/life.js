@@ -5717,7 +5717,7 @@ This file is part of LifeViewer
 
 		this.identifyDetectionTime = (performance.now() - this.identifyStartTime) / 1000;
 
-		//console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
+		console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
 
 		// check for PCA, RuleTree, Super or Extended rules
 		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
@@ -5761,7 +5761,7 @@ This file is part of LifeViewer
 				computeStrict = true;
 			}
 
-			//console.log("memory", bitFrameIn16Bits * period, ((100 * bitFrameIn16Bits * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
+			console.log("memory", bitFrameIn16Bits * period, ((100 * bitFrameIn16Bits * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
 		}
 
 
@@ -5775,7 +5775,7 @@ This file is part of LifeViewer
 			this.occMergedTileMap = Array.matrix(Type.Uint16, this.tileRows, ((this.tileCols - 1) >> 4) + 1, 0, this.allocator, "Life.occMergedTileMap", false);
 		}
 
-		//var t = performance.now();
+		var t = performance.now();
 
 		// reset heat
 		this.minHeat = 16384 * 16384;
@@ -5881,16 +5881,21 @@ This file is part of LifeViewer
 						// check if the bounding box is the same size as the source
 						if ((((extent.rightX - extent.leftX + 1) === checkWidth) && ((extent.topY - extent.bottomY) + 1) === checkHeight) || ((extent.rightX - extent.leftX + 1) === checkHeight) && ((extent.topY - extent.bottomY + 1) === checkWidth)) {
 							// check the source generation against this one
+							var t2 = performance.now();
+
 							this.modType = this.checkModHashType(extent, checkHash, modChecks[0].modType, deltaX, deltaY, period / (p - checkGenDelta));
+
+							t2 = performance.now() - t2;
+							console.log("checkModHashType", t2.toFixed(2) + "ms");
 
 							if (this.modType !== -1) {
 
-								//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
+								console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
 
 								this.modValue = p - checkGenDelta;
 							} else {
 
-								//console.log(p, "gen", this.counter, "verify failed");
+								console.log(p, "gen", this.counter, "verify failed");
 
 								this.modValue = -1;
 							}
@@ -5906,7 +5911,14 @@ This file is part of LifeViewer
 						if (p > 0 && (period % p === 0)) {
 							// ensure bounding box is the same size as the source
 							if ((((extent.rightX - extent.leftX + 1) === width0) && ((extent.topY - extent.bottomY) + 1) === height0) || ((extent.rightX - extent.leftX + 1) === height0) && ((extent.topY - extent.bottomY + 1) === width0)) {
+
+								var t1 = performance.now();
+
 								modMatch = this.checkModHash(extent, hash0, deltaX, deltaY);
+
+								t1 = performance.now() - t1;
+								console.log("checkModHash", t1.toFixed(2) + "ms");
+
 								if (modMatch !== 0 && !(this.isMargolus && hash0 === hash1 && p < 2)) {
 									// potential Mod found so create verification record
 									if (this.isMargolus && hash0 === hash1) {
@@ -5945,14 +5957,14 @@ This file is part of LifeViewer
 			}
 		}
 
-		//t = performance.now() - t;
-		//console.log("computed cell map for each generation in " + (t / 1000).toFixed(1) + " seconds");
-		//t = performance.now();
+		t = performance.now() - t;
+		console.log("computed cell map for each generation in " + (t / 1000).toFixed(1) + " seconds");
+		t = performance.now();
 
 		// compute strict volatility
 		if (computeStrict) {
 			// set any cell that was alive to maximum period
-			//var t = performance.now();
+			var t = performance.now();
 
 			for (cy = 0; cy < boxHeight; cy += 1) {
 				// get the next row offsets
@@ -5966,18 +5978,19 @@ This file is part of LifeViewer
 				}
 			}
 
-			//t = performance.now() - t;
-			//console.log("alive->max", t.toFixed(2));
+			t = performance.now() - t;
+			console.log("alive->max", t.toFixed(2) + "ms");
+			t = performance.now();
 
 			// calculate the factors of the period (subperiods)
 			this.computeCellFactors(cellPeriod, period, frames, cellCounts, boxWidth, boxHeight, bitFrameIn16Bits, bitRowIn16Bits, bitStart);
 
-			//t = performance.now() - t;
-			//console.log("calculated cell factors in " + (t / 1000).toFixed(1) + " seconds");
-			//t = performance.now();
+			t = performance.now() - t;
+			console.log("calculated cell factors in " + (t / 1000).toFixed(1) + " seconds");
+			t = performance.now();
 
 			// count up the subperiod populations
-			//t = performance.now();
+			t = performance.now();
 			for (cy = 0; cy < boxHeight; cy += 1) {
 				row = cy * boxWidth;
 				for (cx = 0; cx < boxWidth; cx += 1) {
@@ -5987,8 +6000,8 @@ This file is part of LifeViewer
 					}
 				}
 			}
-			//t = performance.now() - t;
-			//console.log("subperiod count", t.toFixed(2));
+			t = performance.now() - t;
+			console.log("subperiod count", t.toFixed(2) + "ms");
 
 			// for [R]History and [R]Super add state 6 cells to map and for [R]Extended add state 3 cells
 			if (isOscillator) {
@@ -6028,7 +6041,7 @@ This file is part of LifeViewer
 		// save elapsed time
 		this.identifyElapsedTime = ((performance.now() - this.identifyStartTime) / 1000);
 
-		//console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
+		console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
 
 		// restore heap pointer (freeing up memory allocated)
 		this.allocator.setHeapPointer(wasmPointer);
@@ -20291,7 +20304,7 @@ This file is part of LifeViewer
 				if (this.isHROT) {
 					this.clearHRBoundary();
 				} else {
-					if (this.isRuleTree) {
+					if (this.isRuleTree || this.isPCA) {
 						this.clearRTBoundary();
 					} else {
 						if (this.isExtended) {
@@ -21145,8 +21158,8 @@ This file is part of LifeViewer
 			/** @type {number} */ leftMask = 1 << 15,
 			/** @type {number} */ rightMask = 1 << 0;
 
-		// check for PCA, RuleTree, Super or Extended rules
-		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
+		// check for Super
+		if (this.isSuper) {
 			// swap grids every generation
 			if ((this.counter & 1) !== 0) {
 				colourGrid = this.nextColourGrid;
@@ -21242,6 +21255,9 @@ This file is part of LifeViewer
 			// boundary cell radius
 			/** @type {number} */ radius = this.removePatternRadius,
 
+			// dead cells state
+			/** @type {number} */ deadState = this.isPCA ? this.historyStates : 0,
+
 			// number of cells cleared
 			/** @type {number} */ cleared = 0;
 
@@ -21289,10 +21305,15 @@ This file is part of LifeViewer
 					// check cell is on grid
 					if (tx === (tx & widthMask) && ty === (ty & heightMask)) {
 						// check if cell set
-						if (colourRow[tx] > 0) {
-							// remove the cell
-							colourRow[tx] = 0;
-							cleared += 1;
+						if (colourRow[tx] > deadState) {
+							if (this.isPCA) {
+								// remove the cells
+								cleared += this.bitCounts16[colourRow[tx]];
+							} else {
+								// remove the cell
+								cleared += 1;
+							}
+							colourRow[tx] = deadState;
 
 							// stack the cell
 							if (index === end) {

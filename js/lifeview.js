@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1266,
+		/** @const {number} */ versionBuild : 1268,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3029,17 +3029,28 @@ This file is part of LifeViewer
 	};
 
 	// set undo stack pointer to given generation (used with step back)
+	// returns a flag to indicate whether the top of the stack is advance selection or advance outside
+	/** @returns {boolean} */
 	View.prototype.setUndoGen = function(/** @type {number} */ gen) {
 		var	/** @type {number} */ i = this.editNum - 1,
 			record = null,
 			/** @type {BoundingBox} */ selBox = this.selectionBox,
-			/** @type {boolean} */ found = false;
+			/** @type {boolean} */ found = false,
+			/** @type {boolean} */ result = false;
 
 		// search for undo records at or before specified generation
 		while (i >= 0 && !found) {
 			record = this.editList[i];
 			if (record.gen <= gen) {
 				found = true;
+
+				// check for advance outside or advance selection
+				if (record.action === "advance selection" || record.action === "advance outside") {
+					if (i < this.editList.length - 2 && (this.editList[i + 2].action === "advance selection" || this.editList[i + 2].action === "advance outside")) {
+						result = true;
+						i += 2;
+					}
+				}
 			} else {
 				i -= 1;
 			}
@@ -3067,6 +3078,8 @@ This file is part of LifeViewer
 
 			this.updateUndoToolTips();
 		}
+
+		return result;
 	};
 
 	// update undo/redo tooltips
@@ -5412,10 +5425,14 @@ This file is part of LifeViewer
 				if (this.engine.boundedGridHeight !== 0 && specifiedHeight > this.engine.boundedGridHeight) {
 					specifiedHeight = this.engine.boundedGridHeight;
 				}
-				if (specifiedWidth < width || specifiedHeight < height) {
+
+				if (specifiedWidth === 0) {
 					specifiedWidth = this.engine.boundedGridWidth;
+				}
+				if (specifiedHeight === 0) {
 					specifiedHeight = this.engine.boundedGridHeight;
 				}
+
 				this.panX = Math.round((this.engine.width - specifiedWidth) / 2);
 				this.panY = Math.round((this.engine.height - specifiedHeight) / 2);
 			}
@@ -10564,22 +10581,15 @@ This file is part of LifeViewer
 					} else {
 						// check if at start
 						if (me.engine.counter > 0) {
-							// adjust undo stack pointer
-							me.setUndoGen(me.engine.counter - me.gensPerStep);
-
 							// check current population
 							numChanged = me.engine.population;
 
-							// run from start to previous generation
-							me.runTo(me.engine.counter - me.gensPerStep);
-
-							if (me.editNum > 0) {
-								var record = me.editList[me.editNum - 1];
-
-								if (record.action === "advance outside" || record.action === "advance selection") {
-									me.pasteRaw(me.editList[me.editNum - 3].editCells, true);
-									me.editNum -= 3;
-								}
+							// adjust undo stack pointer
+							if (me.setUndoGen(me.engine.counter - me.gensPerStep)) {
+								me.undo(me);
+							} else {
+								// run from start to previous generation
+								me.runTo(me.engine.counter - me.gensPerStep);
 							}
 
 							// check if population was zero and is now non-zero after step back
@@ -11090,8 +11100,10 @@ This file is part of LifeViewer
 			xOff -= Math.floor(this.specifiedWidth / 2) - this.xOffset - this.xOffset;
 			yOff -= Math.floor(this.specifiedHeight / 2) - this.yOffset - this.yOffset;
 		} else {
-			xOff -= Math.floor(this.specifiedWidth / 2);
-			yOff -= Math.floor(this.specifiedHeight / 2);
+			xOff = this.panX;
+			yOff = this.panY;
+			//xOff -= Math.floor(this.specifiedWidth / 2);
+			//yOff -= Math.floor(this.specifiedHeight / 2);
 		}
 
 		if (this.engine.boundedGridWidth === 0) {
@@ -12156,7 +12168,7 @@ This file is part of LifeViewer
 
 	// change rule
 	View.prototype.changeRule = function(/** @type {View} */ me) {
-		var	/** @type {string} */ ruleName = (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef,
+		var	/** @type {string} */ ruleName = me.patternRuleName + me.patternBoundedGridDef,
 			/** @type {string|null} */ result = null;
 
 		// if the current rule name is blank (typically after an error) then use the last valid one
@@ -14071,17 +14083,17 @@ This file is part of LifeViewer
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0;
 
+		// check for bounded grid
+		if (this.engine.boundedGridType !== -1) {
+			xOff = this.panX;
+			yOff = this.panY;
+		}
+
 		// check for empty population or not marking undo
 		if (this.engine.population > 0 || !markUndo) {
 			// update the pattern extent
 			this.engine.shrinkNeeded = true;
 			this.engine.doShrink();
-
-			// adjust position if in bounded grid
-			if (this.engine.boundedGridType !== -1) {
-				xOff -= Math.floor((this.specifiedWidth - this.patternWidth) / 2);
-				yOff -= Math.floor((this.specifiedHeight - this.patternHeight) / 2);
-			}
 
 			// for HROT patterns use alive states only
 			if (!this.engine.isSuper && !this.engine.isExtended && !this.engine.isRuleTree && (this.engine.isPCA || (this.engine.isHROT && this.engine.multiNumStates === 2) || this.engine.multiNumStates > 2)) {
