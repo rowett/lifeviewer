@@ -1,3 +1,9 @@
+Build 1271
+- fixed an issue with PASTE when the grid grows
+
+Build 1270
+- fixed PCA killed cells statistics
+
 Build 1269
 - fixed grid lines not extending to right hand column
 - fixed TRACKLOOP loop calculation

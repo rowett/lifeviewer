@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1269,
+		/** @const {number} */ versionBuild : 1271,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4332,8 +4332,6 @@ This file is part of LifeViewer
 			/** @type {number} */ destFlag = 0,
 			/** @type {number} */ result = 0,
 			/** @type {number} */ mult = 0,
-			/** @type {number} */ gridWidth = this.engine.width,
-			/** @type {number} */ gridHeight = this.engine.height,
 			/** @type {Array<Uint8Array>} */ stateMap = null,
 			/** @type {Uint8Array} */ stateRow = null,
 			/** @type {number} */ numStates = this.engine.multiNumStates - 1,
@@ -4358,8 +4356,8 @@ This file is part of LifeViewer
 			paste = this.pasteList[j];
 			if (this.pasteThisGen(paste)) {
 				mode = paste.mode;
-				xOff = (gridWidth >> 1) - (this.patternWidth >> 1);
-				yOff = (gridHeight >> 1) - (this.patternHeight >> 1);
+				xOff = (width >> 1) - (this.patternWidth >> 1);
+				yOff = (height >> 1) - (this.patternHeight >> 1);
 				stateMap = paste.map;
 
 				// check for deltas with PASTET EVERY

@@ -21272,9 +21272,13 @@ This file is part of LifeViewer
 		index += 1;
 
 		// remove the cell
-		if (colourGrid[y][x] > 0) {
-			colourGrid[y][x] = 0;
-			cleared += 1;
+		if (colourGrid[y][x] > deadState) {
+			if (this.isPCA) {
+				cleared += this.bitCounts16[colourGrid[y][x] - this.historyStates];
+			} else {
+				cleared += 1;
+			}
+			colourGrid[y][x] = deadState;
 		}
 
 		// keep going until all cells processed
@@ -21308,7 +21312,7 @@ This file is part of LifeViewer
 						if (colourRow[tx] > deadState) {
 							if (this.isPCA) {
 								// remove the cells
-								cleared += this.bitCounts16[colourRow[tx]];
+								cleared += this.bitCounts16[colourRow[tx] - this.historyStates];
 							} else {
 								// remove the cell
 								cleared += 1;
@@ -21764,6 +21768,9 @@ This file is part of LifeViewer
 			/** @type {number} */ xrange = 1,
 			/** @type {number} */ yrange = 1,
 
+			// dead state
+			/** @type {number} */ deadState = this.isPCA ? this.historyStates : 0,
+
 			// counters
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
@@ -21772,13 +21779,13 @@ This file is part of LifeViewer
 		if ((this.counter & 1) !== 0) {
 			colourGrid = this.nextColourGrid;
 		}
-
+		
 		// clear top boundary
 		if ((ht - topY - 1) <= yrange) {
 			for (y = ht - yrange - 1; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
-					if (colourRow[x] > 0) {
+					if (colourRow[x] > deadState) {
 						this.removeRTPattern(x, y);
 					}
 				}
@@ -21791,7 +21798,7 @@ This file is part of LifeViewer
 			for (y = bottomY; y <= yrange; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= rightX; x += 1) {
-					if (colourRow[x] > 0) {
+					if (colourRow[x] > deadState) {
 						this.removeRTPattern(x, y);
 					}
 				}
@@ -21804,7 +21811,7 @@ This file is part of LifeViewer
 			for (y = bottomY; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = leftX; x <= xrange; x += 1) {
-					if (colourRow[x] > 0) {
+					if (colourRow[x] > deadState) {
 						this.removeRTPattern(x, y);
 					}
 				}
@@ -21817,7 +21824,7 @@ This file is part of LifeViewer
 			for (y = bottomY; y <= topY; y += 1) {
 				colourRow = colourGrid[y];
 				for (x = wd - xrange - 1; x <= rightX; x += 1) {
-					if (colourRow[x] > 0) {
+					if (colourRow[x] > deadState) {
 						this.removeRTPattern(x, y);
 					}
 				}
