@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1268,
+		/** @const {number} */ versionBuild : 1269,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6408,7 +6408,9 @@ This file is part of LifeViewer
 				}
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
 					if (((xPos === leftX - 1 || xPos === rightX + 1) && (yPos >= bottomY - 1 && yPos <= topY + 1)) ||
-						((yPos === bottomY - 1 || yPos === topY + 1) && (xPos >= leftX -1 && xPos <= rightX + 1))) {
+						((yPos === bottomY - 1 || yPos === topY + 1) && (xPos >= leftX - 1 && xPos <= rightX + 1)) ||
+						(this.engine.isTriangular && ((xPos === leftX - 2 || xPos === rightX + 2) && (yPos > bottomY - 1 && yPos < topY + 1))) ||
+						(this.engine.isTriangular && (yPos === bottomY - 1 || yPos === topY + 1) && (xPos === leftX - 2))) {
 						this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[bounded]";
 						if (this.stateNumberDisplayed) {
 							this.xyLabel.preText += " " + String(rawState);
@@ -7061,15 +7063,18 @@ This file is part of LifeViewer
 		var	/** @type {number} */ saveTheme = me.engine.colourTheme,
 			/** @type {boolean} */ saveMajor = me.engine.gridLineMajorEnabled,
 			/** @type {boolean} */ saveDisplayGrid = me.engine.displayGrid,
-			/** @type {number} */ saveZoom = me.engine.zoom;
+			/** @type {number} */ saveZoom = me.engine.zoom,
+			/** @type {boolean} */ saveLayers = me.engine.layersOn;
 
 		// check for autofit
 		if (me.autoFit && me.generationOn) {
 			me.fitZoomDisplay(false, false, ViewConstants.fitZoomPattern);
 		}
 
-		// render grid
+		// render grid (without layers if selection displayed)
+		me.engine.layersOn = !(me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan);
 		me.engine.renderGrid(me.drawingSnow, me.starsOn);
+		me.engine.layersOn = saveLayers;
 
 		// draw stars if switched on
 		if (me.starsOn) {
@@ -7082,7 +7087,7 @@ This file is part of LifeViewer
 		}
 
 		// draw grid (disable tilt if selection displayed)
-		me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
+		me.engine.drawGrid((!(me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 		// check if hexagons or triangles should be drawn
 		if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
@@ -7113,7 +7118,7 @@ This file is part of LifeViewer
 				me.engine.zoom = me.engine.zoom | 0;
 
 				me.engine.renderGrid(false, false);
-				me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
+				me.engine.drawGrid((!(me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 				// check if hexagons or triangles should be drawn
 				if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
@@ -7148,7 +7153,7 @@ This file is part of LifeViewer
 			// check for grid capture or black and white capture
 			if (me.screenShotScheduled >= 2) {
 				// restore grid (disable tilt if selection displayed)
-				me.engine.drawGrid((!(this.isSelection || this.drawingSelection || this.isPasting || me.modeList.current !== ViewConstants.modePan)));
+				me.engine.drawGrid((!(me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 				// check if hexagons or triangles should be drawn
 				if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {

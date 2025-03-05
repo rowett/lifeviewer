@@ -48383,7 +48383,7 @@ This file is part of LifeViewer
 
 		// see if the line is on the display
 		if (y >= 0 && y < h) {
-			data32.fill(colour, offset, end);
+			data32.fill(colour, offset, end + 1);
 		}
 	};
 
@@ -48429,7 +48429,7 @@ This file is part of LifeViewer
 
 		// see if the line is on the display
 		if (x >= 0 && x < w) {
-			// draw the horizontal line
+			// draw the vertical line
 			while (offset <= endTarget) {
 				data32[offset] = colour;
 				offset += w;
@@ -49249,16 +49249,36 @@ This file is part of LifeViewer
 				for (i = 0; i < this.height; i += 1) {
 					colourGrid[i][leftX] = border;
 					colourGrid[i][rightX] = border;
+					if (this.isTriangular) {
+						if (leftX > 0) {
+							colourGrid[i][leftX - 1] = border;
+						}
+						if (rightX < this.width - 1) {
+							colourGrid[i][rightX + 1] = border;
+						}
+					}
 				}
 			} else {
 				// draw top and bottom
 				bottomRow.fill(border, leftX, rightX + 1);
 				topRow.fill(border, leftX, rightX + 1);
+				if (this.isTriangular && leftX > 0) {
+					bottomRow[leftX - 1] = border;
+					topRow[leftX - 1] = border;
+				}
 
 				// draw left and right
 				for (i = bottomY + 1; i <= topY - 1; i += 1) {
 					colourGrid[i][leftX] = border;
 					colourGrid[i][rightX] = border;
+					if (this.isTriangular) {
+						if (leftX > 0) {
+							colourGrid[i][leftX - 1] = border;
+						}
+						if (rightX < this.width - 1) {
+							colourGrid[i][rightX + 1] = border;
+						}
+					}
 				}
 			}
 		}

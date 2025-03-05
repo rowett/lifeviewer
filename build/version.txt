@@ -1,3 +1,9 @@
+Build 1269
+- fixed grid lines not extending to right hand column
+- fixed TRACKLOOP loop calculation
+- disable Layers when in Draw or Edit mode or when Selection or Paste box is active
+- make Triangular Bounded Grid thicker
+
 Build 1268
 - fixed PCA killed cells state and statistics
 - worked around compiler optimizer bug for [R]Super WASM

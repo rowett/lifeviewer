@@ -5712,9 +5712,15 @@ This file is part of LifeViewer
 				// check for track loop
 				if (view.trackLoopDefined) {
 					// check for major gridlines
-					if (view.engine.gridLineMajor > 0) {
+					numberValue = view.engine.gridLineMajor;
+
+					if (currentWaypoint.themeDefined) {
+						numberValue = view.engine.themes[currentWaypoint.theme].gridMajor;
+					}
+
+					if (numberValue > 0) {
 						// multiply track parameters by grid line major interval
-						trackPeriod *= view.engine.gridLineMajor;
+						trackPeriod *= numberValue;
 					}
 
 					// set LOOP
