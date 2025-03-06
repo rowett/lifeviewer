@@ -1053,25 +1053,29 @@ This file is part of LifeViewer
 
 			// l for decrease depth or cycle paste location
 			case 76:
-				// check for ctrl
-				if (ctrlKey) {
-					// toggle kill gliders
-					if (!me.killButton.locked) {
-						me.engine.clearGliders = !me.engine.clearGliders;
-						me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
-					}
+				if (me.displayHelp !== 0) {
+					this.toggleHelpTopic(me, ViewConstants.coloursTopic);
 				} else {
-					// check for shift
-					if (shiftKey) {
-						me.cyclePasteLocation(me);
+					// check for ctrl
+					if (ctrlKey) {
+						// toggle kill gliders
+						if (!me.killButton.locked) {
+							me.engine.clearGliders = !me.engine.clearGliders;
+							me.menuManager.notification.notify("Kill Gliders " + (me.engine.clearGliders ? "On" : "Off"), 15, 40, 15, true);
+						}
 					} else {
-						// disable depth in multi-state mode
-						if (!me.multiStateView) {
-							if (!me.depthItem.locked) {
-								if (me.depthItem.current[0] >= 0.01) {
-									me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] - 0.01, me.depthItem.current[1]], true, me);
-								} else {
-									me.depthItem.current = me.viewDepthRange([0, me.depthItem.current[1]], true, me);
+						// check for shift
+						if (shiftKey) {
+							me.cyclePasteLocation(me);
+						} else {
+							// disable depth in multi-state mode
+							if (!me.multiStateView) {
+								if (!me.depthItem.locked) {
+									if (me.depthItem.current[0] >= 0.01) {
+										me.depthItem.current = me.viewDepthRange([me.depthItem.current[0] - 0.01, me.depthItem.current[1]], true, me);
+									} else {
+										me.depthItem.current = me.viewDepthRange([0, me.depthItem.current[1]], true, me);
+									}
 								}
 							}
 						}
@@ -1873,7 +1877,7 @@ This file is part of LifeViewer
 				} else {
 					// check for Help
 					if (me.displayHelp !== 0) {
-						this.toggleHelpTopic(me, ViewConstants.coloursTopic);
+						this.toggleHelpTopic(me, ViewConstants.commentsTopic);
 					} else {
 						// disable colour themes in multi-state mode
 						if (!me.multiStateView) {

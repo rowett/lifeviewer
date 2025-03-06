@@ -538,27 +538,39 @@ This file is part of LifeViewer
 			case ViewConstants.welcomeTopic:
 				this.renderWelcomeTopic(view, ctx, x, y, height, helpLine);
 				break;
+
 			case ViewConstants.keysTopic:
 				this.renderKeysTopic(view, ctx, x, y, height, helpLine);
 				break;
+
 			case ViewConstants.scriptsTopic:
 				this.renderScriptsTopic(view, ctx, x, y, height, helpLine);
 				break;
+
 			case ViewConstants.informationTopic:
 				this.renderInformationTopic(view, ctx, x, y, height, helpLine);
 				break;
+
 			case ViewConstants.themesTopic:
 				this.renderThemesTopic(view, ctx, x, y, height, helpLine);
 				break;
+
 			case ViewConstants.coloursTopic:
 				this.renderColoursTopic(view, ctx, x, y, height, helpLine);
 				break;
+
 			case ViewConstants.aliasesTopic:
 				this.renderAliasesTopic(view, ctx, x, y, height, helpLine);
 				break;
+
 			case ViewConstants.memoryTopic:
 				this.renderMemoryTopic(view, ctx, x, y, height, helpLine);
 				break;
+
+			case ViewConstants.commentsTopic:
+				this.renderCommentsTopic(view, ctx, x, y, height, helpLine);
+				break;
+
 			case ViewConstants.annotationsTopic:
 				this.renderAnnotationsTopic(view, ctx, x, y, height, helpLine);
 				break;
@@ -2965,6 +2977,84 @@ This file is part of LifeViewer
 					y = this.renderHelpLine(view, aliases[i][0] + " " + (aliases[i][2] ? "*" : "") + (aliases[i][3] ? "+" : ""), aliases[i][1], ctx, x, y, height, helpLine);
 				}
 			}
+		}
+	};
+
+	// render comments topic
+	Help.renderCommentsTopic = function(/** @type {View} */ view, /** @type {CanvasRenderingContext2D} */ ctx, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ height, /** @type {number} */ helpLine) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ s = 0,
+			/** @type {number} */ charWidth = 0,
+			/** @type {number} */ charsPerLine = 0,
+			/** @type {number} */ lastSpace = 0,
+
+			// comments
+			/** @type {string} */ comments = view.patternComments;
+
+		// set initial line
+		view.lineNo = 1;
+
+		// enable line wrap
+		view.wrapHelpText = true;
+
+		// reset sections
+		view.helpSections = [];
+
+		// pattern comments
+		view.tabs[0] = 260;
+		y = this.renderHelpLine(view, "", "Pattern Comments", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
+		// display comments
+		view.wrapHelpText = true;
+		if (comments === "") {
+			y = this.renderHelpLine(view, "None", "", ctx, x, y, height, helpLine);
+		} else {
+			// measure the character width
+			ctx.font = view.helpFixedFont;
+			charWidth = ctx.measureText("M").width;
+
+			// compute characters per display line
+			charsPerLine = (view.displayWidth / charWidth) | 0;
+
+			// adjust to avoid right hand menus
+			charsPerLine -= 5;
+
+			// get each line of text up to the newline (which will have been replaced by two spaces)
+			i = comments.indexOf("  ", s);
+			while (i !== -1) {
+				// now split it into parts that fit on one line
+				while (i - s > charsPerLine) {
+					lastSpace = charsPerLine;
+					while (comments.charAt(s + lastSpace) !== " " && lastSpace > 0) {
+						lastSpace -= 1;
+					}
+					if (lastSpace === 0) {
+						lastSpace = charsPerLine;
+					}
+					y = this.renderHelpLine(view, comments.substring(s, s + lastSpace), "", ctx, x, y, height, helpLine);
+					s += lastSpace + 1;
+				}
+				y = this.renderHelpLine(view, comments.substring(s, i), "", ctx, x, y, height, helpLine);
+				s = i + 2;
+				i = comments.indexOf("  ", s);
+				y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+			}
+			i = comments.length;
+
+			// now split it into parts that fit on one line
+			while (i - s > charsPerLine) {
+				lastSpace = charsPerLine;
+				while (comments.charAt(s + lastSpace) !== " " && lastSpace > 0) {
+					lastSpace -= 1;
+				}
+				if (lastSpace === 0) {
+					lastSpace = charsPerLine;
+				}
+				y = this.renderHelpLine(view, comments.substring(s, s + lastSpace), "", ctx, x, y, height, helpLine);
+				s += lastSpace + 1;
+			}
+			y = this.renderHelpLine(view, comments.substring(s, i), "", ctx, x, y, height, helpLine);
 		}
 	};
 

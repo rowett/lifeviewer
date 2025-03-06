@@ -1,3 +1,7 @@
+Build 1272
+- added Help>Comments to display any pattern comments (hotkeys H then C)
+- fixed Selection position in Bounded Grids
+
 Build 1271
 - fixed an issue with PASTE when the grid grows
 

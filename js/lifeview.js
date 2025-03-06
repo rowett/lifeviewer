@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1271,
+		/** @const {number} */ versionBuild : 1272,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -517,7 +517,8 @@ This file is part of LifeViewer
 		/** @const {number} */ coloursTopic : 5,
 		/** @const {number} */ aliasesTopic : 6,
 		/** @const {number} */ memoryTopic : 7,
-		/** @const {number} */ annotationsTopic : 8
+		/** @const {number} */ commentsTopic : 8,
+		/** @const {number} */ annotationsTopic : 9
 	},
 
 	// Controller singleton
@@ -919,6 +920,9 @@ This file is part of LifeViewer
 
 		// WASM memory reset point after initial construction
 		/** @type {number} */ this.wasmResetPoint = 0;
+
+		// pattern comments
+		/** @type {string} */ this.patternComments = "";
 
 		// current maximum step speed (is larger in Pro version)
 		/** @type {number} */ this.maxStepSpeed = Controller.useWASM ? ViewConstants.wasmMaxStepSpeed : ViewConstants.maxStepSpeed;
@@ -2013,6 +2017,7 @@ This file is part of LifeViewer
 		/** @type {MenuItem} */ this.helpColoursButton = null;
 		/** @type {MenuItem} */ this.helpAliasesButton = null;
 		/** @type {MenuItem} */ this.helpMemoryButton = null;
+		/** @type {MenuItem} */ this.helpCommentsButton = null;
 		/** @type {MenuItem} */ this.helpAnnotationsButton = null;
 
 		// help section list
@@ -7753,6 +7758,7 @@ This file is part of LifeViewer
 		this.helpColoursButton.deleted = showTopicButtons;
 		this.helpAliasesButton.deleted = showTopicButtons;
 		this.helpMemoryButton.deleted = showTopicButtons;
+		this.helpCommentsButton.deleted = showTopicButtons;
 		this.helpAnnotationsButton.deleted = showTopicButtons || (this.waypointManager.numAnnotations() === 0);
 
 		// help sections
@@ -9630,6 +9636,11 @@ This file is part of LifeViewer
 	// memory help topic
 	View.prototype.memoryTopicPressed = function(/** @type {View} */ me) {
 		me.setHelpTopic(ViewConstants.memoryTopic, me);
+	};
+
+	// comments help topic
+	View.prototype.commentsTopicPressed = function(/** @type {View} */ me) {
+		me.setHelpTopic(ViewConstants.commentsTopic, me);
 	};
 
 	// annotations help topic
@@ -13885,8 +13896,8 @@ This file is part of LifeViewer
 			if (me.isSelection) {
 				// adjust in case specified is different than actual size
 				if (me.engine.boundedGridType !== -1) {
-					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+					xOff = this.panX;
+					yOff = this.panY;
 				}
 
 				if (x1 > x2) {
@@ -13959,8 +13970,8 @@ This file is part of LifeViewer
 			if (me.isSelection) {
 				// adjust in case specified is different than actual size
 				if (me.engine.boundedGridType !== -1) {
-					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+					xOff = this.panX;
+					yOff = this.panY;
 				}
 
 				if (x1 > x2) {
@@ -14219,8 +14230,8 @@ This file is part of LifeViewer
 
 			// adjust in case specified is different than actual size
 			if (me.engine.boundedGridType !== -1) {
-				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				xOff = this.panX;
+				yOff = this.panY;
 			}
 
 			// allocate the buffer
@@ -14778,8 +14789,8 @@ This file is part of LifeViewer
 
 				// adjust in case specified is different than actual size
 				if (me.engine.boundedGridType !== -1) {
-					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+					xOff = this.panX;
+					yOff = this.panY;
 				}
 
 				// copy selection into temporary buffer
@@ -15054,8 +15065,8 @@ This file is part of LifeViewer
 
 				// adjust in case specified is different than actual size
 				if (me.engine.boundedGridType !== -1) {
-					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+					xOff = this.panX;
+					yOff = this.panY;
 				}
 
 				// use bounded grid if defined
@@ -15110,8 +15121,8 @@ This file is part of LifeViewer
 
 					// adjust in case specified is different than actual size
 					if (me.engine.boundedGridType !== -1) {
-						xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-						yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+						xOff = this.panX;
+						yOff = this.panY;
 					}
 
 					// and then check top right cell with offset
@@ -15142,8 +15153,8 @@ This file is part of LifeViewer
 
 					// adjust in case specified is different than actual size
 					if (me.engine.boundedGridType !== -1) {
-						xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-						yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+						xOff = this.panX;
+						yOff = this.panY;
 					}
 				}
 
@@ -15647,8 +15658,8 @@ This file is part of LifeViewer
 
 			// adjust in case specified is different than actual size
 			if (me.engine.boundedGridType !== -1) {
-				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				xOff = this.panX;
+				yOff = this.panY;
 			}
 
 			// draw random cells
@@ -15801,8 +15812,8 @@ This file is part of LifeViewer
 
 			// adjust in case specified is different than actual size
 			if (me.engine.boundedGridType !== -1) {
-				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				xOff = this.panX;
+				yOff = this.panY;
 			}
 
 			// allocate the row
@@ -15915,8 +15926,8 @@ This file is part of LifeViewer
 
 			// adjust in case specified is different than actual size
 			if (me.engine.boundedGridType !== -1) {
-				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				xOff = this.panX;
+				yOff = this.panY;
 			}
 
 			// allocate the row
@@ -16252,8 +16263,8 @@ This file is part of LifeViewer
 		if (me.isSelection) {
 			// adjust in case specified is different than actual size
 			if (me.engine.boundedGridType !== -1) {
-				xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-				yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+				xOff = this.panX;
+				yOff = this.panY;
 			}
 
 			if (x1 > x2) {
@@ -16319,8 +16330,8 @@ This file is part of LifeViewer
 
 					// adjust in case specified is different than actual size
 					if (me.engine.boundedGridType !== -1) {
-						xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-						yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+						xOff = this.panX;
+						yOff = this.panY;
 					}
 
 				}
@@ -16382,8 +16393,8 @@ This file is part of LifeViewer
 
 				// adjust in case specified is different than actual size
 				if (me.engine.boundedGridType !== -1) {
-					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+					xOff = this.panX;
+					yOff = this.panY;
 				}
 
 				// write the cells to their new positions
@@ -16577,8 +16588,8 @@ This file is part of LifeViewer
 
 				// adjust in case specified is different than actual size
 				if (me.engine.boundedGridType !== -1) {
-					xOff += Math.round((me.patternWidth - me.specifiedWidth) / 2);
-					yOff += Math.round((me.patternHeight - me.specifiedHeight) / 2);
+					xOff = this.panX;
+					yOff = this.panY;
 				}
 
 				// invert cells in selection
@@ -17774,24 +17785,27 @@ This file is part of LifeViewer
 				y += inc;
 				if (this.waypointManager.numAnnotations() > 0) {
 					this.helpMemoryButton.setPosition(Menu.northWest, 10, 150);
+					this.helpCommentsButton.setPosition(Menu.north, 0, 150);
 					this.helpAnnotationsButton.setPosition(Menu.northEast, -160, 150);
 				} else {
-					this.helpMemoryButton.setPosition(Menu.north, 0, 150);
+					this.helpMemoryButton.setPosition(Menu.northWest, 10, 150);
+					this.helpCommentsButton.setPosition(Menu.north, 0, 150);
 				}
 			} else {
 				this.helpColoursButton.setPosition(Menu.northWest, 10, y);
 				this.helpAliasesButton.setPosition(Menu.north, 0, y);
 				this.helpMemoryButton.setPosition(Menu.northEast, -160, y);
 				y += inc;
+				this.helpCommentsButton.setPosition(Menu.northWest, 10, y);
 				if (this.waypointManager.numAnnotations() > 0) {
 					this.helpAnnotationsButton.setPosition(Menu.north, 0, y);
 				}
 			}
 		} else {
 			if (this.waypointManager.numAnnotations() > 0) {
-				y = -175;
+				y = -200;
 			} else {
-				y = -150;
+				y = -175;
 			}
 			this.helpKeysButton.setPosition(Menu.middle, 0, y);
 			y += inc;
@@ -17808,6 +17822,8 @@ This file is part of LifeViewer
 			this.helpAliasesButton.setPosition(Menu.middle, 0, y);
 			y += inc;
 			this.helpMemoryButton.setPosition(Menu.middle, 0, y);
+			y += inc;
+			this.helpCommentsButton.setPosition(Menu.middle, 0, y);
 			y += inc;
 			this.helpAnnotationsButton.setPosition(Menu.middle, 0, y);
 		}
@@ -18090,7 +18106,7 @@ This file is part of LifeViewer
 		this.helpThemesButton.toolTip = "show colour Themes [E]";
 
 		this.helpColoursButton = this.viewMenu.addButtonItem(this.coloursTopicPressed, Menu.north, 0, 250, 150, 40, "Colours");
-		this.helpColoursButton.toolTip = "show colour names [C]";
+		this.helpColoursButton.toolTip = "show colour names [L]";
 
 		this.helpAliasesButton = this.viewMenu.addButtonItem(this.aliasesTopicPressed, Menu.north, 0, 300, 150, 40, "Aliases");
 		this.helpAliasesButton.toolTip = "show rule aliases [A]";
@@ -18098,7 +18114,10 @@ This file is part of LifeViewer
 		this.helpMemoryButton = this.viewMenu.addButtonItem(this.memoryTopicPressed, Menu.north, 0, 350, 150, 40, "Memory");
 		this.helpMemoryButton.toolTip = "show memory usage [Y]";
 
-		this.helpAnnotationsButton = this.viewMenu.addButtonItem(this.annotationsTopicPressed, Menu.north, 0, 350, 150, 40, "Annotations");
+		this.helpCommentsButton = this.viewMenu.addButtonItem(this.commentsTopicPressed, Menu.north, 0, 400, 150, 40, "Comments");
+		this.helpCommentsButton.toolTip = "show pattern comments [C]";
+
+		this.helpAnnotationsButton = this.viewMenu.addButtonItem(this.annotationsTopicPressed, Menu.north, 0, 450, 150, 40, "Annotations");
 		this.helpAnnotationsButton.toolTip = "show annotations [N]";
 
 		// autofit button
@@ -20628,6 +20647,10 @@ This file is part of LifeViewer
 			}
 
 			me.readScript(comments, numberValue);
+
+			// save the pattern comments
+			comments += " ";
+			me.patternComments = comments.replace(/\[\[ .*? \]\] /g, "")
 
 			// set errors to display if any found
 			if (me.scriptErrors.length) {
