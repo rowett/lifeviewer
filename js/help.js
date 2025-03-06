@@ -2994,19 +2994,30 @@ This file is part of LifeViewer
 		// set initial line
 		view.lineNo = 1;
 
-		// enable line wrap
-		view.wrapHelpText = true;
+		// disable line wrap
+		view.wrapHelpText = false;
 
 		// reset sections
 		view.helpSections = [];
 
 		// pattern comments
-		view.tabs[0] = 260;
+		view.tabs[0] = 128;
 		y = this.renderHelpLine(view, "", "Pattern Comments", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
+		// check name and originator
+		if (view.patternName !== "") {
+			y = this.renderHelpLine(view, "Name", view.patternName, ctx, x, y, height, helpLine);
+		}
+		if (view.patternOriginator !== "") {
+			y = this.renderHelpLine(view, "Originator", view.patternOriginator, ctx, x, y, height, helpLine);
+		}
+
+		if (view.patternName !== "" || view.patternOriginator !== "") {
+			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+		}
+
 		// display comments
-		view.wrapHelpText = true;
 		if (comments === "") {
 			y = this.renderHelpLine(view, "None", "", ctx, x, y, height, helpLine);
 		} else {
@@ -3021,40 +3032,33 @@ This file is part of LifeViewer
 			charsPerLine -= 5;
 
 			// get each line of text up to the newline (which will have been replaced by two spaces)
-			i = comments.indexOf("  ", s);
+			i = comments.indexOf("\n", s);
 			while (i !== -1) {
 				// now split it into parts that fit on one line
 				while (i - s > charsPerLine) {
+					// find the previous whitespace on the line
 					lastSpace = charsPerLine;
 					while (comments.charAt(s + lastSpace) !== " " && lastSpace > 0) {
 						lastSpace -= 1;
 					}
-					if (lastSpace === 0) {
-						lastSpace = charsPerLine;
-					}
-					y = this.renderHelpLine(view, comments.substring(s, s + lastSpace), "", ctx, x, y, height, helpLine);
-					s += lastSpace + 1;
-				}
-				y = this.renderHelpLine(view, comments.substring(s, i), "", ctx, x, y, height, helpLine);
-				s = i + 2;
-				i = comments.indexOf("  ", s);
-				y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-			}
-			i = comments.length;
 
-			// now split it into parts that fit on one line
-			while (i - s > charsPerLine) {
-				lastSpace = charsPerLine;
-				while (comments.charAt(s + lastSpace) !== " " && lastSpace > 0) {
-					lastSpace -= 1;
+					// if no whitespace then output the text that fits
+					if (lastSpace === 0) {
+						y = this.renderHelpLine(view, comments.substring(s, s + charsPerLine), "", ctx, x, y, height, helpLine);
+						s += charsPerLine;
+					} else {
+						y = this.renderHelpLine(view, comments.substring(s, s + lastSpace), "", ctx, x, y, height, helpLine);
+						s += lastSpace + 1;
+					}
 				}
-				if (lastSpace === 0) {
-					lastSpace = charsPerLine;
-				}
-				y = this.renderHelpLine(view, comments.substring(s, s + lastSpace), "", ctx, x, y, height, helpLine);
-				s += lastSpace + 1;
+
+				// render the last part of the line without newline
+				y = this.renderHelpLine(view, comments.substring(s, i), "", ctx, x, y, height, helpLine);
+				s = i + 1;
+
+				// find the next end of line in the comments
+				i = comments.indexOf("\n", s);
 			}
-			y = this.renderHelpLine(view, comments.substring(s, i), "", ctx, x, y, height, helpLine);
 		}
 	};
 

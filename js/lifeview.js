@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1272,
+		/** @const {number} */ versionBuild : 1273,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7067,7 +7067,7 @@ This file is part of LifeViewer
 			/** @type {boolean} */ saveMajor = me.engine.gridLineMajorEnabled,
 			/** @type {boolean} */ saveDisplayGrid = me.engine.displayGrid,
 			/** @type {number} */ saveZoom = me.engine.zoom,
-			/** @type {boolean} */ saveLayers = me.engine.layersOn;
+			/** @type {number} */ saveLayers = me.engine.layers;
 
 		// check for autofit
 		if (me.autoFit && me.generationOn) {
@@ -7075,9 +7075,9 @@ This file is part of LifeViewer
 		}
 
 		// render grid (without layers if selection displayed)
-		me.engine.layersOn = !(me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan);
+		me.engine.layers = (me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan) ? 1 : saveLayers;
 		me.engine.renderGrid(me.drawingSnow, me.starsOn);
-		me.engine.layersOn = saveLayers;
+		me.engine.layers = saveLayers;
 
 		// draw stars if switched on
 		if (me.starsOn) {
@@ -20649,8 +20649,7 @@ This file is part of LifeViewer
 			me.readScript(comments, numberValue);
 
 			// save the pattern comments
-			comments += " ";
-			me.patternComments = comments.replace(/\[\[ .*? \]\] /g, "")
+			me.patternComments = ("\n" + pattern.beforeTitle).replace(/\[\[ .*? \]\][ \n]/g, "").replace(/\n#(?:N|O)[^\n]*/g, "").substring(1);
 
 			// set errors to display if any found
 			if (me.scriptErrors.length) {

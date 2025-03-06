@@ -1,3 +1,7 @@
+Build 1273
+- Help>Comments now respects line breaks
+- improved Layer brightness when Layers disabled
+
 Build 1272
 - added Help>Comments to display any pattern comments (hotkeys H then C)
 - fixed Selection position in Bounded Grids
