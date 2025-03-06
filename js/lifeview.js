@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1273,
+		/** @const {number} */ versionBuild : 1275,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -20648,8 +20648,8 @@ This file is part of LifeViewer
 
 			me.readScript(comments, numberValue);
 
-			// save the pattern comments
-			me.patternComments = ("\n" + pattern.beforeTitle).replace(/\[\[ .*? \]\][ \n]/g, "").replace(/\n#(?:N|O)[^\n]*/g, "").substring(1);
+			// save the pattern comments after removing script commands, originator and name, and "#C " or "# " comment prefixes
+			me.patternComments = ("\n" + pattern.beforeTitle).replace(/\n#C /g, "\n").replace(/\n# /g, "\n").replace(/\n#C/g, "\n").replace(/\[\[ .*? \]\][ \n]/g, "").replace(/\n#(?:N|O)[^\n]*/g, "\n").substring(1);
 
 			// set errors to display if any found
 			if (me.scriptErrors.length) {

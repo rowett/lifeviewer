@@ -1,3 +1,9 @@
+Build 1275
+- fixed Step Back with Advance Selection or Advance Outside
+
+Build 1274
+- remove comment prefixes from Comments
+
 Build 1273
 - Help>Comments now respects line breaks
 - improved Layer brightness when Layers disabled

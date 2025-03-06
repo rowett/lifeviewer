@@ -763,11 +763,12 @@ This file is part of LifeViewer
 							} else {
 								// step back if not at start
 								if (me.engine.counter > 0) {
-									// run from start to previous step
-									me.runTo(me.engine.counter - me.gensPerStep);
-
-									// adjust undo stack pointer
-									me.setUndoGen(me.engine.counter - me.gensPerStep + 1);
+									if (me.setUndoGen(me.engine.counter - me.gensPerStep)) {
+										me.undo(me);
+									} else {
+										// run from start to previous step
+										me.runTo(me.engine.counter - me.gensPerStep);
+									}
 								}
 							}
 						} else {
