@@ -1,3 +1,7 @@
+Build 1276
+- clear history cells when switching from Theme with history to one without
+- fixed an issue with loading comments when pattern is invalid
+
 Build 1275
 - fixed Step Back with Advance Selection or Advance Outside
 

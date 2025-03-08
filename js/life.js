@@ -1963,7 +1963,7 @@ This file is part of LifeViewer
 
 	// get mod hash from 2-state pattern using Rot270
 	/** @returns {number} */
-	Life.prototype.getHash2Rot270 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot270 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
@@ -1971,19 +1971,31 @@ This file is part of LifeViewer
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {boolean} */ checkedFirst = false;
 
 		// create a hash from every alive cell
 		iDivHeight = left;
 		hm1 += bottom;
 
+		// find the first alive cell
 		for (y = 0; y < height; y += 1) {
 			for (x = 0; x < width; x += 1) {
-				// adjust the coordinates based on the transformation
 				if (colourGrid[hm1 - iModHeight][iDivHeight] >= aliveStart) {
-					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
+
+					// check if this matches the first hash
+					if (!checkedFirst) {
+						if (hash !== firstHash) {
+							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot270 BAILED != ", firstHash);
+
+							// bail out with non-matching hash value
+							return (firstHash + 1) | 0;
+						}
+
+						checkedFirst = true;
+					}
 				}
 
 				// update index
@@ -1995,19 +2007,22 @@ This file is part of LifeViewer
 			}
 		}
 
+		//console.log("gen", this.counter, "rot270", hash);
+
 		return hash | 0;
 	};
 
 	// get mod hash from 2-state pattern using Rot180
 	/** @returns {number} */
-	Life.prototype.getHash2Rot180 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot180 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {boolean} */ checkedFirst = false;
 
 		// create a hash from every alive cell
 		wm1 += left;
@@ -2021,16 +2036,29 @@ This file is part of LifeViewer
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
+
+					if (!checkedFirst) {
+						if (hash != firstHash) {
+							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot180 BAILED != ", firstHash);
+
+							// bail out with non-matching hash value
+							return (firstHash + 1) | 0;
+						}
+
+						checkedFirst = true;
+					}
 				}
 			}
 		}
+
+		//console.log("gen", this.counter, "rot180", hash);
 
 		return hash | 0;
 	};
 
 	// get mod hash from 2-state pattern using Rot90
 	/** @returns {number} */
-	Life.prototype.getHash2Rot90 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot90 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
@@ -2038,18 +2066,31 @@ This file is part of LifeViewer
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {boolean} */ checkedFirst = false;
 
 		// create a hash from every alive cell
 		wm1 += left;
 
+		// find the first alive cell and check it against the first hash
 		for (y = 0; y < height; y += 1) {
-			for (x = 0; x < width; x += 1) {
+			for (x = 0; x < width; x += 1 ) {
 				// adjust the coordinates based on the transformation
 				if (colourGrid[iModHeight + bottom][wm1 - iDivHeight] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
+
+					if (!checkedFirst) {
+						if (hash !== firstHash) {
+							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot90 BAILED != ", firstHash);
+
+							// bail out with non-matching hash value
+							return (firstHash + 1) | 0;
+						}
+
+						checkedFirst = true;
+					}
 				}
 
 				// update index
@@ -2061,19 +2102,22 @@ This file is part of LifeViewer
 			}
 		}
 
+		//console.log("gen", this.counter, "rot90", hash);
+
 		return hash | 0;
 	};
 
 	// get mod hash from 2-state pattern using FlipX
 	/** @returns {number} */
-	Life.prototype.getHash2FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {boolean} */ checkedFirst = false;
 
 		// create a hash from every alive cell
 		wm1 += left;
@@ -2086,23 +2130,37 @@ This file is part of LifeViewer
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
+
+					if (!checkedFirst) {
+						if (hash !== firstHash) {
+							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "flipX BAILED != ", firstHash);
+
+							// bail out with non-matching hash value
+							return (firstHash + 1) | 0;
+						}
+
+						checkedFirst = true;
+					}
 				}
 			}
 		}
+
+		//console.log("gen", this.counter, "flipX", hash);
 
 		return hash | 0;
 	};
 
 	// get mod hash from 2-state pattern using FlipY
 	/** @returns {number} */
-	Life.prototype.getHash2FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
-			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {boolean} */ checkedFirst = false;
 
 		// create a hash from every alive cell
 		hm1 += bottom;
@@ -2114,16 +2172,29 @@ This file is part of LifeViewer
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
+
+					if (!checkedFirst) {
+						if (hash !== firstHash) {
+							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "flipY BAILED != ", firstHash);
+
+							// bail out with non-matching hash value
+							return (firstHash + 1) | 0;
+						}
+
+						checkedFirst = true;
+					}
 				}
 			}
 		}
+
+		//console.log("gen", this.counter, "flipY", hash);
 
 		return hash | 0;
 	};
 
 	// get mod hash from 2-state pattern using Rot90FlipX
 	/** @returns {number} */
-	Life.prototype.getHash2Rot90FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot90FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
@@ -2131,7 +2202,8 @@ This file is part of LifeViewer
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {boolean} */ checkedFirst = false;
 
 		// create a hash from every alive cell
 		iDivHeight += left;
@@ -2143,6 +2215,18 @@ This file is part of LifeViewer
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
+
+					// check if this matches the first hash
+					if (!checkedFirst) {
+						if (hash !== firstHash) {
+							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot90flipX BAILED != ", firstHash);
+
+							// bail out with non-matching hash value
+							return (firstHash + 1) | 0;
+						}
+
+						checkedFirst = true;
+					}
 				}
 
 				// update index
@@ -2154,12 +2238,14 @@ This file is part of LifeViewer
 			}
 		}
 
+		//console.log("gen", this.counter, "rot90flipX", hash);
+
 		return hash | 0;
 	};
 
 	// get mod hash from 2-state pattern using Rot90FlipY
 	/** @returns {number} */
-	Life.prototype.getHash2Rot90FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom) {
+	Life.prototype.getHash2Rot90FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @type {number} */ x = 0,
@@ -2167,7 +2253,8 @@ This file is part of LifeViewer
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
-			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
+			/** @type {boolean} */ checkedFirst = false;
 
 		// create a hash from every alive cell
 		wm1 += left;
@@ -2180,6 +2267,18 @@ This file is part of LifeViewer
 					// update the hash
 					hash = (hash * factor) ^ y;
 					hash = (hash * factor) ^ x;
+
+					// check if this matches the first hash
+					if (!checkedFirst) {
+						if (hash !== firstHash) {
+							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot90flipY BAILED != ", firstHash);
+
+							// bail out with non-matching hash value
+							return (firstHash + 1) | 0;
+						}
+
+						checkedFirst = true;
+					}
 				}
 
 				// update index
@@ -2191,12 +2290,14 @@ This file is part of LifeViewer
 			}
 		}
 
+		//console.log("gen", this.counter, "rot90flipY", hash);
+
 		return hash | 0;
 	};
 
 	// get mod hash from 2-state pattern
 	/** @returns {number} */
-	Life.prototype.getModHash2 = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform) {
+	Life.prototype.getModHash2 = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ result = 0,
 			/** @const {number} */ left = box.leftX,
 			/** @const {number} */ bottom = box.bottomY,
@@ -2217,35 +2318,40 @@ This file is part of LifeViewer
 			checkHeight = swap;
 		}
 
+		var t = performance.now();
+
 		switch (transform) {
 			case LifeConstants.modRot90:
-				result = this.getHash2Rot90(checkWidth, checkHeight, height, wm1, left, bottom);
+				result = this.getHash2Rot90(checkWidth, checkHeight, height, wm1, left, bottom, firstHash);
 				break;
 
 			case LifeConstants.modRot180:
-				result = this.getHash2Rot180(checkWidth, checkHeight, wm1, hm1, left, bottom);
+				result = this.getHash2Rot180(checkWidth, checkHeight, wm1, hm1, left, bottom, firstHash);
 				break;
 
 			case LifeConstants.modRot270:
-				result = this.getHash2Rot270(checkWidth, checkHeight, height, hm1, left, bottom);
+				result = this.getHash2Rot270(checkWidth, checkHeight, height, hm1, left, bottom, firstHash);
 				break;
 
 			case LifeConstants.modFlipX:
-				result = this.getHash2FlipX(checkWidth, checkHeight, wm1, left, bottom);
+				result = this.getHash2FlipX(checkWidth, checkHeight, wm1, left, bottom, firstHash);
 				break;
 
 			case LifeConstants.modFlipY:
-				result = this.getHash2FlipY(checkWidth, checkHeight, hm1, left, bottom);
+				result = this.getHash2FlipY(checkWidth, checkHeight, hm1, left, bottom, firstHash);
 				break;
 
 			case LifeConstants.modRot90FlipX:
-				result = this.getHash2Rot90FlipX(checkWidth, checkHeight, height, left, bottom);
+				result = this.getHash2Rot90FlipX(checkWidth, checkHeight, height, left, bottom, firstHash);
 				break;
 
 			case LifeConstants.modRot90FlipY:
-				result = this.getHash2Rot90FlipY(checkWidth, checkHeight, height, wm1, hm1, left, bottom);
+				result = this.getHash2Rot90FlipY(checkWidth, checkHeight, height, wm1, hm1, left, bottom, firstHash);
 				break;
 		}
+
+		t = performance.now() - t;
+		//console.log(t.toFixed(2) + "ms");
 
 		return result;
 	};
@@ -2428,11 +2534,11 @@ This file is part of LifeViewer
 
 	// get mod hash
 	/** @returns {number} */
-	Life.prototype.getModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform, /** @type {boolean} */ state2) {
+	Life.prototype.getModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform, /** @type {boolean} */ state2, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ result = 0;
 
 		if (state2) {
-			result = this.getModHash2(box, transform);
+			result = this.getModHash2(box, transform, firstHash);
 		} else {
 			result = this.getModHashN(box, transform);
 		}
@@ -2442,13 +2548,13 @@ This file is part of LifeViewer
 
 	// check for a specific mod transformation
 	/** @returns {number} */
-	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ initialMatches, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ modFactor) {
+	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ initialMatches, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ modFactor, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ modMatch = 0,
 			/** @type {boolean} */ isSpaceship = (deltaX !==0 && deltaY !== 0),
 			/** @type {number} */ trans = -1;
 
 		// get the matching hashes
-		modMatch = this.checkModHash(box, initialHash, deltaX, deltaY);
+		modMatch = this.checkModHash(box, initialHash, deltaX, deltaY, firstHash);
 
 		// mask with the original matches
 		modMatch &= initialMatches;
@@ -2671,7 +2777,7 @@ This file is part of LifeViewer
 
 	// check mod hashes
 	/** @returns {number} */
-	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
+	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ firstHash) {
 		var	/** @type {number} */ trans = 0,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !(this.isRuleTree || this.isLifeHistory)),
 			/** @type {number} */ hash = 0,
@@ -2690,7 +2796,7 @@ This file is part of LifeViewer
 		// check each transformation
 		for (i = 0; i < checkList.length; i += 1) {
 			trans = checkList[i];
-			hash = this.getModHash(box, trans, twoState);
+			hash = this.getModHash(box, trans, twoState, firstHash);
 
 			//console.log(trans, LifeConstants.modTypeName[trans], hash, initialHash);
 
@@ -2801,6 +2907,47 @@ This file is part of LifeViewer
 			this.view.menuManager.updateTimingItem("getHash", timing, Controller.useWASM && Controller.wasmEnableGetHash && this.view.wasmEnabled);
 		}
 		return result;
+	};
+
+	// get first hash from pattern
+	/** @returns {number} */
+	Life.prototype.getFirstHash = function(/** @type {BoundingBox} */ box) {
+		var	/** @type {number} */ hash = 31415962,
+			/** @const {number} */ factor = 1000003,
+			/** @type {number} */ x = box.leftX,
+			/** @type {number} */ y = box.bottomY,
+			/** @type {number} */ right = box.rightX,
+			/** @type {number} */ top = box.topY,
+			/** @type {number} */ cx = 0,
+			/** @type {number} */ cy = 0,
+			/** @type {number} */ yshift = 0,
+			/** @type {number} */ hashX = 0,
+			/** @type {number} */ hashY = 0,
+			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
+			/** @type {Uint8Array} */ colourRow = null,
+			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
+
+		// create a hash from the first alive cell
+		hashX = x;
+		hashY = y;
+
+		for (cy = y; cy <= top; cy += 1) {
+			yshift = cy - hashY;
+			colourRow = colourGrid[cy];
+
+			for (cx = x; cx <= right; cx += 1) {
+				if (colourRow[cx] >= aliveStart) {
+					hash = (hash * factor) ^ yshift;
+					hash = (hash * factor) ^ (cx - hashX);
+
+					//console.log("firstHash", hash, "xy", cx - hashX, yshift);
+
+					return hash | 0;
+				}
+			}
+		}
+
+		return hash | 0;
 	};
 
 	// get hash from pattern
@@ -5695,16 +5842,20 @@ This file is part of LifeViewer
 			/** @type {number} */ hash0 = 0,
 			/** @type {number} */ width0 = 0,
 			/** @type {number} */ height0 = 0,
+			/** @type {number} */ firstHash0 = 0,
 			/** @type {number} */ hash1 = 0,
 			/** @type {number} */ width1 = 0,
 			/** @type {number} */ height1 = 0,
+			/** @type {number} */ firstHash1 = 0,
 			/** @type {number} */ hash2 = 0,
 			/** @type {number} */ width2 = 0,
 			/** @type {number} */ height2 = 0,
+			/** @type {number} */ firstHash2 = 0,
 			/** @type {number} */ checkWidth = 0,
 			/** @type {number} */ checkHeight = 0,
 			/** @type {number} */ checkGenDelta = 0,
 			/** @type {number} */ checkHash = 0,
+			/** @type {number} */ checkFirst = 0,
 			/** @type {number} */ nextHeat = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {number} */ modMatch = 0,
@@ -5717,7 +5868,7 @@ This file is part of LifeViewer
 
 		this.identifyDetectionTime = (performance.now() - this.identifyStartTime) / 1000;
 
-		console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
+		//console.log("found period " + String(period) + " at T=" + String(this.counter) + " in " + this.identifyDetectionTime.toFixed(1) + " seconds");
 
 		// check for PCA, RuleTree, Super or Extended rules
 		if (this.isPCA || this.isRuleTree || this.isSuper || this.isExtended) {
@@ -5761,7 +5912,7 @@ This file is part of LifeViewer
 				computeStrict = true;
 			}
 
-			console.log("memory", bitFrameIn16Bits * period, ((100 * bitFrameIn16Bits * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
+			//console.log("memory", bitFrameIn16Bits * period, ((100 * bitFrameIn16Bits * period) / LifeConstants.maxStrictMemory).toFixed(1) + "%", "strict volatility", computeStrict);
 		}
 
 
@@ -5836,24 +5987,27 @@ This file is part of LifeViewer
 				hash0 = this.getHash(extent);
 				width0 = (extent.rightX - extent.leftX + 1);
 				height0 = (extent.topY - extent.bottomY + 1);
+				firstHash0 = this.getFirstHash(extent);
 
-				//console.log(p, "gen", this.counter, "hash0", hash0);
+				//console.log(p, "gen", this.counter, "hash0", hash0, "firstHash", firstHash0);
 
 			} else {
 				if (p === 1) {
 					hash1 = this.getHash(extent);
 					width1 = (extent.rightX - extent.leftX + 1);
 					height1 = (extent.topY - extent.bottomY + 1);
+					firstHash1 = this.getFirstHash(extent);
 
-					//console.log(p, "gen", this.counter, "hash1", hash1);
+					//console.log(p, "gen", this.counter, "hash1", hash1, "firstHash", firstHash1);
 
 				} else {
 					if (p === 2 && this.isMargolus && hash0 === hash1) {
 						hash2 = this.getHash(extent);
 						width2 = (extent.rightX - extent.leftX + 1);
 						height2 = (extent.topY - extent.bottomY + 1);
+						firstHash2 = this.getFirstHash(extent);
 
-						//console.log(p, "gen", this.counter, "hash2", hash2);
+						//console.log(p, "gen", this.counter, "hash2", hash2, "firstHash", firstHash2);
 
 					}
 				}
@@ -5871,11 +6025,13 @@ This file is part of LifeViewer
 							checkHeight = height2;
 							checkGenDelta = 2;
 							checkHash = hash2;
+							checkFirst = firstHash2;
 						} else {
 							checkWidth = width1;
 							checkHeight = height1;
 							checkGenDelta = 1;
 							checkHash = hash1;
+							checkFirst = firstHash1
 						}
 
 						// check if the bounding box is the same size as the source
@@ -5883,19 +6039,19 @@ This file is part of LifeViewer
 							// check the source generation against this one
 							var t2 = performance.now();
 
-							this.modType = this.checkModHashType(extent, checkHash, modChecks[0].modType, deltaX, deltaY, period / (p - checkGenDelta));
+							this.modType = this.checkModHashType(extent, checkHash, modChecks[0].modType, deltaX, deltaY, period / (p - checkGenDelta), checkFirst);
 
 							t2 = performance.now() - t2;
-							console.log("checkModHashType", t2.toFixed(2) + "ms");
+							//console.log("checkModHashType", t2.toFixed(2) + "ms");
 
 							if (this.modType !== -1) {
 
-								console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
+								//console.log(p, "gen", this.counter, "type", this.modType, LifeConstants.modTypeName[this.modType], "verified");
 
 								this.modValue = p - checkGenDelta;
 							} else {
 
-								console.log(p, "gen", this.counter, "verify failed");
+								//console.log(p, "gen", this.counter, "verify failed");
 
 								this.modValue = -1;
 							}
@@ -5914,10 +6070,10 @@ This file is part of LifeViewer
 
 								var t1 = performance.now();
 
-								modMatch = this.checkModHash(extent, hash0, deltaX, deltaY);
+								modMatch = this.checkModHash(extent, hash0, deltaX, deltaY, firstHash0);
 
 								t1 = performance.now() - t1;
-								console.log("checkModHash", t1.toFixed(2) + "ms");
+								//console.log("checkModHash", t1.toFixed(2) + "ms");
 
 								if (modMatch !== 0 && !(this.isMargolus && hash0 === hash1 && p < 2)) {
 									// potential Mod found so create verification record
@@ -5958,7 +6114,7 @@ This file is part of LifeViewer
 		}
 
 		t = performance.now() - t;
-		console.log("computed cell map for each generation in " + (t / 1000).toFixed(1) + " seconds");
+		//console.log("computed cell map for each generation in " + (t / 1000).toFixed(1) + " seconds");
 		t = performance.now();
 
 		// compute strict volatility
@@ -5979,18 +6135,17 @@ This file is part of LifeViewer
 			}
 
 			t = performance.now() - t;
-			console.log("alive->max", t.toFixed(2) + "ms");
+			//console.log("initialize periods", t.toFixed(2) + "ms");
 			t = performance.now();
 
 			// calculate the factors of the period (subperiods)
 			this.computeCellFactors(cellPeriod, period, frames, cellCounts, boxWidth, boxHeight, bitFrameIn16Bits, bitRowIn16Bits, bitStart);
 
 			t = performance.now() - t;
-			console.log("calculated cell factors in " + (t / 1000).toFixed(1) + " seconds");
+			//console.log("calculated cell factors in " + (t / 1000).toFixed(1) + " seconds");
 			t = performance.now();
 
 			// count up the subperiod populations
-			t = performance.now();
 			for (cy = 0; cy < boxHeight; cy += 1) {
 				row = cy * boxWidth;
 				for (cx = 0; cx < boxWidth; cx += 1) {
@@ -6001,7 +6156,7 @@ This file is part of LifeViewer
 				}
 			}
 			t = performance.now() - t;
-			console.log("subperiod count", t.toFixed(2) + "ms");
+			//console.log("subperiod count", t.toFixed(2) + "ms");
 
 			// for [R]History and [R]Super add state 6 cells to map and for [R]Extended add state 3 cells
 			if (isOscillator) {
@@ -6032,8 +6187,15 @@ This file is part of LifeViewer
 			this.cellFrequencyCounts = cellCounts;
 
 			// create the cell period map
+			t = performance.now();
 			this.createCellPeriodMap(view);
+			t = performance.now() - t;
+			//console.log("created period map in", (t / 1000).toFixed(1) + " seconds");
+
+			t = performance.now();
 			this.createCellFrequencyMap(cellCounts, period);
+			t = performance.now() - t;
+			//console.log("created frequency map in", (t / 1000).toFixed(1) + " seconds");
 		} else {
 			this.popSubPeriod = null;
 		}
@@ -6041,7 +6203,7 @@ This file is part of LifeViewer
 		// save elapsed time
 		this.identifyElapsedTime = ((performance.now() - this.identifyStartTime) / 1000);
 
-		console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
+		//console.log("identification complete in " + this.identifyElapsedTime.toFixed(1) + " seconds");
 
 		// restore heap pointer (freeing up memory allocated)
 		this.allocator.setHeapPointer(wasmPointer);
@@ -15347,15 +15509,15 @@ This file is part of LifeViewer
 					// check each row
 					for (h = 0; h < height; h += 1) {
 						colourGridRow = colourGrid[h];
-	
+
 						// flag nothing in the row
 						rowAlive = 0;
-	
+
 						// check each column
 						for (w = 0; w < width; w += 1) {
 							input = colourGridRow[w];
 							rowAlive |= input;
-	
+
 							if (input) {
 								if (w < newLeftX) {
 									newLeftX = w;
@@ -15365,7 +15527,7 @@ This file is part of LifeViewer
 								}
 							}
 						}
-	
+
 						// check if the row was alive
 						if (rowAlive) {
 							if (h < newBottomY) {
@@ -15380,20 +15542,20 @@ This file is part of LifeViewer
 					// check each row
 					for (h = 0; h < height; h += 1) {
 						gridRow16 = grid16[h];
-	
+
 						// flag nothing alive in the row
 						rowAlive = 0;
-	
+
 						// check each column
 						for (w = 0; w < w16; w += 1) {
 							// update row alive flag
 							input = gridRow16[w];
 							rowAlive |= input;
-	
+
 							// update the column alive flag
 							columnOccupied16[w] |= input;
 						}
-	
+
 						// check if the row was alive
 						if (rowAlive) {
 							if (h < newBottomY) {
@@ -15416,7 +15578,7 @@ This file is part of LifeViewer
 							}
 						}
 					}
-	
+
 					// convert new width to pixels
 					newLeftX = (newLeftX << 4) + this.leftBitOffset16(columnOccupied16[newLeftX]);
 					newRightX = (newRightX << 4) + this.rightBitOffset16(columnOccupied16[newRightX]);
@@ -21779,7 +21941,7 @@ This file is part of LifeViewer
 		if ((this.counter & 1) !== 0) {
 			colourGrid = this.nextColourGrid;
 		}
-		
+
 		// clear top boundary
 		if ((ht - topY - 1) <= yrange) {
 			for (y = ht - yrange - 1; y <= topY; y += 1) {

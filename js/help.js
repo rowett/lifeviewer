@@ -1837,12 +1837,12 @@ This file is part of LifeViewer
 					y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility + " | N/A", ctx, x, y, height, helpLine);
 				} else {
 					y = this.renderHelpLine(view, "Volatility", view.lastIdentifyVolatility + " | " + view.lastIdentifyStrict, ctx, x, y, height, helpLine);
-					view.tabs[1] = 215; // % Total
-					view.tabs[2] = 300; // % Rotor
-					view.tabs[3] = 385; // Colour
-					view.tabs[4] = 425;
-					view.tabs[5] = 465;
-					view.tabs[6] = 505;
+					view.tabs[1] = 235; // % Total
+					view.tabs[2] = 310; // % Rotor
+					view.tabs[3] = 390; // Colour
+					view.tabs[4] = 430;
+					view.tabs[5] = 470;
+					view.tabs[6] = 510;
 					view.tabs[7] = 600;
 					y = this.renderHelpLine(view, "  Period", "    Count\t% Total\t% Rotor\tColour", ctx, x, y, height, helpLine);
 					for (i = view.engine.popSubPeriod.length - 1; i > 0; i -= 1) {

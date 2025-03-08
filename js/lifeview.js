@@ -336,7 +336,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1275,
+		/** @const {number} */ versionBuild : 1276,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -9053,10 +9053,11 @@ This file is part of LifeViewer
 
 	// colour theme
 	View.prototype.setNewTheme = function(/** @type {number} */ newTheme, /** @type {number} */ steps, /** @type {View} */ me) {
-		var	/** @type {number} */ i = 0;
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ currentTheme = me.engine.colourTheme;
 
 		// check if it has changed
-		if (me.engine.colourTheme !== newTheme) {
+		if (currentTheme !== newTheme) {
 			me.engine.setTheme(newTheme, steps, me);
 			if (me.engine.colourChangeSteps > 1) {
 				me.menuManager.updateCount = me.engine.colourChangeSteps;
@@ -9074,6 +9075,13 @@ This file is part of LifeViewer
 			// mark that the Theme has changed so relevant Icons recolour
 			me.iconManager.recolour = true;
 			me.iconManager.recolourGrid = me.engine.gridLineColour;
+
+			// if the new theme does not have history and the old one did then clear history cells
+			if (currentTheme !== -1) {
+				if (!me.engine.themes[newTheme].hasHistory(me.engine.isLifeHistory, me) && me.engine.themes[currentTheme].hasHistory(me.engine.isLifeHistory, me)) {
+					me.engine.clearHistoryCells();
+				}
+			}
 
 			// update the grid major button
 			me.majorButton.current = [me.engine.gridLineMajorEnabled && me.engine.gridLineMajor > 0];
@@ -20649,7 +20657,11 @@ This file is part of LifeViewer
 			me.readScript(comments, numberValue);
 
 			// save the pattern comments after removing script commands, originator and name, and "#C " or "# " comment prefixes
-			me.patternComments = ("\n" + pattern.beforeTitle).replace(/\n#C /g, "\n").replace(/\n# /g, "\n").replace(/\n#C/g, "\n").replace(/\[\[ .*? \]\][ \n]/g, "").replace(/\n#(?:N|O)[^\n]*/g, "\n").substring(1);
+			if (pattern) {
+				me.patternComments = ("\n" + pattern.beforeTitle).replace(/\n#C /g, "\n").replace(/\n# /g, "\n").replace(/\n#C/g, "\n").replace(/\[\[ .*? \]\][ \n]/g, "").replace(/\n#(?:N|O)[^\n]*/g, "\n").substring(1);
+			} else {
+				me.patternComments = "";
+			}
 
 			// set errors to display if any found
 			if (me.scriptErrors.length) {
