@@ -99,6 +99,9 @@ This file is part of LifeViewer
 		// default speed value setting name
 		/** @type {string} */ defaultSpeedValueSettingName : "defaultSpeedValue",
 
+		// refresh rate override setting name
+		/** @type {string} */ refreshRateSettingName : "refreshRate",
+
 		// Wolfram RuleTable emulation colours
 		/** @const {string} */ wolframEmulationColours : "0 0 0 0\n1 0 255 192\n2 0 192 255\n",
 
@@ -344,7 +347,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1280,
+		/** @const {number} */ versionBuild : 1281,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -559,6 +562,8 @@ This file is part of LifeViewer
 		/** @const {number} */ frameCount : 12,
 		/** @type {number} */ currentFrame : 0,
 		/** @type {number} */ refreshRate : 60,
+		/** @type {number} */ autoRefreshRate : 60,
+		/** @type {boolean} */ refreshOverride : false,
 
 		// WASM feature selection
 		/** @type {boolean} */ useWASM: true,
@@ -687,7 +692,17 @@ This file is part of LifeViewer
 
 			// save refresh rate
 			Controller.refreshRate = i;
-			console.log("refresh rate", i + "Hz");
+			Controller.autoRefreshRate = i;
+
+			// check for override
+			i = Controller.loadIntegerSetting(ViewConstants.refreshRateSettingName);
+			if (i !== -1) {
+				Controller.refreshRate = i;
+				Controller.refreshOverride = true;
+			} else {
+				Controller.refreshOverride = false;
+			}
+			console.log("refresh rate", Controller.refreshRate + "Hz " + (Controller.refreshOverride ? "Fixed" : "Auto"));
 
 			// start main application
 			setTimeout(startAllViewers, 0);
@@ -2167,6 +2182,9 @@ This file is part of LifeViewer
 
 		// safe mode button
 		/** @type {MenuItem} */ this.safeModeButton = null;
+
+		// refresh rate button
+		/** @type {MenuItem} */ this.refreshRateButton = null;
 
 		// toggle WASM engine button
 		/** @type {MenuItem} */ this.wasmEngineButton = null;
@@ -7642,6 +7660,7 @@ This file is part of LifeViewer
 		this.fastLookupButton.locked = !this.engine.isRuleTree || (this.engine.isRuleTree && !this.engine.ruleLoaderLookupAvailable());
 		this.stateNumberButton.deleted = shown;
 		this.safeModeButton.deleted = shown;
+		this.refreshRateButton.deleted = shown;
 		if (Controller.useWASM) {
 			this.wasmEngineButton.deleted = shown;
 		}
@@ -13659,6 +13678,43 @@ This file is part of LifeViewer
 		}
 	};
 
+	// refresh rate button
+	View.prototype.viewRefreshPressed = function(/** @type {View} */ me) {
+		// prompt for rate
+		var	/** @type {number} */ lastInput = Controller.loadIntegerSetting(ViewConstants.refreshRateSettingName),
+			/** @type {string|null} */ result = window.prompt("Enter refresh rate", lastInput === -1 ? "Auto" : String(lastInput)),
+			/** @type {number} */ number = 0;
+
+		// check one was entered
+		if (result !== null) {
+			// validate
+			if (result.toLowerCase() === "auto") {
+				number = -1;
+			} else {
+				number = parseInt(result, 10);
+				if (number < 25 || number > 500) {
+					me.menuManager.notification.notify("Invalid refresh rate specified", 15, 240, 15, true);
+					number = -2;
+				}
+			}
+
+			// save setting if valid
+			if (number >= -1) {
+				Controller.saveIntegerSetting(ViewConstants.refreshRateSettingName, number);
+				Controller.refreshOverride = (number !== -1);
+
+				// set it as the current refresh rate
+				if (number === -1) {
+					number = Controller.autoRefreshRate;
+				}
+
+				me.refreshRate = number;
+				me.menuManager.refreshRate = number;
+				Controller.refreshRate = number;
+			}
+		}
+	};
+
 	// back button
 	View.prototype.backPressed = function(/** @type {View} */ me) {
 		// check if any settings are displayed
@@ -18650,48 +18706,48 @@ This file is part of LifeViewer
 		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 100, 25, 150, 40, "Advanced");
 		this.infoButton.toolTip = "advanced settings and actions";
 
-		// toggle WASM engine button
-		i = 0;
-		if (Controller.useWASM) {
-			this.wasmEngineButton = this.viewMenu.addListItem(this.viewEngineToggle, Menu.middle, -100, 100, 180, 40, ["WASM Engine"], [this.wasmEnabled], Menu.multi);
-			this.wasmEngineButton.toolTip = ["toggle WASM engine [" + this.altKeyText + "`]"];
-			
-			// set button position offset
-			i = -25;
-		}
-
 		// fps button
-		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -75 + i, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
+		this.fpsButton = this.viewMenu.addListItem(this.viewFpsToggle, Menu.middle, -100, -100, 180, 40, ["Frame Times"], [this.menuManager.showTiming], Menu.multi);
 		this.fpsButton.toolTip = ["toggle timing display [T]"];
 
 		// timing detail button
-		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -75 + i, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
+		this.timingDetailButton = this.viewMenu.addListItem(this.viewTimingDetailToggle, Menu.middle, 100, -100, 180, 40, ["Timing Details"], [this.menuManager.showExtendedTiming], Menu.multi);
 		this.timingDetailButton.toolTip = ["toggle timing details [Shift T]"];
 
 		// relative toggle button
-		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -25 + i, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
+		this.relativeToggle = this.viewMenu.addListItem(this.viewRelativeToggle, Menu.middle, -100, -50, 180, 40, ["Relative Gen"], [this.genRelative], Menu.multi);
 		this.relativeToggle.toolTip = ["toggle absolute/relative generation display [Shift G]"];
 
 		// y coordinate direction button
-		this.yDirectionButton = this.viewMenu.addListItem(this.viewYDirectionToggle, Menu.middle, 100, -25 + i, 180, 40, ["Y Direction"], [this.yUp], Menu.multi);
+		this.yDirectionButton = this.viewMenu.addListItem(this.viewYDirectionToggle, Menu.middle, 100, -50, 180, 40, ["Y Direction"], [this.yUp], Menu.multi);
 		this.yDirectionButton.toolTip = ["toggle y coordinate direction [F9]"];
 
 		// infobar toggle button
-		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 25 + i, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
+		this.infoBarButton = this.viewMenu.addListItem(this.viewInfoBarToggle, Menu.middle, -100, 0, 180, 40, ["Info Bar"], [this.infoBarEnabled], Menu.multi);
 		this.infoBarButton.toolTip = ["toggle Information Bar [Shift I]"];
 
 		// fast lookup toggle button
-		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 25 + i, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
+		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 0, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
 		this.fastLookupButton.toolTip = ["toggle fast lookup [F7]"];
 
 		// state number toggle button
-		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 75 + i, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
+		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 50, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
 		this.stateNumberButton.toolTip = ["toggle state number display [F8]"];
 
 		// toggle safe mode
-		this.safeModeButton = this.viewMenu.addListItem(this.viewSafeModeToggle, Menu.middle, 100, 75 + i, 180, 40, ["Safe Mode"], [this.safeMode], Menu.multi);
+		this.safeModeButton = this.viewMenu.addListItem(this.viewSafeModeToggle, Menu.middle, 100, 50, 180, 40, ["Safe Mode"], [this.safeMode], Menu.multi);
 		this.safeModeButton.toolTip = ["toggle safe mode [Shift F9]"];
 		
+		// toggle refresh rate
+		this.refreshRateButton = this.viewMenu.addButtonItem(this.viewRefreshPressed, Menu.middle, -100, 100, 180, 40, "Refresh Rate");
+		this.refreshRateButton.toolTip = ["set refresh rate"];
+
+		// toggle WASM engine button
+		if (Controller.useWASM) {
+			this.wasmEngineButton = this.viewMenu.addListItem(this.viewEngineToggle, Menu.middle, 100, 100, 180, 40, ["WASM Engine"], [this.wasmEnabled], Menu.multi);
+			this.wasmEngineButton.toolTip = ["toggle WASM engine [" + this.altKeyText + "`]"];
+		}
+
 		// add the back button
 		this.backButton = this.viewMenu.addButtonItem(this.backPressed, Menu.south, 0, -100, 120, 40, "Back");
 		this.backButton.toolTip = "back to previous menu [Backspace]";

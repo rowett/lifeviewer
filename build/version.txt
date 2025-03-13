@@ -1,3 +1,8 @@
+Build 1281
+- added Settings>Advanced>Refresh Rate button which allows you to override the monitor refresh rate detection
+	- specify a refresh rate from 25Hz to 500Hz or Auto (the default)
+	- the setting will be saved for the current browser on the current device
+
 Build 1280
 - fixed "Life ended at" with PASTE
 - [[ STARTFROM ]] generation can now be postfixed with "B" for benchmark mode
