@@ -8383,6 +8383,11 @@ This file is part of LifeViewer
 					case "R":
 						// check for rule
 						if (!sawRule) {
+							// check if this is actually #RULE
+							if (source.substring(index, index + 3) === "ULE") {
+								index += 3;
+							}
+
 							// decode rule (size is ignored and computed from the read pattern)
 							index += this.decodeRule(pattern, source.substring(index), false, allocator);
 							sawRule = true;

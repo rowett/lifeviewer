@@ -1,3 +1,29 @@
+Build 1280
+- fixed "Life ended at" with PASTE
+- [[ STARTFROM ]] generation can now be postfixed with "B" for benchmark mode
+- fixed HROT von Neumann pattern grid boundary detection
+- PopUp Close Window button colours now match title bar close button
+- PopUp Title and Close Button colours are now displayed in Help>Info>UI
+- added [[ SNOW ]] and [[ COLOR SNOW r g b ]] script commands
+- fixed Reset after Advance Selection or Advance Outside
+- embedded Viewers now fit mobile screen width
+
+Build 1279
+- fixed clipboard context box not updating after cut from the box itself
+- moved Back colour to Cell Period Map table in Help>Info>Identify
+- fixed Comments persisting when new pattern has no comments defined
+- PopUp window title bar and close button colours can be customised:
+	- COLOR TITLEFOREGROUND R G B
+	- COLOR TITLEBACKGROUND R G B
+	- COLOR CLOSEFOREGROUND R G B
+	- COLOR CLOSEBACKGROUND R G B
+
+Build 1278
+- fixed Change Rule and New Pattern with embedded @RULE definition
+
+Build 1277
+- fixed issue with switching Themes for Generations rules
+
 Build 1276
 - clear history cells when switching from Theme with history to one without
 - fixed an issue with loading comments when pattern is invalid

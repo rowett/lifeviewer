@@ -81,6 +81,9 @@ This file is part of LifeViewer
 		/** @const {number} */ identifyDisplayPeriod : 0,
 		/** @const {number} */ identifyDisplayFrequency : 1,
 
+		// default snow colour (white)
+		/** @const {number} */ defaultSnowColour : 0xffffff,
+
 		// settings prefix
 		/** @const {string} */ settingsPrefix : "LV",
 
@@ -306,6 +309,11 @@ This file is part of LifeViewer
 		/** @const {number} */ customThemePaste : 29,
 		/** @const {number} */ customThemeSelectedCells : 30,
 		/** @const {number} */ customThemeHelp : 31,
+		/** @const {number} */ customThemeTitleFG : 32,
+		/** @const {number} */ customThemeTitleBG : 33,
+		/** @const {number} */ customThemeCloseFG : 34,
+		/** @const {number} */ customThemeCloseBG : 35,
+		/** @const {number} */ customThemeSnow : 36,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -336,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1276,
+		/** @const {number} */ versionBuild : 1280,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -979,9 +987,6 @@ This file is part of LifeViewer
 		// whether Life just died
 		/** @type {boolean} */ this.justDied = false;
 
-		// whether secret snow is disabled
-		/** @type {boolean} */ this.snowDisabled = false;
-
 		// whether playback duration displayed
 		/** @type {boolean} */ this.showPlayDuration = false;
 
@@ -1103,6 +1108,9 @@ This file is part of LifeViewer
 
 		// last still life density
 		/** @type {string} */ this.lastIdentifyDensity = "";
+
+		// last buffer used
+		/** @type {string} */ this.lastIdentifyBufferUsed = "";
 
 		// whether computing oscillators
 		/** @type {boolean} */ this.identify = false;
@@ -1588,6 +1596,9 @@ This file is part of LifeViewer
 		// whether autofit only uses state 1
 		/** @type {boolean} */ this.state1Fit = false;
 
+		// snow colour
+		/** @type {number} */ this.snowColour = ViewConstants.defaultSnowColour;
+
 		// custom text message colour
 		/** @type {Array<number>} */ this.customTextColour = null;
 
@@ -1621,6 +1632,14 @@ This file is part of LifeViewer
 		// window title element
 		this.titleElement = null;
 
+		// window title colours (must be in #xxxxxx format)
+		this.titleBGCol = "#FFFFFF";
+		this.titleFGCol = "#536482";
+
+		// window close button colours (must be in #xxxxxx format)
+		this.closeBGCol = "#C75050";
+		this.closeFGCol = "#FFFFFF";
+
 		// window title string
 		/** @type {string} */ this.windowTitle = "";
 
@@ -1638,6 +1657,9 @@ This file is part of LifeViewer
 
 		// create and initialise stars
 		/** @type {Stars} */ this.starField = null;
+
+		// flag if snow is used
+		/** @type {boolean} */ this.snowOn = false;
 
 		// whether viewer is in popup window
 		/** @type {boolean} */ this.isInPopup = false;
@@ -1726,7 +1748,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.customGridMajor = false;
 
 		// custom theme value
-		/** @type {Array<number>} */ this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		/** @type {Array<number>} */ this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		/** @type {number} */ this.customGridColour = -1;
@@ -6608,7 +6630,7 @@ This file is part of LifeViewer
 	// check if Life has ended (including any future PASTE commands)
 	/** @returns {boolean} */
 	View.prototype.lifeEnded = function() {
-		return this.justDied && (!(this.pasteEvery || this.engine.counter <= this.maxPasteGen));
+		return this.justDied && (!(this.pasteEvery || this.engine.counter < this.maxPasteGen));
 	};
 
 	// update view mode for normal processing
@@ -6836,6 +6858,9 @@ This file is part of LifeViewer
 
 				// set grid TBD
 				//me.engine.displayGrid = currentWaypoint.grid;
+
+				// set snow TBD
+				//me.snowOn = currentWaypoint.snow;
 
 				// if waypoints not ended then work out whether to step to next generation
 				if (currentWaypoint.targetGen > me.engine.counter) {
@@ -8330,6 +8355,7 @@ This file is part of LifeViewer
 						me.lastIdentifyActive = "";
 						me.lastIdentifyTemperature = "";
 						me.lastIdentifyDensity = "";
+						me.lastIdentifyBufferUsed = "";
 					} else {
 						// check results
 						me.lastOscillator = identifyResult[0];
@@ -8349,6 +8375,7 @@ This file is part of LifeViewer
 							me.lastIdentifyActive = identifyResult[13];
 							me.lastIdentifyTemperature = identifyResult[14];
 							me.lastIdentifyDensity = identifyResult[15];
+							me.lastIdentifyBufferUsed = String(me.engine.oscLength);
 
 							// update result labels
 							me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
@@ -9485,8 +9512,14 @@ This file is part of LifeViewer
 		// reset cleared glider count
 		me.engine.numClearedGliders = 0;
 
+		// clear any selection
+		me.isSelection = false;
+		me.afterSelectAction = false;
+		me.drawingSelection = false;
+
 		// reset undo/redo to generation 0
-		me.setUndoGen(me.engine.counter);
+		me.editNum = 1;
+		me.updateUndoToolTips();
 
 		// clear identify results
 		me.resultsDisplayed = false;
@@ -12090,6 +12123,7 @@ This file is part of LifeViewer
 		var	/** @type {string} */ result = "",
 			/** @type {string} */ patternText = "x = 1, y = 1, rule = ",
 			/** @type {number} */ textPos = -1,
+			/** @type {string} */ justRule = "",
 			/** @type {Pattern} */ pattern = null;
 
 		// check if the rule name is blank
@@ -12127,6 +12161,18 @@ This file is part of LifeViewer
 
 		// create an empty pattern
 		patternText += ruleName + "\nb!";
+
+		// remove any bounded grid definition
+		justRule = ruleName;
+		textPos = ruleName.indexOf(":");
+		if (textPos !== -1) {
+			justRule = ruleName.substring(0, textPos);
+		}
+
+		// if the rule name is the same as the current pattern rule and it was defined by an inline @RULE definition then add the definition
+		if (justRule === this.patternRuleName && this.engine.afterTitle.indexOf(this.manager.ruleTableRuleName) !== -1) {
+			patternText += "\n" + this.engine.afterTitle;
+		}
 
 		// attempt to build a pattern from the string
 		try {
@@ -13180,8 +13226,7 @@ This file is part of LifeViewer
 
 	// new pattern
 	View.prototype.newPattern = function(/** @type {View} */ me) {
-		var	/** @type {string} */ patternText = "x = 1, y = 1, rule = ",
-			/** @type {string|null} */ result = window.prompt("Create new pattern with rule", (me.patternAliasName === "" ? me.patternRuleName : me.patternAliasName) + me.patternBoundedGridDef);
+		var	/** @type {string|null} */ result = window.prompt("Create new pattern with rule", me.patternRuleName + me.patternBoundedGridDef);
 
 		// check if the prompt was confirmed
 		if (result !== null) {
@@ -13212,12 +13257,28 @@ This file is part of LifeViewer
 
 	// complete new pattern after valid rule found
 	View.prototype.newPatternSuccess = function(/** @type {Pattern} */ pattern, /** @type {Array} */ args, /** @type {View} */ me) {
-		var	/** @type {string} */ patternText = "x = 1, y = 1, rule = " + args[0] + "\nb!";
+		var	/** @type {string} */ ruleName = args[0],
+			/** @type {string} */ patternText = "x = 1, y = 1, rule = " + ruleName + "\nb!",
+			/** @type {string} */ justRule = "",
+			/** @type {number} */ textPos = 0;
 
 		// restore previous size
 		if (me.isInPopup) {
 			me.displayWidth = me.origDisplayWidth;
 			me.displayHeight = me.origDisplayHeight;
+		}
+
+		// remove any bounded grid definition
+		justRule = ruleName;
+		textPos = ruleName.indexOf(":");
+		if (textPos !== -1) {
+			justRule = ruleName.substring(0, textPos);
+		}
+
+		// if the rule name is the same as the current pattern rule and it was defined by an inline @RULE definition then add the definition
+		textPos = this.engine.afterTitle.indexOf(this.manager.ruleTableRuleName);
+		if (justRule === this.patternRuleName && textPos !== -1) {
+			patternText += "\n" + this.engine.afterTitle.substring(textPos);
 		}
 
 		// start viewer
@@ -13528,6 +13589,11 @@ This file is part of LifeViewer
 		// check for stars
 		if (poi.starsDefined) {
 			this.starsOn = poi.stars;
+		}
+
+		// check for snow
+		if (poi.snowDefined) {
+			this.snowOn = poi.snow;
 		}
 	};
 
@@ -17433,7 +17499,7 @@ This file is part of LifeViewer
 
 	// copy string to clipboard
 	View.prototype.copyToClipboard = function(/** @type {View} */ me, /** @type {string} */ contents) {
-		var	/** @type {Element} */ copyElement = document.getElementById("ViewerCopy"),
+		var	/** @type {Object} */ copyElement = document.getElementById("ViewerCopy"),
 			/** @type {ClipboardItem} */ clipboardItem = null;
 
 		// save the contents
@@ -17469,6 +17535,7 @@ This file is part of LifeViewer
 		// check if a copy text box exists
 		if (copyElement) {
 			copyElement.innerHTML = contents;
+			copyElement.value = copyElement.innerHTML;
 		}
 	};
 
@@ -17941,7 +18008,8 @@ This file is part of LifeViewer
 		this.menuManager.setColours(fgCol, bgCol, highlightCol, selectedCol, lockedCol, borderCol, this.helpFontColour);
 
 		// set the escape button background
-		this.escButton.bgCol = "red";
+		this.escButton.bgCol = this.closeBGCol;
+		this.escButton.fgCol = this.closeFGCol;
 	};
 
 	// create menus
@@ -19171,9 +19239,6 @@ This file is part of LifeViewer
 		// reset show play duration
 		this.showPlayDuration = false;
 
-		// clear disable snow
-		this.snowDisabled = false;
-
 		// disable icons
 		this.useIcons = false;
 
@@ -19246,6 +19311,9 @@ This file is part of LifeViewer
 		this.engine.graphAliveColor = this.engine.graphAliveDefColor;
 		this.engine.graphBirthColor = this.engine.graphBirthDefColor;
 		this.engine.graphDeathColor = this.engine.graphDeathDefColor;
+
+		// reset snow colour
+		this.snowColour = ViewConstants.defaultSnowColour;
 
 		// clear hard reset mode
 		this.hardReset = false;
@@ -19400,6 +19468,9 @@ This file is part of LifeViewer
 			this.engine.createCellPeriodMap(this);
 			this.engine.createCellFrequencyMap(this.engine.cellFrequencyCounts, this.engine.identifyPeriod);
 		}
+
+		// scale embedded if needed
+		this.scaleEmbedded();
 
 		// if AutoFit is enabled then fit zoom
 		if (this.autoFit) {
@@ -19579,6 +19650,49 @@ This file is part of LifeViewer
 
 		// set the theme
 		this.setNewTheme(themeRequested, 1, this);
+	};
+
+	// scale embedded viewer
+	View.prototype.scaleEmbedded = function() {
+		var	/** @type {number} */ windowWidth = 0,
+			/** @type {number} */ viewerWidth = 0,
+			/** @type {number} */ scale = 0;
+
+		if (!this.isInPopup) {
+			// update the device pixel ratio
+			this.devicePixelRatio = (window.devicePixelRatio ? window.devicePixelRatio : 1);
+
+			// compute the width of the embedded viewer and the browser window
+			viewerWidth = this.displayWidth * this.devicePixelRatio;
+			windowWidth = document.body.clientWidth;
+			scale = 1;
+			this.windowZoom = 1;
+
+			// check window fits on display
+			if (viewerWidth > windowWidth) {
+				// find the scaling factor for the window to fit
+				this.windowZoom = windowWidth / this.displayWidth;
+			}
+
+			// update menu manager zoom
+			this.menuManager.windowZoom = this.windowZoom;
+
+			// resize the menu controls
+			this.viewMenu.resizeControls(scale);
+
+			// resize the icons
+			this.iconManager.setScale(scale);
+
+			// resize the help fonts
+			this.helpFontSize = (18 * scale) | 0;
+			this.helpFixedFont = this.helpFontSize + "px " + ViewConstants.fixedFontFamily;
+			this.helpVariableFont = this.helpFontSize + "px " + ViewConstants.variableFontFamily;
+			this.clearHelpCache();
+
+			// resize the canvas
+			this.mainCanvas.style.transform = "scale(" + this.windowZoom + "," + this.windowZoom + ")";
+			this.mainCanvas.style.transformOrigin = "top left";
+		}
 	};
 
 	// scale popup window
@@ -20359,6 +20473,9 @@ This file is part of LifeViewer
 		// disable stars
 		me.starsOn = false;
 
+		// disable snow
+		me.snowOn = false;
+
 		// initalised ColourManager
 		ColourManager.init();
 
@@ -20612,20 +20729,9 @@ This file is part of LifeViewer
 		// set random seed
 		me.randomSeed = Date.now().toString();
 
-		// check for fullscreen not in popup
-		if (!me.isInPopup && DocConfig.fullScreen) {
-			me.displayWidth = (document.body.clientWidth & ~7) - 8;
-			me.displayHeight = window.innerHeight - 130;
-			if (me.displayWidth < ViewConstants.minViewerWidth) {
-				me.displayWidth = ViewConstants.minViewerWidth;
-			}
-			if (me.displayHeight < ViewConstants.minViewerHeight) {
-				me.displayHeight = ViewConstants.minViewerHeight;
-			}
-			resizeRequired = true;
-		}
-
 		// read any script in the title
+		this.patternComments = "";
+
 		if (comments !== "") {
 			// decode any script commands
 			if (pattern) {
@@ -20658,9 +20764,10 @@ This file is part of LifeViewer
 
 			// save the pattern comments after removing script commands, originator and name, and "#C " or "# " comment prefixes
 			if (pattern) {
-				me.patternComments = ("\n" + pattern.beforeTitle).replace(/\n#C /g, "\n").replace(/\n# /g, "\n").replace(/\n#C/g, "\n").replace(/\[\[ .*? \]\][ \n]/g, "").replace(/\n#(?:N|O)[^\n]*/g, "\n").substring(1);
-			} else {
-				me.patternComments = "";
+				me.patternComments = ("\n" + pattern.beforeTitle).replace(/\n#C /g, "\n").replace(/\n# /g, "\n").replace(/#CXRLE .*?\n/g, "\n").replace(/\n#C/g, "\n").replace(/\[\[ .*? \]\][ \n]/g, "").replace(/\n#(?:N|O)[^\n]*/g, "\n").substring(1);
+				if (me.patternComments == "\n") {
+					me.patternComments = "";
+				}
 			}
 
 			// set errors to display if any found
@@ -20713,6 +20820,29 @@ This file is part of LifeViewer
 						me.displayHeight = me.requestedPopupHeight;
 						resizeRequired = true;
 					}
+				}
+			}
+		}
+
+		// check for size when embedded
+		if (!me.isInPopup) {
+			// check for fullscreen mode
+			var clientWidth = (document.body.clientWidth & ~7) - 8;
+
+			if (DocConfig.fullScreen) {
+				me.displayWidth = clientWidth;
+				me.displayHeight = window.innerHeight - 130;
+				if (me.displayWidth < ViewConstants.minViewerWidth) {
+					me.displayWidth = ViewConstants.minViewerWidth;
+				}
+				if (me.displayHeight < ViewConstants.minViewerHeight) {
+					me.displayHeight = ViewConstants.minViewerHeight;
+				}
+				resizeRequired = true;
+			} else {
+				// embedded mode
+				if (me.displayWidth > clientWidth) {
+					resizeRequired = true;
 				}
 			}
 		}
@@ -21609,7 +21739,7 @@ This file is part of LifeViewer
 		}
 
 		// check if snow needed
-		if (!me.snowDisabled && (me.engine.zoom === 8 || me.engine.zoom === 0.125) && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0 && (me.rleList.length & 5) === 1) {
+		if (me.snowOn || ((me.engine.zoom === 8 || me.engine.zoom === 0.125) && me.numScriptCommands > 0 && (me.numScriptCommands & 3) === 0 && (me.rleList.length & 5) === 1)) {
 			me.drawingSnow = true;
 			me.engine.initSnow();
 		} else {
@@ -22057,7 +22187,8 @@ This file is part of LifeViewer
 			/** @type {number} */ itemFontSize = 18,
 
 			// popup window
-			/** @type {PopupWindow} */ popup = null;
+			/** @type {PopupWindow} */ popup = null,
+			/** @type {number} */ value = 0;
 
 		// check if the standalone viewer exists
 		if (viewer) {
@@ -22086,8 +22217,8 @@ This file is part of LifeViewer
 			anchorItem.innerHTML = "&nbsp;X&nbsp;";
 			anchorItem.style.textDecoration = "none";
 			anchorItem.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
-			anchorItem.style.color = "#FFFFFF";
-			anchorItem.style.backgroundColor = "#C75050";
+			//anchorItem.style.color = "#FFFFFF";
+			//anchorItem.style.backgroundColor = "#C75050";
 			anchorItem.style.cssFloat = "right";
 			anchorItem.style.height = itemHeight + "px";
 			anchorItem.style.fontSize = itemFontSize + "px";
@@ -22106,7 +22237,8 @@ This file is part of LifeViewer
 			// create the center div with the window title text
 			centerDivItem = /** @type {!HTMLDivElement} */ (document.createElement("div"));
 			centerDivItem.style.textAlign = "center";
-			centerDivItem.style.color = "rgb(83,100,130)";
+			//centerDivItem.style.color = "rgb(83,100,130)";
+			//centerDivItem.style.backgroundColor = "rgb(0,255,20)";
 			centerDivItem.style.fontFamily = "Arial, Verdana, Helvetica, sans-serif";
 			centerDivItem.style.fontSize = itemFontSize + "px";
 			centerDivItem.style.height = itemHeight + "px";
@@ -22195,6 +22327,37 @@ This file is part of LifeViewer
 		view.startViewer(cleanItem, true);
 		if (!view.needsComplete) {
 			completeUpdate(view);
+		}
+
+		// set the colours
+		value = view.customThemeValue[ViewConstants.customThemeTitleFG];
+		if (value === -1) {
+			view.centerDivItem.style.color = view.titleFGCol;
+		} else {
+			view.centerDivItem.style.color = "#" + ("000000" + value.toString(16)).slice(-6);
+		}
+
+		value = view.customThemeValue[ViewConstants.customThemeTitleBG];
+		if (value === -1) {
+			view.centerDivItem.style.backgroundColor = view.titleBGCol;
+		} else {
+			view.centerDivItem.style.backgroundColor = "#" + ("000000" + value.toString(16)).slice(-6);
+		}
+
+		value = view.customThemeValue[ViewConstants.customThemeCloseFG];
+		if (value === -1) {
+			view.anchorItem.style.color = view.closeFGCol;
+		} else {
+			view.anchorItem.style.color = "#" + ("000000" + value.toString(16)).slice(-6);
+			view.escButton.fgCol = view.anchorItem.style.color;
+		}
+
+		value = view.customThemeValue[ViewConstants.customThemeCloseBG];
+		if (value === -1) {
+			view.anchorItem.style.backgroundColor = view.closeBGCol;
+		} else {
+			view.anchorItem.style.backgroundColor = "#" + ("000000" + value.toString(16)).slice(-6);
+			view.escButton.bgCol = view.anchorItem.style.backgroundColor;
 		}
 	}
 
@@ -22412,6 +22575,12 @@ This file is part of LifeViewer
 			// resize
 			view.resize();
 			view.menuManager.setAutoUpdate(true);
+		} else {
+			for (i = 0; i < Controller.viewers.length; i += 1) {
+				view = Controller.viewers[i][1];
+				view.resize();
+				view.menuManager.setAutoUpdate(true);
+			}
 		}
 	}
 

@@ -479,7 +479,6 @@ This file is part of LifeViewer
 
 		// identify temporary results
 		/** @type {string} */ this.identifyMessage = "";
-		/** @type {number} */ this.identifyI = 0;
 		/** @type {number} */ this.identifyPeriod = 0;
 		/** @type {number} */ this.identifyDeltaX = 0;
 		/** @type {number} */ this.identifyDeltaY = 0;
@@ -606,8 +605,6 @@ This file is part of LifeViewer
 		/** @type {Uint32Array} */ this.genList = null;
 		/** @type {Uint32Array} */ this.popList = null;
 		/** @type {Uint32Array} */ this.boxList = null;
-		/** @type {Uint32Array} */ this.nextList = null;
-		/** @type {number} */ this.startItem = 0;
 		/** @type {number} */ this.oscLength = 0;
 		/** @type {Array<Uint8Array>} */ this.countList = null;
 		/** @type {Array<Uint8Array>} */ this.initList = null;
@@ -828,6 +825,9 @@ This file is part of LifeViewer
 
 		// identify box
 		/** @type {BoundingBox} */ this.identifyBox = new BoundingBox(0, 0, 0, 0);
+
+		// identify max box
+		/** @type {BoundingBox} */ this.identifyMaxBox = new BoundingBox(0, 0, 0, 0);
 
 		// history bounding box
 		/** @type {BoundingBox} */ this.historyBox = null;
@@ -1355,7 +1355,15 @@ This file is part of LifeViewer
 			/** @type {Uint16Array} */ snowX = this.snowX,
 			/** @type {Float32Array} */ snowY = this.snowY,
 			/** @type {Float32Array} */ snowDY = this.snowDY,
-			/** @type {Uint32Array} */ snowRevive = this.snowRevive;
+			/** @type {Uint32Array} */ snowRevive = this.snowRevive,
+			/** @type {number} */ snowCol = this.view.snowColour;
+
+		// set snow colour
+		if (this.littleEndian) {
+			snowCol = (255 << 24) | ((snowCol & 255) << 16) | (snowCol & 0xff00) | (snowCol >> 16);
+		} else {
+			snowCol = (snowCol << 8) | 255;
+		}
 
 		// update each snowflake
 		for (i = 0; i < LifeConstants.flakes; i += 1) {
@@ -1370,7 +1378,7 @@ This file is part of LifeViewer
 				if ((lastY | 0) === ((lastY + dirY) | 0)) {
 					newY = lastY + dirY;
 					// draw the flake at the current position
-					screen[(newY | 0) * wd + newX] = -1;
+					screen[(newY | 0) * wd + newX] = snowCol;
 				} else {
 					// check if the space below is free
 					if (screen[((lastY + dirY) | 0) * wd + lastX] === bg) {
@@ -1392,7 +1400,7 @@ This file is part of LifeViewer
 						}
 					}
 					// draw the flake at the new position
-					screen[(newY | 0) * wd + newX] = -1;
+					screen[(newY | 0) * wd + newX] = snowCol;
 				}
 			} else if (lastY < 0) {
 				// flake is above the screen so move it down
@@ -1897,7 +1905,6 @@ This file is part of LifeViewer
 				this.genList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, this.maxOscillatorGens, "Life.genList", false));
 				this.popList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, this.maxOscillatorGens, "Life.popList", false));
 				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * this.maxOscillatorGens, "Life.boxList", false));
-				this.nextList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Int32, this.maxOscillatorGens, "Life.nextList", false));
 				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList", false);
 				if (this.multiNumStates > 2 || this.isRuleTree) {
 					this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList", false);
@@ -1906,10 +1913,6 @@ This file is part of LifeViewer
 				}
 				this.modValue = -1;
 				this.modType = -1;
-				this.startItem = -1;
-
-				// clear next pointers
-				this.nextList.fill(-1);
 
 				// clear last strict volatility
 				this.strictVol = "";
@@ -1924,6 +1927,12 @@ This file is part of LifeViewer
 				this.occMap[65] = LifeConstants.cellWasAlive;
 				this.occMap[66] = LifeConstants.cellHasChanged;
 
+				// maximum bounding box
+				this.identifyMaxBox.leftX = this.width;
+				this.identifyMaxBox.rightX = 0;
+				this.identifyMaxBox.bottomY = this.height;
+				this.identifyMaxBox.topY = 0;
+
 				// get start time
 				this.identifyStartTime = performance.now();
 			}
@@ -1933,12 +1942,10 @@ This file is part of LifeViewer
 			this.genList = null;
 			this.popList = null;
 			this.boxList = null;
-			this.nextList = null;
 			this.countList = null;
 			this.initList = null;
 			this.modValue = -1;
 			this.modType = -1;
-			this.startItem = -1;
 			this.occMap = null;
 			this.occTileMap = null;
 			this.occMergedTileMap = null;
@@ -3104,57 +3111,6 @@ This file is part of LifeViewer
 		}
 
 		return result;
-	};
-
-	// get oscillator bounding box
-	Life.prototype.getOscillatorBounds = function(/** @type {number} */ period, /** @type {number} */ i) {
-		var	/** @type {BoundingBox} */ extent = new BoundingBox(0, 0, 0, 0),
-			/** @type {number} */ p = 0,
-			/** @type {number} */ currentP = 0,
-			/** @type {number} */ leftX = 16384,
-			/** @type {number} */ rightX = -16384,
-			/** @type {number} */ bottomY = 16384,
-			/** @type {number} */ topY = -16384,
-			/** @type {number} */ cLeftX = 0,
-			/** @type {number} */ cBottomY = 0,
-			/** @type {number} */ cWidth = 0,
-			/** @type {number} */ cHeight = 0,
-			/** @type {number} */ current = 0;
-
-		currentP = 0;
-		for (p = 0; p < period; p += 1) {
-			// get the bounding box for the current generation within the oscillator period
-			current = this.boxList[(i + currentP) << 1];
-			cWidth = current >> 16;
-			cHeight = current & 65535;
-			current = this.boxList[((i + currentP) << 1) + 1];
-			cLeftX = current >> 16;
-			cBottomY = current & 65535;
-
-			// update the extent
-			if (cLeftX < leftX) {
-				leftX = cLeftX;
-			}
-			if (cBottomY < bottomY) {
-				bottomY = cBottomY;
-			}
-			if (cLeftX + cWidth - 1 > rightX) {
-				rightX = cLeftX + cWidth - 1;
-			}
-			if (cBottomY + cHeight - 1 > topY) {
-				topY = cBottomY + cHeight - 1;
-			}
-
-			currentP += 1;
-		}
-
-		extent.leftX = leftX;
-		extent.bottomY = bottomY;
-		extent.rightX = rightX;
-		extent.topY = topY;
-
-		//console.log(extent);
-		return extent;
 	};
 
 	// convert number to string with no more than n decimal places
@@ -5820,7 +5776,7 @@ This file is part of LifeViewer
 	};
 
 	// compute strict volatility and Mod
-	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {number} */ i, /** @type {View} */ view, /** @type {boolean} */ isOscillator, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
+	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {View} */ view, /** @type {boolean} */ isOscillator, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ p = 0,
 			/** @type {number} */ bitRowIn16Bits = 0,
 			/** @type {number} */ bitFrameIn16Bits = 0,
@@ -5879,7 +5835,7 @@ This file is part of LifeViewer
 		}
 
 		// compute bounding box extent over entire period
-		extent = this.getOscillatorBounds(period, i);
+		extent = this.identifyMaxBox;
 
 		// determine whether Strict Volatility can be calculated based on amount of RAM needed
 		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper || this.isExtended)) {
@@ -6210,7 +6166,7 @@ This file is part of LifeViewer
 	};
 
 	// return identify results
-	Life.prototype.identifyResults = function(/** @type {View} */ view, /** @type {number} */ i, /** @type {string} */ message, /** @type {number} */ period, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight) {
+	Life.prototype.identifyResults = function(/** @type {View} */ view, /** @type {string} */ message, /** @type {number} */ period, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ boxWidth, /** @type {number} */ boxHeight) {
 		// simple version of speed
 		var	/** @type {string} */ simpleSpeed = "",
 
@@ -6398,7 +6354,7 @@ This file is part of LifeViewer
 			}
 
 			// compute Mod for spaceship
-			this.computeStrictVolatility(period, i, view, false, deltaXOrig, deltaYOrig);
+			this.computeStrictVolatility(period, view, false, deltaXOrig, deltaYOrig);
 		} else {
 			if (period === 1 || (period === 2 && this.isMargolus && this.hashList[0] === this.hashList[1])) {
 				type = "Still Life";
@@ -6407,7 +6363,7 @@ This file is part of LifeViewer
 				type = "Oscillator";
 
 				// compute strict volatility and Mod for oscillator
-				this.computeStrictVolatility(period, i, view, true, 0, 0);
+				this.computeStrictVolatility(period, view, true, 0, 0);
 			}
 		}
 
@@ -6698,25 +6654,13 @@ This file is part of LifeViewer
 	};
 
 	// create new Identify record
-	Life.prototype.addIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY, /** @type {number} */ lastI) {
+	Life.prototype.addIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY) {
 		// create the new record
 		this.hashList[this.oscLength] = hash;
 		this.genList[this.oscLength] = this.counter;
 		this.popList[this.oscLength] = this.population;
 		this.boxList[this.oscLength << 1] = boxSize;
 		this.boxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
-		this.nextList[this.oscLength] = -1;
-
-		// do not skip so point the previous record at this one
-		if (this.startItem === -1) {
-			this.startItem = 0;
-		} else {
-			if (lastI === -1) {
-				this.startItem = this.oscLength;
-			} else {
-				this.nextList[lastI] = this.oscLength;
-			}
-		}
 	};
 
 	// return true if pattern is empty, stable, oscillating or a spaceship
@@ -6730,6 +6674,7 @@ This file is part of LifeViewer
 			/** @type {number} */ topY = box.topY,
 			/** @type {number} */ boxWidth = rightX - leftX + 1,
 			/** @type {number} */ boxHeight = topY - bottomY + 1,
+			/** @type {BoundingBox} */ maxBox = this.identifyMaxBox,
 
 			// whether to save results
 			/** @type {boolean} */ saveResults = false,
@@ -6764,7 +6709,7 @@ This file is part of LifeViewer
 			// hash entry index
 			/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
-			/** @type {number} */ lastI = 0,
+			/** @type {number} */ maxI = this.oscLength,
 
 			// movement vector
 			/** @type {number} */ deltaX = 0,
@@ -6782,13 +6727,12 @@ This file is part of LifeViewer
 
 			if (this.identifyDeferredCounter === -1) {
 				this.identifyMessage = this.identifyDeferredResults[0];
-				this.identifyI = this.identifyDeferredResults[1];
-				this.identifyPeriod = this.identifyDeferredResults[2];
-				this.identifyDeltaX = this.identifyDeferredResults[3];
-				this.identifyDeltaY = this.identifyDeferredResults[4];
-				this.identifyBoxWidth = this.identifyDeferredResults[5];
-				this.identifyBoxHeight = this.identifyDeferredResults[6];
-				result = this.identifyResults(view, this.identifyDeferredResults[1], this.identifyDeferredResults[0], this.identifyDeferredResults[2], this.identifyDeferredResults[3], this.identifyDeferredResults[4], this.identifyDeferredResults[5], this.identifyDeferredResults[6]);
+				this.identifyPeriod = this.identifyDeferredResults[1];
+				this.identifyDeltaX = this.identifyDeferredResults[2];
+				this.identifyDeltaY = this.identifyDeferredResults[3];
+				this.identifyBoxWidth = this.identifyDeferredResults[4];
+				this.identifyBoxHeight = this.identifyDeferredResults[5];
+				result = this.identifyResults(view, this.identifyDeferredResults[0], this.identifyDeferredResults[1], this.identifyDeferredResults[2], this.identifyDeferredResults[3], this.identifyDeferredResults[4], this.identifyDeferredResults[5]);
 			}
 
 			return result;
@@ -6803,6 +6747,20 @@ This file is part of LifeViewer
 				boxHeight = 0;
 				quit = true;
 			} else {
+				// update maximum bounding box
+				if (leftX < maxBox.leftX) {
+					maxBox.leftX = leftX;
+				}
+				if (rightX > maxBox.rightX) {
+					maxBox.rightX = rightX;
+				}
+				if (bottomY < maxBox.bottomY) {
+					maxBox.bottomY = bottomY;
+				}
+				if (topY > maxBox.topY) {
+					maxBox.topY = topY;
+				}
+
 				// get the hash of the current pattern
 				hash = this.getHash(box);
 
@@ -6810,19 +6768,19 @@ This file is part of LifeViewer
 				quitLoop = false;
 
 				// get the start item
-				i = this.startItem;
-				lastI = -1;
+				i = 0;
 
 				// search the hash list
-				while ((i !== -1) && !quitLoop) {
+				while (i < maxI && !quitLoop) {
 					currentValue = this.hashList[i];
 					if (hash > currentValue) {
 						// hash value greater so try next
-						lastI = i;
-						i = this.nextList[i];
+						i += 1;
 					} else {
 						if (hash < currentValue) {
 							// hash value less so truncate list here
+							this.oscLength = i;
+
 							quitLoop = true;
 						} else {
 							if (hash === currentValue) {
@@ -6879,19 +6837,17 @@ This file is part of LifeViewer
 										}
 
 										// create the results
-										this.identifyDeferredResults = [message, i, period, deltaX, deltaY, boxWidth, boxHeight];
+										this.identifyDeferredResults = [message, period, deltaX, deltaY, boxWidth, boxHeight];
 										this.identifyDeferredCounter = LifeConstants.identifyNotificationDuration;
 										view.menuManager.notification.notify(message, 15, 40, 15, true);
 										view.menuManager.notification.notify("Calculating...", 15, 40, 15, false);
 									} else {
 										// try next
-										lastI = i;
-										i = this.nextList[i];
+										i += 1;
 									}
 								} else {
 									// false positive so try next
-									lastI = i;
-									i = this.nextList[i];
+									i += 1;
 								}
 							}
 						}
@@ -6901,7 +6857,7 @@ This file is part of LifeViewer
 				// add to the lists
 				if (!quit) {
 					// create the new record
-					this.addIdentifyRecord(hash, boxSize, leftX, bottomY, lastI);
+					this.addIdentifyRecord(hash, boxSize, leftX, bottomY);
 
 					// check for buffer full
 					this.oscLength += 1;
@@ -20448,7 +20404,26 @@ This file is part of LifeViewer
 		if (this.width === this.maxGridSize || this.height === this.maxGridSize) {
 			// check for LtL or HROT
 			if (this.isHROT) {
-				boundarySize = this.HROT.xrange * 2;
+				if (this.HROT.type === this.manager.vonNeumannHROT) {
+					var lx = zoomBox.leftX - 2 * this.HROT.xrange;
+					var rx = zoomBox.rightX + 2 * this.HROT.xrange;
+					var by = zoomBox.bottomY - 2 * this.HROT.xrange;
+					var ty = zoomBox.topY + 2 * this.HROT.xrange;
+					var rows = ty - by + 1;
+					var cols = rx - lx + 1;
+					var ccht = (rows + (cols - 1) / 2) | 0;
+					if (ccht > this.height) {
+						if (zoomBox.bottomY > this.height - zoomBox.topY) {
+							boundarySize = zoomBox.bottomY + 1;
+						} else {
+							boundarySize = this.height - zoomBox.topY;
+						}
+					} else {
+						boundarySize = this.HROT.xrange * 2;
+					}
+				} else {
+					boundarySize = this.HROT.xrange * 2;
+				}
 			} else {
 				if (this.isExtended || this.isRuleTree) {
 					boundarySize = 1;
@@ -20464,7 +20439,7 @@ This file is part of LifeViewer
 
 				// clear grid boundary
 				if (this.isHROT) {
-					this.clearHRBoundary();
+					this.clearHRBoundary(this.HROT.xrange * 2 + 1, boundarySize + 1);
 				} else {
 					if (this.isRuleTree || this.isPCA) {
 						this.clearRTBoundary();
@@ -22080,7 +22055,7 @@ This file is part of LifeViewer
 	};
 
 	// remove HROT patterns that touch the boundary
-	Life.prototype.clearHRBoundary = function() {
+	Life.prototype.clearHRBoundary = function(/** @type {number} */ xrange, /** @type {number} */ yrange) {
 		// grid
 		var	/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
@@ -22095,10 +22070,6 @@ This file is part of LifeViewer
 			/** @type {number} */ rightX = zoomBox.rightX,
 			/** @type {number} */ bottomY = zoomBox.bottomY,
 			/** @type {number} */ topY = zoomBox.topY,
-
-			// range
-			/** @type {number} */ xrange = this.HROT.xrange * 2 + 1,
-			/** @type {number} */ yrange = this.HROT.yrange * 2 + 1,
 
 			// alive and dead states
 			/** @type {number} */ alive = (this.multiNumStates > 2 ? this.multiNumStates + this.historyStates - 1 : LifeConstants.aliveStart),
@@ -31256,6 +31227,7 @@ This file is part of LifeViewer
 	// remove history cells from colour grid
 	Life.prototype.clearHistoryCells = function() {
 		var	/** @type {number} */ h = 0,
+			/** @type {number} */ w = 0,
 			/** @type {number} */ cr = 0,
 			/** @type {Array<Uint16Array>} */ colourGrid16 = this.colourGrid16,
 			/** @type {Uint16Array} */ colourGridRow = null,
@@ -31268,6 +31240,8 @@ This file is part of LifeViewer
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ tiles = 0,
+			/** @type {number} */ twoCells = 0,
+			/** @type {number} */ newCells = 0,
 
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
@@ -31306,35 +31280,64 @@ This file is part of LifeViewer
 					for (b = 15; b >= 0; b -= 1) {
 						// check if this tile is occupied
 						if ((tiles & (1 << b)) !== 0) {
-							// process each row
-							h = bottomY;
-							while (h < topY) {
-								// get the grid and colour grid row
-								colourGridRow = colourGrid16[h];
+							if (this.multiNumStates === -1) {
+								// process each row
+								h = bottomY;
+								while (h < topY) {
+									// get the grid and colour grid row
+									colourGridRow = colourGrid16[h];
 
-								// get correct starting colour index
-								cr = (leftX << 3);
+									// get correct starting colour index
+									cr = (leftX << 3);
 
-								// mask out all but the two alive cells
-								colourGridRow[cr] &= aliveMask16;
-								cr += 1;
-								colourGridRow[cr] &= aliveMask16;
-								cr += 1;
-								colourGridRow[cr] &= aliveMask16;
-								cr += 1;
-								colourGridRow[cr] &= aliveMask16;
-								cr += 1;
-								colourGridRow[cr] &= aliveMask16;
-								cr += 1;
-								colourGridRow[cr] &= aliveMask16;
-								cr += 1;
-								colourGridRow[cr] &= aliveMask16;
-								cr += 1;
-								colourGridRow[cr] &= aliveMask16;
-								// cr += 1   - no need for final increment it will be reset next row
+									// mask out all but the two alive cells
+									colourGridRow[cr] &= aliveMask16;
+									cr += 1;
+									colourGridRow[cr] &= aliveMask16;
+									cr += 1;
+									colourGridRow[cr] &= aliveMask16;
+									cr += 1;
+									colourGridRow[cr] &= aliveMask16;
+									cr += 1;
+									colourGridRow[cr] &= aliveMask16;
+									cr += 1;
+									colourGridRow[cr] &= aliveMask16;
+									cr += 1;
+									colourGridRow[cr] &= aliveMask16;
+									cr += 1;
+									colourGridRow[cr] &= aliveMask16;
+									// cr += 1   - no need for final increment it will be reset next row
 
-								// next row
-								h += 1;
+									// next row
+									h += 1;
+								}
+							} else {
+								// process each row
+								h = bottomY;
+								while (h < topY) {
+									// get the grid and colour grid row
+									colourGridRow = colourGrid16[h];
+
+									// get correct starting colour index
+									cr = (leftX << 3);
+
+									// remove history cells
+									for (w = 0; w < 8; w += 1) {
+										twoCells = colourGridRow[cr];
+										newCells = 0;
+										if ((twoCells & 255) > this.historyStates) {
+											newCells = twoCells & 0xff;
+										}
+										if ((twoCells >> 8) > this.historyStates) {
+											newCells |= twoCells & 0xff00;
+										}
+										colourGridRow[cr] = newCells;
+										cr += 1;
+									}
+
+									// next row
+									h += 1;
+								}
 							}
 						}
 

@@ -1281,6 +1281,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.aliveStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of age states to draw", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.historyStatesWord + " <0.." + ((view.engine.multiNumStates > 2) ? 1 : 63) + ">", "number of history states to draw", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.starfieldWord + " (" + Keywords.offWord + ")", "display stars", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.snowWord + " (" + Keywords.offWord + ")", "display snow", ctx, x, y, height, helpLine);
 		if (view.engine.isHex) {
 			y = this.renderHelpLine(view, Keywords.hexCellsWord, "hexagonal cells for grid", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, Keywords.squareCellsWord, "offset square cells for grid", ctx, x, y, height, helpLine);
@@ -1380,6 +1381,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.gridWord + " R G B", "set grid color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.gridMajorWord + " R G B", "set grid major color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.starfieldWord + " R G B", "set star color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.snowWord + " R G B", "set snow color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.textColorWord + " R G B", "set waypoint message color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.errorColorWord + " R G B", "set error message color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.helpColorWord + " R G B", "set help message color", ctx, x, y, height, helpLine);
@@ -1397,6 +1399,10 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.uiSelectWord + " R G B", "set UI selected color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.uiLockedWord + " R G B", "set UI locked color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.uiBorderWord + " R G B", "set UI border color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.titleFGWord + " R G B", "set title bar color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.titleBGWord + " R G B", "set title bar background color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.closeFGWord + " R G B", "set close button color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.closeBGWord + " R G B", "set close button background color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colourWord, "same as " + Keywords.colorWord, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
@@ -1857,6 +1863,9 @@ This file is part of LifeViewer
 							}
 						}
 					}
+					if (!view.engine.identifyAllCells) {
+						y = this.renderHelpLine(view, "  Back", "\t\t\t" + this.rgbString(0, 0, 0).trim(), ctx, x, y, height, helpLine);
+					}
 
 					y = this.renderHelpLine(view, "  Frequency", "    Count\t% Total\t\tColour", ctx, x, y, height, helpLine);
 					for (i = view.engine.cellFrequencyNumCols - 1; i >= 0; i -= 1) {
@@ -1877,10 +1886,6 @@ This file is part of LifeViewer
 					}
 					this.renderColourBox(view, 0, 0, 0, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 
-					if (!view.engine.identifyAllCells) {
-						y = this.renderHelpLine(view, "  Back", "\t\t\t" + this.rgbString(0, 0, 0).trim(), ctx, x, y, height, helpLine);
-					}
-
 					if (view.engine.boundedGridType !== -1) {
 						this.renderColourBox(view, 0x80, 0x80, 0x80, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 						y = this.renderHelpLine(view, "  Bounded", "\t\t\t" + this.rgbString(0x80, 0x80, 0x80).trim(), ctx, x, y, height, helpLine);
@@ -1894,6 +1899,7 @@ This file is part of LifeViewer
 			}
 			y = this.renderHelpLine(view, "Generation", view.lastIdentifyGen, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Time", "Period: " + view.engine.identifyDetectionTime.toFixed(1) + " seconds   Total: " + view.engine.identifyElapsedTime.toFixed(1) + " seconds", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Buffer", view.lastIdentifyBufferUsed, ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		}
 
@@ -2417,6 +2423,26 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, "Help", this.rgbString(32, 255, 255), ctx, x, y, height, helpLine);
 		}
 
+		// display popup title foreground
+		value = Number("0x" + view.titleFGCol.substring(1));
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "TitleFG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+		// display popup title background
+		value = Number("0x" + view.titleBGCol.substring(1));
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "TitleBG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+		// display popup title close button foreground
+		value = Number("0x" + view.closeFGCol.substring(1));
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "CloseFG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+		// display popup title close button background
+		value = Number("0x" + view.closeBGCol.substring(1));
+		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "CloseBG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// selection colours
@@ -2486,6 +2512,16 @@ This file is part of LifeViewer
 
 		this.renderColourBox(view, view.starField.starColour.red, view.starField.starColour.green, view.starField.starColour.blue, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "Color", this.rgbObjectString(view.starField.starColour), ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
+		// snow information
+		view.helpSections[sectionNum] = [view.lineNo, "Snow"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Snow:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Enabled", view.drawingSnow ? (view.snowOn ? "On" : "Secret") : "Off", ctx, x, y, height, helpLine);
+
+		this.renderColourBox(view, view.snowColour >> 16, (view.snowColour >> 8) & 255, view.snowColour & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+		y = this.renderHelpLine(view, "Color", this.rgbString(view.snowColour >> 16, (view.snowColour >> 8) & 255, view.snowColour & 255), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// random parameter information

@@ -110,6 +110,9 @@ This file is part of LifeViewer
 		// stars
 		/** @type {boolean} */ this.stars = false;
 
+		// snow
+		/** @type {boolean} */ this.snow = false;
+
 		// grid
 		/** @type {boolean} */ this.grid = false;
 
@@ -134,6 +137,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.zModeDefined = false;
 		/** @type {boolean} */ this.starsDefined = false;
 		/** @type {boolean} */ this.gridDefined = false;
+		/** @type {boolean} */ this.snowDefined = false;
 
 		// whether waypoint has been processed
 		/** @type {boolean} */ this.processed = false;
@@ -2849,6 +2853,11 @@ This file is part of LifeViewer
 			// grid
 			if (!current.gridDefined) {
 				current.grid = previous.grid;
+			}
+
+			// snow
+			if (!current.snowDefined) {
+				current.snow = previous.snow;
 			}
 		}
 	};

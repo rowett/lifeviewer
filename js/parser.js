@@ -124,6 +124,7 @@ This file is part of LifeViewer
 			case Keywords.graphOpacityWord:
 			case Keywords.graphPointsWord:
 			case Keywords.starfieldWord:
+			case Keywords.snowWord:
 			case Keywords.maxGridSizeWord:
 			case Keywords.autoFitWord:
 			case Keywords.historyFitWord:
@@ -134,7 +135,6 @@ This file is part of LifeViewer
 			case Keywords.pauseWord:
 			case Keywords.gridWord:
 			case Keywords.gridMajorWord:
-			case Keywords.noSnowWord:
 			case Keywords.qualityWord:
 			case Keywords.suppressWord:
 			case Keywords.colorWord:
@@ -391,6 +391,11 @@ This file is part of LifeViewer
 				view.starField.starColour.red = redValue;
 				view.starField.starColour.green = greenValue;
 				view.starField.starColour.blue = blueValue;
+				break;
+
+			case ViewConstants.customThemeSnow:
+				// copy to snow colour
+				view.snowColour = view.customThemeValue[customThemeElement];
 				break;
 
 			case ViewConstants.customThemeText:
@@ -2614,12 +2619,6 @@ This file is part of LifeViewer
 
 							break;
 
-						// disable secret snow
-						case Keywords.noSnowWord:
-							view.snowDisabled = true;
-							itemValid = true;
-							break;
-
 						// quality rendering
 						case Keywords.qualityWord:
 							view.engine.pretty = true;
@@ -3221,6 +3220,23 @@ This file is part of LifeViewer
 							itemValid = true;
 							break;
 
+						// starfield
+						case Keywords.snowWord:
+							// check for OFF
+							peekToken = scriptReader.peekAtNextToken();
+							if (peekToken === Keywords.offWord) {
+								// token valid so eat it
+								peekToken = scriptReader.getNextToken();
+								// switch stars off
+								currentWaypoint.snow = false;
+							} else {
+								currentWaypoint.snow = true;
+							}
+							currentWaypoint.snowDefined = true;
+
+							itemValid = true;
+							break;
+
 						// fit zoom
 						case Keywords.autoFitWord:
 							// check for OFF
@@ -3520,6 +3536,11 @@ This file is part of LifeViewer
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeStars, whichColour);
 									break;
 
+								// stars
+								case Keywords.snowWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeSnow, whichColour);
+									break;
+
 								// text
 								case Keywords.textColorWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeText, whichColour);
@@ -3634,6 +3655,26 @@ This file is part of LifeViewer
 								// UI border
 								case Keywords.uiBorderWord:
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeUIBorder, whichColour);
+									break;
+
+								// title foreground
+								case Keywords.titleFGWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeTitleFG, whichColour);
+									break;
+
+								// title background
+								case Keywords.titleBGWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeTitleBG, whichColour);
+									break;
+
+								// close foreground
+								case Keywords.closeFGWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeCloseFG, whichColour);
+									break;
+
+								// close background
+								case Keywords.closeBGWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeCloseBG, whichColour);
 									break;
 
 								// others are errors or state names
@@ -3840,6 +3881,27 @@ This file is part of LifeViewer
 									view.startFrom = numberValue;
 									view.startFromGens = numberValue;
 									itemValid = true;
+								}
+							} else {
+								// check if it is a benchmark number
+								peekToken = scriptReader.peekAtNextToken();
+								if (peekToken.charAt(peekToken.length - 1).toLowerCase() === "b") {
+									// remove the trailing b and get the number of generations
+									peekToken = peekToken.substring(0, peekToken.length - 1);
+									numberValue = Number(peekToken);
+
+									// get the original token
+									peekToken = scriptReader.getNextToken();
+
+									// check it is in range
+									isNumeric = true;
+									if (numberValue >= 0 && numberValue <= ViewConstants.maxStartFromGeneration) {
+										view.startFrom = numberValue;
+										view.startFromGens = numberValue;
+										view.startFromTiming = performance.now();
+										view.lastGoto = peekToken;
+										itemValid = true;
+									}
 								}
 							}
 							break;
@@ -5955,6 +6017,11 @@ This file is part of LifeViewer
 			// set stars
 			if (currentWaypoint.starsDefined) {
 				view.starsOn = currentWaypoint.stars;
+			}
+
+			// set snow
+			if (currentWaypoint.snowDefined) {
+				view.snowOn = currentWaypoint.snow;
 			}
 
 			// count how many custom colours provided

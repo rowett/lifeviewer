@@ -30,9 +30,6 @@ This file is part of LifeViewer
 		// script end
 		/** @const {string} */ scriptEndWord : "]]",
 
-		// no snow
-		/** @const {string} */ noSnowWord : "NOSNOW",
-
 		// quality
 		/** @const {string} */ qualityWord : "QUALITY",
 
@@ -287,6 +284,9 @@ This file is part of LifeViewer
 		// starfield word
 		/** @const {string} */ starfieldWord : "STARS",
 
+		// snow word
+		/** @const {string} */ snowWord : "SNOW",
+
 		// custom theme identifier
 		/** @const {string} */ themeCustomWord : "CUSTOM",
 
@@ -318,6 +318,10 @@ This file is part of LifeViewer
 		/** @const {string} */ uiLockedAlphaWord : "UILOCKEDA",
 		/** @const {string} */ uiBorderWord : "UIBORDER",
 		/** @const {string} */ uiBorderWordAlpha : "UIBORDERA",
+		/** @const {string} */ titleFGWord : "TITLEFOREGROUND",
+		/** @const {string} */ titleBGWord : "TITLEBACKGROUND",
+		/** @const {string} */ closeFGWord : "CLOSEFOREGROUND",
+		/** @const {string} */ closeBGWord : "CLOSEBACKGROUND",
 
 		// boundary
 		/** @const {string} */ boundaryWord : "BOUNDARY",
