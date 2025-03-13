@@ -347,7 +347,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1281,
+		/** @const {number} */ versionBuild : 1282,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -696,7 +696,13 @@ This file is part of LifeViewer
 
 			// check for override
 			i = Controller.loadIntegerSetting(ViewConstants.refreshRateSettingName);
-			if (i !== -1) {
+			if (i !== 0) {
+				if (i < 25) {
+					i = 25;
+				}
+				if (i > 500) {
+					i = 500;
+				}
 				Controller.refreshRate = i;
 				Controller.refreshOverride = true;
 			} else {
@@ -13682,29 +13688,29 @@ This file is part of LifeViewer
 	View.prototype.viewRefreshPressed = function(/** @type {View} */ me) {
 		// prompt for rate
 		var	/** @type {number} */ lastInput = Controller.loadIntegerSetting(ViewConstants.refreshRateSettingName),
-			/** @type {string|null} */ result = window.prompt("Enter refresh rate", lastInput === -1 ? "Auto" : String(lastInput)),
+			/** @type {string|null} */ result = window.prompt("Enter refresh rate", lastInput === 0 ? "Auto" : String(lastInput)),
 			/** @type {number} */ number = 0;
 
 		// check one was entered
 		if (result !== null) {
 			// validate
 			if (result.toLowerCase() === "auto") {
-				number = -1;
+				number = 0;
 			} else {
 				number = parseInt(result, 10);
 				if (number < 25 || number > 500) {
 					me.menuManager.notification.notify("Invalid refresh rate specified", 15, 240, 15, true);
-					number = -2;
+					number = -1;
 				}
 			}
 
 			// save setting if valid
-			if (number >= -1) {
+			if (number >= 0) {
 				Controller.saveIntegerSetting(ViewConstants.refreshRateSettingName, number);
-				Controller.refreshOverride = (number !== -1);
+				Controller.refreshOverride = (number !== 0);
 
 				// set it as the current refresh rate
-				if (number === -1) {
+				if (number === 0) {
 					number = Controller.autoRefreshRate;
 				}
 
