@@ -1,3 +1,11 @@
+Build 1284
+- fixed Help>UI not displaying custom Popup window colours correctly
+- improved embedded Viewer fit to browser window width
+- fixed Select with CXRLE Pos
+
+Build 1283
+- fixed Reset not restoring T=0 edits
+
 Build 1282
 - fixed hung playback issue
 
@@ -14,7 +22,7 @@ Build 1280
 - PopUp Title and Close Button colours are now displayed in Help>Info>UI
 - added [[ SNOW ]] and [[ COLOR SNOW r g b ]] script commands
 - fixed Reset after Advance Selection or Advance Outside
-- embedded Viewers now fit mobile screen width
+- embedded Viewers now fit browser window width
 
 Build 1279
 - fixed clipboard context box not updating after cut from the box itself

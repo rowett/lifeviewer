@@ -2424,22 +2424,34 @@ This file is part of LifeViewer
 		}
 
 		// display popup title foreground
-		value = Number("0x" + view.titleFGCol.substring(1));
+		value = view.customThemeValue[ViewConstants.customThemeTitleFG];
+		if (value === -1) {
+			value = Number("0x" + view.titleFGCol.substring(1));
+		}
 		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "TitleFG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
 
 		// display popup title background
-		value = Number("0x" + view.titleBGCol.substring(1));
+		value = view.customThemeValue[ViewConstants.customThemeTitleBG];
+		if (value === -1) {
+			value = Number("0x" + view.titleBGCol.substring(1));
+		}
 		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "TitleBG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
 
 		// display popup title close button foreground
-		value = Number("0x" + view.closeFGCol.substring(1));
+		value = view.customThemeValue[ViewConstants.customThemeCloseFG];
+		if (value === -1) {
+			value = Number("0x" + view.closeFGCol.substring(1));
+		}
 		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "CloseFG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
 
 		// display popup title close button background
-		value = Number("0x" + view.closeBGCol.substring(1));
+		value = view.customThemeValue[ViewConstants.customThemeCloseBG];
+		if (value === -1) {
+			value = Number("0x" + view.closeBGCol.substring(1));
+		}
 		this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 		y = this.renderHelpLine(view, "CloseBG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
 

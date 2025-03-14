@@ -347,7 +347,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1282,
+		/** @const {number} */ versionBuild : 1284,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3511,6 +3511,25 @@ This file is part of LifeViewer
 				this.fitZoomDisplay(true, true, ViewConstants.fitZoomPattern);
 			}
 		}
+	};
+
+	// reset undo/redo to end of generation 0
+	View.prototype.resetUndoRedo = function() {
+		var	/** @type {number} */ i = 0,
+			/** @type {boolean} */ found = false,
+			record = null;
+
+		while (i < this.editList.length && !found) {
+			record = this.editList[i];
+			if (record.gen > 0 || record.action === "advance selection" || record.action === "advanced outside") {
+				found = true;
+			} else {
+				i += 1;
+			}
+		}
+		
+		this.editNum = i;
+		this.updateUndoToolTips();
 	};
 
 	// get neighbourhood name
@@ -9543,8 +9562,7 @@ This file is part of LifeViewer
 		me.drawingSelection = false;
 
 		// reset undo/redo to generation 0
-		me.editNum = 1;
-		me.updateUndoToolTips();
+		me.resetUndoRedo();
 
 		// clear identify results
 		me.resultsDisplayed = false;
@@ -14031,9 +14049,9 @@ This file is part of LifeViewer
 			// check for selection
 			if (me.isSelection) {
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1) {
-					xOff = this.panX;
-					yOff = this.panY;
+				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+					xOff = me.panX;
+					yOff = me.panY;
 				}
 
 				if (x1 > x2) {
@@ -14074,7 +14092,7 @@ This file is part of LifeViewer
 
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
 					// update state 6 grid
-					this.engine.populateState6MaskFromColGrid();
+					me.engine.populateState6MaskFromColGrid();
 				}
 
 				// check if shrink needed
@@ -14105,9 +14123,9 @@ This file is part of LifeViewer
 			// check for selection
 			if (me.isSelection) {
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1) {
-					xOff = this.panX;
-					yOff = this.panY;
+				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+					xOff = me.panX;
+					yOff = me.panY;
 				}
 
 				if (x1 > x2) {
@@ -14146,7 +14164,7 @@ This file is part of LifeViewer
 
 				// update state 6 grid
 				if (me.engine.isLifeHistory || me.engine.isSuper) {
-					this.engine.populateState6MaskFromColGrid();
+					me.engine.populateState6MaskFromColGrid();
 				}
 
 				// check if shrink needed
@@ -14234,7 +14252,7 @@ This file is part of LifeViewer
 			/** @type {number} */ height = 0;
 
 		// check for bounded grid
-		if (this.engine.boundedGridType !== -1) {
+		if (this.engine.boundedGridType !== -1 && !this.posDefined) {
 			xOff = this.panX;
 			yOff = this.panY;
 		}
@@ -14339,7 +14357,7 @@ This file is part of LifeViewer
 			/** @type {number} */ state = 0,
 			/** @type {number} */ count = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)),
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {Uint8Array} */ buffer = null,
@@ -14365,9 +14383,9 @@ This file is part of LifeViewer
 			height = (y2 - y1 + 1);
 
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1) {
-				xOff = this.panX;
-				yOff = this.panY;
+			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+				xOff = me.panX;
+				yOff = me.panY;
 			}
 
 			// allocate the buffer
@@ -14391,7 +14409,7 @@ This file is part of LifeViewer
 			}
 
 			if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-				this.engine.populateState6MaskFromColGrid();
+				me.engine.populateState6MaskFromColGrid();
 			}
 
 			// copy to required buffer
@@ -14716,7 +14734,7 @@ This file is part of LifeViewer
 					if (me.engine.isTriangular) {
 						// check if neighbourhood needs to be inverted
 						if (((x1 + xOff + y1 + yOff) & 1) === 0) {
-							output = this.reverseCoordCA(output);
+							output = me.reverseCoordCA(output);
 						}
 						output += "L";
 					}
@@ -14849,7 +14867,7 @@ This file is part of LifeViewer
 			/** @type {number} */ swap = 0,
 			/** @type {number} */ i = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)),
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {Uint8Array} */ buffer = null,
@@ -14924,9 +14942,9 @@ This file is part of LifeViewer
 				height = (y2 - y1 + 1);
 
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1) {
-					xOff = this.panX;
-					yOff = this.panY;
+				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+					xOff = me.panX;
+					yOff = me.panY;
 				}
 
 				// copy selection into temporary buffer
@@ -14950,7 +14968,7 @@ This file is part of LifeViewer
 				}
 
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-					this.engine.populateState6MaskFromColGrid();
+					me.engine.populateState6MaskFromColGrid();
 				}
 
 				// shrink needed
@@ -14986,7 +15004,7 @@ This file is part of LifeViewer
 						}
 					}
 					if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-						this.engine.populateState6MaskFromColGrid();
+						me.engine.populateState6MaskFromColGrid();
 					}
 
 					// shrink needed
@@ -15007,7 +15025,7 @@ This file is part of LifeViewer
 				}
 
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-					this.engine.populateState6MaskFromColGrid();
+					me.engine.populateState6MaskFromColGrid();
 				}
 
 				// shrink needed
@@ -15091,14 +15109,14 @@ This file is part of LifeViewer
 		}
 
 		// check the paste mode
-		switch (this.getUIPasteMode()) {
+		switch (me.getUIPasteMode()) {
 		case ViewConstants.pasteModeOr:
 			i = 0;
 			for (y = 0; y < height; y += 1) {
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
-					if (this.engine.isPCA) {
-						current = this.engine.getState(cellX + x, cellY + y, false);
+					if (me.engine.isPCA) {
+						current = me.engine.getState(cellX + x, cellY + y, false);
 						wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current | state, true, false);
 					} else {
 						if (state > 0) {
@@ -15124,7 +15142,7 @@ This file is part of LifeViewer
 			for (y = 0; y < height; y += 1) {
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
-					current = this.engine.getState(cellX + x, cellY + y, false);
+					current = me.engine.getState(cellX + x, cellY + y, false);
 					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current ^ state, true, false);
 					i += 1;
 				}
@@ -15135,7 +15153,7 @@ This file is part of LifeViewer
 			for (y = 0; y < height; y += 1) {
 				for (x = 0; x < width; x += 1) {
 					state = buffer[i];
-					current = this.engine.getState(cellX + x, cellY + y, false);
+					current = me.engine.getState(cellX + x, cellY + y, false);
 					wasState6 |= me.setStateWithUndo(cellX + x, cellY + y, current & state, true, false);
 					i += 1;
 				}
@@ -15143,7 +15161,7 @@ This file is part of LifeViewer
 		}
 
 		if ((me.engine.isLifeHistory || me.engine.isSuper || me.engine.isExtended) && wasState6) {
-			this.engine.populateState6MaskFromColGrid();
+			me.engine.populateState6MaskFromColGrid();
 		}
 
 		// paste finished
@@ -15200,9 +15218,9 @@ This file is part of LifeViewer
 				height = topY - bottomY + 1;
 
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1) {
-					xOff = this.panX;
-					yOff = this.panY;
+				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+					xOff = me.panX;
+					yOff = me.panY;
 				}
 
 				// use bounded grid if defined
@@ -15256,9 +15274,9 @@ This file is part of LifeViewer
 					height = topY - bottomY + 1;
 
 					// adjust in case specified is different than actual size
-					if (me.engine.boundedGridType !== -1) {
-						xOff = this.panX;
-						yOff = this.panY;
+					if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+						xOff = me.panX;
+						yOff = me.panY;
 					}
 
 					// and then check top right cell with offset
@@ -15288,9 +15306,9 @@ This file is part of LifeViewer
 					height = topY - bottomY + 1;
 
 					// adjust in case specified is different than actual size
-					if (me.engine.boundedGridType !== -1) {
-						xOff = this.panX;
-						yOff = this.panY;
+					if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+						xOff = me.panX;
+						yOff = me.panY;
 					}
 				}
 
@@ -15332,7 +15350,7 @@ This file is part of LifeViewer
 					me.pasteBuffers[ViewConstants.numPasteBuffers] = null;
 
 					if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-						this.engine.populateState6MaskFromColGrid();
+						me.engine.populateState6MaskFromColGrid();
 					}
 
 					// adjust selection box
@@ -15793,9 +15811,9 @@ This file is part of LifeViewer
 			}
 
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1) {
-				xOff = this.panX;
-				yOff = this.panY;
+			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+				xOff = me.panX;
+				yOff = me.panY;
 			}
 
 			// draw random cells
@@ -15845,7 +15863,7 @@ This file is part of LifeViewer
 			}
 
 			if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-				this.engine.populateState6MaskFromColGrid();
+				me.engine.populateState6MaskFromColGrid();
 			}
 
 			// check if shrink needed
@@ -15928,7 +15946,7 @@ This file is part of LifeViewer
 			/** @type {Uint8Array} */ row = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)),
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {number} */ wasState6 = 0;
@@ -15947,9 +15965,9 @@ This file is part of LifeViewer
 			}
 
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1) {
-				xOff = this.panX;
-				yOff = this.panY;
+			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+				xOff = me.panX;
+				yOff = me.panY;
 			}
 
 			// allocate the row
@@ -15982,7 +16000,7 @@ This file is part of LifeViewer
 			}
 
 			if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-				this.engine.populateState6MaskFromColGrid();
+				me.engine.populateState6MaskFromColGrid();
 			}
 
 			// check if shrink needed
@@ -16042,7 +16060,7 @@ This file is part of LifeViewer
 			/** @type {Uint8Array} */ column = null,
 			/** @type {number} */ state = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)),
 			/** @type {number} */ xOff = (me.engine.width >> 1) - (me.patternWidth >> 1) + (me.xOffset << 1),
 			/** @type {number} */ yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1),
 			/** @type {number} */ wasState6 = 0;
@@ -16061,9 +16079,9 @@ This file is part of LifeViewer
 			}
 
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1) {
-				xOff = this.panX;
-				yOff = this.panY;
+			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+				xOff = me.panX;
+				yOff = me.panY;
 			}
 
 			// allocate the row
@@ -16095,7 +16113,7 @@ This file is part of LifeViewer
 			}
 
 			if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-				this.engine.populateState6MaskFromColGrid();
+				me.engine.populateState6MaskFromColGrid();
 			}
 
 			// check if shrink needed
@@ -16190,7 +16208,7 @@ This file is part of LifeViewer
 			///** @type {number} */ saveTopY = 0,
 			///** @type {number} */ states = me.engine.multiNumStates,
 			///** @type {boolean} */ rotateFits = true,
-			///** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
+			///** @type {boolean} */ invertForGenerations = (states > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)),
 			///** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 			///** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
 			///** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
@@ -16340,7 +16358,7 @@ This file is part of LifeViewer
 				//}
 
 				//if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-					//this.engine.populateState6MaskFromColGrid();
+					//me.engine.populateState6MaskFromColGrid();
 				//}
 
 				//// check if shrink needed
@@ -16385,7 +16403,7 @@ This file is part of LifeViewer
 			/** @type {number} */ saveTopY = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
 			/** @type {boolean} */ rotateFits = true,
-			/** @type {boolean} */ invertForGenerations = (states > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper || this.engine.isExtended)),
+			/** @type {boolean} */ invertForGenerations = (states > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)),
 			/** @type {number} */ boxOffset = (me.engine.isMargolus ? -1 : 0),
 			/** @type {number} */ leftX = Math.round((me.engine.width - me.engine.boundedGridWidth) / 2) + boxOffset,
 			/** @type {number} */ bottomY = Math.round((me.engine.height - me.engine.boundedGridHeight) / 2) + boxOffset,
@@ -16398,9 +16416,9 @@ This file is part of LifeViewer
 		// check for selection
 		if (me.isSelection) {
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1) {
-				xOff = this.panX;
-				yOff = this.panY;
+			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+				xOff = me.panX;
+				yOff = me.panY;
 			}
 
 			if (x1 > x2) {
@@ -16465,9 +16483,9 @@ This file is part of LifeViewer
 					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 					// adjust in case specified is different than actual size
-					if (me.engine.boundedGridType !== -1) {
-						xOff = this.panX;
-						yOff = this.panY;
+					if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+						xOff = me.panX;
+						yOff = me.panY;
 					}
 
 				}
@@ -16528,9 +16546,9 @@ This file is part of LifeViewer
 				yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1) {
-					xOff = this.panX;
-					yOff = this.panY;
+				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+					xOff = me.panX;
+					yOff = me.panY;
 				}
 
 				// write the cells to their new positions
@@ -16566,7 +16584,7 @@ This file is part of LifeViewer
 				}
 
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-					this.engine.populateState6MaskFromColGrid();
+					me.engine.populateState6MaskFromColGrid();
 				}
 
 				// check if shrink needed
@@ -16723,9 +16741,9 @@ This file is part of LifeViewer
 				}
 
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1) {
-					xOff = this.panX;
-					yOff = this.panY;
+				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
+					xOff = me.panX;
+					yOff = me.panY;
 				}
 
 				// invert cells in selection
@@ -16740,7 +16758,7 @@ This file is part of LifeViewer
 				}
 
 				if ((me.engine.isLifeHistory || me.engine.isSuper) && wasState6) {
-					this.engine.populateState6MaskFromColGrid();
+					me.engine.populateState6MaskFromColGrid();
 				}
 
 				// check if shrink needed
@@ -19731,7 +19749,7 @@ This file is part of LifeViewer
 			this.windowZoom = 1;
 
 			// check window fits on display
-			if (viewerWidth > windowWidth) {
+			if (this.displayWidth > windowWidth) {
 				// find the scaling factor for the window to fit
 				this.windowZoom = windowWidth / this.displayWidth;
 			}
