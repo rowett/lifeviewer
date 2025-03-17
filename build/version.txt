@@ -3,6 +3,7 @@ Build 1287
 - added one decimal place to gps display after GoToGen benchmark
 - reduced Identify memory usage
 - increased GoToGen / STARTFROM generation limit
+- fixed Gaussian rules with invalid ranges causing out of memory error
 
 Build 1286
 - Identify can now handle oscillators with very large periods (work in progress)

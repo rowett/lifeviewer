@@ -4897,6 +4897,12 @@ This file is part of LifeViewer
 			this.index = saveIndex;
 		}
 
+		// check Gaussian
+		if (pattern.neighborhoodHROT === this.gaussianHROT && pattern.rangeHROT > this.maxRangeHROTGaussian) {
+			this.failureReason = "HROT 'R' > " + this.maxRangeHROTGaussian;
+			result = false;
+		}
+
 		// decode survivals
 		if (result) {
 			result = false;
@@ -10403,12 +10409,6 @@ This file is part of LifeViewer
 			} else {
 				newPattern.boundedGridDef = "";
 			}
-		}
-
-		// check if the HROT Gaussian range is too big
-		if (newPattern && newPattern.isHROT && newPattern.neighborhoodHROT === this.gaussianHROT && newPattern.rangeHROT > this.maxRangeHROTGaussian) {
-			this.failureReason = "HROT 'R' > " + this.maxRangeHROTGaussian;
-			this.executable = false;
 		}
 
 		// check if the new pattern was decoded
