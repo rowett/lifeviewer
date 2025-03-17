@@ -1851,16 +1851,15 @@ This file is part of LifeViewer
 					view.tabs[6] = 510;
 					view.tabs[7] = 600;
 					y = this.renderHelpLine(view, "  Period", "    Count\t% Total\t% Rotor\tColour", ctx, x, y, height, helpLine);
-					for (i = view.engine.popSubPeriod.length - 1; i > 0; i -= 1) {
+					for (j = view.engine.popSubPeriodHelp.length - 1; j >= 0; j -= 1) {
+						i = view.engine.popSubPeriodHelp[j];
 						value = view.engine.popSubPeriod[i];
-						if (value > 0) {
-							this.renderColourBox(view, view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-							colourValue = this.rgbString(view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255).trim();
-							if (i > 1) {
-								y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (Math.floor(10000 * value / view.engine.popTotal) / 100).toFixed(2) + "%\t" + (Math.floor(10000 * value / view.engine.popRotor) / 100).toFixed(2) + "%\t" + colourValue, ctx, x, y, height, helpLine);
-							} else {
-								y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (Math.floor(10000 * value / view.engine.popTotal) / 100).toFixed(2) + "%\t\t" + colourValue, ctx, x, y, height, helpLine);
-							}
+						this.renderColourBox(view, view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+						colourValue = this.rgbString(view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255).trim();
+						if (i > 1) {
+							y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (Math.floor(10000 * value / view.engine.popTotal) / 100).toFixed(2) + "%\t" + (Math.floor(10000 * value / view.engine.popRotor) / 100).toFixed(2) + "%\t" + colourValue, ctx, x, y, height, helpLine);
+						} else {
+							y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (Math.floor(10000 * value / view.engine.popTotal) / 100).toFixed(2) + "%\t\t" + colourValue, ctx, x, y, height, helpLine);
 						}
 					}
 					if (!view.engine.identifyAllCells) {

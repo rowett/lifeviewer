@@ -347,7 +347,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1284,
+		/** @const {number} */ versionBuild : 1286,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3517,6 +3517,7 @@ This file is part of LifeViewer
 	View.prototype.resetUndoRedo = function() {
 		var	/** @type {number} */ i = 0,
 			/** @type {boolean} */ found = false,
+			/** @type {BoundingBox} */ selBox = this.selectionBox,
 			record = null;
 
 		while (i < this.editList.length && !found) {
@@ -3524,6 +3525,17 @@ This file is part of LifeViewer
 			if (record.gen > 0 || record.action === "advance selection" || record.action === "advanced outside") {
 				found = true;
 			} else {
+				if (record.selection) {
+					selBox.leftX = record.selection.leftX;
+					selBox.bottomY = record.selection.bottomY;
+					selBox.rightX = record.selection.rightX;
+					selBox.topY = record.selection.topY;
+					this.isSelection = true;
+					this.afterSelectAction = false;
+				} else {
+					this.isSelection = false;
+					this.afterSelectAction = false;
+				}
 				i += 1;
 			}
 		}
@@ -5761,7 +5773,11 @@ This file is part of LifeViewer
 	// update progress bar for identify period detection
 	View.prototype.updateProgressBarIdentify = function(/** @type {View} */ me) {
 		// update the progress bar
-		me.progressBar.current = (100 * me.engine.oscLength) / me.engine.maxOscillatorGens;
+		if (me.engine.fullOscLength >= 0) {
+			me.progressBar.current = (100 * me.engine.fullOscLength) / LifeConstants.maxOscillatorGens;
+		} else {
+			me.progressBar.current = (100 * me.engine.oscLength) / LifeConstants.negOscillatorGens;
+		}
 
 		// show the progress bar
 		me.progressBar.deleted = false;
@@ -6731,13 +6747,6 @@ This file is part of LifeViewer
 		// check whether to display progress bar
 		if (!me.viewOnly) {
 			me.updateProgressBar(me);
-		}
-
-		// enable stats if pending
-		if (me.pendingStatsOn) {
-			me.genToggle.current = me.viewStats([true], true, me);
-			me.pendingStatsOn = false;
-			me.menuManager.toggleRequired = true;
 		}
 
 		// copy gens per step from control since it gets overwritten by waypoint playback
@@ -8419,7 +8428,11 @@ This file is part of LifeViewer
 							me.lastIdentifyActive = identifyResult[13];
 							me.lastIdentifyTemperature = identifyResult[14];
 							me.lastIdentifyDensity = identifyResult[15];
-							me.lastIdentifyBufferUsed = String(me.engine.oscLength);
+							if (me.engine.fullOscLength >= 0) {
+								me.lastIdentifyBufferUsed = String(me.engine.oscLength + " " + ((100 * me.engine.fullOscLength) / LifeConstants.maxOscillatorGens).toFixed(1) + "%");
+							} else {
+								me.lastIdentifyBufferUsed = String(me.engine.oscLength);
+							}
 
 							// update result labels
 							me.identifyCellsValueLabel.preText = me.lastIdentifyCells;
@@ -8761,6 +8774,13 @@ This file is part of LifeViewer
 	// update view mode dispatcher
 	View.prototype.viewAnimate = function(/** @type {number} */ timeSinceLastUpdate, /** @type {View} */ me) {
 		var	/** @type {number} */ startTime = performance.now();
+
+		// enable stats if pending
+		if (me.pendingStatsOn) {
+			me.genToggle.current = me.viewStats([true], true, me);
+			me.pendingStatsOn = false;
+			me.menuManager.toggleRequired = true;
+		}
 
 		if (me.computeHistory) {
 			// computing history

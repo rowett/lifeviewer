@@ -1,3 +1,11 @@
+Build 1286
+- Identify can now handle oscillators with very large periods (work in progress)
+- fixed SHOWGENSTATS being ignored until AUTOIDENTIFY complete
+- improved Help>Info performance with Identify results
+
+Build 1285
+- fixed Selection on Reset
+
 Build 1284
 - fixed Help>UI not displaying custom Popup window colours correctly
 - improved embedded Viewer fit to browser window width

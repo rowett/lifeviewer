@@ -31,6 +31,12 @@ This file is part of LifeViewer
 		/** @const {number} */ shaderRainbow : 2,
 		/** @const {number} */ shaderNeighbourCount : 3,
 
+		// maximum number of generations for quick oscillator detection
+		/** @const {number} */ maxOscillatorGens : 4194304,
+
+		// maximum number of generations for short oscillator buffer
+		/** @const {number} */ negOscillatorGens : 256,
+
 		// state modes
 		/** @const {number} */ mode2 : 0,
 		/** @const {number} */ mode2Table : 1,
@@ -487,12 +493,33 @@ This file is part of LifeViewer
 		/** @type {string} */ this.identifyPopWithTMessage = "";
 		/** @type {string} */ this.identifyBoxWithTMessage = "";
 
-		// maximum number of generations to check for oscillators
-		/** @type {number} */ this.maxOscillatorGens = (Controller.useWASM ? 10000000 : 4194304);
-
 		// identify deferred results
 		/** @type {Array} */ this.identifyDeferredResults = [];
 		/** @type {number} */ this.identifyDeferredCounter = -1;
+
+
+		// identify min/max/average popultation and generation
+		/** @type {number} */ this.identifyMinPop = 0;
+		/** @type {number} */ this.identifyMinPopT = 0;
+
+		/** @type {number} */ this.identifyMaxPop = 0;
+		/** @type {number} */ this.identifyMaxPopT = 0;
+
+		/** @type {number} */ this.identifyAveragePop = 0;
+
+		// min and max box width and height and generation
+		/** @type {number} */ this.identifyMinBoxWidth = 0;
+		/** @type {number} */ this.identifyMinBoxHeight = 0;
+		/** @type {number} */ this.identifyMinBoxSizeT = 0;
+
+		/** @type {number} */ this.identifyMaxBoxWidth = 0;
+		/** @type {number} */ this.identifyMaxBoxHeight = 0;
+		/** @type {number} */ this.identifyMaxBoxSizeT = 0;
+
+		/** @type {number} */ this.identifyMinX = 0;
+		/** @type {number} */ this.identifyMinY = 0;
+		/** @type {number} */ this.identifyFullWidth = 0;
+		/** @type {number} */ this.identifyFullHeight = 0;
 
 		// whether any cells were not in rotor
 		/** @type {boolean} */ this.identifyAllCells = false;
@@ -518,6 +545,9 @@ This file is part of LifeViewer
 
 		// oscillator population subperiod
 		/** @type {Uint32Array} */ this.popSubPeriod = null;
+
+		// oscillator population subperiod help list
+		/** @type {Array<number>} */ this.popSubPeriodHelp = [];
 
 		// oscillator population total
 		/** @type {number} */ this.popTotal = 0;
@@ -606,6 +636,7 @@ This file is part of LifeViewer
 		/** @type {Uint32Array} */ this.popList = null;
 		/** @type {Uint32Array} */ this.boxList = null;
 		/** @type {number} */ this.oscLength = 0;
+		/** @type {number} */ this.fullOscLength = 0;
 		/** @type {Array<Uint8Array>} */ this.countList = null;
 		/** @type {Array<Uint8Array>} */ this.initList = null;
 		/** @type {number} */ this.modValue = -1;
@@ -825,9 +856,6 @@ This file is part of LifeViewer
 
 		// identify box
 		/** @type {BoundingBox} */ this.identifyBox = new BoundingBox(0, 0, 0, 0);
-
-		// identify max box
-		/** @type {BoundingBox} */ this.identifyMaxBox = new BoundingBox(0, 0, 0, 0);
 
 		// history bounding box
 		/** @type {BoundingBox} */ this.historyBox = null;
@@ -1889,8 +1917,11 @@ This file is part of LifeViewer
 
 	// initialize oscillator search
 	Life.prototype.initSearch = function(/** @type {boolean} */ on) {
-		// zero array index
+		// zero array index for short array (just minimum hashes)
 		this.oscLength = 0;
+
+		// zero array index for full array (all generations)
+		this.fullOscLength = 0;
 
 		// clear temporary results
 		this.identifyDeferredCounter = -1;
@@ -1901,10 +1932,16 @@ This file is part of LifeViewer
 			// just switched on so check if buffers are allocated
 			if (this.hashList === null) {
 				// allocate buffers
-				this.hashList = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, this.maxOscillatorGens, "Life.hashList", false));
-				this.genList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, this.maxOscillatorGens, "Life.genList", false));
-				this.popList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, this.maxOscillatorGens, "Life.popList", false));
-				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * this.maxOscillatorGens, "Life.boxList", false));
+				this.hashList = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.hashList", false));
+				this.genList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.genList", false));
+				this.popList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.maxOscillatorGens, "Life.popList", false));
+				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList", false));
+
+				this.negHashList = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.negOscillatorGens, "Life.negHashList", false));
+				this.negGenList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.negOscillatorGens, "Life.negGenList", false));
+				this.negPopList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.negOscillatorGens, "Life.negPopList", false));
+				this.negBoxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * LifeConstants.negOscillatorGens, "Life.negBoxList", false));
+
 				this.countList = Array.matrix(Type.Uint8, this.height, this.width, LifeConstants.cellWasDead, this.allocator, "Life.countList", false);
 				if (this.multiNumStates > 2 || this.isRuleTree) {
 					this.initList = Array.matrix(Type.Uint8, this.height, this.width, 0, this.allocator, "Life.initList", false);
@@ -1926,12 +1963,6 @@ This file is part of LifeViewer
 				this.occMap[64] = LifeConstants.cellHasChanged;
 				this.occMap[65] = LifeConstants.cellWasAlive;
 				this.occMap[66] = LifeConstants.cellHasChanged;
-
-				// maximum bounding box
-				this.identifyMaxBox.leftX = this.width;
-				this.identifyMaxBox.rightX = 0;
-				this.identifyMaxBox.bottomY = this.height;
-				this.identifyMaxBox.topY = 0;
 
 				// get start time
 				this.identifyStartTime = performance.now();
@@ -3437,6 +3468,7 @@ This file is part of LifeViewer
 			x = 0;
 		}
 
+		this.popSubPeriodHelp = [];
 		while (x < this.popSubPeriod.length) {
 			if (x === -1 || this.popSubPeriod[x] > 0) {
 				pixCol = this.cellPeriodRGB[x];
@@ -3450,6 +3482,7 @@ This file is part of LifeViewer
 					blue = (pixCol >> 8) & 255;
 				}
 				this.cellPeriodRGB[x] = (red << 16) | (green << 8) | blue;
+				this.popSubPeriodHelp[this.popSubPeriodHelp.length] = x;
 			}
 
 			x += 1;
@@ -5775,6 +5808,78 @@ This file is part of LifeViewer
 		return this.identifyBox;
 	};
 
+	// get identify maximum bounding box
+	/** @returns {BoundingBox} */
+	Life.prototype.getIdentifyMaxBox = function(/** @type {number} */ period) {
+		var	/** @type {BoundingBox} */ result = new BoundingBox(this.width, this.height, 0, 0),
+			/** @type {BoundingBox} */ extent = null,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ p = this.counter - period - 1,
+			/** @type {number} */ lx = 0,
+			/** @type {number} */ by = 0,
+			/** @type {number} */ wd = 0,
+			/** @type {number} */ ht = 0,
+			/** @type {number} */ record = 0,
+			/** @type {View} */ view = this.view;
+
+		// check if records exist
+		if (this.fullOscLength !== -1) {
+			for (i = 0; i < period; i += 1) {
+				// unpack width and height
+				record = this.boxList[(p + i) << 1];
+				wd = record >> 16;
+				ht = record & 65535;
+
+				// unpack bottom left
+				record = this.boxList[((p + i) << 1) + 1];
+				lx = record >> 16;
+				by = record & 65535;
+
+				// update bounding box
+				if (lx < result.leftX) {
+					result.leftX = lx;
+				}
+
+				if (lx + wd > result.rightX) {
+					result.rightX = lx + wd;
+				}
+
+				if (by < result.bottomY) {
+					result.bottomY = by;
+				}
+
+				if (by + ht > result.topY) {
+					result.topY = by + ht;
+				}
+			}
+		} else {
+			// need to run for the period
+			for (i = 0; i < period; i += 1) {
+				view.computeNextGeneration();
+				extent = this.updateIdentifyBox();
+
+				if (extent.leftX < result.leftX) {
+					result.leftX = extent.leftX;
+				}
+
+				if (extent.rightX > result.rightX) {
+					result.rightX = extent.rightX;
+				}
+
+				if (extent.bottomY < result.bottomY) {
+					result.bottomY = extent.bottomY;
+				}
+
+				if (extent.topY > result.topY) {
+					result.topY = extent.topY;
+				}
+			}
+		}
+
+		return result;
+	};
+
+
 	// compute strict volatility and Mod
 	Life.prototype.computeStrictVolatility = function(/** @type {number} */ period, /** @type {View} */ view, /** @type {boolean} */ isOscillator, /** @type {number} */ deltaX, /** @type {number} */ deltaY) {
 		var	/** @type {number} */ p = 0,
@@ -5815,6 +5920,28 @@ This file is part of LifeViewer
 			/** @type {number} */ nextHeat = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {number} */ modMatch = 0,
+			/** @type {number} */ minPop = 0,
+			/** @type {number} */ maxPop = 0,
+			/** @type {number} */ minPopT = 0,
+			/** @type {number} */ maxPopT = 0,
+			/** @type {number} */ totalPop = 0,
+			/** @type {number} */ minBoxWidth = 0,
+			/** @type {number} */ minBoxHeight = 0,
+			/** @type {number} */ minBoxSize = 0,
+			/** @type {number} */ minBoxSizeT = 0,
+			/** @type {number} */ maxBoxWidth = 0,
+			/** @type {number} */ maxBoxHeight = 0,
+			/** @type {number} */ maxBoxSize = 0,
+			/** @type {number} */ maxBoxSizeT = 0,
+			/** @type {number} */ totalBoxWidth = 0,
+			/** @type {number} */ totalBoxHeight = 0,
+			/** @type {BoundingBox} */ currentBox = null,
+			/** @type {number} */ minX = 0,
+			/** @type {number} */ maxX = 0,
+			/** @type {number} */ minY = 0,
+			/** @type {number} */ maxY = 0,
+			/** @type {number} */ wd = 0,
+			/** @type {number} */ ht = 0,
 
 			// get available memory
 			/** @type {number} */ memoryLimit = Controller.useWASM ? this.allocator.availableHeap() : LifeConstants.maxStrictMemory,
@@ -5834,8 +5961,10 @@ This file is part of LifeViewer
 			}
 		}
 
-		// compute bounding box extent over entire period
-		extent = this.identifyMaxBox;
+		if (isOscillator) {
+			// compute bounding box extent over entire period
+			extent = this.getIdentifyMaxBox(period);
+		}
 
 		// determine whether Strict Volatility can be calculated based on amount of RAM needed
 		if (isOscillator && (this.multiNumStates <= 2 || this.isSuper || this.isExtended)) {
@@ -5873,7 +6002,7 @@ This file is part of LifeViewer
 
 
 		// if not computing strict volatility then use other method for rotor and stator
-		if (!computeStrict) {
+		if (isOscillator && !computeStrict) {
 			// clear the rotor/stator count map
 			this.countList.whole.fill(LifeConstants.cellWasDead);
 
@@ -5891,6 +6020,30 @@ This file is part of LifeViewer
 
 		// save cell map for each generation in the period
 		// include extra generation to check Oscillator Mod period/2
+		minPop = this.population;
+		maxPop = this.population;
+		minPopT = 0;
+		maxPopT = 0;
+
+		minBoxWidth = this.width;
+		maxBoxWidth = 0;
+		minBoxHeight = this.height;
+		maxBoxHeight = 0;
+
+		minBoxSize = this.width * this.width;
+		maxBoxSize = 0;
+
+		minBoxSizeT = 0;
+		maxBoxSizeT = 0;
+
+		totalBoxWidth = 0;
+		totalBoxHeight = 0;
+
+		minX = this.width;
+		maxX = 0;
+		minY = this.height;
+		maxY = 0;
+
 		for (p = 0; p <= period + 1; p += 1) {
 			// compute next generation and update bounding box
 			view.computeNextGeneration();
@@ -5926,14 +6079,16 @@ This file is part of LifeViewer
 			}
 
 			// add to the strict volatility frame if computing strict volatility
-			if (computeStrict) {
-				if (p < period) {
-					this.updateCellCounts(extent, colourGrid, cellCounts);
-					this.updateOccupancyStrict(extent, colourGrid, frames, p, bitRowIn16Bits, bitFrameIn16Bits, bitStart);
+			if (isOscillator) {
+				if (computeStrict) {
+					if (p < period) {
+						this.updateCellCounts(extent, colourGrid, cellCounts);
+						this.updateOccupancyStrict(extent, colourGrid, frames, p, bitRowIn16Bits, bitFrameIn16Bits, bitStart);
+					}
+				} else {
+					// use the original method of computing cell occupancy
+					this.updateOccupancy(extent, p);
 				}
-			} else {
-				// use the original method of computing cell occupancy
-				this.updateOccupancy(extent, p);
 			}
 
 			//console.log(p, "gen", this.counter, extent, "width", (extent.rightX - extent.leftX + 1), "height", (extent.topY - extent.bottomY + 1));
@@ -6049,7 +6204,7 @@ This file is part of LifeViewer
 				}
 			}
 
-			// update heat
+			// update heat, min/max population and bounding box statistics
 			if (p < period) {
 				nextHeat = this.births + this.deaths;
 				if (nextHeat < this.minHeat) {
@@ -6062,10 +6217,76 @@ This file is part of LifeViewer
 
 				this.heatVal += nextHeat;
 
-				// save statistics for this generation
-				this.popList[p] = this.population;
-				this.boxList[p << 1] = ((extent.rightX - extent.leftX + 1) << 16) | (extent.topY - extent.bottomY + 1);
-				this.boxList[(p << 1) + 1] = (extent.leftX << 16) | extent.bottomY;
+				if (this.population < minPop) {
+					minPop = this.population;
+					minPopT = p;
+				}
+
+				if (this.population > maxPop) {
+					maxPop = this.population;
+					maxPopT = p;
+				}
+
+				totalPop += this.population;
+
+				if (!isOscillator) {
+					wd = extent.rightX - extent.leftX + 1;
+					ht = extent.topY - extent.bottomY + 1;
+					if (wd > totalBoxWidth) {
+						totalBoxWidth = wd;
+					}
+					if (ht > totalBoxHeight) {
+						totalBoxHeight = ht;
+					}
+
+					if (wd * ht < minBoxSize) {
+						minBoxSize = wd * ht;
+						minBoxWidth = wd;
+						minBoxHeight = ht;
+						minBoxSizeT = p;
+					}
+
+					if (wd * ht > maxBoxSize) {
+						maxBoxSize = wd * ht;
+						maxBoxWidth = wd;
+						maxBoxHeight = ht;
+						maxBoxSizeT = p;
+					}
+				} else {
+					currentBox = this.updateIdentifyBox();
+					wd = currentBox.rightX - currentBox.leftX + 1;
+					ht = currentBox.topY - currentBox.bottomY + 1;
+
+					if (currentBox.leftX < minX) {
+						minX = currentBox.leftX;
+					}
+
+					if (currentBox.rightX > maxX) {
+						maxX = currentBox.rightX;
+					}
+
+					if (currentBox.bottomY < minY) {
+						minY = currentBox.bottomY;
+					}
+
+					if (currentBox.topY > maxY) {
+						maxY = currentBox.topY;
+					}
+
+					if (wd * ht < minBoxSize) {
+						minBoxSize = wd * ht;
+						minBoxWidth = wd;
+						minBoxHeight = ht;
+						minBoxSizeT = p;
+					}
+
+					if (wd * ht > maxBoxSize) {
+						maxBoxSize = wd * ht;
+						maxBoxWidth = wd;
+						maxBoxHeight = ht;
+						maxBoxSizeT = p;
+					}
+				}
 			}
 		}
 
@@ -6154,7 +6375,34 @@ This file is part of LifeViewer
 			//console.log("created frequency map in", (t / 1000).toFixed(1) + " seconds");
 		} else {
 			this.popSubPeriod = null;
+			this.popSubPeriodHelp = [];
 		}
+
+		// save statistics
+		this.identifyMinPop = minPop;
+		this.identifyMinPopT = minPopT;
+		this.identifyMaxPop = maxPop;
+		this.identifyMaxPopT = maxPopT;
+		this.identifyAveragePop = totalPop / period;
+
+		this.identifyMinBoxWidth = minBoxWidth;
+		this.identifyMinBoxHeight = minBoxHeight;
+		this.identifyMinBoxSizeT = minBoxSizeT;
+
+		this.identifyMaxBoxWidth = maxBoxWidth;
+		this.identifyMaxBoxHeight = maxBoxHeight;
+		this.identifyMaxBoxSizeT = maxBoxSizeT;
+
+
+		if (isOscillator) {
+			totalBoxWidth = maxX - minX + 1;
+			totalBoxHeight = maxY - minY + 1;
+		}
+
+		this.identifyMinX = minX;
+		this.identifyMinY = minY;
+		this.identifyFullWidth = totalBoxWidth;
+		this.identifyFullHeight = totalBoxHeight;
 
 		// save elapsed time
 		this.identifyElapsedTime = ((performance.now() - this.identifyStartTime) / 1000);
@@ -6200,11 +6448,6 @@ This file is part of LifeViewer
 			/** @type {string} */ popResult = "",
 
 			// bounding box
-			/** @type {number} */ current = 0,
-			/** @type {number} */ currentWidth = 0,
-			/** @type {number} */ currentHeight = 0,
-			/** @type {number} */ currentLeft = 0,
-			/** @type {number} */ currentBottom = 0,
 			/** @type {number} */ minX = 16384,
 			/** @type {number} */ maxX = 0,
 			/** @type {number} */ minY = 16384,
@@ -6387,26 +6630,19 @@ This file is part of LifeViewer
 		if (type === "Still Life") {
 			popResult = String(this.population);
 		} else {
-			total = 0;
-			for (i = 0; i < last; i += 1) {
-				current = this.popList[i];
-				total += current;
-				if (current < min) {
-					min = current;
-					minT = (i + 1) % period;
-				}
-				if (current > max) {
-					max = current;
-					maxT = (i + 1) % period;
-				}
-			}
+			min = this.identifyMinPop;
+			minT = this.identifyMinPopT;
+
+			max = this.identifyMaxPop;
+			maxT = this.identifyMaxPopT;
+
+			avg = this.identifyAveragePop;
 
 			if (min === max) {
 				// output the latest
 				popResult = String(max);
 			} else {
 				// otherwise output min, max and average
-				avg = total / last;
 				popResult = String(min) + " | " + String(max) + " | " + this.toPlaces(avg, 1);
 
 				// save extended message with generations for Help->Identify
@@ -6420,74 +6656,24 @@ This file is part of LifeViewer
 		this.identifyBoxWithTMessage = "";
 
 		if (type !== "Still Life") {
-			if (type === "Spaceship") {
-				for (i = 0; i < last; i += 1) {
-					current = this.boxList[i << 1];
-					currentWidth = current >> 16;
-					currentHeight = current & 65535;
-					if (currentWidth > boxWidth) {
-						boxWidth = currentWidth;
-					}
-					if (currentHeight > boxHeight) {
-						boxHeight = currentHeight;
-					}
+			minBoxWidth = this.identifyMinBoxWidth;
+			minBoxHeight = this.identifyMinBoxHeight;
+			minT = this.identifyMinBoxSizeT;
 
-					// update minimum and maximum box
-					if (currentWidth * currentHeight < minBoxSize) {
-						minBoxSize = currentWidth * currentHeight;
-						minBoxWidth = currentWidth;
-						minBoxHeight = currentHeight;
-						minT = (i + 1) % period;
-					}
+			maxBoxWidth = this.identifyMaxBoxWidth;
+			maxBoxHeight = this.identifyMaxBoxHeight;
+			maxT = this.identifyMaxBoxSizeT;
 
-					if (currentWidth * currentHeight > maxBoxSize) {
-						maxBoxSize = currentWidth * currentHeight;
-						maxBoxWidth = currentWidth;
-						maxBoxHeight = currentHeight;
-						maxT = (i + 1) % period;
-					}
-				}
-			} else {
-				for (i = 0; i < last; i += 1) {
-					current = this.boxList[i << 1];
-					currentWidth = current >> 16;
-					currentHeight = current & 65535;
-					current = this.boxList[(i << 1) + 1];
-					currentLeft = current >> 16;
-					currentBottom = current & 65535;
+			boxWidth = this.identifyFullWidth;
+			boxHeight = this.identifyFullHeight;
 
-					// update bounding box
-					if (currentLeft < minX) {
-						minX = currentLeft;
-					}
-					if (currentBottom < minY) {
-						minY = currentBottom;
-					}
-					if (currentLeft + currentWidth - 1 > maxX) {
-						maxX = currentLeft + currentWidth - 1;
-					}
-					if (currentBottom + currentHeight - 1 > maxY) {
-						maxY = currentBottom + currentHeight - 1;
-					}
+			minBoxSize = minBoxWidth * minBoxHeight;
+			maxBoxSize = maxBoxWidth * maxBoxHeight;
 
-					// update minimum and maximum box
-					if (currentWidth * currentHeight < minBoxSize) {
-						minBoxSize = currentWidth * currentHeight;
-						minBoxWidth = currentWidth;
-						minBoxHeight = currentHeight;
-						minT = (i + 1) % period;
-					}
-
-					if (currentWidth * currentHeight > maxBoxSize) {
-						maxBoxSize = currentWidth * currentHeight;
-						maxBoxWidth = currentWidth;
-						maxBoxHeight = currentHeight;
-						maxT = (i + 1) % period;
-					}
-				}
-				boxWidth = maxX - minX + 1;
-				boxHeight = maxY - minY + 1;
-			}
+			minX = this.identifyMinX;
+			maxX = minX + boxWidth;
+			minY = this.identifyMinY;
+			maxY = minY + boxHeight;
 		}
 
 		boxResult = String(boxWidth + " x " + boxHeight + " = " + (boxWidth * boxHeight));
@@ -6653,14 +6839,24 @@ This file is part of LifeViewer
 		return result;
 	};
 
-	// create new Identify record
-	Life.prototype.addIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY) {
+	// add new identify record to short list
+	Life.prototype.addNegIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY) {
 		// create the new record
-		this.hashList[this.oscLength] = hash;
-		this.genList[this.oscLength] = this.counter;
-		this.popList[this.oscLength] = this.population;
-		this.boxList[this.oscLength << 1] = boxSize;
-		this.boxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
+		this.negHashList[this.oscLength] = hash;
+		this.negGenList[this.oscLength] = this.counter;
+		this.negPopList[this.oscLength] = this.population;
+		this.negBoxList[this.oscLength << 1] = boxSize;
+		this.negBoxList[(this.oscLength << 1) + 1] = (leftX << 16) | bottomY;
+	};
+
+	// add new identify record to full list
+	Life.prototype.addFullIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY) {
+		// create the new record
+		this.hashList[this.fullOscLength] = hash;
+		this.genList[this.fullOscLength] = this.counter;
+		this.popList[this.fullOscLength] = this.population;
+		this.boxList[this.fullOscLength << 1] = boxSize;
+		this.boxList[(this.fullOscLength << 1) + 1] = (leftX << 16) | bottomY;
 	};
 
 	// return true if pattern is empty, stable, oscillating or a spaceship
@@ -6674,20 +6870,9 @@ This file is part of LifeViewer
 			/** @type {number} */ topY = box.topY,
 			/** @type {number} */ boxWidth = rightX - leftX + 1,
 			/** @type {number} */ boxHeight = topY - bottomY + 1,
-			/** @type {BoundingBox} */ maxBox = this.identifyMaxBox,
 
 			// whether to save results
 			/** @type {boolean} */ saveResults = false,
-
-			// flag for verifying a spaceship
-			/** @type {boolean} */ verifyingSpaceship = false,
-
-			// last spaceship period
-			/** @type {number} */ lastSpaceshipPeriod = -1,
-
-			// last spaceship delay X and Y
-			/** @type {number} */ lastSpaceshipDeltaX = -1,
-			/** @type {number} */ lastSpaceshipDeltaY = -1,
 
 			// merge size into one value
 			/** @type {number} */ boxSize = (boxWidth << 16) | boxHeight,
@@ -6739,7 +6924,7 @@ This file is part of LifeViewer
 		}
 
 		// check buffer
-		if (this.oscLength < this.maxOscillatorGens) {
+		if (this.oscLength < LifeConstants.negOscillatorGens) {
 			// check population
 			if (this.population === 0) {
 				result = ["Empty pattern", "Empty"];
@@ -6747,20 +6932,6 @@ This file is part of LifeViewer
 				boxHeight = 0;
 				quit = true;
 			} else {
-				// update maximum bounding box
-				if (leftX < maxBox.leftX) {
-					maxBox.leftX = leftX;
-				}
-				if (rightX > maxBox.rightX) {
-					maxBox.rightX = rightX;
-				}
-				if (bottomY < maxBox.bottomY) {
-					maxBox.bottomY = bottomY;
-				}
-				if (topY > maxBox.topY) {
-					maxBox.topY = topY;
-				}
-
 				// get the hash of the current pattern
 				hash = this.getHash(box);
 
@@ -6772,7 +6943,7 @@ This file is part of LifeViewer
 
 				// search the hash list
 				while (i < maxI && !quitLoop) {
-					currentValue = this.hashList[i];
+					currentValue = this.negHashList[i];
 					if (hash > currentValue) {
 						// hash value greater so try next
 						i += 1;
@@ -6787,40 +6958,50 @@ This file is part of LifeViewer
 								j = i << 1;
 
 								// hash matched so check population and bounding box
-								if ((this.population === this.popList[i]) && boxSize === this.boxList[j]) {
+								if ((this.population === this.negPopList[i]) && boxSize === this.negBoxList[j]) {
 									saveResults = true;
-									period = this.counter - this.genList[i];
+									period = this.counter - this.negGenList[i];
 
-									if (this.boxList[j + 1] === boxLocation) {
+									if (this.negBoxList[j + 1] === boxLocation) {
 										// check for odd period Margolus
 										if ((period & 1) === 1 && this.isMargolus) {
 											saveResults = false;
 										} else {
 											// pattern hasn't moved
-											if (period === 1 || (period === 2 && this.isMargolus && this.hashList[0] === this.hashList[1])) {
+											if (period === 1 || (period === 2 && this.isMargolus && this.negHashList[0] === this.negHashList[1])) {
 												message = "Still Life";
 											} else {
 												message = "Oscillator period " + period;
 											}
 										}
 									} else {
-										// pattern is moving so check if we are verifying spaceship
-										deltaX = leftX - (this.boxList[j + 1] >> 16);
-										deltaY = bottomY - (this.boxList[j + 1] & 65535);
-										if (verifyingSpaceship) {
-											if (this.spaceshipContinues(period, lastSpaceshipPeriod, deltaX, lastSpaceshipDeltaX, deltaY, lastSpaceshipDeltaY)) {
-												message = this.spaceshipSpeed(period, deltaX, deltaY);
-												verifyingSpaceship = false;
-											} else {
-												saveResults = false;
+										// pattern is moving so attempt to verify spaceship
+										saveResults = false;
+
+										if (i < this.oscLength - 1) {
+											// check if the next record is also a hash match
+											var nextI = i + 1;
+
+											if (hash === this.negHashList[nextI]) {
+												// check if it has the same population and bounding box
+												if ((this.population === this.negPopList[nextI]) && boxSize === this.negBoxList[nextI << 1]) {
+													// check if the periods are the same
+													if (this.negGenList[nextI] - this.negGenList[i] === this.counter - this.negGenList[nextI]) {
+														// finally check the deltas
+														deltaX = (this.negBoxList[(nextI << 1) + 1] >> 16) - (this.negBoxList[(i << 1) + 1] >> 16);
+														deltaY = (this.negBoxList[(nextI << 1) + 1] & 65535) - (this.negBoxList[(i << 1) + 1] & 65535);
+
+														var deltaX2 = leftX - (this.negBoxList[(nextI << 1) + 1] >> 16);
+														var deltaY2 = bottomY - (this.negBoxList[(nextI << 1) + 1] & 65535);
+
+														if (deltaX === deltaX2 && deltaY === deltaY2) {
+															period = this.counter - this.negGenList[nextI];
+															saveResults = true;
+														}
+														
+													}
+												}
 											}
-										} else {
-											// remember current spaceship position so it can be verified
-											verifyingSpaceship = true;
-											lastSpaceshipPeriod = period;
-											lastSpaceshipDeltaX = deltaX;
-											lastSpaceshipDeltaY = deltaY;
-											saveResults = false;
 										}
 									}
 
@@ -6829,12 +7010,6 @@ This file is part of LifeViewer
 										// result found
 										quitLoop = true;
 										quit = true;
-
-										// reset delta if waiting to verify a spaceship since it must be an oscillator
-										if (verifyingSpaceship) {
-											deltaX = 0;
-											deltaY = 0;
-										}
 
 										// create the results
 										this.identifyDeferredResults = [message, period, deltaX, deltaY, boxWidth, boxHeight];
@@ -6856,12 +7031,24 @@ This file is part of LifeViewer
 
 				// add to the lists
 				if (!quit) {
-					// create the new record
-					this.addIdentifyRecord(hash, boxSize, leftX, bottomY);
+					// create the new records
+					this.addNegIdentifyRecord(hash, boxSize, leftX, bottomY);
 
-					// check for buffer full
+					// check if the full buffer is full
+					if (this.fullOscLength >= 0) {
+						// add the record
+						this.addFullIdentifyRecord(hash, boxSize, leftX, bottomY);
+
+						// see if the buffer is now full
+						this.fullOscLength += 1;
+						if (this.fullOscLength === LifeConstants.maxOscillatorGens) {
+							this.fullOscLength = -1;
+						}
+					}
+
+					// check for short buffer full
 					this.oscLength += 1;
-					if (this.oscLength === this.maxOscillatorGens) {
+					if (this.oscLength === LifeConstants.negOscillatorGens) {
 						this.oscLength = 0;
 						result = [LifeConstants.bufferFullMessage];
 					}
@@ -10554,11 +10741,19 @@ This file is part of LifeViewer
 			// update identify positions
 			if (this.oscLength > 0) {
 				for (y = 0; y < this.oscLength; y += 1) {
+					idCurrent = this.negBoxList[(y << 1) + 1];
+					idLeft = (idCurrent >> 16) + xOffset;
+					idBottom = (idCurrent & 65535) + yOffset;
+					this.negBoxList[(y << 1) + 1] = (idLeft << 16) | idBottom;
+				}
+
+				for (y = 0; y < this.fullOscLength; y += 1) {
 					idCurrent = this.boxList[(y << 1) + 1];
 					idLeft = (idCurrent >> 16) + xOffset;
 					idBottom = (idCurrent & 65535) + yOffset;
 					this.boxList[(y << 1) + 1] = (idLeft << 16) | idBottom;
 				}
+
 			}
 		}
 	};
