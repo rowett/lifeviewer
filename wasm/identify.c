@@ -383,6 +383,8 @@ uint32_t getHashTwoState(
 	const int32_t aliveStart
 ) {
 	const uint32_t factor = 1000003;
+	const uint32_t primeX = 19349663;
+	const uint32_t primeY = 73856093;
 	uint32_t hash = 31415962;
 
 	// alive cells
@@ -401,6 +403,7 @@ uint32_t getHashTwoState(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
+		uint32_t yPrime = yshift * primeY;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -418,8 +421,7 @@ uint32_t getHashTwoState(
 
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
-				hash = (hash * factor) ^ yshift;
-				hash = (hash * factor) ^ (xshift + i);
+				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
 				mask &= (mask - 1);
 			}
 
@@ -446,6 +448,8 @@ uint32_t getHashSuper(
 	const int32_t colourGridWidth
 ) {
 	const uint32_t factor = 1000003;
+	const uint32_t primeX = 19349663;
+	const uint32_t primeY = 73856093;
 	uint32_t hash = 31415962;
 
 	// alive cells
@@ -467,6 +471,7 @@ uint32_t getHashSuper(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
+		uint32_t yPrime = yshift * primeY;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -491,8 +496,7 @@ uint32_t getHashSuper(
 
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
-				hash = (hash * factor) ^ yshift;
-				hash = (hash * factor) ^ (xshift + i);
+				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
 				if (*(colourRow + i) == 6) {
 					hash = (hash * factor) ^ 6;
 				}
@@ -525,6 +529,8 @@ uint32_t getHashLifeHistory(
 	const int32_t state6
 ) {
 	const uint32_t factor = 1000003;
+	const uint32_t primeX = 19349663;
+	const uint32_t primeY = 73856093;
 	uint32_t hash = 31415962;
 
 	// alive cells
@@ -547,6 +553,7 @@ uint32_t getHashLifeHistory(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
+		uint32_t yPrime = yshift * primeY;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -571,8 +578,7 @@ uint32_t getHashLifeHistory(
 
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
-				hash = (hash * factor) ^ yshift;
-				hash = (hash * factor) ^ (xshift + i);
+				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
 				if (*(overlayRow + i) == state6) {
 					hash = (hash * factor) ^ 6;
 				}
@@ -604,6 +610,8 @@ uint32_t getHashRuleLoaderOrPCAOrExtended(
 	const uint32_t historyStates
 ) {
 	const uint32_t factor = 1000003;
+	const uint32_t primeX = 19349663;
+	const uint32_t primeY = 73856093;
 	uint32_t hash = 31415962;
 
 	// alive cells offset
@@ -622,6 +630,7 @@ uint32_t getHashRuleLoaderOrPCAOrExtended(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
+		uint32_t yPrime = yshift * primeY;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -639,8 +648,7 @@ uint32_t getHashRuleLoaderOrPCAOrExtended(
 
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
-				hash = (hash * factor) ^ yshift;
-				hash = (hash * factor) ^ (xshift + i);
+				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
 				hash = (hash * factor) ^ (*(colourRow + i) - historyStates);
 				mask &= (mask - 1);
 			}
@@ -669,6 +677,8 @@ uint32_t getHashGenerations(
 	const uint32_t numStates
 ) {
 	const uint32_t factor = 1000003;
+	const uint32_t primeX = 19349663;
+	const uint32_t primeY = 73856093;
 	uint32_t hash = 31415962;
 
 	// alive cells offset
@@ -687,6 +697,7 @@ uint32_t getHashGenerations(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
+		uint32_t yPrime = yshift * primeY;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -704,8 +715,7 @@ uint32_t getHashGenerations(
 
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
-				hash = (hash * factor) ^ yshift;
-				hash = (hash * factor) ^ (xshift + i);
+				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
 				hash = (hash * factor) ^ (numStates - (*(colourRow + i) - historyStates));
 				mask &= (mask - 1);
 			}

@@ -1,3 +1,9 @@
+Build 1287
+- improved hash algorithm in Identify to reduce chance of hash collisions
+- added one decimal place to gps display after GoToGen benchmark
+- reduced Identify memory usage
+- increased GoToGen / STARTFROM generation limit
+
 Build 1286
 - Identify can now handle oscillators with very large periods (work in progress)
 - fixed SHOWGENSTATS being ignored until AUTOIDENTIFY complete

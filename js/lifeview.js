@@ -128,7 +128,7 @@ This file is part of LifeViewer
 		/** @const {string} */ doneKey : "workaround",
 
 		// maximum start from generation
-		/** @const {number} */ maxStartFromGeneration : 4194304,
+		/** @const {number} */ maxStartFromGeneration : 134217728,
 
 		// fit zoom types
 		/** @const {number} */ fitZoomPattern : 0,
@@ -347,7 +347,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1286,
+		/** @const {number} */ versionBuild : 1287,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -8263,8 +8263,8 @@ This file is part of LifeViewer
 					if (me.startFromTiming !== -1) {
 						// calculate benchmark results
 						genTime = (performance.now() - me.startFromTiming) / 1000;
-						gps = (me.startFromGens / genTime) | 0;
-						me.menuManager.notification.notify(me.startFromGens + " gens in " + genTime.toFixed(1) + "s = " + gps + "gps", 15, 1200, 15, false);
+						gps = me.startFromGens / genTime;
+						me.menuManager.notification.notify(me.startFromGens + " gens in " + genTime.toFixed(1) + "s = " + gps.toFixed(1) + "gps", 15, 1200, 15, false);
 
 						// save benchmark info
 						me.lastBenchmarkTime = genTime;
@@ -8429,7 +8429,7 @@ This file is part of LifeViewer
 							me.lastIdentifyTemperature = identifyResult[14];
 							me.lastIdentifyDensity = identifyResult[15];
 							if (me.engine.fullOscLength >= 0) {
-								me.lastIdentifyBufferUsed = String(me.engine.oscLength + " " + ((100 * me.engine.fullOscLength) / LifeConstants.maxOscillatorGens).toFixed(1) + "%");
+								me.lastIdentifyBufferUsed = String(me.engine.oscLength + " / " + ((100 * me.engine.fullOscLength) / LifeConstants.maxOscillatorGens).toFixed(1) + "%");
 							} else {
 								me.lastIdentifyBufferUsed = String(me.engine.oscLength);
 							}
