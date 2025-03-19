@@ -128,7 +128,7 @@ This file is part of LifeViewer
 		/** @const {string} */ doneKey : "workaround",
 
 		// maximum start from generation
-		/** @const {number} */ maxStartFromGeneration : 134217728,
+		/** @const {number} */ maxStartFromGeneration : 1073741824,
 
 		// fit zoom types
 		/** @const {number} */ fitZoomPattern : 0,
@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1291,
+		/** @const {number} */ versionBuild : 1292,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -5538,25 +5538,40 @@ This file is part of LifeViewer
 		// get default result
 		result = value + String();
 
-		// check for huge number
-		if (value >= 1000000000) {
-			result = "1B+";
+		// check for trillions
+		if (value >= 1000000000000) {
+			result = "999B+";
 		} else {
-			// check for hundreds of millions
-			if (value >= 100000000) {
-				result = ((value / 1000000) | 0) + "M";
+			// check for hundres of billions
+			if (value >= 100000000000) {
+				result = ((value / 1000000000) | 0) + "B";
 			} else {
-				// check for tens of millions
-				if (value >= 10000000) {
-					result = (Math.floor(Number(value / 100000)) / 10).toFixed(1) + "M";
+				// check for tens of billions
+				if (value >= 10000000000) {
+					result = (Math.floor(Number(value / 100000000)) / 10).toFixed(1) + "B";
 				} else {
-					// check for millions
-					if (value >= 1000000) {
-						result = (Math.floor(Number(value / 10000)) / 100).toFixed(2) + "M";
+					// check for billions
+					if (value >= 1000000000) {
+						result = (Math.floor(Number(value / 10000000)) / 100).toFixed(2) + "B";
 					} else {
-						// check for one hundred thousand
-						if (value >= 100000) {
-							result = ((value / 1000) | 0) + "K";
+						// check for hundreds of millions
+						if (value >= 100000000) {
+							result = ((value / 1000000) | 0) + "M";
+						} else {
+							// check for tens of millions
+							if (value >= 10000000) {
+								result = (Math.floor(Number(value / 100000)) / 10).toFixed(1) + "M";
+							} else {
+								// check for millions
+								if (value >= 1000000) {
+									result = (Math.floor(Number(value / 10000)) / 100).toFixed(2) + "M";
+								} else {
+									// check for one hundred thousand
+									if (value >= 100000) {
+										result = ((value / 1000) | 0) + "K";
+									}
+								}
+							}
 						}
 					}
 				}
@@ -6660,7 +6675,7 @@ This file is part of LifeViewer
 		if (!me.genRelative) {
 			counter += me.genOffset;
 			if (counter >= 1000000000) {
-				me.genValueLabel.preText = "1B+";
+				me.genValueLabel.preText = this.shortenNumber(counter);
 			} else {
 				me.genValueLabel.preText = String(counter);
 			}
@@ -6669,8 +6684,8 @@ This file is part of LifeViewer
 			if (me.engine.isMargolus || me.engine.isPCA) {
 				counter = me.engine.counter;
 			}
-			if (counter >= 1000000000) {
-				me.genValueLabel.preText = "1B+";
+			if (counter >= 1000000000000) {
+				me.genValueLabel.preText = this.shortenNumber(counter);
 			} else {
 				me.genValueLabel.preText = String(counter);
 			}

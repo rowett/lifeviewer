@@ -1,3 +1,7 @@
+Build 1292
+- increased generation display up to 1T
+- increased Go To Gen / STARTFROM generation limit
+
 Build 1291
 - improved hash algorithm for Identify further to reduce hash collisions for very high period oscillators
 - fixed stuttering at high T values
@@ -14,9 +18,9 @@ Build 1288
 
 Build 1287
 - improved hash algorithm in Identify to reduce chance of hash collisions
-- added one decimal place to gps display after GoToGen benchmark
+- added one decimal place to gps display after Go To Gen benchmark
 - reduced Identify memory usage
-- increased GoToGen / STARTFROM generation limit
+- increased Go To Gen / STARTFROM generation limit
 - fixed Gaussian rules with invalid ranges causing out of memory error
 
 Build 1286
