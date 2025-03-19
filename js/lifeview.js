@@ -243,9 +243,6 @@ This file is part of LifeViewer
 		// one frame in milliseconds
 		/** @const (number) */ singleFrameMS : 16,
 
-		// number of generations for elapsed times buffer
-		/** @const (number) */ numElapsedTimes : 16384,
-
 		// default graph opacity
 		/** @const {number} */ defaultOpacity : 0.7,
 
@@ -347,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1287,
+		/** @const {number} */ versionBuild : 1291,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1446,9 +1443,6 @@ This file is part of LifeViewer
 
 		// fixed point counter for generation
 		/** @type {number} */ this.fixedPointCounter = 0;
-
-		// elapsed time at each generation
-		/** @type {Float32Array} */ this.elapsedTimes = null;
 
 		// x and y offset of pattern
 		/** @type {number} */ this.panX = 0;
@@ -8145,19 +8139,7 @@ This file is part of LifeViewer
 
 	// save elapsed time at generation
 	View.prototype.saveElapsedTime = function(/** @type {number} */ counter, /** @type {number} */ timeSinceLastUpdate, /** @type {number} */ gensPerStep) {
-		var	/** @type {Float32Array} */ buffer = null;
-
-		// save elapsed time
-		if (counter >= this.elapsedTimes.length) {
-			// grow buffer
-			buffer = /** @type {!Float32Array} */ (this.engine.allocator.allocate(Type.Float32, this.elapsedTimes.length + ViewConstants.numElapsedTimes, "View.elapsedTimes", false));
-
-			// copy buffer
-			buffer.set(this.elapsedTimes);
-			this.elapsedTimes = buffer;
-		}
 		this.elapsedTime += (timeSinceLastUpdate / gensPerStep);
-		this.elapsedTimes[counter] = this.elapsedTime;
 	};
 
 	// compute next generation and set flag if Life just died
@@ -11273,7 +11255,12 @@ This file is part of LifeViewer
 		if (x !== -1 && y !== -1) {
 			// check for existing selection
 			if (me.isSelection) {
-				me.removeSelection(me);
+				// check for Shift key
+				if (KeyProcessor.shift) {
+					me.drawingSelection = true;
+				} else {
+					me.removeSelection(me);
+				}
 			}
 
 			// convert display coordinates to cell location
@@ -16892,7 +16879,7 @@ This file is part of LifeViewer
 				me.engine.tableStartRow = 0;
 
 				// start identification
-				me.menuManager.notification.notify("Identifying...", 15, 216000, 15, false);
+				me.menuManager.notification.notify("Identifying...", 15, 5184000, 15, false);
 
 				// create undo point
 				me.afterEdit("");
@@ -17518,7 +17505,8 @@ This file is part of LifeViewer
 		}
 
 		// restore the elapsed time
-		this.elapsedTime = this.elapsedTimes[targetGen];
+		// this.elapsedTime = this.elapsedTimes[targetGen];
+		this.elapsedTime = 1000 * targetGen / (this.genSpeed * this.gensPerStep);
 		this.fixedPointCounter = targetGen * this.refreshRate;
 	};
 
@@ -17538,7 +17526,8 @@ This file is part of LifeViewer
 				}
 
 				// restore the elapsed time
-				this.elapsedTime = this.elapsedTimes[targetGen];
+				//this.elapsedTime = this.elapsedTimes[targetGen];
+				this.elapsedTime = 1000 * targetGen / (this.genSpeed * this.gensPerStep);
 				this.fixedPointCounter = targetGen * this.refreshRate;
 
 				// don't actually step back if pattern is dead at the requested generation
@@ -17550,7 +17539,8 @@ This file is part of LifeViewer
 				}
 
 				// restore the elapsed time again
-				this.elapsedTime = this.elapsedTimes[targetGen];
+				//this.elapsedTime = this.elapsedTimes[targetGen];
+				this.elapsedTime = 1000 * targetGen / (this.genSpeed * this.gensPerStep);
 				this.fixedPointCounter = targetGen * this.refreshRate;
 
 				// notify waypoint manager of change
@@ -17857,6 +17847,11 @@ This file is part of LifeViewer
 	View.prototype.copyCurrentRLE = function(/** @type {View} */ me, /** @type {boolean} */ addComments) {
 		// copy the current pattern to the clipboard
 		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, [], false));
+	};
+
+	// key up
+	View.prototype.keyUp = function(/** @type {View} */ me, /** @type {KeyboardEvent} */ event) {
+		KeyProcessor.shift = event.shiftKey;
 	};
 
 	// key down
@@ -19120,9 +19115,6 @@ This file is part of LifeViewer
 			this.engine.initEngine(this.mainContext, this.displayWidth, this.displayHeight);
 			//console.timeEnd("init engine");
 
-			// create the elapsed times buffer
-			this.elapsedTimes = /** @type {!Float32Array} */ (this.engine.allocator.allocate(Type.Float32, ViewConstants.numElapsedTimes, "View.elapsedTimes", false));
-
 			// create the starfield
 			this.starField = new Stars(ViewConstants.numStars, this.engine.allocator);
 
@@ -19162,9 +19154,11 @@ This file is part of LifeViewer
 			// register keyboard input
 			if (this.isInPopup) {
 				registerEvent(Controller.popupWindow.wrappedElement, "keydown", function(/** @type {KeyboardEvent} */ event) {me.keyDown(me, event);}, false);
+				registerEvent(Controller.popupWindow.wrappedElement, "keyup", function(/** @type {KeyboardEvent} */ event) {me.keyUp(me, event);}, false);
 				Controller.popupWindow.menuManager = this.menuManager;
 			} else {
 				registerEvent(this.mainCanvas, "keydown", function(/** @type {KeyboardEvent} */ event) {me.keyDown(me, event);}, false);
+				registerEvent(this.mainCanvas, "keyup", function(/** @type {KeyboardEvent} */ event) {me.keyUp(me, event);}, false);
 			}
 
 			// success
@@ -19564,7 +19558,7 @@ This file is part of LifeViewer
 		this.engine.resizeDisplay(this.displayWidth, this.displayHeight);
 
 		// resize the cell period map if available
-		if (!(this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "") && (this.engine.popSubPeriod !== null)) {
+		if (!(this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "") && (this.engine.cellPeriod !== null)) {
 			this.engine.createCellPeriodMap(this);
 			this.engine.createCellFrequencyMap(this.engine.cellFrequencyCounts, this.engine.identifyPeriod);
 		}
@@ -19755,7 +19749,6 @@ This file is part of LifeViewer
 	// scale embedded viewer
 	View.prototype.scaleEmbedded = function() {
 		var	/** @type {number} */ windowWidth = 0,
-			/** @type {number} */ viewerWidth = 0,
 			/** @type {number} */ scale = 0;
 
 		if (!this.isInPopup) {
@@ -19763,7 +19756,6 @@ This file is part of LifeViewer
 			this.devicePixelRatio = (window.devicePixelRatio ? window.devicePixelRatio : 1);
 
 			// compute the width of the embedded viewer and the browser window
-			viewerWidth = this.displayWidth * this.devicePixelRatio;
 			windowWidth = document.body.clientWidth;
 			scale = 1;
 			this.windowZoom = 1;

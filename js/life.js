@@ -447,6 +447,10 @@ This file is part of LifeViewer
 		// whether snapshot save is required
 		/** @type {boolean} */ this.snapshotNeeded = false;
 
+		// hash lower and upper 32 bits
+		/** @type {number} */ this.hashLower = 0;
+		/** @type {number} */ this.hashUpper = 0;
+
 		// canvas for cell icons at supported resolutions
 		/** @type {HTMLCanvasElement} */ this.cellIconCanvas31 = null;
 		/** @type {HTMLCanvasElement} */ this.cellIconCanvas15 = null;
@@ -631,9 +635,11 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.ruleTableB0 = false;
 
 		// identify lists
-		/** @type {Int32Array} */ this.hashList = null;
+		/** @type {Int32Array} */ this.hashListLower = null;
+		/** @type {Int32Array} */ this.hashListUpper = null;
 		/** @type {Uint32Array} */ this.boxList = null;
-		/** @type {Int32Array} */ this.negHashList = null;
+		/** @type {Int32Array} */ this.negHashListLower = null;
+		/** @type {Int32Array} */ this.negHashListUpper = null;
 		/** @type {Uint32Array} */ this.negGenList = null;
 		/** @type {Uint32Array} */ this.negPopList = null;
 		/** @type {Uint32Array} */ this.negBoxList = null;
@@ -1932,12 +1938,14 @@ This file is part of LifeViewer
 		// check if search has been switched on
 		if (on) {
 			// just switched on so check if buffers are allocated
-			if (this.hashList === null) {
+			if (this.hashListLower === null) {
 				// allocate buffers
-				this.hashList = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.hashList", false));
+				this.hashListLower = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.hashListLower", false));
+				this.hashListUpper = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.maxOscillatorGens, "Life.hashListUpper", false));
 				this.boxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * LifeConstants.maxOscillatorGens, "Life.boxList", false));
 
-				this.negHashList = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.negOscillatorGens, "Life.negHashList", false));
+				this.negHashListLower = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.negOscillatorGens, "Life.negHashListLower", false));
+				this.negHashListUpper = /** @type {!Int32Array} */ (this.allocator.allocate(Type.Int32, LifeConstants.negOscillatorGens, "Life.negHashListUpper", false));
 				this.negGenList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.negOscillatorGens, "Life.negGenList", false));
 				this.negPopList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, LifeConstants.negOscillatorGens, "Life.negPopList", false));
 				this.negBoxList = /** @type {!Uint32Array} */ (this.allocator.allocate(Type.Uint32, 2 * LifeConstants.negOscillatorGens, "Life.negBoxList", false));
@@ -1969,9 +1977,11 @@ This file is part of LifeViewer
 			}
 		} else {
 			// just switched off so release buffers
-			this.hashList = null;
+			this.hashListLower = null;
+			this.hashListUpper = null;
 			this.boxList = null;
-			this.negHashList = null;
+			this.negHashListLower = null;
+			this.negHashListUpper = null;
 			this.negGenList = null;
 			this.negPopList = null;
 			this.negBoxList = null;
@@ -2002,13 +2012,17 @@ This file is part of LifeViewer
 	};
 
 	// get mod hash from 2-state pattern using Rot270
-	/** @returns {number} */
-	Life.prototype.getHash2Rot270 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
+	Life.prototype.getHash2Rot270 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ iDivHeight = 0,
@@ -2024,18 +2038,22 @@ This file is part of LifeViewer
 		// find the first alive cell
 		for (y = 0; y < height; y += 1) {
 			yPrime = y * primeY;
+			yPrime2 = y * primeY2;
 
 			for (x = 0; x < width; x += 1) {
 				if (colourGrid[hm1 - iModHeight][iDivHeight] >= aliveStart) {
 					hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+					hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 
 					// check if this matches the first hash
 					if (!checkedFirst) {
-						if (hash !== firstHash) {
+						if (hash !== firstHash1 || hash2 !== firstHash2) {
 							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot270 BAILED != ", firstHash);
 
 							// bail out with non-matching hash value
-							return (firstHash + 1) | 0;
+							this.hashLower = firstHash1 + 1;
+							this.hashUpper = firstHash2 + 1;
+							return;
 						}
 
 						checkedFirst = true;
@@ -2053,19 +2071,24 @@ This file is part of LifeViewer
 
 		//console.log("gen", this.counter, "rot270", hash);
 
-		return hash | 0;
+		this.hashLower = hash | 0;
+		this.hashUpper = hash2 | 0;
 	};
 
 	// get mod hash from 2-state pattern using Rot180
-	/** @returns {number} */
-	Life.prototype.getHash2Rot180 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
+	Life.prototype.getHash2Rot180 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
@@ -2078,19 +2101,23 @@ This file is part of LifeViewer
 		for (y = 0; y < height; y += 1) {
 			colourRow = colourGrid[hm1 - y];
 			yPrime = y * primeY;
+			yPrime2 = y * primeY2;
 
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
 				if (colourRow[wm1 - x] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+					hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 
 					if (!checkedFirst) {
-						if (hash != firstHash) {
+						if (hash !== firstHash1 || hash2 !== firstHash2) {
 							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot180 BAILED != ", firstHash);
 
 							// bail out with non-matching hash value
-							return (firstHash + 1) | 0;
+							this.hashLower = firstHash1 + 1;
+							this.hashUpper = firstHash2 + 1;
+							return;
 						}
 
 						checkedFirst = true;
@@ -2101,19 +2128,24 @@ This file is part of LifeViewer
 
 		//console.log("gen", this.counter, "rot180", hash);
 
-		return hash | 0;
+		this.hashLower = hash | 0;
+		this.hashUpper = hash2 | 0;
 	};
 
 	// get mod hash from 2-state pattern using Rot90
-	/** @returns {number} */
-	Life.prototype.getHash2Rot90 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
+	Life.prototype.getHash2Rot90 = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
@@ -2126,19 +2158,23 @@ This file is part of LifeViewer
 		// find the first alive cell and check it against the first hash
 		for (y = 0; y < height; y += 1) {
 			yPrime = y * primeY;
+			yPrime2 = y * primeY2;
 
 			for (x = 0; x < width; x += 1 ) {
 				// adjust the coordinates based on the transformation
 				if (colourGrid[iModHeight + bottom][wm1 - iDivHeight] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+					hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 
 					if (!checkedFirst) {
-						if (hash !== firstHash) {
+						if (hash !== firstHash1 || hash2 !== firstHash2) {
 							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot90 BAILED != ", firstHash);
 
 							// bail out with non-matching hash value
-							return (firstHash + 1) | 0;
+							this.hashLower = firstHash1 + 1;
+							this.hashUpper = firstHash2 + 1;
+							return;
 						}
 
 						checkedFirst = true;
@@ -2156,19 +2192,24 @@ This file is part of LifeViewer
 
 		//console.log("gen", this.counter, "rot90", hash);
 
-		return hash | 0;
+		this.hashLower = hash | 0;
+		this.hashUpper = hash2 | 0;
 	};
 
 	// get mod hash from 2-state pattern using FlipX
-	/** @returns {number} */
-	Life.prototype.getHash2FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
+	Life.prototype.getHash2FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ wm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
@@ -2180,19 +2221,23 @@ This file is part of LifeViewer
 		for (y = 0; y < height; y += 1) {
 			colourRow = colourGrid[y + bottom];
 			yPrime = y * primeY;
+			yPrime2 = y * primeY2;
 
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
 				if (colourRow[wm1 - x] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+					hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 
 					if (!checkedFirst) {
-						if (hash !== firstHash) {
+						if (hash !== firstHash1 || hash2 !== firstHash2) {
 							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "flipX BAILED != ", firstHash);
 
 							// bail out with non-matching hash value
-							return (firstHash + 1) | 0;
+							this.hashLower = firstHash1 + 1;
+							this.hashUpper = firstHash2 + 1;
+							return;
 						}
 
 						checkedFirst = true;
@@ -2203,19 +2248,24 @@ This file is part of LifeViewer
 
 		//console.log("gen", this.counter, "flipX", hash);
 
-		return hash | 0;
+		this.hashLower = hash | 0;
+		this.hashUpper = hash2 | 0;
 	};
 
 	// get mod hash from 2-state pattern using FlipY
-	/** @returns {number} */
-	Life.prototype.getHash2FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
+	Life.prototype.getHash2FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart,
@@ -2227,18 +2277,22 @@ This file is part of LifeViewer
 		for (y = 0; y < height; y += 1) {
 			colourRow = colourGrid[hm1 - y];
 			yPrime = y * primeY;
+			yPrime2 = y * primeY2;
 
 			for (x = 0; x < width; x += 1) {
 				if (colourRow[x + left] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+					hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 
 					if (!checkedFirst) {
-						if (hash !== firstHash) {
+						if (hash !== firstHash1 || hash2 !== firstHash2) {
 							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "flipY BAILED != ", firstHash);
 
 							// bail out with non-matching hash value
-							return (firstHash + 1) | 0;
+							this.hashLower = firstHash1 + 1;
+							this.hashUpper = firstHash2 + 1;
+							return;
 						}
 
 						checkedFirst = true;
@@ -2249,19 +2303,24 @@ This file is part of LifeViewer
 
 		//console.log("gen", this.counter, "flipY", hash);
 
-		return hash | 0;
+		this.hashLower = hash | 0;
+		this.hashUpper = hash2 | 0;
 	};
 
 	// get mod hash from 2-state pattern using Rot90FlipX
-	/** @returns {number} */
-	Life.prototype.getHash2Rot90FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
+	Life.prototype.getHash2Rot90FlipX = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
@@ -2273,20 +2332,24 @@ This file is part of LifeViewer
 
 		for (y = 0; y < height; y += 1) {
 			yPrime = y * primeY;
+			yPrime2 = y * primeY2;
 
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
 				if (colourGrid[iModHeight + bottom][iDivHeight] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+					hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 
 					// check if this matches the first hash
 					if (!checkedFirst) {
-						if (hash !== firstHash) {
+						if (hash !== firstHash1 || hash2 !== firstHash2) {
 							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot90flipX BAILED != ", firstHash);
 
 							// bail out with non-matching hash value
-							return (firstHash + 1) | 0;
+							this.hashLower = firstHash1 + 1;
+							this.hashUpper = firstHash2 + 1;
+							return;
 						}
 
 						checkedFirst = true;
@@ -2304,19 +2367,24 @@ This file is part of LifeViewer
 
 		//console.log("gen", this.counter, "rot90flipX", hash);
 
-		return hash | 0;
+		this.hashLower = hash | 0;
+		this.hashUpper = hash2 | 0;
 	};
 
 	// get mod hash from 2-state pattern using Rot90FlipY
-	/** @returns {number} */
-	Life.prototype.getHash2Rot90FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash) {
+	Life.prototype.getHash2Rot90FlipY = function(/** @type {number} */ width, /** @type {number} */ height, /** @type {number} */ modHeight, /** @type {number} */ wm1, /** @type {number} */ hm1, /** @type {number} */ left, /** @type {number} */ bottom, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {number} */ iDivHeight = 0,
 			/** @type {number} */ iModHeight = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
@@ -2329,20 +2397,24 @@ This file is part of LifeViewer
 
 		for (y = 0; y < height; y += 1) {
 			yPrime = y * primeY;
+			yPrime2 = y * primeY2;
 
 			for (x = 0; x < width; x += 1) {
 				// adjust the coordinates based on the transformation
 				if (colourGrid[hm1 - iModHeight][wm1 - iDivHeight] >= aliveStart) {
 					// update the hash
 					hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+					hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 
 					// check if this matches the first hash
 					if (!checkedFirst) {
-						if (hash !== firstHash) {
+						if (hash !== firstHash1 || hash2 !== firstHash2) {
 							//console.log("gen", this.counter, "xy", x, y, "hash", hash, "rot90flipY BAILED != ", firstHash);
 
 							// bail out with non-matching hash value
-							return (firstHash + 1) | 0;
+							this.hashLower = firstHash1 + 1;
+							this.hashUpper = firstHash2 + 1;
+							return;
 						}
 
 						checkedFirst = true;
@@ -2360,14 +2432,13 @@ This file is part of LifeViewer
 
 		//console.log("gen", this.counter, "rot90flipY", hash);
 
-		return hash | 0;
+		this.hashLower = hash | 0;
+		this.hashUpper = hash2 | 0;
 	};
 
 	// get mod hash from 2-state pattern
-	/** @returns {number} */
-	Life.prototype.getModHash2 = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform, /** @type {number} */ firstHash) {
-		var	/** @type {number} */ result = 0,
-			/** @const {number} */ left = box.leftX,
+	Life.prototype.getModHash2 = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
+		var	/** @const {number} */ left = box.leftX,
 			/** @const {number} */ bottom = box.bottomY,
 			/** @const {number} */ right = box.rightX,
 			/** @const {number} */ top = box.topY,
@@ -2390,47 +2461,48 @@ This file is part of LifeViewer
 
 		switch (transform) {
 			case LifeConstants.modRot90:
-				result = this.getHash2Rot90(checkWidth, checkHeight, height, wm1, left, bottom, firstHash);
+				this.getHash2Rot90(checkWidth, checkHeight, height, wm1, left, bottom, firstHash1, firstHash2);
 				break;
 
 			case LifeConstants.modRot180:
-				result = this.getHash2Rot180(checkWidth, checkHeight, wm1, hm1, left, bottom, firstHash);
+				this.getHash2Rot180(checkWidth, checkHeight, wm1, hm1, left, bottom, firstHash1, firstHash2);
 				break;
 
 			case LifeConstants.modRot270:
-				result = this.getHash2Rot270(checkWidth, checkHeight, height, hm1, left, bottom, firstHash);
+				this.getHash2Rot270(checkWidth, checkHeight, height, hm1, left, bottom, firstHash1, firstHash2);
 				break;
 
 			case LifeConstants.modFlipX:
-				result = this.getHash2FlipX(checkWidth, checkHeight, wm1, left, bottom, firstHash);
+				this.getHash2FlipX(checkWidth, checkHeight, wm1, left, bottom, firstHash1, firstHash2);
 				break;
 
 			case LifeConstants.modFlipY:
-				result = this.getHash2FlipY(checkWidth, checkHeight, hm1, left, bottom, firstHash);
+				this.getHash2FlipY(checkWidth, checkHeight, hm1, left, bottom, firstHash1, firstHash2);
 				break;
 
 			case LifeConstants.modRot90FlipX:
-				result = this.getHash2Rot90FlipX(checkWidth, checkHeight, height, left, bottom, firstHash);
+				this.getHash2Rot90FlipX(checkWidth, checkHeight, height, left, bottom, firstHash1, firstHash2);
 				break;
 
 			case LifeConstants.modRot90FlipY:
-				result = this.getHash2Rot90FlipY(checkWidth, checkHeight, height, wm1, hm1, left, bottom, firstHash);
+				this.getHash2Rot90FlipY(checkWidth, checkHeight, height, wm1, hm1, left, bottom, firstHash1, firstHash2);
 				break;
 		}
 
 		t = performance.now() - t;
 		//console.log(t.toFixed(2) + "ms");
-
-		return result;
 	};
 
 	// get mod hash from pattern
-	/** @returns {number} */
 	Life.prototype.getModHashN = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ left = box.leftX,
 			/** @type {number} */ bottom = box.bottomY,
 			/** @type {number} */ right = box.rightX,
@@ -2446,6 +2518,7 @@ This file is part of LifeViewer
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {number} */ cx = 0,
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ iDivHeight = 0,
@@ -2472,6 +2545,7 @@ This file is part of LifeViewer
 
 		for (y = 0; y < checkHeight; y += 1) {
 			yPrime = y * primeY;
+			yPrime2 = y * primeY2;
 
 			//var rowMsg = "";
 			//var rowMsgC = "";
@@ -2514,6 +2588,7 @@ This file is part of LifeViewer
 					if (colourGrid[cy + bottom][cx + left] >= aliveStart || overlayGrid[cy + bottom][cx + left] === state6) {
 						// update the hash
 						hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+						hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 						if (overlayGrid[cy + bottom][cx + left] === state6) {
 							hash = (hash * factor) ^ 6;
 						}
@@ -2523,6 +2598,7 @@ This file is part of LifeViewer
 						state = colourGrid[cy + bottom][cx + left];
 						if (state & 1 || state === 6) {
 							hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+							hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 							if (state === 6) {
 								hash = (hash * factor) ^ state;
 							}
@@ -2563,15 +2639,18 @@ This file is part of LifeViewer
 
 								// update the hash value
 								hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+								hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 								hash = (hash * factor) ^ state;
 							} else {
 								if (this.isRuleTree || this.isExtended) {
 									// update the hash value
 									hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+									hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 									hash = (hash * factor) ^ state;
 								} else {
 									state = this.multiNumStates - state;
 									hash = (hash * factor) ^ (yPrime ^ (x * primeX));
+									hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 									hash = (hash * factor) ^ state;
 								}
 							}
@@ -2596,32 +2675,28 @@ This file is part of LifeViewer
 			//}
 		}
 
-		return hash | 0;
+		this.hashLower = hash | 0;
+		this.hashUpper = hash2 | 0;
 	};
 
 	// get mod hash
-	/** @returns {number} */
-	Life.prototype.getModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform, /** @type {boolean} */ state2, /** @type {number} */ firstHash) {
-		var	/** @type {number} */ result = 0;
-
+	Life.prototype.getModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ transform, /** @type {boolean} */ state2, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
 		if (state2) {
-			result = this.getModHash2(box, transform, firstHash);
+			this.getModHash2(box, transform, firstHash1, firstHash2);
 		} else {
-			result = this.getModHashN(box, transform);
+			this.getModHashN(box, transform);
 		}
-
-		return result;
 	};
 
 	// check for a specific mod transformation
 	/** @returns {number} */
-	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ initialMatches, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ modFactor, /** @type {number} */ firstHash) {
+	Life.prototype.checkModHashType = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHashLower, /** @type {number} */ initialHashUpper, /** @type {number} */ initialMatches, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ modFactor, /** @type {number} */ firstHashLower, /** @type {number} */ firstHashUpper) {
 		var	/** @type {number} */ modMatch = 0,
 			/** @type {boolean} */ isSpaceship = (deltaX !==0 && deltaY !== 0),
 			/** @type {number} */ trans = -1;
 
 		// get the matching hashes
-		modMatch = this.checkModHash(box, initialHash, deltaX, deltaY, firstHash);
+		modMatch = this.checkModHash(box, initialHashLower, initialHashUpper, deltaX, deltaY, firstHashLower, firstHashUpper);
 
 		// mask with the original matches
 		modMatch &= initialMatches;
@@ -2844,10 +2919,9 @@ This file is part of LifeViewer
 
 	// check mod hashes
 	/** @returns {number} */
-	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ firstHash) {
+	Life.prototype.checkModHash = function(/** @type {BoundingBox} */ box, /** @type {number} */ initialHash1, /** @type {number} */ initialHash2, /** @type {number} */ deltaX, /** @type {number} */ deltaY, /** @type {number} */ firstHash1, /** @type {number} */ firstHash2) {
 		var	/** @type {number} */ trans = 0,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !(this.isRuleTree || this.isLifeHistory)),
-			/** @type {number} */ hash = 0,
 			/** @type {number} */ i = 0,
 			/** @type {boolean} */ valid = true,
 			/** @type {Array<number>} */ checkList = [],
@@ -2863,11 +2937,11 @@ This file is part of LifeViewer
 		// check each transformation
 		for (i = 0; i < checkList.length; i += 1) {
 			trans = checkList[i];
-			hash = this.getModHash(box, trans, twoState, firstHash);
+			this.getModHash(box, trans, twoState, firstHash1, firstHash2);
 
 			//console.log(trans, LifeConstants.modTypeName[trans], hash, initialHash);
 
-			if (hash === initialHash) {
+			if (this.hashLower === initialHash1 && this.hashUpper === initialHash2) {
 				valid = true;
 
 				//console.log("found", trans, LifeConstants.modTypeName[trans]);
@@ -2895,10 +2969,9 @@ This file is part of LifeViewer
 		return result;
 	};
 
-	/** @returns {number} */
+	// get hash from pattern
 	Life.prototype.getHash = function(/** @type {BoundingBox} */ box) {
-		var	/** @type {number} */ result = 0,
-			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
+		var	/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {number} */ gridWidth = this.colourGrid[0].length,
 			/** @type {number} */ timing = performance.now();
@@ -2913,7 +2986,7 @@ This file is part of LifeViewer
 
 		if (Controller.useWASM && Controller.wasmEnableGetHash && this.view.wasmEnabled) {
 			if (this.isLifeHistory) {
-				result = WASM.getHashLifeHistory(
+				WASM.getHashLifeHistory(
 					colourGrid.whole.byteOffset | 0,
 					this.overlayGrid.whole.byteOffset | 0,
 					box.bottomY | 0,
@@ -2922,39 +2995,32 @@ This file is part of LifeViewer
 					box.rightX | 0,
 					gridWidth | 0,
 					this.aliveStart | 0,
-					(ViewConstants.stateMap[6] + 128) | 0
+					(ViewConstants.stateMap[6] + 128) | 0,
+					this.sharedBuffer.byteOffset | 0
 				);
 			} else if (twoState) {
-				result = WASM.getHashTwoState(
+				WASM.getHashTwoState(
 					colourGrid.whole.byteOffset | 0,
 					box.bottomY | 0,
 					box.leftX | 0,
 					box.topY | 0,
 					box.rightX | 0,
 					gridWidth | 0,
-					this.aliveStart | 0
+					this.aliveStart | 0,
+					this.sharedBuffer.byteOffset | 0
 				);
 			} else if (this.isSuper) {
-				result = WASM.getHashSuper(
-					colourGrid.whole.byteOffset | 0,
-					box.bottomY | 0,
-					box.leftX | 0,
-					box.topY | 0,
-					box.rightX | 0,
-					gridWidth | 0
-				);
-			} else if (this.isRuleTree || this.isPCA || this.isExtended) {
-				result = WASM.getHashRuleLoaderOrPCAOrExtended(
+				WASM.getHashSuper(
 					colourGrid.whole.byteOffset | 0,
 					box.bottomY | 0,
 					box.leftX | 0,
 					box.topY | 0,
 					box.rightX | 0,
 					gridWidth | 0,
-					this.historyStates | 0
+					this.sharedBuffer.byteOffset | 0
 				);
-			} else {
-				result = WASM.getHashGenerations(
+			} else if (this.isRuleTree || this.isPCA || this.isExtended) {
+				WASM.getHashRuleLoaderOrPCAOrExtended(
 					colourGrid.whole.byteOffset | 0,
 					box.bottomY | 0,
 					box.leftX | 0,
@@ -2962,27 +3028,47 @@ This file is part of LifeViewer
 					box.rightX | 0,
 					gridWidth | 0,
 					this.historyStates | 0,
-					this.multiNumStates | 0
+					this.sharedBuffer.byteOffset | 0
+				);
+			} else {
+				WASM.getHashGenerations(
+					colourGrid.whole.byteOffset | 0,
+					box.bottomY | 0,
+					box.leftX | 0,
+					box.topY | 0,
+					box.rightX | 0,
+					gridWidth | 0,
+					this.historyStates | 0,
+					this.multiNumStates | 0,
+					this.sharedBuffer.byteOffset | 0
 				);
 			}
+
+			//this.getHashJS(box);
+			//console.log(this.hashLower, this.hashUpper);
+			this.hashLower = this.sharedBuffer[0] | 0;
+			this.hashUpper = this.sharedBuffer[1] | 0;
+			//console.log(this.hashLower, this.hashUpper);
 		} else {
-			result = this.getHashJS(box);
+			this.getHashJS(box);
 		}
 
 		timing = performance.now() - timing;
 		if (Controller.wasmTiming) {
 			this.view.menuManager.updateTimingItem("getHash", timing, Controller.useWASM && Controller.wasmEnableGetHash && this.view.wasmEnabled);
 		}
-		return result;
 	};
 
 	// get first hash from pattern
-	/** @returns {number} */
 	Life.prototype.getFirstHash = function(/** @type {BoundingBox} */ box) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ x = box.leftX,
 			/** @type {number} */ y = box.bottomY,
 			/** @type {number} */ right = box.rightX,
@@ -2993,6 +3079,7 @@ This file is part of LifeViewer
 			/** @type {number} */ hashX = 0,
 			/** @type {number} */ hashY = 0,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
 			/** @const {number} */ aliveStart = LifeConstants.aliveStart;
@@ -3005,28 +3092,36 @@ This file is part of LifeViewer
 			yShift = cy - hashY;
 			colourRow = colourGrid[cy];
 			yPrime = yShift * primeY;
+			yPrime2 = yShift * primeY2;
 
 			for (cx = x; cx <= right; cx += 1) {
 				if (colourRow[cx] >= aliveStart) {
 
 					hash = (hash * factor) ^ (yPrime ^ ((cx - hashX) * primeX));
+					hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
+					this.hashLower = hash | 0;
+					this.hashUpper = hash2 | 0;
 					//console.log("firstHash", hash, "xy", cx - hashX, yshift);
 
-					return hash | 0;
+					return;
 				}
 			}
 		}
 
-		return hash | 0;
+		this.hashLower = hash | 0;
+		this.hashUpper = hash2 | 0;
 	};
 
 	// get hash from pattern
-	/** @returns {number} */
 	Life.prototype.getHashJS = function(/** @type {BoundingBox} */ box) {
 		var	/** @type {number} */ hash = 31415962,
 			/** @const {number} */ factor = 1000003,
 			/** @const {number} */ primeX = 19349663,
 			/** @const {number} */ primeY = 73856093,
+			/** @type {number} */ hash2 = 27182818,
+			/** @const {number} */ factor2 = 3000077,
+			/** @const {number} */ primeX2 = 60000047,
+			/** @const {number} */ primeY2 = 45230483,
 			/** @type {number} */ x = box.leftX,
 			/** @type {number} */ y = box.bottomY,
 			/** @type {number} */ right = box.rightX,
@@ -3035,6 +3130,7 @@ This file is part of LifeViewer
 			/** @type {number} */ cy = 0,
 			/** @type {number} */ yShift = 0,
 			/** @type {number} */ yPrime = 0,
+			/** @type {number} */ yPrime2 = 0,
 			/** @type {number} */ state = 0,
 			/** @type {boolean} */ twoState = (this.multiNumStates <= 2 && !this.isRuleTree),
 			/** @type {number} */ hashX = 0,
@@ -3060,7 +3156,8 @@ This file is part of LifeViewer
 
 		for (cy = y; cy <= top; cy += 1) {
 			yShift = cy - hashY;
-			yPrime = yShift * primeY;
+			yPrime = (yShift * primeY);
+			yPrime2 = (yShift * primeY2);
 
 			colourRow = colourGrid[cy];
 			if (this.isLifeHistory) {
@@ -3068,6 +3165,7 @@ This file is part of LifeViewer
 				for (cx = x; cx <= right; cx += 1) {
 					if (colourRow[cx] >= aliveStart || overlayRow[cx] === state6) {
 						hash = (hash * factor) ^ (yPrime ^ ((cx - hashX) * primeX));
+						hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
 						if (overlayRow[cx] === state6) {
 							hash = (hash * factor) ^ 6;
 						}
@@ -3077,12 +3175,14 @@ This file is part of LifeViewer
 				for (cx = x; cx <= right; cx += 1) {
 					if (colourRow[cx] >= aliveStart) {
 						hash = (hash * factor) ^ (yPrime ^ ((cx - hashX) * primeX));
+						hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
 					}
 				}
 			} else if (this.isSuper) {
 				for (cx = x; cx <= right; cx += 1) {
 					if ((colourRow[cx] & 1) || colourRow[cx] === 6) {
 						hash = (hash * factor) ^ (yPrime ^ ((cx - hashX) * primeX));
+						hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
 						if (colourRow[cx] === 6) {
 							hash = (hash * factor) ^ 6;
 						}
@@ -3095,6 +3195,7 @@ This file is part of LifeViewer
 					if (state > this.historyStates) {
 						state -= this.historyStates;
 						hash = (hash * factor) ^ (yPrime ^ ((cx - hashX) * primeX));
+						hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
 						hash = (hash * factor) ^ state;
 					}
 				}
@@ -3106,13 +3207,15 @@ This file is part of LifeViewer
 						state -= this.historyStates;
 						state = this.multiNumStates - state;
 						hash = (hash * factor) ^ (yPrime ^ ((cx - hashX) * primeX));
+						hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
 						hash = (hash * factor) ^ state;
 					}
 				}
 			}
 		}
 
-		return hash;
+		this.hashLower = hash;
+		this.hashUpper = hash2;
 	};
 
 	// get greatest common divisor
@@ -4017,6 +4120,7 @@ This file is part of LifeViewer
 	Life.prototype.drawCellPeriodTable = function(/** @type {MenuItem} */ label) {
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ j = 0,
+			/** @type {number} */ k = 0,
 			/** @type {number} */ itemNum = 0,
 			/** @type {number} */ maxItem = 0,
 			/** @type {number} */ value = 0,
@@ -4050,7 +4154,8 @@ This file is part of LifeViewer
 
 		// calculate the height of the table including the column header row
 		y = rowHeight;
-		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
+		for (k = this.popSubPeriodHelp.length - 1; k >= 0; k -= 1) {
+			i = this.view.engine.popSubPeriodHelp[k];
 			value = this.popSubPeriod[i];
 			if (value > 0 && y + startY < this.displayHeight - 80 * displayScale) {
 				y += rowHeight;
@@ -4076,7 +4181,8 @@ This file is part of LifeViewer
 			// draw the table rows
 			itemNum = 0;
 
-			for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
+			for (k = this.popSubPeriodHelp.length - 1; k >= 0; k -= 1) {
+				i = this.view.engine.popSubPeriodHelp[k];
 				value = this.popSubPeriod[i];
 				if (value > 0 && y < this.displayHeight - 80 * displayScale) {
 					if (itemNum >= (this.tableStartRow | 0)) {
@@ -4105,7 +4211,8 @@ This file is part of LifeViewer
 		maxItem = itemNum;
 		itemNum = 0;
 		offset = ((28 * displayScale) >> 1);
-		for (i = this.popSubPeriod.length - 1; i > 0; i -= 1) {
+		for (k = this.popSubPeriodHelp.length - 1; k >= 0; k -= 1) {
+			i = this.view.engine.popSubPeriodHelp[k];
 			value = this.popSubPeriod[i];
 			if (value > 0 && itemNum < maxItem) {
 				if (itemNum >= (this.tableStartRow | 0)) {
@@ -4235,6 +4342,7 @@ This file is part of LifeViewer
 			/** @type {number} */ y = 0,
 			/** @type {number} */ p = 0,
 			/** @type {number} */ s = 0,
+			/** @type {number} */ k = 0,
 			/** @type {number} */ displayScale = this.view.viewMenu.xScale,
 			/** @type {number} */ legendWidth = 50 * displayScale,
 			/** @type {number} */ rowSize = 15 * displayScale,
@@ -4314,7 +4422,8 @@ This file is part of LifeViewer
 
 		// set the box width to the longest period value or the State 6 label
 		y = 0;
-		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
+		for (k = this.popSubPeriodHelp.length - 1; k >= 0; k -= 1) {
+			x = this.popSubPeriodHelp[k];
 			p = this.popSubPeriod[x];
 			if (p > 0) {
 				if (x > y) {
@@ -4337,7 +4446,8 @@ This file is part of LifeViewer
 		// check if the legend fits in one column
 		testY = legendBorder;
 		y = 0;
-		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
+		for (k = this.popSubPeriodHelp.length - 1; k >= 0; k -= 1) {
+			x = this.popSubPeriodHelp[k];
 			p = this.popSubPeriod[x];
 			if (p > 0) {
 				if ((testY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
@@ -4394,7 +4504,8 @@ This file is part of LifeViewer
 			itemNum += 1;
 		}
 
-		for (x = this.popSubPeriod.length - 1; x > 0; x -= 1) {
+		for (k = this.popSubPeriodHelp.length - 1; k >= 0; k -= 1) {
+			x = this.popSubPeriodHelp[k];
 			p = this.popSubPeriod[x];
 			if (p > 0 && y < this.displayHeight - 2 * legendBorder * displayScale) {
 				if (itemNum >= (this.tableStartRow | 0)) {
@@ -5846,7 +5957,7 @@ This file is part of LifeViewer
 		var	/** @type {BoundingBox} */ result = new BoundingBox(this.width, this.height, 0, 0),
 			/** @type {BoundingBox} */ extent = null,
 			/** @type {number} */ i = 0,
-			/** @type {number} */ p = this.counter - period - 1,
+			/** @type {number} */ p = this.fullOscLength - period,
 			/** @type {number} */ lx = 0,
 			/** @type {number} */ by = 0,
 			/** @type {number} */ wd = 0,
@@ -5932,23 +6043,31 @@ This file is part of LifeViewer
 			/** @type {BoundingBox} */ extent = null,
 			/** @type {number} */ frameTypeMSB = 0,
 			/** @type {number} */ bitStart = 0,
-			/** @type {number} */ hash0 = 0,
+			/** @type {number} */ hash0Lower = 0,
+			/** @type {number} */ hash0Upper = 0,
 			/** @type {number} */ width0 = 0,
 			/** @type {number} */ height0 = 0,
-			/** @type {number} */ firstHash0 = 0,
-			/** @type {number} */ hash1 = 0,
+			/** @type {number} */ firstHash0Lower = 0,
+			/** @type {number} */ firstHash0Upper = 0,
+			/** @type {number} */ hash1Lower = 0,
+			/** @type {number} */ hash1Upper = 0,
 			/** @type {number} */ width1 = 0,
 			/** @type {number} */ height1 = 0,
-			/** @type {number} */ firstHash1 = 0,
-			/** @type {number} */ hash2 = 0,
+			/** @type {number} */ firstHash1Lower = 0,
+			/** @type {number} */ firstHash1Upper = 0,
+			/** @type {number} */ hash2Lower = 0,
+			/** @type {number} */ hash2Upper = 0,
 			/** @type {number} */ width2 = 0,
 			/** @type {number} */ height2 = 0,
-			/** @type {number} */ firstHash2 = 0,
+			/** @type {number} */ firstHash2Lower = 0,
+			/** @type {number} */ firstHash2Upper = 0,
 			/** @type {number} */ checkWidth = 0,
 			/** @type {number} */ checkHeight = 0,
 			/** @type {number} */ checkGenDelta = 0,
-			/** @type {number} */ checkHash = 0,
-			/** @type {number} */ checkFirst = 0,
+			/** @type {number} */ checkHashLower = 0,
+			/** @type {number} */ checkHashUpper = 0,
+			/** @type {number} */ checkFirstLower = 0,
+			/** @type {number} */ checkFirstUpper = 0,
 			/** @type {number} */ nextHeat = 0,
 			/** @type {Array<ModCheck>} */ modChecks = [],
 			/** @type {number} */ modMatch = 0,
@@ -6127,28 +6246,40 @@ This file is part of LifeViewer
 
 			// save hash for first two generations
 			if (p === 0) {
-				hash0 = this.getHash(extent);
+				this.getHash(extent);
+				hash0Lower = this.hashLower;
+				hash0Upper = this.hashUpper;
 				width0 = (extent.rightX - extent.leftX + 1);
 				height0 = (extent.topY - extent.bottomY + 1);
-				firstHash0 = this.getFirstHash(extent);
+				this.getFirstHash(extent);
+				firstHash0Lower = this.hashLower;
+				firstHash0Upper = this.hashUpper;
 
 				//console.log(p, "gen", this.counter, "hash0", hash0, "firstHash", firstHash0);
 
 			} else {
 				if (p === 1) {
-					hash1 = this.getHash(extent);
+					this.getHash(extent);
+					hash1Lower = this.hashLower;
+					hash1Upper = this.hashUpper;
 					width1 = (extent.rightX - extent.leftX + 1);
 					height1 = (extent.topY - extent.bottomY + 1);
-					firstHash1 = this.getFirstHash(extent);
+					this.getFirstHash(extent);
+					firstHash1Lower = this.hashLower;
+					firstHash1Upper = this.hashUpper;
 
 					//console.log(p, "gen", this.counter, "hash1", hash1, "firstHash", firstHash1);
 
 				} else {
-					if (p === 2 && this.isMargolus && hash0 === hash1) {
-						hash2 = this.getHash(extent);
+					if (p === 2 && this.isMargolus && hash0Lower === hash1Lower && hash0Upper === hash1Upper) {
+						this.getHash(extent);
+						hash2Lower = this.hashLower;
+						hash2Upper = this.hashUpper
 						width2 = (extent.rightX - extent.leftX + 1);
 						height2 = (extent.topY - extent.bottomY + 1);
-						firstHash2 = this.getFirstHash(extent);
+						this.getFirstHash(extent);
+						firstHash2Lower = this.hashLower;
+						firstHash2Upper = this.hashUpper;
 
 						//console.log(p, "gen", this.counter, "hash2", hash2, "firstHash", firstHash2);
 
@@ -6163,18 +6294,22 @@ This file is part of LifeViewer
 					// check if verifying
 					while (this.modValue === -1 && modChecks.length > 0 && modChecks[0].checkGen === p) {
 						// get the correct generation values
-						if (this.isMargolus && hash0 === hash1) {
+						if (this.isMargolus && hash0Lower === hash1Lower && hash0Upper === hash1Upper) {
 							checkWidth = width2;
 							checkHeight = height2;
 							checkGenDelta = 2;
-							checkHash = hash2;
-							checkFirst = firstHash2;
+							checkHashLower = hash2Lower;
+							checkHashUpper = hash2Upper;
+							checkFirstLower = firstHash2Lower;
+							checkFirstUpper = firstHash2Upper;
 						} else {
 							checkWidth = width1;
 							checkHeight = height1;
 							checkGenDelta = 1;
-							checkHash = hash1;
-							checkFirst = firstHash1
+							checkHashLower = hash1Lower;
+							checkHashUpper = hash1Upper;
+							checkFirstLower = firstHash1Lower;
+							checkFirstUpper = firstHash1Upper;
 						}
 
 						// check if the bounding box is the same size as the source
@@ -6182,7 +6317,7 @@ This file is part of LifeViewer
 							// check the source generation against this one
 							var t2 = performance.now();
 
-							this.modType = this.checkModHashType(extent, checkHash, modChecks[0].modType, deltaX, deltaY, period / (p - checkGenDelta), checkFirst);
+							this.modType = this.checkModHashType(extent, checkHashLower, checkHashUpper, modChecks[0].modType, deltaX, deltaY, period / (p - checkGenDelta), checkFirstLower, checkFirstUpper);
 
 							t2 = performance.now() - t2;
 							//console.log("checkModHashType", t2.toFixed(2) + "ms");
@@ -6213,14 +6348,14 @@ This file is part of LifeViewer
 
 								var t1 = performance.now();
 
-								modMatch = this.checkModHash(extent, hash0, deltaX, deltaY, firstHash0);
+								modMatch = this.checkModHash(extent, hash0Lower, hash0Upper, deltaX, deltaY, firstHash0Lower, firstHash0Upper);
 
 								t1 = performance.now() - t1;
 								//console.log("checkModHash", t1.toFixed(2) + "ms");
 
-								if (modMatch !== 0 && !(this.isMargolus && hash0 === hash1 && p < 2)) {
+								if (modMatch !== 0 && !(this.isMargolus && hash0Lower === hash1Lower && hash0Upper === hash1Upper && p < 2)) {
 									// potential Mod found so create verification record
-									if (this.isMargolus && hash0 === hash1) {
+									if (this.isMargolus && hash0Lower === hash1Lower && hash0Upper === hash1Upper) {
 										modChecks[modChecks.length] = new ModCheck(p + 2, modMatch);
 									} else {
 										modChecks[modChecks.length] = new ModCheck(p + 1, modMatch);
@@ -6631,7 +6766,7 @@ This file is part of LifeViewer
 			// compute Mod for spaceship
 			this.computeStrictVolatility(period, view, false, deltaXOrig, deltaYOrig);
 		} else {
-			if (period === 1 || (period === 2 && this.isMargolus && this.hashList[0] === this.hashList[1])) {
+			if (period === 1 || (period === 2 && this.isMargolus && this.hashListLower[0] === this.hashListLower[1] && this.hashListUpper[0] === this.hashListUpper[1])) {
 				type = "Still Life";
 			} else {
 				// oscillator
@@ -6852,9 +6987,10 @@ This file is part of LifeViewer
 	};
 
 	// add new identify record to short list
-	Life.prototype.addNegIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY) {
+	Life.prototype.addNegIdentifyRecord = function(/** @type {number} */ hashLower, /** @type {number} */ hashUpper, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY) {
 		// create the new record
-		this.negHashList[this.oscLength] = hash;
+		this.negHashListLower[this.oscLength] = hashLower;
+		this.negHashListUpper[this.oscLength] = hashUpper;
 		this.negGenList[this.oscLength] = this.counter;
 		this.negPopList[this.oscLength] = this.population;
 		this.negBoxList[this.oscLength << 1] = boxSize;
@@ -6862,9 +6998,10 @@ This file is part of LifeViewer
 	};
 
 	// add new identify record to full list
-	Life.prototype.addFullIdentifyRecord = function(/** @type {number} */ hash, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY) {
+	Life.prototype.addFullIdentifyRecord = function(/** @type {number} */ hashLower, /** @type {number} */ hashUpper, /** @type {number} */ boxSize, /** @type {number} */ leftX, /** @type {number} */ bottomY) {
 		// create the new record
-		this.hashList[this.fullOscLength] = hash;
+		this.hashListLower[this.fullOscLength] = hashLower;
+		this.hashListUpper[this.fullOscLength] = hashUpper;
 		this.boxList[this.fullOscLength << 1] = boxSize;
 		this.boxList[(this.fullOscLength << 1) + 1] = (leftX << 16) | bottomY;
 	};
@@ -6891,8 +7028,10 @@ This file is part of LifeViewer
 			/** @type {number} */ boxLocation = (leftX << 16) | bottomY,
 
 			// hash value of current pattern
-			/** @type {number} */ hash = 0,
-			/** @type {number} */ currentValue = 0,
+			/** @type {number} */ hashLower = 0,
+			/** @type {number} */ hashUpper = 0,
+			/** @type {number} */ currentValueLower = 0,
+			/** @type {number} */ currentValueUpper = 0,
 
 			// period
 			/** @type {number} */ period = 0,
@@ -6946,7 +7085,9 @@ This file is part of LifeViewer
 				quit = true;
 			} else {
 				// get the hash of the current pattern
-				hash = this.getHash(box);
+				this.getHash(box);
+				hashLower = this.hashLower;
+				hashUpper = this.hashUpper;
 
 				// search hash list for match
 				quitLoop = false;
@@ -6956,18 +7097,19 @@ This file is part of LifeViewer
 
 				// search the hash list
 				while (i < maxI && !quitLoop) {
-					currentValue = this.negHashList[i];
-					if (hash > currentValue) {
+					currentValueLower = this.negHashListLower[i];
+					currentValueUpper = this.negHashListUpper[i];
+					if (hashLower > currentValueLower) {
 						// hash value greater so try next
 						i += 1;
 					} else {
-						if (hash < currentValue) {
+						if (hashLower < currentValueLower) {
 							// hash value less so truncate list here
 							this.oscLength = i;
 
 							quitLoop = true;
 						} else {
-							if (hash === currentValue) {
+							if (hashLower === currentValueLower && hashUpper === currentValueUpper) {
 								j = i << 1;
 
 								// hash matched so check population and bounding box
@@ -6981,7 +7123,7 @@ This file is part of LifeViewer
 											saveResults = false;
 										} else {
 											// pattern hasn't moved
-											if (period === 1 || (period === 2 && this.isMargolus && this.negHashList[0] === this.negHashList[1])) {
+											if (period === 1 || (period === 2 && this.isMargolus && this.negHashListLower[0] === this.negHashListLower[1] && this.negHashListUpper[0] === this.negHashListUpper[1])) {
 												message = "Still Life";
 											} else {
 												message = "Oscillator period " + period;
@@ -6995,7 +7137,7 @@ This file is part of LifeViewer
 											// check if the next record is also a hash match
 											nextI = i + 1;
 
-											if (hash === this.negHashList[nextI]) {
+											if (hashLower === this.negHashListLower[nextI] && hashUpper === this.negHashListUpper[nextI]) {
 												// check if it has the same population and bounding box
 												if ((this.population === this.negPopList[nextI]) && boxSize === this.negBoxList[nextI << 1]) {
 													// check if the periods are the same
@@ -7009,6 +7151,7 @@ This file is part of LifeViewer
 
 														if (deltaX === deltaX2 && deltaY === deltaY2) {
 															period = this.counter - this.negGenList[nextI];
+															message = this.spaceshipSpeed(period, deltaX, deltaY);
 															saveResults = true;
 														}
 													}
@@ -7036,6 +7179,9 @@ This file is part of LifeViewer
 									// false positive so try next
 									i += 1;
 								}
+							} else {
+								// try next
+								i += 1;
 							}
 						}
 					}
@@ -7044,12 +7190,12 @@ This file is part of LifeViewer
 				// add to the lists
 				if (!quit) {
 					// create the new records
-					this.addNegIdentifyRecord(hash, boxSize, leftX, bottomY);
+					this.addNegIdentifyRecord(hashLower, hashUpper, boxSize, leftX, bottomY);
 
 					// check if the full buffer is full
 					if (this.fullOscLength >= 0) {
 						// add the record
-						this.addFullIdentifyRecord(hash, boxSize, leftX, bottomY);
+						this.addFullIdentifyRecord(hashLower, hashUpper, boxSize, leftX, bottomY);
 
 						// see if the buffer is now full
 						this.fullOscLength += 1;

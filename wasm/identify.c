@@ -373,19 +373,25 @@ void updateCellCountsSuperOrRuleTree(
 
 EMSCRIPTEN_KEEPALIVE
 // create a hash from the colour grid for two state algo
-uint32_t getHashTwoState(
+void getHashTwoState(
 	uint8_t *const colourGrid,
 	const uint32_t bottom,
 	const uint32_t left,
 	const uint32_t top,
 	const uint32_t right,
 	const int32_t colourGridWidth,
-	const int32_t aliveStart
+	const int32_t aliveStart,
+	uint32_t *const shared
 ) {
-	const uint32_t factor = 1000003;
-	const uint32_t primeX = 19349663;
-	const uint32_t primeY = 73856093;
-	uint32_t hash = 31415962;
+	const uint64_t factor = 1000003;
+	const uint64_t primeX = 19349663;
+	const uint64_t primeY = 73856093;
+	uint64_t hash = 31415962;
+
+	const uint64_t factor2 = 3000077;
+	const uint64_t primeX2 = 60000047;
+	const uint64_t primeY2 = 45230483;
+	uint64_t hash2 = 27182818;
 
 	// alive cells
 	const v128_t alive = wasm_u8x16_splat(aliveStart);
@@ -403,7 +409,8 @@ uint32_t getHashTwoState(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
-		uint32_t yPrime = yshift * primeY;
+		uint64_t yPrime = yshift * primeY;
+		uint64_t yPrime2 = yshift * primeY2;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -422,6 +429,7 @@ uint32_t getHashTwoState(
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
 				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
+				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				mask &= (mask - 1);
 			}
 
@@ -433,24 +441,32 @@ uint32_t getHashTwoState(
 		colourRow += rowOffset;
 	}
 
-	return hash;
+	// return data to JS
+	shared[0] = (uint32_t)hash;
+	shared[1] = (uint32_t)hash2;
 }
 
 
 EMSCRIPTEN_KEEPALIVE
 // create a hash from the colour grid for Super algo
-uint32_t getHashSuper(
+void getHashSuper(
 	uint8_t *const colourGrid,
 	const uint32_t bottom,
 	const uint32_t left,
 	const uint32_t top,
 	const uint32_t right,
-	const int32_t colourGridWidth
+	const int32_t colourGridWidth,
+	uint32_t *const shared
 ) {
-	const uint32_t factor = 1000003;
-	const uint32_t primeX = 19349663;
-	const uint32_t primeY = 73856093;
-	uint32_t hash = 31415962;
+	const uint64_t factor = 1000003;
+	const uint64_t primeX = 19349663;
+	const uint64_t primeY = 73856093;
+	uint64_t hash = 31415962;
+
+	const uint64_t factor2 = 3000077;
+	const uint64_t primeX2 = 60000047;
+	const uint64_t primeY2 = 45230483;
+	uint64_t hash2 = 27182818;
 
 	// alive cells
 	const v128_t alive = wasm_u8x16_splat(1);
@@ -472,6 +488,7 @@ uint32_t getHashSuper(
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
 		uint32_t yPrime = yshift * primeY;
+		uint32_t yPrime2 = yshift * primeY2;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -497,6 +514,7 @@ uint32_t getHashSuper(
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
 				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
+				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				if (*(colourRow + i) == 6) {
 					hash = (hash * factor) ^ 6;
 				}
@@ -511,13 +529,15 @@ uint32_t getHashSuper(
 		colourRow += rowOffset;
 	}
 
-	return hash;
+	// return data to JS
+	shared[0] = hash;
+	shared[1] = hash2;
 }
 
 
 EMSCRIPTEN_KEEPALIVE
 // create a hash from the colour grid for [R]History algo
-uint32_t getHashLifeHistory(
+void getHashLifeHistory(
 	uint8_t *const colourGrid,
 	uint8_t *const overlayGrid,
 	const uint32_t bottom,
@@ -526,12 +546,18 @@ uint32_t getHashLifeHistory(
 	const uint32_t right,
 	const int32_t colourGridWidth,
 	const int32_t aliveStart,
-	const int32_t state6
+	const int32_t state6,
+	uint32_t *const shared
 ) {
-	const uint32_t factor = 1000003;
-	const uint32_t primeX = 19349663;
-	const uint32_t primeY = 73856093;
-	uint32_t hash = 31415962;
+	const uint64_t factor = 1000003;
+	const uint64_t primeX = 19349663;
+	const uint64_t primeY = 73856093;
+	uint64_t hash = 31415962;
+
+	const uint64_t factor2 = 3000077;
+	const uint64_t primeX2 = 60000047;
+	const uint64_t primeY2 = 45230483;
+	uint64_t hash2 = 27182818;
 
 	// alive cells
 	const v128_t alive = wasm_u8x16_splat(aliveStart);
@@ -553,7 +579,8 @@ uint32_t getHashLifeHistory(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
-		uint32_t yPrime = yshift * primeY;
+		uint64_t yPrime = yshift * primeY;
+		uint64_t yPrime2 = yshift * primeY2;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -579,6 +606,7 @@ uint32_t getHashLifeHistory(
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
 				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
+				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				if (*(overlayRow + i) == state6) {
 					hash = (hash * factor) ^ 6;
 				}
@@ -594,25 +622,33 @@ uint32_t getHashLifeHistory(
 		overlayRow += rowOffset;
 	}
 
-	return hash;
+	// return data to JS
+	shared[0] = hash;
+	shared[1] = hash2;
 }
 
 
 EMSCRIPTEN_KEEPALIVE
 // create a hash from the colour grid for RuleLoader, PCA or Extended
-uint32_t getHashRuleLoaderOrPCAOrExtended(
+void getHashRuleLoaderOrPCAOrExtended(
 	uint8_t *const colourGrid,
 	const uint32_t bottom,
 	const uint32_t left,
 	const uint32_t top,
 	const uint32_t right,
 	const int32_t colourGridWidth,
-	const uint32_t historyStates
+	const uint32_t historyStates,
+	uint32_t *const shared
 ) {
-	const uint32_t factor = 1000003;
-	const uint32_t primeX = 19349663;
-	const uint32_t primeY = 73856093;
-	uint32_t hash = 31415962;
+	const uint64_t factor = 1000003;
+	const uint64_t primeX = 19349663;
+	const uint64_t primeY = 73856093;
+	uint64_t hash = 31415962;
+
+	const uint64_t factor2 = 3000077;
+	const uint64_t primeX2 = 60000047;
+	const uint64_t primeY2 = 45230483;
+	uint64_t hash2 = 27182818;
 
 	// alive cells offset
 	const v128_t history = wasm_u8x16_splat(historyStates);
@@ -630,7 +666,8 @@ uint32_t getHashRuleLoaderOrPCAOrExtended(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
-		uint32_t yPrime = yshift * primeY;
+		uint64_t yPrime = yshift * primeY;
+		uint64_t yPrime2 = yshift * primeY2;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -649,6 +686,7 @@ uint32_t getHashRuleLoaderOrPCAOrExtended(
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
 				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
+				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				hash = (hash * factor) ^ (*(colourRow + i) - historyStates);
 				mask &= (mask - 1);
 			}
@@ -661,12 +699,14 @@ uint32_t getHashRuleLoaderOrPCAOrExtended(
 		colourRow += rowOffset;
 	}
 
-	return hash;
+	// return data to JS
+	shared[0] = hash;
+	shared[1] = hash2;
 }
 
 EMSCRIPTEN_KEEPALIVE
 // create a hash from the colour grid for Generations
-uint32_t getHashGenerations(
+void getHashGenerations(
 	uint8_t *const colourGrid,
 	const uint32_t bottom,
 	const uint32_t left,
@@ -674,12 +714,18 @@ uint32_t getHashGenerations(
 	const uint32_t right,
 	const int32_t colourGridWidth,
 	const uint32_t historyStates,
-	const uint32_t numStates
+	const uint32_t numStates,
+	uint32_t *const shared
 ) {
-	const uint32_t factor = 1000003;
-	const uint32_t primeX = 19349663;
-	const uint32_t primeY = 73856093;
-	uint32_t hash = 31415962;
+	const uint64_t factor = 1000003;
+	const uint64_t primeX = 19349663;
+	const uint64_t primeY = 73856093;
+	uint64_t hash = 31415962;
+
+	const uint64_t factor2 = 3000077;
+	const uint64_t primeX2 = 60000047;
+	const uint64_t primeY2 = 45230483;
+	uint64_t hash2 = 27182818;
 
 	// alive cells offset
 	const v128_t history = wasm_u8x16_splat(historyStates);
@@ -697,7 +743,8 @@ uint32_t getHashGenerations(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
-		uint32_t yPrime = yshift * primeY;
+		uint64_t yPrime = yshift * primeY;
+		uint64_t yPrime2 = yshift * primeY2;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -716,6 +763,7 @@ uint32_t getHashGenerations(
 			while (mask) {
 				uint32_t i = __builtin_ctz(mask);
 				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
+				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				hash = (hash * factor) ^ (numStates - (*(colourRow + i) - historyStates));
 				mask &= (mask - 1);
 			}
@@ -728,5 +776,7 @@ uint32_t getHashGenerations(
 		colourRow += rowOffset;
 	}
 
-	return hash;
+	// return data to JS
+	shared[0] = hash;
+	shared[1] = hash2;
 }

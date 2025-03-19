@@ -20,7 +20,9 @@ This file is part of LifeViewer
  */
 
 	// key processor
-	var KeyProcessor = {};
+	var KeyProcessor = {
+		/** @type {boolean} */ shift : false
+	};
 
 	// process keys in go to generation mode
 	/** @returns {boolean} */
@@ -241,6 +243,9 @@ This file is part of LifeViewer
 		if (metaKey) {
 			ctrlKey = true;
 		}
+
+		// save shift status
+		KeyProcessor.shift = shiftKey;
 
 		// check if gui enabled
 		if (me.noGUI) {

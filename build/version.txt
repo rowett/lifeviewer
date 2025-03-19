@@ -1,3 +1,17 @@
+Build 1291
+- improved hash algorithm for Identify further to reduce hash collisions for very high period oscillators
+- fixed stuttering at high T values
+
+Build 1290
+- fixed missing Spaceship title
+- don't show window colours for embedded Viewers
+
+Build 1289
+- improved Cell Period Map and Cell Period Table performance
+
+Build 1288
+- fixed Identify issue when started at T>0
+
 Build 1287
 - improved hash algorithm in Identify to reduce chance of hash collisions
 - added one decimal place to gps display after GoToGen benchmark
