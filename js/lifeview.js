@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1296,
+		/** @const {number} */ versionBuild : 1297,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -17150,6 +17150,7 @@ This file is part of LifeViewer
 
 				// start identification
 				me.menuManager.notification.notify("Identifying...", 15, 5184000, 15, false);
+				me.diedGeneration = -1;
 
 				// create undo point
 				me.afterEdit("");

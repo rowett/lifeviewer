@@ -1,3 +1,7 @@
+Build 1297
+- fixed Identify not reporting all cells dead after first time
+- fixed Fit Zoom ignoring [R]History cells with Hexagonal grid
+
 Build 1296
 - fixed Identify cells killed persisting
 - phase 1 of Identify Snapshots

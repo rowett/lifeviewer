@@ -48655,6 +48655,8 @@ This file is part of LifeViewer
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
 			/** @type {Array<Uint8Array>} */ colourGrid = this.colourGrid,
 			/** @type {Uint8Array} */ colourRow = null,
+			/** @type {Array<Uint8Array>} */ overlayGrid = this.overlayGrid,
+			/** @type {Uint8Array} */ overlayRow = null,
 			/** @type {number} */ zoom = 1,
 			/** @type {number} */ newX = 0,
 			/** @type {number} */ newY = 0,
@@ -48792,18 +48794,40 @@ This file is part of LifeViewer
 				if (historyFit) {
 					targetState = 1;
 				}
-				for (y = bottomY; y <= topY; y += 1) {
-					colourRow = colourGrid[y];
-					for (x = leftX; x <= rightX; x += 1) {
-						state = colourRow[x];
-						if (state >= targetState) {
-							count += 1;
-							hexX = x - y / 2;
-							if (hexX < minX) {
-								minX = hexX;
+
+				// check for [R]History
+				if (this.isLifeHistory) {
+					for (y = bottomY; y <= topY; y += 1) {
+						colourRow = colourGrid[y];
+						overlayRow = overlayGrid[y];
+						for (x = leftX; x <= rightX; x += 1) {
+							state = colourRow[x];
+							if (state >= targetState || overlayRow[x] > 0) {
+								count += 1;
+								hexX = x - y / 2;
+								if (hexX < minX) {
+									minX = hexX;
+								}
+								if (hexX > maxX) {
+									maxX = hexX;
+								}
 							}
-							if (hexX > maxX) {
-								maxX = hexX;
+						}
+					}
+				} else {
+					for (y = bottomY; y <= topY; y += 1) {
+						colourRow = colourGrid[y];
+						for (x = leftX; x <= rightX; x += 1) {
+							state = colourRow[x];
+							if (state >= targetState) {
+								count += 1;
+								hexX = x - y / 2;
+								if (hexX < minX) {
+									minX = hexX;
+								}
+								if (hexX > maxX) {
+									maxX = hexX;
+								}
 							}
 						}
 					}
