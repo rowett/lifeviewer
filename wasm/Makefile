@@ -5,8 +5,7 @@
 CC = emcc
 
 # C flags (no main entry point, instrinsic SIMD, optimize)
-#CFLAGS = --no-entry -msimd128 -O3 -Wall -Wextra
-CFLAGS = --no-entry -msimd128 -Wall -Wextra
+CFLAGS = --no-entry -msimd128 -O3 -Wall -Wextra
 
 # WebAssembly settings (heap size, standalone output, exported functions)
 SETTINGS = -s INITIAL_MEMORY=1792MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="[ \

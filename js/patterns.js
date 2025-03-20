@@ -10224,6 +10224,54 @@ This file is part of LifeViewer
 				// save pattern definition if valid
 				if (pattern.manager.failureReason === "") {
 					pattern.manager.ruleLoaderDefinition = reader.getStringSection(startIndex, endIndex);
+
+					// create canonical bounded grid name
+					if (pattern.gridType !== -1) {
+						// add grid type
+						pattern.boundedGridDef = ":" + this.boundedGridTypes[pattern.gridType].toUpperCase();
+
+						// add width
+						pattern.boundedGridDef += pattern.gridWidth;
+
+						// check for sphere axis
+						if (!pattern.gridSphereAxisTopLeft) {
+							pattern.boundedGridDef += "*";
+						}
+
+						// check for horizontal twist
+						if (pattern.gridHorizontalTwist) {
+							pattern.boundedGridDef += "*";
+						}
+
+						// check for horizontal shift
+						if (pattern.gridHorizontalShift) {
+							if (pattern.gridHorizontalShift < 0) {
+								pattern.boundedGridDef += pattern.gridHorizontalShift;
+							} else {
+								pattern.boundedGridDef += "+" + pattern.gridHorizontalShift;
+							}
+						}
+
+						// add more if the grid type is not Sphere
+						if (pattern.gridType !== 4) {
+							// add the height
+							pattern.boundedGridDef += "," + pattern.gridHeight;
+
+							// check for horizontal twist
+							if (pattern.gridVerticalTwist) {
+								pattern.boundedGridDef += "*";
+							}
+
+							// check for horizontal shift
+							if (pattern.gridVerticalShift) {
+								if (pattern.gridVerticalShift < 0) {
+									pattern.boundedGridDef += pattern.gridVerticalShift;
+								} else {
+									pattern.boundedGridDef += "+" + pattern.gridVerticalShift;
+								}
+							}
+						}
+					}
 				}
 			}
 		}

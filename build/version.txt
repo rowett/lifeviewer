@@ -1,3 +1,11 @@
+Build 1294
+- fixed Selection position with CXRLE Pos and specified size different than actual size
+- fixed RuleLoader rules not creating canonical Bounded Grid definitions
+
+Build 1293
+- fixed saving empty patterns
+- fixed patterns with embedded @RULEs failing to Change Rule after an invalid pattern
+
 Build 1292
 - increased generation display up to 1T
 - increased Go To Gen / STARTFROM generation limit

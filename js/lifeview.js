@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1292,
+		/** @const {number} */ versionBuild : 1294,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -10268,6 +10268,23 @@ This file is part of LifeViewer
 			/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
 			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1);
 
+		// adjust in case specified is different than actual size
+		if (this.engine.boundedGridType !== -1) {
+			if (this.posDefined) {
+				xOff -= Math.floor((this.specifiedWidth - this.patternWidth) / 2);
+				yOff -= Math.floor((this.specifiedHeight - this.patternHeight) / 2);
+				if (((this.patternWidth & 1) === 1) && ((this.specifiedWidth & 1) === 0)) {
+					xOff -= 1;
+				}
+				if (((this.patternHeight & 1) === 1) && ((this.specifiedHeight & 1) === 0)) {
+					yOff -= 1;
+				}
+			} else {
+				xOff = this.panX;
+				yOff = this.panY;
+			}
+		}
+
 		// adjust current state if generations style
 		if (this.engine.multiNumStates > 2 && !(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper|| this.engine.isExtended)) {
 			if (replace > 0) {
@@ -14071,9 +14088,20 @@ This file is part of LifeViewer
 			// check for selection
 			if (me.isSelection) {
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-					xOff = me.panX;
-					yOff = me.panY;
+				if (me.engine.boundedGridType !== -1) {
+					if (me.posDefined) {
+						xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+						yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+						if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+							xOff -= 1;
+						}
+						if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+							yOff -= 1;
+						}
+					} else {
+						xOff = me.panX;
+						yOff = me.panY;
+					}
 				}
 
 				if (x1 > x2) {
@@ -14145,9 +14173,20 @@ This file is part of LifeViewer
 			// check for selection
 			if (me.isSelection) {
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-					xOff = me.panX;
-					yOff = me.panY;
+				if (me.engine.boundedGridType !== -1) {
+					if (me.posDefined) {
+						xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+						yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+						if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+							xOff -= 1;
+						}
+						if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+							yOff -= 1;
+						}
+					} else {
+						xOff = me.panX;
+						yOff = me.panY;
+					}
 				}
 
 				if (x1 > x2) {
@@ -14273,10 +14312,21 @@ This file is part of LifeViewer
 			/** @type {number} */ width = 0,
 			/** @type {number} */ height = 0;
 
-		// check for bounded grid
-		if (this.engine.boundedGridType !== -1 && !this.posDefined) {
-			xOff = this.panX;
-			yOff = this.panY;
+		// adjust in case specified is different than actual size
+		if (this.engine.boundedGridType !== -1) {
+			if (this.posDefined) {
+				xOff -= Math.floor((this.specifiedWidth - this.patternWidth) / 2);
+				yOff -= Math.floor((this.specifiedHeight - this.patternHeight) / 2);
+				if (((this.patternWidth & 1) === 1) && ((this.specifiedWidth & 1) === 0)) {
+					xOff -= 1;
+				}
+				if (((this.patternHeight & 1) === 1) && ((this.specifiedHeight & 1) === 0)) {
+					yOff -= 1;
+				}
+			} else {
+				xOff = this.panX;
+				yOff = this.panY;
+			}
 		}
 
 		// check for empty population or not marking undo
@@ -14405,9 +14455,20 @@ This file is part of LifeViewer
 			height = (y2 - y1 + 1);
 
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-				xOff = me.panX;
-				yOff = me.panY;
+			if (me.engine.boundedGridType !== -1) {
+				if (me.posDefined) {
+					xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+					yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+					if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+						xOff -= 1;
+					}
+					if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+						yOff -= 1;
+					}
+				} else {
+					xOff = me.panX;
+					yOff = me.panY;
+				}
 			}
 
 			// allocate the buffer
@@ -14497,7 +14558,7 @@ This file is part of LifeViewer
 			// copy to the standard clipboard
 			if (me.isSelection) {
 				me.copySelection(me, me.currentPasteBuffer);
-				if (!me.syncNotified) {
+				if (!me.syncNotified && me.copySyncExternal) {
 					me.syncNotified = true;
 					me.menuManager.notification.notify("Disable Sync for faster internal clipboard", 15, 360, 15, false);
 				}
@@ -14799,9 +14860,26 @@ This file is part of LifeViewer
 			/** @type {number} */ count = 0,
 			/** @type {number} */ states = me.engine.multiNumStates,
 			/** @type {boolean} */ invertForGenerations = (states > 2 && !(me.engine.isNone || me.engine.isPCA || me.engine.isRuleTree || me.engine.isSuper || me.engine.isExtended)),
-			/** @type {number} */ xOff = me.panX - me.xOffset,
-			/** @type {number} */ yOff = me.panY - me.yOffset,
+			/** @type {number} */ xOff = (this.engine.width >> 1) - (this.patternWidth >> 1) + (this.xOffset << 1),
+			/** @type {number} */ yOff = (this.engine.height >> 1) - (this.patternHeight >> 1) + (this.yOffset << 1),
 			/** @type {Uint8Array} */ buffer = null;
+
+		// adjust in case specified is different than actual size
+		if (me.engine.boundedGridType !== -1) {
+			if (me.posDefined) {
+				xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+				yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+				if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+					xOff -= 1;
+				}
+				if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+					yOff -= 1;
+				}
+			} else {
+				xOff = me.panX;
+				yOff = me.panY;
+			}
+		}
 
 		if (me.isSelection) {
 			// order selection
@@ -14819,17 +14897,6 @@ This file is part of LifeViewer
 			// compute width and height of selection
 			width = (x2 - x1 + 1);
 			height = (y2 - y1 + 1);
-
-			// adjust if CXRLE Pos defined
-			if (me.posDefined) {
-				if (me.engine.boundedGridType !== -1) {
-					xOff += me.posXOffset - x1;
-					yOff += me.posYOffset - y1;
-				} else {
-					xOff += me.posXOffset * 2;
-					yOff += me.posYOffset * 2;
-				}
-			}
 
 			// allocate the buffer
 			buffer = /** @type {!Uint8Array} */ (me.engine.allocator.allocate(Type.Uint8, width * height, "View.pasteBuffer" + number, false));
@@ -14964,9 +15031,20 @@ This file is part of LifeViewer
 				height = (y2 - y1 + 1);
 
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-					xOff = me.panX;
-					yOff = me.panY;
+				if (me.engine.boundedGridType !== -1) {
+					if (me.posDefined) {
+						xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+						yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+						if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+							xOff -= 1;
+						}
+						if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+							yOff -= 1;
+						}
+					} else {
+						xOff = me.panX;
+						yOff = me.panY;
+					}
 				}
 
 				// copy selection into temporary buffer
@@ -15240,9 +15318,20 @@ This file is part of LifeViewer
 				height = topY - bottomY + 1;
 
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-					xOff = me.panX;
-					yOff = me.panY;
+				if (me.engine.boundedGridType !== -1) {
+					if (me.posDefined) {
+						xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+						yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+						if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+							xOff -= 1;
+						}
+						if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+							yOff -= 1;
+						}
+					} else {
+						xOff = me.panX;
+						yOff = me.panY;
+					}
 				}
 
 				// use bounded grid if defined
@@ -15296,9 +15385,20 @@ This file is part of LifeViewer
 					height = topY - bottomY + 1;
 
 					// adjust in case specified is different than actual size
-					if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-						xOff = me.panX;
-						yOff = me.panY;
+					if (me.engine.boundedGridType !== -1) {
+						if (me.posDefined) {
+							xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+							yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+							if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+								xOff -= 1;
+							}
+							if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+								yOff -= 1;
+							}
+						} else {
+							xOff = me.panX;
+							yOff = me.panY;
+						}
 					}
 
 					// and then check top right cell with offset
@@ -15328,9 +15428,20 @@ This file is part of LifeViewer
 					height = topY - bottomY + 1;
 
 					// adjust in case specified is different than actual size
-					if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-						xOff = me.panX;
-						yOff = me.panY;
+					if (me.engine.boundedGridType !== -1) {
+						if (me.posDefined) {
+							xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+							yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+							if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+								xOff -= 1;
+							}
+							if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+								yOff -= 1;
+							}
+						} else {
+							xOff = me.panX;
+							yOff = me.panY;
+						}
 					}
 				}
 
@@ -15647,6 +15758,23 @@ This file is part of LifeViewer
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0;
 
+		// adjust in case specified is different than actual size
+		if (this.engine.boundedGridType !== -1) {
+			if (this.posDefined) {
+				xOff -= Math.floor((this.specifiedWidth - this.patternWidth) / 2);
+				yOff -= Math.floor((this.specifiedHeight - this.patternHeight) / 2);
+				if (((this.patternWidth & 1) === 1) && ((this.specifiedWidth & 1) === 0)) {
+					xOff -= 1;
+				}
+				if (((this.patternHeight & 1) === 1) && ((this.specifiedHeight & 1) === 0)) {
+					yOff -= 1;
+				}
+			} else {
+				xOff = this.panX;
+				yOff = this.panY;
+			}
+		}
+
 		// check for copy buffer
 		if (this.pasteBuffers[this.currentPasteBuffer] !== null) {
 			// check for paste to selection
@@ -15833,9 +15961,20 @@ This file is part of LifeViewer
 			}
 
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-				xOff = me.panX;
-				yOff = me.panY;
+			if (me.engine.boundedGridType !== -1) {
+				if (me.posDefined) {
+					xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+					yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+					if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+						xOff -= 1;
+					}
+					if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+						yOff -= 1;
+					}
+				} else {
+					xOff = me.panX;
+					yOff = me.panY;
+				}
 			}
 
 			// draw random cells
@@ -15987,9 +16126,20 @@ This file is part of LifeViewer
 			}
 
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-				xOff = me.panX;
-				yOff = me.panY;
+			if (me.engine.boundedGridType !== -1) {
+				if (me.posDefined) {
+					xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+					yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+					if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+						xOff -= 1;
+					}
+					if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+						yOff -= 1;
+					}
+				} else {
+					xOff = me.panX;
+					yOff = me.panY;
+				}
 			}
 
 			// allocate the row
@@ -16101,9 +16251,20 @@ This file is part of LifeViewer
 			}
 
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-				xOff = me.panX;
-				yOff = me.panY;
+			if (me.engine.boundedGridType !== -1) {
+				if (me.posDefined) {
+					xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+					yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+					if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+						xOff -= 1;
+					}
+					if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+						yOff -= 1;
+					}
+				} else {
+					xOff = me.panX;
+					yOff = me.panY;
+				}
 			}
 
 			// allocate the row
@@ -16438,9 +16599,20 @@ This file is part of LifeViewer
 		// check for selection
 		if (me.isSelection) {
 			// adjust in case specified is different than actual size
-			if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-				xOff = me.panX;
-				yOff = me.panY;
+			if (me.engine.boundedGridType !== -1) {
+				if (me.posDefined) {
+					xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+					yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+					if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+						xOff -= 1;
+					}
+					if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+						yOff -= 1;
+					}
+				} else {
+					xOff = me.panX;
+					yOff = me.panY;
+				}
 			}
 
 			if (x1 > x2) {
@@ -16505,9 +16677,20 @@ This file is part of LifeViewer
 					yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 					// adjust in case specified is different than actual size
-					if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-						xOff = me.panX;
-						yOff = me.panY;
+					if (me.engine.boundedGridType !== -1) {
+						if (me.posDefined) {
+							xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+							yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+							if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+								xOff -= 1;
+							}
+							if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+								yOff -= 1;
+							}
+						} else {
+							xOff = me.panX;
+							yOff = me.panY;
+						}
 					}
 
 				}
@@ -16568,9 +16751,20 @@ This file is part of LifeViewer
 				yOff = (me.engine.height >> 1) - (me.patternHeight >> 1) + (me.yOffset << 1);
 
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-					xOff = me.panX;
-					yOff = me.panY;
+				if (me.engine.boundedGridType !== -1) {
+					if (me.posDefined) {
+						xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+						yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+						if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+							xOff -= 1;
+						}
+						if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+							yOff -= 1;
+						}
+					} else {
+						xOff = me.panX;
+						yOff = me.panY;
+					}
 				}
 
 				// write the cells to their new positions
@@ -16763,9 +16957,20 @@ This file is part of LifeViewer
 				}
 
 				// adjust in case specified is different than actual size
-				if (me.engine.boundedGridType !== -1 && !me.posDefined) {
-					xOff = me.panX;
-					yOff = me.panY;
+				if (me.engine.boundedGridType !== -1) {
+					if (me.posDefined) {
+						xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+						yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+						if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+							xOff -= 1;
+						}
+						if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+							yOff -= 1;
+						}
+					} else {
+						xOff = me.panX;
+						yOff = me.panY;
+					}
 				}
 
 				// invert cells in selection
@@ -17821,6 +18026,10 @@ This file is part of LifeViewer
 		// don't use alias names since it makes it less compatible with other CA simulators
 		var	/** @type {string} */ rle = "";
 		
+		// shrink the bounding box to fit the pattern
+		me.engine.shrinkNeeded = true;
+		me.engine.doShrink();
+
 		// get the pattern as an RLE string
 		rle = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
 
@@ -19895,7 +20104,7 @@ This file is part of LifeViewer
 		this.posDefined = false;
 		this.posXOffset = 0;
 		this.posYOffset = 0;
-		this.patternRuleName = "";
+		//this.patternRuleName = "";
 		this.patternAliasName = "";
 		this.patternBoundedGridDef = "";
 		this.patternName = "";
@@ -20260,6 +20469,13 @@ This file is part of LifeViewer
 
 		// clear icons
 		me.engine.ruleTableIcons = null;
+
+		// save pattern info in case there was a RuleLoader definition in the comments so if ChangeRule is used it gets appended
+		if (pattern) {
+			me.patternRuleName = pattern.ruleName;
+			me.patternBoundedGridDef = pattern.boundedGridDef;
+			me.engine.afterTitle = pattern.afterTitle;
+		}
 
 		// check for illegal states in RuleTable
 		if (pattern && (pattern.ruleTableOutput !== null || pattern.ruleTreeStates !== -1)) {
