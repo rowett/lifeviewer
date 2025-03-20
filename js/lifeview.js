@@ -5542,7 +5542,7 @@ This file is part of LifeViewer
 		if (value >= 1000000000000) {
 			result = "999B+";
 		} else {
-			// check for hundres of billions
+			// check for hundreds of billions
 			if (value >= 100000000000) {
 				result = ((value / 1000000000) | 0) + "B";
 			} else {
