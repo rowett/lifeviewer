@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1294,
+		/** @const {number} */ versionBuild : 1296,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4354,7 +4354,12 @@ This file is part of LifeViewer
 	/** @returns {number} */
 	View.prototype.setStateWithCheck = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ state, /** @type {boolean} */ deadZero) {
 		var	/** @type {number} */ result = 0,
-			/** @type {Array} */ checkGridResult = [];
+			/** @type {Array} */ checkGridResult = [],
+			/** @type {number} */ boxOffset = (this.engine.isMargolus ? -1 : 0),
+			/** @type {number} */ leftX = Math.round((this.engine.width - this.engine.boundedGridWidth) / 2) + boxOffset,
+			/** @type {number} */ bottomY = Math.round((this.engine.height - this.engine.boundedGridHeight) / 2) + boxOffset,
+			/** @type {number} */ rightX = leftX + this.engine.boundedGridWidth - 1,
+			/** @type {number} */ topY = bottomY + this.engine.boundedGridHeight - 1,
 
 		// check if the cell is on the grid
 		checkGridResult = this.cellOnGrid(x, y);
@@ -4363,8 +4368,26 @@ This file is part of LifeViewer
 			x = checkGridResult[1];
 			y = checkGridResult[2];
 
-			// draw the cell
-			result = this.engine.setState(x, y, state, deadZero);
+			// check for bounded grid cylinders
+			if (this.engine.boundedGridType !== -1) {
+				if (this.engine.boundedGridWidth === 0) {
+					leftX = 0;
+					rightX = this.engine.width - 1;
+				}
+				if (this.engine.boundedGridHeight === 0) {
+					bottomY = 0;
+					topY = this.engine.height - 1;
+				}
+	
+				// check the coordinates are within the bounded grid
+				if (x >= leftX && x <= rightX && y >= bottomY && y <= topY) {
+					// draw the cell
+					result = this.engine.setState(x, y, state, deadZero);
+				}
+			} else {
+				// draw the cell
+				result = this.engine.setState(x, y, state, deadZero);
+			}
 		}
 
 		return result;
@@ -7018,7 +7041,7 @@ This file is part of LifeViewer
 				if ((me.loopGeneration !== -1) && (me.engine.counter >= me.loopGeneration) && !me.loopDisabled) {
 					// save elapsed time up to the loop generation
 					for (i = 1; i <= stepsTaken; i += 1) {
-						me.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsTaken);
+						me.saveElapsedTime(timeSinceLastUpdate, stepsTaken);
 					}
 
 					// reset
@@ -7048,7 +7071,7 @@ This file is part of LifeViewer
 			// save elapsed time for each step actually taken
 			for (i = 1; i <= stepsTaken; i += 1) {
 				// add the time increment as if all steps could be taken (time will slow when throttled)
-				me.saveElapsedTime(currentGen + i, timeSinceLastUpdate, stepsToTake);
+				me.saveElapsedTime(timeSinceLastUpdate, stepsToTake);
 			}
 
 			// check if life just stopped
@@ -8153,7 +8176,7 @@ This file is part of LifeViewer
 	};
 
 	// save elapsed time at generation
-	View.prototype.saveElapsedTime = function(/** @type {number} */ counter, /** @type {number} */ timeSinceLastUpdate, /** @type {number} */ gensPerStep) {
+	View.prototype.saveElapsedTime = function(/** @type {number} */ timeSinceLastUpdate, /** @type {number} */ gensPerStep) {
 		this.elapsedTime += (timeSinceLastUpdate / gensPerStep);
 	};
 
@@ -8212,6 +8235,33 @@ This file is part of LifeViewer
 		} else {
 			// normal case so process now
 			this.engine.createRuleLoaderLookup();
+		}
+	};
+
+	// save identify snapshot
+	View.prototype.saveIdentifySnapshot = function() {
+		var	/** @type {string} */ rle = "#C Identify Snapshot\n#CXRLE Gen=" + this.engine.counter + "\n",
+			/** @type {Object} */ copyElement = document.getElementById("ViewerCopy"),
+			/** @type {number} */ i = 0;
+
+		// check if a copy text box exists
+		if (copyElement) {
+			// output the identify snapshot
+			for (i = 0; i < this.engine.oscLength; i += 1) {
+				rle += "#I " + this.engine.negHashListLower[i] + "|" + this.engine.negHashListUpper[i] + "|" +
+					this.engine.negGenList[i] + "|" + this.engine.negBoxList[i << 1] + "|" +
+					this.engine.negBoxList[(i << 1) + 1] + "\n";
+			}
+
+			// output the script command to launch Identify
+			rle += "#C [[ AUTOIDENTIFY ]]\n";
+	
+			// add the current RLE
+			rle += this.engine.asRLE(this, this.engine, true, this.engine.multiNumStates, this.engine.multiNumStates, [], false);
+
+			copyElement.innerHTML = rle;
+			copyElement.value = copyElement.innerHTML;
+			this.menuManager.notification.notify("Saved Identify Snapshot", 15, 360, 15, true);
 		}
 	};
 
@@ -8312,7 +8362,7 @@ This file is part of LifeViewer
 			}
 
 			// save elapsed time
-			me.saveElapsedTime(me.engine.counter, 0, 1);
+			me.saveElapsedTime(0, 1);
 		}
 
 		// render world
@@ -8378,7 +8428,7 @@ This file is part of LifeViewer
 				}
 
 				// save elapsed time
-				me.saveElapsedTime(me.engine.counter, 0, 1);
+				me.saveElapsedTime(0, 1);
 			}
 
 			// check if any cells are alive

@@ -1,3 +1,11 @@
+Build 1296
+- fixed Identify cells killed persisting
+- phase 1 of Identify Snapshots
+
+Build 1295
+- fixed PASTE drawing cells outside Bounded Grid
+- Identify will now quit if cells are killed due to hitting the grid boundary during period detection
+
 Build 1294
 - fixed Selection position with CXRLE Pos and specified size different than actual size
 - fixed RuleLoader rules not creating canonical Bounded Grid definitions

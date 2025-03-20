@@ -37,6 +37,9 @@ This file is part of LifeViewer
 		// maximum number of generations for short oscillator buffer
 		/** @const {number} */ negOscillatorGens : 128,
 
+		// how often in seconds to save an Identify Snapshot after quick detection completes
+		/** @const {number} */ identifySnapshotInterval : 300,
+
 		// state modes
 		/** @const {number} */ mode2 : 0,
 		/** @const {number} */ mode2Table : 1,
@@ -501,7 +504,6 @@ This file is part of LifeViewer
 		/** @type {Array} */ this.identifyDeferredResults = [];
 		/** @type {number} */ this.identifyDeferredCounter = -1;
 
-
 		// identify min/max/average popultation and generation
 		/** @type {number} */ this.identifyMinPop = 0;
 		/** @type {number} */ this.identifyMinPopT = 0;
@@ -527,6 +529,8 @@ This file is part of LifeViewer
 
 		// whether any cells were not in rotor
 		/** @type {boolean} */ this.identifyAllCells = false;
+
+		/** @type {number} */ this.identifyLastSnapshotTime = 0;
 
 		// period table start row and maximum row
 		/** @type {number} */ this.tableStartRow = 0;
@@ -902,6 +906,9 @@ This file is part of LifeViewer
 
 		// display height
 		/** @type {number} */ this.displayHeight = displayHeight;
+
+		// number of cells killed in the last generation by hitting the grid boundary
+		/** @type {number} */ this.cellsCleared = 0;
 
 		// population of grid
 		/** @type {number} */ this.population = 0;
@@ -7075,6 +7082,14 @@ This file is part of LifeViewer
 			return result;
 		}
 
+		// check for cells killed at grid boundary
+		if (this.cellsCleared !== 0) {
+			result = ["Cells Killed", "Empty"];
+			boxWidth = 0;
+			boxHeight = 0;
+			quit = true;
+		}
+
 		// check buffer
 		if (this.oscLength < LifeConstants.negOscillatorGens) {
 			// check population
@@ -7201,6 +7216,7 @@ This file is part of LifeViewer
 						this.fullOscLength += 1;
 						if (this.fullOscLength === LifeConstants.maxOscillatorGens) {
 							this.fullOscLength = -1;
+							this.identifyLastSnapshotTime = performance.now();
 						}
 					}
 
@@ -7212,6 +7228,12 @@ This file is part of LifeViewer
 					}
 				}
 			}
+		}
+
+		// save checkpoint to clipboard periodically
+		if (this.fullOscLength === -1 && ((performance.now() - this.identifyLastSnapshotTime) / 1000) > LifeConstants.identifySnapshotInterval) {
+			this.identifyLastSnapshotTime = performance.now();
+			view.saveIdentifySnapshot();
 		}
 
 		// return results
@@ -20608,6 +20630,9 @@ This file is part of LifeViewer
 			/** @type {number} */ currentPop = 0,
 			/** @type {number} */ timing = 0;
 
+		// mark no cells killed by hitting boundary
+		this.cellsCleared = 0;
+
 		// check if snapshot should be saved
 		if (this.counter === this.nextSnapshotTarget - 1 && !noHistory) {
 			// save snapshot required
@@ -20808,6 +20833,8 @@ This file is part of LifeViewer
 
 				// check if cells were deleted
 				if (currentPop !== this.population) {
+					this.cellsCleared = this.population - currentPop;
+
 					// update bounding box
 					this.shrinkNeeded = true;
 					this.doShrink();
