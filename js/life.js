@@ -9267,6 +9267,7 @@ This file is part of LifeViewer
 			/** @type {number} */ cellAsTileBit = 0,
 			/** @type {boolean} */ growX = false,
 			/** @type {boolean} */ growY = false,
+			/** @type {boolean} */ wasAlive = false,
 
 			// current cell state
 			/** @type {number} */ current = 0,
@@ -9411,6 +9412,7 @@ This file is part of LifeViewer
 				// adjust population if cell was alive
 				if ((grid[y][x >> 4] & cellAsBit) !== 0) {
 					this.population -= 1;
+					wasAlive = true;
 				}
 
 				// clear cell
@@ -9444,7 +9446,11 @@ This file is part of LifeViewer
 
 				// update overlay grid if not
 				if (state === 0) {
-					overlayGrid[y][x] = 0;
+					if (wasAlive) {
+						overlayGrid[y][x] = ViewConstants.stateMap[2] + 128;
+					} else {
+						overlayGrid[y][x] = 0;
+					}
 				} else {
 					overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
 				}
@@ -15684,6 +15690,7 @@ This file is part of LifeViewer
 		var	/** @type {number} */ w = 0,
 			/** @type {number} */ h = 0,
 			/** @type {number} */ input = 0,
+			/** @type {number} */ over = 0,
 
 			// width in 16bit chunks
 			/** @type {number} */ w16 = this.width >> 4,
@@ -15708,6 +15715,7 @@ This file is part of LifeViewer
 			/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
 			/** @type {BoundingBox} */ initialBox = this.initialBox,
+			/** @type {BoundingBox} */ historyBox = this.historyBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = this.height,
@@ -15724,12 +15732,13 @@ This file is part of LifeViewer
 			// flag if something in the row was alive
 			/** @type {number} */ rowAlive = 0,
 
-			// dead cell values for [R]History rules
-			/** @const {number} */ deadMin = LifeConstants.deadMin,
-			/** @const {number} */ deadStart = LifeConstants.deadStart,
-
 			// safe border size
 			/** @type {number} */ safeBorder = this.isHROT ? (this.view.getSafeBorderSize() >> 1) : 0,
+
+			// [R]History states to include in bounding box
+			/** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
+			/** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
+			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128,
 
 			// flags if something in the column was alive
 			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16;
@@ -15769,7 +15778,8 @@ This file is part of LifeViewer
 
 					// check each column
 					for (w = 0; w < width; w += 1) {
-						if (overlayRow[w] || (colourGridRow[w] >= deadMin && colourGridRow[w] <= deadStart)) {
+						over = overlayRow[w];
+						if (over && (over === state3 || over === state5 || over == state6)) {
 							input = 1;
 						} else {
 							input = 0;
@@ -15970,11 +15980,17 @@ This file is part of LifeViewer
 			HROTBox.leftX = newLeftX;
 			HROTBox.rightX = newRightX;
 
-			// copy to the original box (for LifeHistory)
+			// copy to inital box (for Track)
 			initialBox.topY = newTopY;
 			initialBox.bottomY = newBottomY;
 			initialBox.leftX = newLeftX;
 			initialBox.rightX = newRightX;
+
+			// copy to the history box (for LifeHistory)
+			historyBox.topY = newTopY;
+			historyBox.bottomY = newBottomY;
+			historyBox.leftX = newLeftX;
+			historyBox.rightX = newRightX;
 		}
 	};
 

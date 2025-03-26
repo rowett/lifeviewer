@@ -554,6 +554,12 @@ This file is part of LifeViewer
 		// whether message has relative reverse generation substitution (for PCA and Margolus rules)
 		/** @type {number} */ this.relRevSub = -1;
 
+		// whether message has births substitution
+		/** @type {number} */ this.birSub = -1;
+
+		// whether message has deaths substitution
+		/** @type {number} */ this.dthSub = -1;
+
 		// x position
 		/** @type {number} */ this.x = x;
 
@@ -721,6 +727,8 @@ This file is part of LifeViewer
 		label.revSub = label.message.indexOf("#H");
 		label.relGenSub = label.message.indexOf("#I");
 		label.relRevSub = label.message.indexOf("#J");
+		label.birSub = label.message.indexOf("#F");
+		label.dthSub = label.message.indexOf("#E");
 
 		// add to label list
 		this.labelList[this.labelList.length] = label;
@@ -1744,6 +1752,12 @@ This file is part of LifeViewer
 							if (current.relRevSub !== -1) {
 								current.relRevSub = message.indexOf("#J");
 							}
+							if (current.birSub !== -1) {
+								current.birSub = message.indexOf("#F");
+							}
+							if (current.dthSub !== -1) {
+								current.dthSub = message.indexOf("#E");
+							}
 						}
 
 						// add population if required
@@ -1760,6 +1774,12 @@ This file is part of LifeViewer
 							if (current.relRevSub !== -1) {
 								current.relRevSub = message.indexOf("#J");
 							}
+							if (current.birSub !== -1) {
+								current.birSub = message.indexOf("#F");
+							}
+							if (current.dthSub !== -1) {
+								current.dthSub = message.indexOf("#E");
+							}
 						}
 
 						// add reverse generation if required
@@ -1769,6 +1789,37 @@ This file is part of LifeViewer
 							} else {
 								message = message.substring(0, current.revSub) + view.engine.counter + message.substring(current.revSub + 2);
 							}
+							if (current.relGenSub !== -1) {
+								current.relGenSub = message.indexOf("#I");
+							}
+							if (current.relRevSub !== -1) {
+								current.relRevSub = message.indexOf("#J");
+							}
+							if (current.birSub !== -1) {
+								current.birSub = message.indexOf("#F");
+							}
+							if (current.dthSub !== -1) {
+								current.dthSub = message.indexOf("#E");
+							}
+						}
+
+						// add births if required
+						if (current.birSub !== -1) {
+							message = message.substring(0, current.birSub) + view.engine.births + message.substring(current.birSub + 2);
+							if (current.relGenSub !== -1) {
+								current.relGenSub = message.indexOf("#I");
+							}
+							if (current.relRevSub !== -1) {
+								current.relRevSub = message.indexOf("#J");
+							}
+							if (current.dthSub !== -1) {
+								current.dthSub = message.indexOf("#E");
+							}
+						}
+
+						// add deaths if required
+						if (current.dthSub !== -1) {
+							message = message.substring(0, current.dthSub) + view.engine.deaths + message.substring(current.dthSub + 2);
 							if (current.relGenSub !== -1) {
 								current.relGenSub = message.indexOf("#I");
 							}

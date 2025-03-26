@@ -1137,6 +1137,8 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "I", "current generation relative (Labels)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "J", "reversible generation relative (Labels)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "P", "current population (Labels)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "F", "current births (Labels)", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "E", "current deaths (Labels)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "0..9", "saved timing as average fps", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + Keywords.variablePrefixSymbol, Keywords.variablePrefixSymbol + " symbol", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);

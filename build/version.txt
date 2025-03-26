@@ -1,3 +1,9 @@
+Build 1299
+- added two new variable substitutions for Labels
+	- #F births
+	- #E deaths
+- fixed [R]History bounding box (include state 6 but exclude dead marked states)
+
 Build 1298
 - disable passive handling of touch and mouse events
 - phase 1 of Shader change at Waypoints
