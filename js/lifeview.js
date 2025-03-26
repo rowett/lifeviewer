@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1297,
+		/** @const {number} */ versionBuild : 1298,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1436,6 +1436,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.initialDepth = false;
 		/** @type {boolean} */ this.initialLayers = false;
 		/** @type {boolean} */ this.initialTheme = false;
+		/** @type {boolean} */ this.initialShader = false;
 		/** @type {boolean} */ this.initialStep = false;
 		/** @type {boolean} */ this.initialGps = false;
 		/** @type {boolean} */ this.initialStop = false;
@@ -4724,7 +4725,7 @@ This file is part of LifeViewer
 									}
 
 									// if the cell changed then update the grid
-									if (sourceFlag !== destFlag) {
+									if (result !== destFlag) {
 										wasState6 |= this.setStateWithCheck(xOff + x, yOff + y, result, false);
 									}
 								}
@@ -4814,6 +4815,7 @@ This file is part of LifeViewer
 		this.initialDepth = value;
 		this.initialLayers = value;
 		this.initialTheme = value;
+		this.initialShader = value;
 		this.initialStep = value;
 		this.initialGps = value;
 		this.initialStop = value;
@@ -6836,7 +6838,7 @@ This file is part of LifeViewer
 					me.manualChange = false;
 
 					// create temporary position
-					me.elapsedTime = me.waypointManager.createTemporaryPosition(me.engine.width / 2 - me.engine.xOff, me.engine.height / 2 - me.engine.yOff, me.engine.zoom, me.engine.angle, me.engine.tilt, me.engine.layers, me.engine.layerDepth * ViewConstants.depthScale, me.engine.colourTheme, me.genSpeed, me.gensPerStep, me.engine.counter, me.elapsedTime);
+					me.elapsedTime = me.waypointManager.createTemporaryPosition(me.engine.width / 2 - me.engine.xOff, me.engine.height / 2 - me.engine.yOff, me.engine.zoom, me.engine.angle, me.engine.tilt, me.engine.layers, me.engine.layerDepth * ViewConstants.depthScale, me.engine.colourTheme, me.engine.cellRenderer, me.genSpeed, me.gensPerStep, me.engine.counter, me.elapsedTime);
 				}
 
 				// check for fit zoom
@@ -8242,7 +8244,9 @@ This file is part of LifeViewer
 	View.prototype.saveIdentifySnapshot = function() {
 		var	/** @type {string} */ rle = "#C Identify Snapshot\n#CXRLE Gen=" + this.engine.counter + "\n",
 			/** @type {Object} */ copyElement = document.getElementById("ViewerCopy"),
-			/** @type {number} */ i = 0;
+			/** @type {number} */ i = 0,
+			/** @type {number} */ hash = 29979527,
+			/** @type {number} */ factor = 99999989;
 
 		// check if a copy text box exists
 		if (copyElement) {
@@ -8251,7 +8255,11 @@ This file is part of LifeViewer
 				rle += "#I " + this.engine.negHashListLower[i] + "|" + this.engine.negHashListUpper[i] + "|" +
 					this.engine.negGenList[i] + "|" + this.engine.negBoxList[i << 1] + "|" +
 					this.engine.negBoxList[(i << 1) + 1] + "\n";
+				hash = (hash * factor) ^ (this.engine.negHashListLower[i] + this.engine.negHashListUpper[i] + this.engine.negGenList[i] + i);
 			}
+
+			// output the hash
+			rle += "#I " + (hash | 0) + "\n";
 
 			// output the script command to launch Identify
 			rle += "#C [[ AUTOIDENTIFY ]]\n";
@@ -21139,7 +21147,7 @@ This file is part of LifeViewer
 			// save the pattern comments after removing script commands, originator and name, and "#C " or "# " comment prefixes
 			if (pattern) {
 				me.patternComments = ("\n" + pattern.beforeTitle).replace(/\n#C /g, "\n").replace(/\n# /g, "\n").replace(/#CXRLE .*?\n/g, "\n").replace(/\n#C/g, "\n").replace(/\[\[ .*? \]\][ \n]/g, "").replace(/\n#(?:N|O)[^\n]*/g, "\n").substring(1);
-				if (me.patternComments == "\n") {
+				if (me.patternComments === "\n") {
 					me.patternComments = "";
 				}
 			}

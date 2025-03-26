@@ -7217,6 +7217,7 @@ This file is part of LifeViewer
 						if (this.fullOscLength === LifeConstants.maxOscillatorGens) {
 							this.fullOscLength = -1;
 							this.identifyLastSnapshotTime = performance.now();
+							view.saveIdentifySnapshot();
 						}
 					}
 

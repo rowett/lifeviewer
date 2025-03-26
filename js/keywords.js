@@ -434,6 +434,9 @@ This file is part of LifeViewer
 		// shader
 		/** @const {string} */ shaderWord : "SHADER",
 
+		// cell age word
+		/** @const {string} */ cellAgeWord : "AGE",
+
 		// rainbow word
 		/** @const {string} */ rainbowWord : "RAINBOW",
 

@@ -1062,6 +1062,9 @@ This file is part of LifeViewer
 
 		// rule table icons
 		/** @type {Array} */ this.ruleTableIcons = null;
+
+		// identify snapshot data
+		/** @type {Array<string>} */ this.identifySnapshot = [];
 	}
 
 	// check if pattern is HROT and has B0
@@ -7189,6 +7192,20 @@ This file is part of LifeViewer
 		}
 	};
 
+	// add to the identify snapshot
+	PatternManager.prototype.addIdentifySnapshot = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
+		// end of line index
+		var	/** @type {number} */ endIndex = source.indexOf("\n");
+
+		// check if a newline exists
+		if (endIndex === -1) {
+			endIndex = source.length;
+		}
+
+		// set the name
+		pattern.identifySnapshot[pattern.identifySnapshot.length] = source.substring(0, endIndex).trim();
+	};
+
 	// set the pattern name
 	PatternManager.prototype.setName = function(/** @type {Pattern} */ pattern, /** @type {string} */ source) {
 		// end of line index
@@ -8366,6 +8383,10 @@ This file is part of LifeViewer
 				index += 1;
 
 				switch (current) {
+					case "I":
+						// identify snapshot
+						this.addIdentifySnapshot(pattern, source.substring(index));
+						break;
 					case "N":
 						// set the name
 						this.setName(pattern, source.substring(index));

@@ -33,6 +33,7 @@ This file is part of LifeViewer
 		// check if the token is a script command
 		switch (tokenString) {
 			case Keywords.shaderWord:
+			case Keywords.cellAgeWord:
 			case Keywords.rainbowWord:
 			case Keywords.neighbourCountWord:
 			case Keywords.neighborCountWord:
@@ -4935,12 +4936,40 @@ This file is part of LifeViewer
 						case Keywords.shaderWord:
 							// get the shader type
 							peekToken = scriptReader.peekAtNextToken().toUpperCase();
-							if (peekToken == Keywords.rainbowWord || peekToken == Keywords.neighborCountWord || peekToken == Keywords.neighbourCountWord || peekToken == Keywords.basicWord) {
+							if (peekToken === Keywords.cellAgeWord || peekToken === Keywords.rainbowWord || peekToken === Keywords.neighborCountWord || peekToken === Keywords.neighbourCountWord || peekToken === Keywords.basicWord) {
 								// valid so eat the token
-								scriptReader.getNextToken();
+								stringToken = scriptReader.getNextToken();
+
+								// check if shader already defined
+								if (currentWaypoint.shaderDefined && !view.initialShader && !suppressErrors.shader) {
+									switch (currentWaypoint.shader) {
+										case LifeConstants.shaderBasic:
+											stringValue = Keywords.basicWord;
+											break;
+
+										case LifeConstants.shaderCellAge:
+											stringValue = Keywords.cellAgeWord;
+											break;
+
+										case LifeConstants.shaderNeighbourCount:
+											stringValue = Keywords.neighborCountWord;
+											break;
+
+										case LifeConstants.shaderRainbow:
+											stringValue = Keywords.rainbowWord;
+											break;
+									}
+
+									scriptErrors[scriptErrors.length] = [Keywords.shaderWord + " " + stringToken, "overwrites " + stringValue];
+								}
 
 								if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
 									switch (peekToken) {
+										case Keywords.cellAgeWord:
+											view.engine.cellRenderer = LifeConstants.shaderCellAge;
+											view.defaultRenderer = LifeConstants.shaderCellAge;
+											break;
+
 										case Keywords.rainbowWord:
 											view.engine.cellRenderer = LifeConstants.shaderRainbow;
 											view.defaultRenderer = LifeConstants.shaderRainbow;
@@ -4957,9 +4986,25 @@ This file is part of LifeViewer
 											view.defaultRenderer = LifeConstants.shaderBasic;
 											break;
 									}
-
+									currentWaypoint.shader = view.engine.cellRenderer;
+									currentWaypoint.shaderDefined = true;
+									view.initialShader = false;
+									suppressErrors.shader = false;
 								}
 								itemValid = true;
+							} else {
+								if (peekToken === Keywords.initialWord) {
+									// token valid so eat it
+									peekToken = scriptReader.getNextToken();
+
+									// copy from initial waypoint
+									view.waypointManager.copyInitial(Keywords.shaderWord, currentWaypoint, scriptErrors, view.initialShader);
+									view.initialShader = true;
+									itemValid = true;
+								} else {
+									this.nonNumericTokenError(scriptReader, scriptErrors, Keywords.shaderWord, "argument", "shader name");
+									itemValid = true;
+								}
 							}
 							break;
 

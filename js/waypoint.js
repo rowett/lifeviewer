@@ -84,6 +84,9 @@ This file is part of LifeViewer
 		// colour theme
 		/** @type {number} */ this.theme = 0;
 
+		// shader 
+		/** @type {number} */ this.shader = 0;
+
 		// gps
 		/** @type {number} */ this.gps = ViewConstants.defaultRefreshRate;
 
@@ -125,6 +128,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.layersDefined = false;
 		/** @type {boolean} */ this.depthDefined = false;
 		/** @type {boolean} */ this.themeDefined = false;
+		/** @type {boolean} */ this.shaderDefined = false;
 		/** @type {boolean} */ this.gpsDefined = false;
 		/** @type {boolean} */ this.stepDefined = false;
 		/** @type {boolean} */ this.stopGenDefined = false;
@@ -185,6 +189,9 @@ This file is part of LifeViewer
 
 		// copy theme
 		this.theme = fromWaypoint.theme;
+
+		// copy shader
+		this.shader = fromWaypoint.shader;
 
 		// copy gps and step
 		this.gps = fromWaypoint.gps;
@@ -355,6 +362,9 @@ This file is part of LifeViewer
 
 		// copy theme
 		this.theme = toWaypoint.theme;
+
+		// copy shader
+		this.shader = toWaypoint.shader;
 
 		// copy gps
 		this.gps = toWaypoint.gps;
@@ -2059,7 +2069,7 @@ This file is part of LifeViewer
 
 	// create temporary position
 	/** @returns {number}  */
-	WaypointManager.prototype.createTemporaryPosition = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ zoom, /** @type {number} */ angle, /** @type {number} */ tilt, /** @type {number} */ layers, /** @type {number} */ depth, /** @type {number} */ theme, /** @type {number} */ gps, /** @type {number} */ step, /** @type {number} */ generation, /** @type {number} */ elapsedTime) {
+	WaypointManager.prototype.createTemporaryPosition = function(/** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ zoom, /** @type {number} */ angle, /** @type {number} */ tilt, /** @type {number} */ layers, /** @type {number} */ depth, /** @type {number} */ theme, /** @type {number} */ shader, /** @type {number} */ gps, /** @type {number} */ step, /** @type {number} */ generation, /** @type {number} */ elapsedTime) {
 		// get the temporary start waypoint
 		var	/** @type {Waypoint} */ temp = this.tempStart,
 			/** @type {number} */ result = 0;
@@ -2075,6 +2085,7 @@ This file is part of LifeViewer
 		temp.layers = layers;
 		temp.depth = depth;
 		temp.theme = theme;
+		temp.shader = shader;
 
 		// set the target generation
 		temp.targetGen = generation;
@@ -2429,6 +2440,9 @@ This file is part of LifeViewer
 				if (requested.theme !== previous.theme) {
 					text += " C " + requested.theme;
 				}
+				if (requested.shader !== previous.shader) {
+					text += " R " + requested.shader;
+				}
 				if (requested.gps !== previous.gps) {
 					text += " G " + requested.gps;
 				}
@@ -2440,7 +2454,7 @@ This file is part of LifeViewer
 				}
 			} else {
 				// create the text from the single waypoint
-				text = "T " + requested.targetGen + " X " + -requested.x + " Y " + -requested.y + " Z " + this.shortNumber(requested.zoom, 1) + " A " + requested.angle + " L " + requested.layers + " D " + this.shortNumber(requested.depth, 1) + " C "  + requested.theme + " G " + requested.gps + " S " + requested.step;
+				text = "T " + requested.targetGen + " X " + -requested.x + " Y " + -requested.y + " Z " + this.shortNumber(requested.zoom, 1) + " A " + requested.angle + " L " + requested.layers + " D " + this.shortNumber(requested.depth, 1) + " C "  + requested.theme + " R " + requested.shader + " G " + requested.gps + " S " + requested.step;
 			}
 		}
 
@@ -2674,6 +2688,16 @@ This file is part of LifeViewer
 				// set theme
 				poi.theme = this.waypointList[0].theme;
 				poi.themeDefined = true;
+				break;
+
+			case Keywords.shaderWord:
+				// check if shader is already defined
+				if (poi.shaderDefined) {
+					scriptErrors[scriptErrors.length] = [what + " " + Keywords.initialWord, (initialDefined ? "already defined" : "overwrites " + poi.shader)];
+				}
+				// set theme
+				poi.shader = this.waypointList[0].shader;
+				poi.shaderDefined = true;
 				break;
 
 			case Keywords.gpsWord:

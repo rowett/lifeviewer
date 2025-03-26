@@ -34,9 +34,9 @@ This file is part of LifeViewer
 	};
 
 	// cross-browser register event function
-	function registerEvent(element, /** @type {string} */ event, handler, /** @type {boolean} */ capture) {
+	function registerEvent(element, /** @type {string} */ event, handler, /** @type {boolean} */ passive) {
 		if (element.addEventListener) {
-			element.addEventListener(event, handler, capture);
+			element.addEventListener(event, handler, {passive: passive});
 		} else {
 			element.attachEvent("on" + event, handler);
 		}

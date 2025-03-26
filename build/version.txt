@@ -1,3 +1,8 @@
+Build 1298
+- disable passive handling of touch and mouse events
+- phase 1 of Shader change at Waypoints
+- fixed PASTE with [R]History and [R]Super
+
 Build 1297
 - fixed Identify not reporting all cells dead after first time
 - fixed Fit Zoom ignoring [R]History cells with Hexagonal grid

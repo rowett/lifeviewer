@@ -1301,6 +1301,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.showInfoBarWord, "show information bar", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.shaderWord + " shader", "set the cell shader", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.basicWord, "use alive and dead colours", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + Keywords.cellAgeWord, "use cell age", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.rainbowWord, "use rainbow colours", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.neighborCountWord, "use neighbour count colours", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.neighbourCountWord, "same as " + Keywords.neighborCountWord, ctx, x, y, height, helpLine);
