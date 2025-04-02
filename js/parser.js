@@ -5821,7 +5821,7 @@ This file is part of LifeViewer
 					// check for major gridlines
 					numberValue = view.engine.gridLineMajor;
 
-					if (currentWaypoint.themeDefined) {
+					if (currentWaypoint.themeDefined && !view.customGridMajor) {
 						numberValue = view.engine.themes[currentWaypoint.theme].gridMajor;
 					}
 

@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1299,
+		/** @const {number} */ versionBuild : 1304,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3717,7 +3717,6 @@ This file is part of LifeViewer
 		return itemName;
 	};
 
-	// convert rle to cell list
 	/** @returns {Array} */
 	View.prototype.rleToCellList = function(/** @type {string} */ rle, /** @type {number} */ x, /** @type {number} */ y, /** @type {number} */ transform) {
 		var	/** @type {Array} */ cells = [],
@@ -8265,7 +8264,7 @@ This file is part of LifeViewer
 			rle += "#C [[ AUTOIDENTIFY ]]\n";
 	
 			// add the current RLE
-			rle += this.engine.asRLE(this, this.engine, true, this.engine.multiNumStates, this.engine.multiNumStates, [], false);
+			rle += this.engine.asRLE(this, this.engine, this.engine.multiNumStates, this.engine.multiNumStates, [], false, LifeConstants.rleComments);
 
 			copyElement.innerHTML = rle;
 			copyElement.value = copyElement.innerHTML;
@@ -11508,6 +11507,23 @@ This file is part of LifeViewer
 		me.engine.shrinkNeeded = true;
 		me.engine.doShrink();
 
+		// adjust in case specified is different than actual size
+		if (me.engine.boundedGridType !== -1) {
+			if (me.posDefined) {
+				xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+				yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+				if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+					xOff -= 1;
+				}
+				if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+					yOff -= 1;
+				}
+			} else {
+				xOff = me.panX;
+				yOff = me.panY;
+			}
+		}
+
 		// order bottom left to top right
 		if (leftX > rightX) {
 			swap = leftX;
@@ -12362,7 +12378,7 @@ This file is part of LifeViewer
 		}
 
 		me.patternAliasName = "";
-		patternText = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], true);
+		patternText = me.engine.asRLE(me, me.engine, me.engine.multiNumStates, me.engine.multiNumStates, [], true, LifeConstants.rleComments);
 
 		// restore previous size
 		if (me.isInPopup) {
@@ -12421,7 +12437,7 @@ This file is part of LifeViewer
 		// set new rule name
 		this.patternRuleName = currentRule;
 		this.patternAliasName = currentRule;
-		patternText = this.engine.asRLE(this, this.engine, true, fromStates, toStates, mapping, true);
+		patternText = this.engine.asRLE(this, this.engine, fromStates, toStates, mapping, true, LifeConstants.rleComments);
 
 		// restore previous size
 		if (this.isInPopup) {
@@ -14387,6 +14403,11 @@ This file is part of LifeViewer
 			}
 		}
 
+		// switch to edit mode
+		if (this.modeList.current !== ViewConstants.modeSelect) {
+			this.modeList.current = this.viewModeList(ViewConstants.modeSelect, true, this);
+		}
+
 		// check for empty population or not marking undo
 		if (this.engine.population > 0 || !markUndo) {
 			// update the pattern extent
@@ -14703,6 +14724,23 @@ This file is part of LifeViewer
 			width = (x2 - x1 + 1);
 			height = (y2 - y1 + 1);
 
+			// adjust in case specified is different than actual size
+			if (me.engine.boundedGridType !== -1) {
+				if (me.posDefined) {
+					xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+					yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+					if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+						xOff -= 1;
+					}
+					if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+						yOff -= 1;
+					}
+				} else {
+					xOff = me.panX;
+					yOff = me.panY;
+				}
+			}
+
 			// check selection is square and an odd number wide from 3 to 99
 			if (width !== height) {
 				me.menuManager.notification.notify("Weighted needs a square selection", 15, 180, 15, true);
@@ -14841,6 +14879,23 @@ This file is part of LifeViewer
 						me.menuManager.notification.notify("CoordCA size must be >= 3 and <= 99", 15, 180, 15, true);
 						valid = false;
 					}
+				}
+			}
+
+			// adjust in case specified is different than actual size
+			if (me.engine.boundedGridType !== -1) {
+				if (me.posDefined) {
+					xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
+					yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);
+					if (((me.patternWidth & 1) === 1) && ((me.specifiedWidth & 1) === 0)) {
+						xOff -= 1;
+					}
+					if (((me.patternHeight & 1) === 1) && ((me.specifiedHeight & 1) === 0)) {
+						yOff -= 1;
+					}
+				} else {
+					xOff = me.panX;
+					yOff = me.panY;
 				}
 			}
 
@@ -18090,7 +18145,7 @@ This file is part of LifeViewer
 		me.engine.doShrink();
 
 		// get the pattern as an RLE string
-		rle = me.engine.asRLE(me, me.engine, true, me.engine.multiNumStates, me.engine.multiNumStates, [], false);
+		rle = me.engine.asRLE(me, me.engine, me.engine.multiNumStates, me.engine.multiNumStates, [], false, LifeConstants.rleComments);
 
 		//  write as HTML
 		me.element.innerHTML = rle.replace(/\n/g, "<br>");
@@ -18128,8 +18183,22 @@ This file is part of LifeViewer
 
 	// select and copy current rle
 	View.prototype.copyCurrentRLE = function(/** @type {View} */ me, /** @type {boolean} */ addComments) {
+		var	/** @type {number} */ options = addComments ? LifeConstants.rleComments : 0;
+
 		// copy the current pattern to the clipboard
-		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, addComments, me.engine.multiNumStates, me.engine.multiNumStates, [], false));
+		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, me.engine.multiNumStates, me.engine.multiNumStates, [], false, options));
+	};
+
+	// copy current rle with blanks, no new lines and no header
+	View.prototype.copyCurrentRLEAsWhole = function(/** @type {View} */ me, /** @type {boolean} */ ctrlKey) {
+		var	/** @type {number} */ options = LifeConstants.rleBlanks | LifeConstants.rleNoHeader;
+
+		if (ctrlKey) {
+			options |= LifeConstants.rleNoNewLines;
+		}
+
+		// copy the current pattern to the clipboard
+		me.copyToClipboard(me, me.engine.asRLE(me, me.engine, me.engine.multiNumStates, me.engine.multiNumStates, [], false, options));
 	};
 
 	// key up
@@ -19050,7 +19119,7 @@ This file is part of LifeViewer
 
 		// fast lookup toggle button
 		this.fastLookupButton = this.viewMenu.addListItem(this.viewFastLookupToggle, Menu.middle, 100, 0, 180, 40, ["Fast Lookup"], [this.engine.ruleLoaderLookupEnabled], Menu.multi);
-		this.fastLookupButton.toolTip = ["toggle fast lookup [F7]"];
+		this.fastLookupButton.toolTip = ["toggle fast lookup [Shift F7]"];
 
 		// state number toggle button
 		this.stateNumberButton = this.viewMenu.addListItem(this.viewStateNumberToggle, Menu.middle, -100, 50, 180, 40, ["State Number"], [this.stateNumberDisplayed], Menu.multi);
@@ -22881,7 +22950,7 @@ This file is part of LifeViewer
 			if (rleItem !== null) {
 				// ignore patterns that look like python code
 				if (!(patternText[0] === "#" && patternText.indexOf("import ") !== -1)) {
-					createError(rleItem, textItem, pattern.ruleName + " - " + pattern.originalFailure);
+					createError(rleItem, textItem, pattern.ruleName + " - " + pattern.originalFailure + "\n\n" + pattern.manager.failureReason);
 				}
 			}
 		}

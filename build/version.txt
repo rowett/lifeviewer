@@ -1,8 +1,27 @@
+Build 1304
+- hotkey F7 will now copy the current selection as headerless RLE including blank cells
+	- hotkey Ctrl F7 will do the same but all in one line
+
+Build 1303
+- fixed [R]History Bounding Box for state 2 cells
+
+Build 1302
+- fixed Select All and Shrink Selection for [R]History rules
+
+Build 1301
+- include original failure reason in Show Pattern Error message
+
+Build 1300
+- automatically switch to Select mode on Select All
+- fixed Shrink Selection in Bounded Grid
+- fixed crash when reading invalid @TABLE sections
+- fixed TRACKLOOP
+
 Build 1299
 - added two new variable substitutions for Labels
 	- #F births
 	- #E deaths
-- fixed [R]History bounding box (include state 6 but exclude dead marked states)
+- fixed [R]History bounding box for Identify (include state 6 but exclude dead marked states)
 
 Build 1298
 - disable passive handling of touch and mouse events

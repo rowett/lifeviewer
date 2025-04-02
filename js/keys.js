@@ -2260,11 +2260,16 @@ This file is part of LifeViewer
 				}
 				break;
 
-			// f7 to toggle fast lookup for RuleLoader algos
+			// f7 to copy whole area or toggle fast lookup for RuleLoader algos
 			case 118:
-				if (!me.fastLookupButton.locked) {
-					me.fastLookupButton.current = me.viewFastLookupToggle([!me.engine.ruleLoaderLookupEnabled], true, me);
-					me.menuManager.notification.notify("Fast Lookup " + (me.engine.ruleLoaderLookupEnabled ? "On" : "Off"), 15, 40, 15, true);
+				if (shiftKey) {
+					if (!me.fastLookupButton.locked) {
+						me.fastLookupButton.current = me.viewFastLookupToggle([!me.engine.ruleLoaderLookupEnabled], true, me);
+						me.menuManager.notification.notify("Fast Lookup " + (me.engine.ruleLoaderLookupEnabled ? "On" : "Off"), 15, 40, 15, true);
+					}
+				} else {
+					// copy whole area (include empty cells and rows)
+					me.copyCurrentRLEAsWhole(me, ctrlKey);
 				}
 				break;
 

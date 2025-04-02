@@ -9618,7 +9618,7 @@ This file is part of LifeViewer
 					// if the next token is a number then read it as a state
 					if (reader.nextTokenIsNumeric()) {
 						readState = reader.getNextTokenAsNumber();
-						if (readState >= 0 && readState <= states) {
+						if (readState >= 0 && readState < states) {
 							varValues[varValues.length] = readState;
 						} else {
 							valid = false;

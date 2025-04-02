@@ -766,7 +766,7 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, "0", "reset step and speed", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, view.controlKeyText + " P", "toggle pause playback while drawing", ctx, x, y, height, helpLine);
 			if (view.engine.ruleLoaderLookupAvailable()) {
-				y = this.renderHelpLine(view, "F7", "toggle fast lookup", ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, "Shift F7", "toggle fast lookup", ctx, x, y, height, helpLine);
 			}
 			y = this.renderHelpLine(view, view.altKeyText + " T", "toggle throttling", ctx, x, y, height, helpLine);
 			if (view.waypointsDefined) {
@@ -990,6 +990,8 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, view.controlKeyText + "+Shift C", "copy original pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.controlKeyText + " C", "copy current selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.controlKeyText + "+" + view.altKeyText + " C", "copy current selection with comments", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "F7", "copy selection headerless including blanks", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, view.controlKeyText + " F7", "copy selection headerless including blanks (1 line)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.controlKeyText + "+Shift X", "cut original pattern", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.controlKeyText + " X", "cut current selection", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, view.controlKeyText + "+" + view.altKeyText + " X", "cut current selection with comments", ctx, x, y, height, helpLine);

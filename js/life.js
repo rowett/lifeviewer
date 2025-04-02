@@ -40,6 +40,12 @@ This file is part of LifeViewer
 		// how often in seconds to save an Identify Snapshot after quick detection completes
 		/** @const {number} */ identifySnapshotInterval : 300,
 
+		// RLE options (bit fields)
+		/** @const {number} */ rleBlanks : 1,
+		/** @const {number} */ rleNoNewLines : 2,
+		/** @const {number} */ rleNoHeader : 4,
+		/** @const {number} */ rleComments : 8,
+
 		// state modes
 		/** @const {number} */ mode2 : 0,
 		/** @const {number} */ mode2Table : 1,
@@ -862,6 +868,9 @@ This file is part of LifeViewer
 
 		// state 6 [R]History box
 		/** @type {BoundingBox} */ this.state6Box = null;
+
+		// identify [R]History box (alive marked states and state 6)
+		/** @type {BoundingBox} */ this.identifyHistoryBox = new BoundingBox(0, 0, 0, 0);
 
 		// alive states bounding box for Super
 		/** @type {BoundingBox} */ this.aliveBox = new BoundingBox(0, 0, 0, 0);
@@ -8710,7 +8719,7 @@ This file is part of LifeViewer
 
 	// convert grid to RLE
 	/** @returns {string} */
-	Life.prototype.asRLE = function(/** @type {View} */ view, /** @type {Life} */ me, /** @type {boolean} */ addComments, /** @type {number} */ inputStates, /** @type {number} */ outputStates, /** @type {Array<number>} */ mapping, /** @type {boolean} */ useAlias) {
+	Life.prototype.asRLE = function(/** @type {View} */ view, /** @type {Life} */ me, /** @type {number} */ inputStates, /** @type {number} */ outputStates, /** @type {Array<number>} */ mapping, /** @type {boolean} */ useAlias, /** @type {number} */ options) {
 		var	/** @type {string} */ rle = "",
 			/** @type {BoundingBox} */ zoomBox = (me.isLifeHistory ? me.historyBox : (me.isHROT ? me.HROTBox : me.zoomBox)),
 			/** @type {number} */ leftX = zoomBox.leftX,
@@ -8737,7 +8746,11 @@ This file is part of LifeViewer
 			/** @type {number} */ xOff = view.panX - view.xOffset,
 			/** @type {number} */ yOff = view.panY - view.yOffset,
 			/** @type {string} */ ruleName = "",
-			/** @type {BoundingBox} */ selBox = view.selectionBox;
+			/** @type {BoundingBox} */ selBox = view.selectionBox,
+			/** @type {boolean} */ blanks = (options & LifeConstants.rleBlanks) !== 0,
+			/** @type {boolean} */ noNewLines = (options & LifeConstants.rleNoNewLines) !== 0,
+			/** @type {boolean} */ noHeader = (options & LifeConstants.rleNoHeader) !== 0,
+			/** @type {boolean} */ addComments = (options & LifeConstants.rleComments) !== 0;
 
 		// ensure states are at least 2
 		if (inputStates < 2) {
@@ -8845,16 +8858,18 @@ This file is part of LifeViewer
 		}
 
 		// output header
-		ruleName = ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
-		if (ruleName === "Conway's Life") {
-			ruleName = "Life";
+		if (!noHeader) {
+			ruleName = ((useAlias && view.patternAliasName !== "") ? view.patternAliasName : view.patternRuleName);
+			if (ruleName === "Conway's Life") {
+				ruleName = "Life";
+			}
+			if (ruleName === "B3/S23History") {
+				ruleName = "LifeHistory";
+			}
+			rle += "x = " + width + ", y = " + height + ", rule = " + ruleName;
+			rle += view.patternBoundedGridDef;
+			rle += "\n";
 		}
-		if (ruleName === "B3/S23History") {
-			ruleName = "LifeHistory";
-		}
-		rle += "x = " + width + ", y = " + height + ", rule = " + ruleName;
-		rle += view.patternBoundedGridDef;
-		rle += "\n";
 		lastLength = rle.length;
 
 		// output pattern
@@ -8897,19 +8912,22 @@ This file is part of LifeViewer
 				}
 				if (state !== last) {
 					// output end of previous row(s)
-					if (!(state === -1 && last === 0) && rowCount > 0) {
+					if ((!(state === -1 && last === 0) || blanks) && rowCount > 0) {
 						if (rowCount > 1) {
 							rle += rowCount;
 						}
 						rle += "$";
-						if (rle.length - lastLength >= charsPerRow) {
-							rle += "\n";
-							lastLength = rle.length;
+
+						if (!noNewLines) {
+							if (rle.length - lastLength >= charsPerRow) {
+								rle += "\n";
+								lastLength = rle.length;
+							}
 						}
 						rowCount = 0;
 					}
 					// check if run is alive or dead
-					if (last > 0) {
+					if ((last > 0) || blanks) {
 						if (count > 1) {
 							rle += count;
 						}
@@ -8920,9 +8938,12 @@ This file is part of LifeViewer
 						}
 						rle += outputState[mapping[last]];
 					}
-					if (rle.length - lastLength >= charsPerRow) {
-						rle += "\n";
-						lastLength = rle.length;
+
+					if (!noNewLines) {
+						if (rle.length - lastLength >= charsPerRow) {
+							rle += "\n";
+							lastLength = rle.length;
+						}
 					}
 					count = 1;
 					last = state;
@@ -9446,11 +9467,7 @@ This file is part of LifeViewer
 
 				// update overlay grid if not
 				if (state === 0) {
-					if (wasAlive) {
-						overlayGrid[y][x] = ViewConstants.stateMap[2] + 128;
-					} else {
-						overlayGrid[y][x] = 0;
-					}
+					overlayGrid[y][x] = 0;
 				} else {
 					overlayGrid[y][x] = ViewConstants.stateMap[state] + 128;
 				}
@@ -10718,7 +10735,6 @@ This file is part of LifeViewer
 			/** @type {Array<Uint16Array>} */ currentOccTileMap = this.occTileMap,
 			/** @type {Array<Uint16Array>} */ currentOccMergedTileMap = this.occMergedTileMap,
 
-
 			// current tile height
 			/** @type {number} */ currentTileHeight = this.tileRows,
 
@@ -10940,7 +10956,6 @@ This file is part of LifeViewer
 					idBottom = (idCurrent & 65535) + yOffset;
 					this.boxList[(y << 1) + 1] = (idLeft << 16) | idBottom;
 				}
-
 			}
 		}
 	};
@@ -15691,6 +15706,8 @@ This file is part of LifeViewer
 			/** @type {number} */ h = 0,
 			/** @type {number} */ input = 0,
 			/** @type {number} */ over = 0,
+			/** @type {number} */ state = 0,
+			/** @type {number} */ inputHistory = 0,
 
 			// width in 16bit chunks
 			/** @type {number} */ w16 = this.width >> 4,
@@ -15729,8 +15746,15 @@ This file is part of LifeViewer
 			/** @type {number} */ overlayLeftX = this.width,
 			/** @type {number} */ overlayRightX = -1,
 
+			// new identify history extent
+			/** @type {number} */ identifyHistoryBottomY = this.height,
+			/** @type {number} */ identifyHistoryTopY = -1,
+			/** @type {number} */ identifyHistoryLeftX = this.width,
+			/** @type {number} */ identifyHistoryRightX = -1,
+
 			// flag if something in the row was alive
 			/** @type {number} */ rowAlive = 0,
+			/** @type {number} */ rowAliveHistory = 0,
 
 			// safe border size
 			/** @type {number} */ safeBorder = this.isHROT ? (this.view.getSafeBorderSize() >> 1) : 0,
@@ -15775,16 +15799,25 @@ This file is part of LifeViewer
 
 					// flag nothing in the row
 					rowAlive = 0;
+					rowAliveHistory = 0;
 
 					// check each column
 					for (w = 0; w < width; w += 1) {
 						over = overlayRow[w];
-						if (over && (over === state3 || over === state5 || over == state6)) {
+						state = colourGridRow[w];
+						if (over || (state > 0 && state < this.aliveStart)) {
 							input = 1;
+							if ((over === state3 || over === state5 || over == state6)) {
+								inputHistory = 1;
+							} else {
+								inputHistory = 0;
+							}
 						} else {
 							input = 0;
+							inputHistory = 0;
 						}
 						rowAlive |= input;
+						rowAliveHistory |= inputHistory;
 
 						if (input) {
 							if (w < overlayLeftX) {
@@ -15792,6 +15825,15 @@ This file is part of LifeViewer
 							}
 							if (w > overlayRightX) {
 								overlayRightX = w;
+							}
+						}
+
+						if (inputHistory) {
+							if (w < identifyHistoryLeftX) {
+								identifyHistoryLeftX = w;
+							}
+							if (w > identifyHistoryRightX) {
+								identifyHistoryRightX = w;
 							}
 						}
 					}
@@ -15803,6 +15845,15 @@ This file is part of LifeViewer
 						}
 						if (h > overlayTopY) {
 							overlayTopY = h;
+						}
+					}
+
+					if (rowAliveHistory) {
+						if (h < identifyHistoryBottomY) {
+							identifyHistoryBottomY = h;
+						}
+						if (h > identifyHistoryTopY) {
+							identifyHistoryTopY = h;
 						}
 					}
 				}
@@ -15950,6 +16001,25 @@ This file is part of LifeViewer
 				if (overlayRightX > newRightX) {
 					newRightX = overlayRightX;
 				}
+
+				// update identify history box
+				if (identifyHistoryTopY > this.height - 1 - safeBorder) {
+					identifyHistoryTopY = this.height - 1 - safeBorder;
+				}
+				if (identifyHistoryBottomY < safeBorder) {
+					identifyHistoryBottomY = safeBorder;
+				}
+				if (identifyHistoryLeftX < safeBorder) {
+					identifyHistoryLeftX = safeBorder;
+				}
+				if (identifyHistoryRightX > this.width - 1 - safeBorder) {
+					identifyHistoryRightX = this.width - 1 - safeBorder;
+				}
+
+				this.identifyHistoryBox.leftX = identifyHistoryLeftX;
+				this.identifyHistoryBox.bottomY = identifyHistoryBottomY;
+				this.identifyHistoryBox.rightX = identifyHistoryRightX;
+				this.identifyHistoryBox.topY = identifyHistoryTopY;
 			}
 
 			// clip to display
