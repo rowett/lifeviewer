@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1304,
+		/** @const {number} */ versionBuild : 1306,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -20298,6 +20298,9 @@ This file is part of LifeViewer
 			/** @type {Pattern} */ pattern = null,
 			/** @type {Pattern} */ temp = null,
 			/** @type {number} */ speed = 0;
+
+		// prevent touches on the canvas since we handle them explicitly
+		this.mainCanvas.style.touchAction = "none";
 
 		// reset timings
 		this.menuManager.timingManager.reset();

@@ -5937,7 +5937,7 @@ This file is part of LifeViewer
 	// compute bounding box for Identify
 	/** @returns {BoundingBox} */
 	Life.prototype.updateIdentifyBox = function() {
-		var	/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : this.zoomBox),
+		var	/** @type {BoundingBox} */ box = (this.isHROT ? this.HROTBox : (this.isLifeHistory ? this.identifyHistoryBox : this.zoomBox)),
 			/** @type {BoundingBox} */ state6Box = this.state6Box,
 			/** @type {BoundingBox} */ identifyBox = this.identifyBox,
 			/** @type {number} */ boxOffset = (this.isMargolus ? -1 : 0);
@@ -15707,7 +15707,6 @@ This file is part of LifeViewer
 			/** @type {number} */ input = 0,
 			/** @type {number} */ over = 0,
 			/** @type {number} */ state = 0,
-			/** @type {number} */ inputHistory = 0,
 
 			// width in 16bit chunks
 			/** @type {number} */ w16 = this.width >> 4,
@@ -15733,6 +15732,7 @@ This file is part of LifeViewer
 			/** @type {BoundingBox} */ HROTBox = this.HROTBox,
 			/** @type {BoundingBox} */ initialBox = this.initialBox,
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
+			/** @type {BoundingBox} */ identifyHistoryBox = this.identifyHistoryBox,
 
 			// new box extent
 			/** @type {number} */ newBottomY = this.height,
@@ -15754,7 +15754,6 @@ This file is part of LifeViewer
 
 			// flag if something in the row was alive
 			/** @type {number} */ rowAlive = 0,
-			/** @type {number} */ rowAliveHistory = 0,
 
 			// safe border size
 			/** @type {number} */ safeBorder = this.isHROT ? (this.view.getSafeBorderSize() >> 1) : 0,
@@ -15799,7 +15798,6 @@ This file is part of LifeViewer
 
 					// flag nothing in the row
 					rowAlive = 0;
-					rowAliveHistory = 0;
 
 					// check each column
 					for (w = 0; w < width; w += 1) {
@@ -15807,17 +15805,10 @@ This file is part of LifeViewer
 						state = colourGridRow[w];
 						if (over || (state > 0 && state < this.aliveStart)) {
 							input = 1;
-							if ((over === state3 || over === state5 || over == state6)) {
-								inputHistory = 1;
-							} else {
-								inputHistory = 0;
-							}
 						} else {
 							input = 0;
-							inputHistory = 0;
 						}
 						rowAlive |= input;
-						rowAliveHistory |= inputHistory;
 
 						if (input) {
 							if (w < overlayLeftX) {
@@ -15825,15 +15816,6 @@ This file is part of LifeViewer
 							}
 							if (w > overlayRightX) {
 								overlayRightX = w;
-							}
-						}
-
-						if (inputHistory) {
-							if (w < identifyHistoryLeftX) {
-								identifyHistoryLeftX = w;
-							}
-							if (w > identifyHistoryRightX) {
-								identifyHistoryRightX = w;
 							}
 						}
 					}
@@ -15845,15 +15827,6 @@ This file is part of LifeViewer
 						}
 						if (h > overlayTopY) {
 							overlayTopY = h;
-						}
-					}
-
-					if (rowAliveHistory) {
-						if (h < identifyHistoryBottomY) {
-							identifyHistoryBottomY = h;
-						}
-						if (h > identifyHistoryTopY) {
-							identifyHistoryTopY = h;
 						}
 					}
 				}
@@ -15987,6 +15960,12 @@ This file is part of LifeViewer
 				newRightX = newLeftX;
 			}
 
+			// copy to [R]History identify box
+			identifyHistoryBox.leftX = newLeftX;
+			identifyHistoryBox.bottomY = newBottomY;
+			identifyHistoryBox.rightX = newRightX;
+			identifyHistoryBox.topY = newTopY;
+
 			// merge with overlay if required
 			if (overlayGrid) {
 				if (overlayTopY > newTopY) {
@@ -16001,25 +15980,6 @@ This file is part of LifeViewer
 				if (overlayRightX > newRightX) {
 					newRightX = overlayRightX;
 				}
-
-				// update identify history box
-				if (identifyHistoryTopY > this.height - 1 - safeBorder) {
-					identifyHistoryTopY = this.height - 1 - safeBorder;
-				}
-				if (identifyHistoryBottomY < safeBorder) {
-					identifyHistoryBottomY = safeBorder;
-				}
-				if (identifyHistoryLeftX < safeBorder) {
-					identifyHistoryLeftX = safeBorder;
-				}
-				if (identifyHistoryRightX > this.width - 1 - safeBorder) {
-					identifyHistoryRightX = this.width - 1 - safeBorder;
-				}
-
-				this.identifyHistoryBox.leftX = identifyHistoryLeftX;
-				this.identifyHistoryBox.bottomY = identifyHistoryBottomY;
-				this.identifyHistoryBox.rightX = identifyHistoryRightX;
-				this.identifyHistoryBox.topY = identifyHistoryTopY;
 			}
 
 			// clip to display
@@ -20713,6 +20673,7 @@ This file is part of LifeViewer
 	Life.prototype.processNextGen = function(/** @type {boolean} */ noHistory) {
 		var	/** @type {BoundingBox} */ zoomBox = this.zoomBox,
 			/** @type {BoundingBox} */ historyBox = this.historyBox,
+			/** @type {BoundingBox} */ identifyHistoryBox = this.identifyHistoryBox,
 			/** @type {number} */ boundarySize = 16,
 			/** @type {number} */ currentPop = 0,
 			/** @type {number} */ timing = 0;
@@ -20774,6 +20735,14 @@ This file is part of LifeViewer
 					}
 				}
 			}
+		}
+
+		// set the Identify bounding box for [R]History to the alive cells - it will be merged later with any state 6 bounding box
+		if (this.isLifeHistory) {
+			identifyHistoryBox.leftX = zoomBox.leftX;
+			identifyHistoryBox.bottomY = zoomBox.bottomY;
+			identifyHistoryBox.rightX = zoomBox.rightX;
+			identifyHistoryBox.topY = zoomBox.topY;
 		}
 
 		// increment generation count

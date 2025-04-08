@@ -3825,6 +3825,11 @@ This file is part of LifeViewer
 			/** @type {number} */ numChanges = changes.length,
 			/** @type {number} */ i = 0;
 
+		// immediately prevent default handler since on some devices preventDefault appears not to be respected
+		if (event.cancelable) {
+			event.preventDefault();
+		}
+
 		// determine which event was received
 		switch (event.type) {
 		// touch start
@@ -4017,9 +4022,6 @@ This file is part of LifeViewer
 		// stop event propagating
 		if (event.stopPropagation) {
 			event.stopPropagation();
-		}
-		if (event.cancelable) {
-			event.preventDefault();
 		}
 	};
 
