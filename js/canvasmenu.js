@@ -2748,9 +2748,20 @@ This file is part of LifeViewer
 		registerEvent(mainCanvas, "touchend", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
 		registerEvent(mainCanvas, "touchcancel", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
 
+		// register event listeners for unload if LifeViewer home page
+		if (document.getElementById("ViewerCopy")) {
+			registerEvent(window, "beforeunload", function(/** @type {Event} */ event) {me.unloadHandler(me, event);}, false);
+		}
+
 		// setup r g b components
 		this.setRGBComponents();
 	}
+
+	// unload page event
+	MenuManager.prototype.unloadHandler = function(/** @type {MenuManager} */ me, /** @type {Event} */ event) {
+		event.preventDefault();
+		event.returnValue = true;
+	};
 
 	// update timing item
 	MenuManager.prototype.updateTimingItem = function(/** @type {string} */ name, /** @type {number} */ value, /** @type {boolean} */ isWASM) {

@@ -384,6 +384,9 @@ This file is part of LifeViewer
 		// RuleTable repository end tag
 		/** @const {string} */ this.ruleSearchEndTag = "<!--";
 
+		// rule table all zeros to zero flag
+		/** @type {boolean} */ this.ruleTableAllZeroToZero = false;
+
 		// _none_ rule (must be lower case)
 		/** @const {string} */ this.noneRuleName = "none";
 
@@ -9287,8 +9290,13 @@ This file is part of LifeViewer
 				}
 			}
 
+			// check for all zero inputs to zero output
+			if (output === 0 && numZeroInputs === nInputs) {
+				this.ruleTableAllZeroToZero = true;
+			}
+
 			// check for B0
-			if (output !== 0 && numZeroInputs === nInputs) {
+			if (output !== 0 && numZeroInputs === nInputs && !this.ruleTableAllZeroToZero) {
 				this.ruleTableB0 = true;
 			}
 		}
@@ -9366,6 +9374,9 @@ This file is part of LifeViewer
 			/** @type {Array<Array<Array<number>>>} */ lut = [],
 			/** @type {number} */ numDups = 0,
 			/** @type {Array} */ dedupe = [];
+
+		// clear the B0 override flag (rule found where all zero states maps to zero output)
+		this.ruleTableAllZeroToZero = false;
 
 		// allocate the LUT
 		for (i = 0; i < nInputs; i += 1) {

@@ -1,3 +1,9 @@
+Build 1308
+- fixed issue with RuleTables and B0
+
+Build 1307
+- request confirmation if refreshing or navigating away from the LifeViewer home page
+
 Build 1306
 - fixed [R]History bounding box with Identify
 
