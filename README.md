@@ -8,6 +8,7 @@ Currently used on:
 * [ConwayLife Forums](http://www.conwaylife.com/forums)
 * [ConwayLife Wiki](http://www.conwaylife.com/wiki)
 * [Catagolue](http://catagolue.appspot.com)
+* [Minecraft Wiki](https://minecraft.wiki)
 
 Written in plain Javascript/HTML5 without any external libraries.
 
