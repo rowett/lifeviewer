@@ -1,3 +1,15 @@
+Build 1311
+- fixed Identify Page Up button greying out
+- fixed SHADER error message case
+
+Build 1310
+- fixed [R]History state 2 with PASTE
+- fixed STARTFROM being executed with invalid patterns
+- fixed STARTFROM not starting when initial pattern empty and pending PASTEs
+
+Build 1309
+- fixed Advance Outside issue after Reset
+
 Build 1308
 - fixed issue with RuleTables and B0
 

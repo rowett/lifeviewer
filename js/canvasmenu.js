@@ -4069,9 +4069,7 @@ This file is part of LifeViewer
 			// check if the canvas has focus
 			if (!me.hasFocus) {
 				// set focus on canvas element
-				if (!me.eventWasTouch) {
-					me.mainCanvas.focus();
-				}
+				me.mainCanvas.focus();
 				me.hasFocus = true;
 
 				// clear click to focus notification

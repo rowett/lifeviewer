@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1308,
+		/** @const {number} */ versionBuild : 1311,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3517,7 +3517,7 @@ This file is part of LifeViewer
 
 		while (i < this.editList.length && !found) {
 			record = this.editList[i];
-			if (record.gen > 0 || record.action === "advance selection" || record.action === "advanced outside") {
+			if (record.gen > 0 || record.action === "advance selection" || record.action === "advance outside") {
 				found = true;
 			} else {
 				if (record.selection) {
@@ -7604,7 +7604,7 @@ This file is part of LifeViewer
 		this.identifyPageDownButton.deleted = shown;
 
 		// lock page up and down buttons
-		this.identifyPageUpButton.locked = (this.engine.tableStartRow === 0);
+		this.identifyPageUpButton.locked = ((this.engine.tableStartRow | 0) === 0);
 		this.identifyPageDownButton.locked = (this.engine.tableStartRow >= this.engine.tableMaxRow - this.engine.tablePageSize);
 
 		// undo and redo buttons
@@ -19861,11 +19861,6 @@ This file is part of LifeViewer
 			// enable the menu
 			this.viewMenu.deleted = false;
 
-			// display hotkey to shrink
-			if (!this.menuManager.eventWasTouch) {
-				this.menuManager.notification.notify("Shrink with hotkey N", 15, 100, 15, true);
-			}
-
 			// resize
 			this.resize();
 		}
@@ -21744,18 +21739,6 @@ This file is part of LifeViewer
 			//console.timeEnd("resetColourGridBox");
 			//console.timeEnd("resetBoxes");
 
-			// draw any rle snippets after colour grid conversion (for paste blending modes)
-			me.pasteRLEList();
-
-			// reset boxes again if RLE was pasted
-			if (me.pasteList.length > 0) {
-				me.engine.resetBoxes(me.state1Fit);
-				me.engine.resetHistoryBox();
-				if (me.engine.multiNumStates <= 2) {
-					me.engine.resetColourGridBox(me.engine.grid16);
-				}
-			}
-
 			// check if pattern is an [R]History pattern
 			if (me.engine.isLifeHistory) {
 				// check if there are state 2 cells
@@ -21763,6 +21746,15 @@ This file is part of LifeViewer
 					// copy state 2 to the colour grid
 					me.engine.copyState2(pattern, me.panX, me.panY);
 				}
+			}
+
+			// draw any rle snippets after colour grid conversion (for paste blending modes)
+			me.pasteRLEList();
+
+			// reset boxes again if RLE was pasted
+			if (me.pasteList.length > 0) {
+				me.engine.resetBoxes(me.state1Fit);
+				me.engine.resetHistoryBox();
 			}
 
 			// reset population
@@ -22223,9 +22215,12 @@ This file is part of LifeViewer
 		}
 
 		// notify if start from is defined
+		if (me.failureReason !== "") {
+			me.startFrom = -1;
+		}
 		if (me.startFrom !== -1) {
 			if (me.genNotifications) {
-				if (me.engine.population === 0) {
+				if (me.engine.population === 0 && me.lifeEnded()) {
 					me.menuManager.notification.notify("No live cells", 15, 360, 15, false);
 					me.startFrom = -1;
 				} else {

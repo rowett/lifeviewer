@@ -25,6 +25,16 @@ This file is part of LifeViewer
 		/** @type {number} */ BSnValue : 0
 	};
 
+	// convert a string to camel case
+	/** @returns {string} */
+	ScriptParser.camelCase = function(/** @type {string} */ token) {
+		var	/** @type {string} */ result = token.substring(0, 1).toUpperCase();
+
+		result += token.substring(1).toLowerCase();
+
+		return result;
+	};
+
 	// check if a string is a script command
 	/** @returns {boolean} */
 	ScriptParser.isScriptCommand = function(/** @type {string} */ tokenString) {
@@ -4960,7 +4970,7 @@ This file is part of LifeViewer
 											break;
 									}
 
-									scriptErrors[scriptErrors.length] = [Keywords.shaderWord + " " + stringToken, "overwrites " + stringValue];
+									scriptErrors[scriptErrors.length] = [Keywords.shaderWord + " " + this.camelCase(stringToken), "overwrites " + this.camelCase(stringValue)];
 								}
 
 								if (!(view.engine.multiNumStates > 2 || view.engine.isHROT || view.engine.isPCA || view.engine.isLifeHistory || view.engine.isSuper || view.engine.isExtended || view.engine.isRuleTree)) {
@@ -6345,4 +6355,9 @@ This file is part of LifeViewer
 
 		// sort annotations into zoom order
 		view.waypointManager.sortAnnotations();
+
+		// disable start from if there were errors
+		if (view.failureReason !== "") {
+			view.startFrom = -1;
+		}
 	};
