@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1311,
+		/** @const {number} */ versionBuild : 1312,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -552,6 +552,9 @@ This file is part of LifeViewer
 
 		// last copied text
 		/** @type {string} */ clipText : "",
+
+		// bit counts for 16bit values
+		/** @type {Uint8Array} */ bitCounts16 : new Uint8Array(65536),
 
 		// frame rate measurement
 		/** @type {number} */ firstFrame : 0,
@@ -877,6 +880,22 @@ This file is part of LifeViewer
 
 		// return number of viewers stopped
 		return result;
+	};
+
+	// initialize bit counts
+	Controller.initBitCounts = function() {
+		var	/** @type {number} */ i,
+			/** @type {number} */ v,
+			/** @type {number} */ c,
+			/** @type {Uint8Array} */ bitCounts = this.bitCounts16;
+
+		for (i = 0; i < 65536; i += 1) {
+			v = i;
+			for (c = 0; v; c += 1) {
+				v &= v - 1;
+			}
+			bitCounts[i] = c;
+		}
 	};
 
 	// BitVector
@@ -3534,7 +3553,7 @@ This file is part of LifeViewer
 				i += 1;
 			}
 		}
-		
+
 		this.editNum = i;
 		this.updateUndoToolTips();
 	};
@@ -4378,7 +4397,7 @@ This file is part of LifeViewer
 					bottomY = 0;
 					topY = this.engine.height - 1;
 				}
-	
+
 				// check the coordinates are within the bounded grid
 				if (x >= leftX && x <= rightX && y >= bottomY && y <= topY) {
 					// draw the cell
@@ -8262,7 +8281,7 @@ This file is part of LifeViewer
 
 			// output the script command to launch Identify
 			rle += "#C [[ AUTOIDENTIFY ]]\n";
-	
+
 			// add the current RLE
 			rle += this.engine.asRLE(this, this.engine, this.engine.multiNumStates, this.engine.multiNumStates, [], false, LifeConstants.rleComments);
 
@@ -18139,7 +18158,7 @@ This file is part of LifeViewer
 	View.prototype.saveCurrentRLE = function(/** @type {View} */ me) {
 		// don't use alias names since it makes it less compatible with other CA simulators
 		var	/** @type {string} */ rle = "";
-		
+
 		// shrink the bounding box to fit the pattern
 		me.engine.shrinkNeeded = true;
 		me.engine.doShrink();
@@ -19128,7 +19147,7 @@ This file is part of LifeViewer
 		// toggle safe mode
 		this.safeModeButton = this.viewMenu.addListItem(this.viewSafeModeToggle, Menu.middle, 100, 50, 180, 40, ["Safe Mode"], [this.safeMode], Menu.multi);
 		this.safeModeButton.toolTip = ["toggle safe mode [Shift F9]"];
-		
+
 		// toggle refresh rate
 		this.refreshRateButton = this.viewMenu.addButtonItem(this.viewRefreshPressed, Menu.middle, -100, 100, 180, 40, "Refresh Rate");
 		this.refreshRateButton.toolTip = ["set refresh rate"];
@@ -23113,6 +23132,9 @@ This file is part of LifeViewer
 		// initialise the aliases
 		AliasManager.init();
 
+		// initialize the bit counts
+		Controller.initBitCounts();
+
 		// check for safe mode
 		// search for rle divs
 		for (i = 0; i < divList.length; i += 1) {
@@ -23191,14 +23213,14 @@ This file is part of LifeViewer
 								} else {
 									// remove any html tags from the text item and trim
 									cleanItem = cleanPattern(textItem);
-	
+
 									// null the anchor so we can tell if it gets created
 									anchorItem = null;
-	
+
 									// check if the contents is a valid pattern (will add to Controller if in multiverse mode)
 									isPattern(cleanItem, allocator, manager, rleItem, textItem, null);
 								}
-	
+
 								console.timeEnd("read popup");
 								popupReads += 1;
 							}

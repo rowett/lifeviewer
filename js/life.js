@@ -716,8 +716,7 @@ This file is part of LifeViewer
 		/** @type {Int32Array} */ this.customColours = null;
 
 		// bit counts for 16bit values
-		/** @type {Uint8Array} */ this.bitCounts16 = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, 65536, "Life.bitCounts16", false));
-		this.initBitCounts16();
+		/** @type {Uint8Array} */ this.bitCounts16 = Controller.bitCounts16;
 
 		// population graph array
 		/** @type {Array<Uint32Array>} */ this.popGraphData = null;
@@ -1075,13 +1074,16 @@ This file is part of LifeViewer
 		/** @type {Array<Uint16Array>} */ this.diedGrid = null;
 
 		// blank row for 16bit life grid
-		/** @type {Uint16Array} */ this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
+		///** @type {Uint16Array} */ this.blankRow16 = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, ((this.width - 1) >> 4) + 1, "Life.blankRow16", Controller.useWASM));
+		/** @type {Uint16Array} */ this.blankRow16 = null;
 
 		// blank tile row to prevent wrap
-		/** @type {Uint16Array} */ this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
+		///** @type {Uint16Array} */ this.blankTileRow = /** @type {!Uint16Array} */ (this.allocator.allocate(Type.Uint16, this.tileCols >> 4, "Life.blankTileRow", Controller.useWASM));
+		/** @type {Uint16Array} */ this.blankTileRow = null;
 
 		// blank colour row
-		/** @type {Uint8Array} */ this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", Controller.useWASM));
+		///** @type {Uint8Array} */ this.blankColourRow = /** @type {!Uint8Array} */ (this.allocator.allocate(Type.Uint8, this.width, "Life.blankColourRow", Controller.useWASM));
+		/** @type {Uint8Array} */ this.blankColourRow = null;
 
 		// colour grid
 		/** @type {Array<Uint8Array>} */ this.colourGrid = null;
@@ -4083,6 +4085,9 @@ This file is part of LifeViewer
 		// get number of table rows
 		if (this.uniqueCellCounts) {
 			numRows = this.uniqueCellCounts.length;
+			if (this.cellPeriodState6) {
+				numRows += 1;
+			}
 
 			// see if the table would be off the bottom of the display (add 1 for the column headings)
 			y = startY + (rowHeight >> 1) + ((numRows + 1) * rowHeight);
@@ -11044,22 +11049,6 @@ This file is part of LifeViewer
 		}
 	};
 
-	// initialise 16bit counts
-	Life.prototype.initBitCounts16 = function() {
-		var	/** @type {number} */ i,
-			/** @type {number} */ v,
-			/** @type {number} */ c,
-			/** @type {Uint8Array} */ bitCounts = this.bitCounts16;
-
-		for (i = 0; i < 65536; i += 1) {
-			v = i;
-			for (c = 0; v; c += 1) {
-				v &= v - 1;
-			}
-			bitCounts[i] = c;
-		}
-	};
-
 	// initialise colour reset
 	Life.prototype.initColourReset = function() {
 		var	/** @type {number} */ h,
@@ -11839,9 +11828,9 @@ This file is part of LifeViewer
 		this.resizeDisplay(displayWidth, displayHeight);
 
 		// create the blank rows
-		blankRow16.fill(0);
-		blankColourRow.fill(unoccupied);
-		blankTileRow.fill(0);
+		//blankRow16.fill(0);
+		//blankColourRow.fill(unoccupied);
+		//blankTileRow.fill(0);
 
 		// create the 7x7 gliders
 		this.create7x7Gliders();

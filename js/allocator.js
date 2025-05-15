@@ -420,7 +420,7 @@ This file is part of LifeViewer
 	Allocator.prototype.allocate = function(/** @type {number} */ type, /** @type {number} */ elements, /** @type {string} */ name, /** @type {boolean} */ wasmHeap) {
 		var	/** @type {Uint8Array|Uint8ClampedArray|Uint16Array|Uint32Array|Int8Array|Int16Array|Int32Array|Float32Array|Float64Array|null} */ result = null;
 
-		//console.log("allocate(" + Type.typeName(type) + ", " + elements + ", " + name + (wasmHeap ? (", WASM " + String(this.wasmPointer)) : ")"));
+		//console.log("allocate(" + Type.typeName(type) + ", " + elements + ", " + name + (wasmHeap ? (", WASM " + String(this.wasmPointer) + ")") : ")"));
 
 		// get typed block of memory
 		result = this.typedMemory(type, elements, name, wasmHeap, false);

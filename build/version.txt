@@ -1,3 +1,6 @@
+Build 1312
+- fixed Cell Frequency Map legend missing final entry
+
 Build 1311
 - fixed Identify Page Up button greying out
 - fixed SHADER error message case
