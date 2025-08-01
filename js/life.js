@@ -8547,7 +8547,7 @@ This file is part of LifeViewer
 			bottomY = ((-halfDisplayHeight / yzoom) - yOff + h2) | 0;
 			topY = ((halfDisplayHeight / yzoom) - yOff + h2) | 0;
 
-			for (y = bottomY; y <= topY; y += 1) {
+			for (y = bottomY; y <= topY + 1; y += 1) {
 				// clip y to window
 				displayY = ((y + yOff - h2) * yzoom) + halfDisplayHeight;
 				if (displayY >= -yzoom && displayY < this.displayHeight + yzoom) {
@@ -29408,7 +29408,6 @@ This file is part of LifeViewer
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ tiles = 0,
-			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ calc = 0,
 			/** @type {boolean} */ process = true,
 			/** @type {number} */ width = this.width,
@@ -29450,9 +29449,6 @@ This file is part of LifeViewer
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowAliveOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
-
-			// whether the tile is alive
-			/** @type {number} */ tileAlive = 0,
 
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
@@ -29533,7 +29529,6 @@ This file is part of LifeViewer
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileGridRow[tw] | colourTileRow[tw];
-				nextTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -29549,9 +29544,6 @@ This file is part of LifeViewer
 							rowOccupied = 0;
 							rowAliveOccupied = 0;
 							rowIndex = 32768;
-
-							// flag nothing alive in the tile
-							tileAlive = 0;
 
 							// clear type mask
 							typeMask = 0;
@@ -29830,12 +29822,6 @@ This file is part of LifeViewer
 							rowOccupied16[th] |= rowOccupied;
 							columnAliveOccupied16[leftX] |= colAliveOccupied;
 							rowAliveOccupied16[th] |= rowAliveOccupied;
-
-							// check if the row was alive
-							if (tileAlive) {
-								// update tile flag
-								nextTiles |= (1 << b);
-							}
 						}
 
 						// next tile columns
@@ -29847,8 +29833,8 @@ This file is part of LifeViewer
 				}
 
 				// save the tile group
-				colourTileRow[tw] = tiles | nextTiles;
-				colourTileHistoryRow[tw] |= tiles | nextTiles;
+				colourTileRow[tw] = tiles;
+				colourTileHistoryRow[tw] |= tiles;
 			}
 
 			// next tile row
@@ -30010,7 +29996,6 @@ This file is part of LifeViewer
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ tiles = 0,
-			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ calc = 0,
 			/** @type {boolean} */ process = true,
 			/** @type {number} */ width = this.width,
@@ -30050,9 +30035,6 @@ This file is part of LifeViewer
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowAliveOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
-
-			// whether the tile is alive
-			/** @type {number} */ tileAlive = 0,
 
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
@@ -30133,7 +30115,6 @@ This file is part of LifeViewer
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileGridRow[tw] | colourTileRow[tw];
-				nextTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -30149,9 +30130,6 @@ This file is part of LifeViewer
 							rowOccupied = 0;
 							rowAliveOccupied = 0;
 							rowIndex = 32768;
-
-							// flag nothing alive in the tile
-							tileAlive = 0;
 
 							// clear type mask
 							typeMask = 0;
@@ -30425,12 +30403,6 @@ This file is part of LifeViewer
 							rowOccupied16[th] |= rowOccupied;
 							columnAliveOccupied16[leftX] |= colAliveOccupied;
 							rowAliveOccupied16[th] |= rowAliveOccupied;
-
-							// check if the row was alive
-							if (tileAlive) {
-								// update tile flag
-								nextTiles |= (1 << b);
-							}
 						}
 
 						// next tile columns
@@ -30442,8 +30414,8 @@ This file is part of LifeViewer
 				}
 
 				// save the tile group
-				colourTileRow[tw] = tiles | nextTiles;
-				colourTileHistoryRow[tw] |= tiles | nextTiles;
+				colourTileRow[tw] = tiles;
+				colourTileHistoryRow[tw] |= tiles;
 			}
 
 			// next tile row
@@ -30605,7 +30577,6 @@ This file is part of LifeViewer
 			/** @type {number} */ topY = 0,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ tiles = 0,
-			/** @type {number} */ nextTiles = 0,
 			/** @type {number} */ calc = 0,
 			/** @type {boolean} */ process = true,
 			/** @type {number} */ width = this.width,
@@ -30645,9 +30616,6 @@ This file is part of LifeViewer
 			/** @type {number} */ rowOccupied = 0,
 			/** @type {number} */ rowAliveOccupied = 0,
 			/** @type {number} */ rowIndex = 0,
-
-			// whether the tile is alive
-			/** @type {number} */ tileAlive = 0,
 
 			// set tile height
 			/** @type {number} */ ySize = this.tileY,
@@ -30724,7 +30692,6 @@ This file is part of LifeViewer
 			for (tw = 0; tw < tileCols16; tw += 1) {
 				// get the next tile group (16 tiles)
 				tiles = tileGridRow[tw] | colourTileRow[tw];
-				nextTiles = 0;
 
 				// check if any are occupied
 				if (tiles) {
@@ -30740,9 +30707,6 @@ This file is part of LifeViewer
 							rowOccupied = 0;
 							rowAliveOccupied = 0;
 							rowIndex = 32768;
-
-							// flag nothing alive in the tile
-							tileAlive = 0;
 
 							// clear type mask
 							typeMask = 0;
@@ -30972,12 +30936,6 @@ This file is part of LifeViewer
 							rowOccupied16[th] |= rowOccupied;
 							columnAliveOccupied16[leftX] |= colAliveOccupied;
 							rowAliveOccupied16[th] |= rowAliveOccupied;
-
-							// check if the row was alive
-							if (tileAlive) {
-								// update tile flag
-								nextTiles |= (1 << b);
-							}
 						}
 
 						// next tile columns
@@ -30989,8 +30947,8 @@ This file is part of LifeViewer
 				}
 
 				// save the tile group
-				colourTileRow[tw] = tiles | nextTiles;
-				colourTileHistoryRow[tw] |= tiles | nextTiles;
+				colourTileRow[tw] = tiles;
+				colourTileHistoryRow[tw] |= tiles;
 			}
 
 			// next tile row

@@ -2168,7 +2168,6 @@ void nextGenerationSuperMoore(
 			// get the next tile group (16 tiles)
 			uint32_t tiles = tileGridRow[tw] | colourTileRow[tw];
 			uint32_t currentX = leftX;
-			uint32_t nextTiles = 0;
 			uint32_t origTiles = tiles;
 
 			// compute next colour for each tile in the set
@@ -2186,9 +2185,6 @@ void nextGenerationSuperMoore(
 				uint32_t rowOccupied = 0;
 				uint32_t rowAliveOccupied = 0;
 				uint32_t rowIndex = 32768;
-
-				// flag nothing alive in the tile
-				uint32_t tileAlive = 0;
 
 				// clear type mask
 				uint32_t typeMask = 0;
@@ -2413,17 +2409,11 @@ void nextGenerationSuperMoore(
 				rowOccupied16[th] |= rowOccupied;
 				columnAliveOccupied16[leftX] |= colAliveOccupied;
 				rowAliveOccupied16[th] |= rowAliveOccupied;
-
-				// check if the row was alive
-				if (tileAlive) {
-					// update tile flag
-					nextTiles |= (1 << b);
-				}
 			}
 
 			// save the tile group
-			colourTileRow[tw] = origTiles | nextTiles;
-			colourTileHistoryRow[tw] |= origTiles | nextTiles;
+			colourTileRow[tw] = origTiles;
+			colourTileHistoryRow[tw] |= origTiles;
 
 			// next tile set
 			leftX = currentX + (xSize << 4);
@@ -2539,7 +2529,6 @@ void nextGenerationSuperHex(
 			// get the next tile group (16 tiles)
 			uint32_t tiles = tileGridRow[tw] | colourTileRow[tw];
 			uint32_t currentX = leftX;
-			uint32_t nextTiles = 0;
 			uint32_t origTiles = tiles;
 
 			// compute next colour for each tile in the set
@@ -2557,9 +2546,6 @@ void nextGenerationSuperHex(
 				uint32_t rowOccupied = 0;
 				uint32_t rowAliveOccupied = 0;
 				uint32_t rowIndex = 32768;
-
-				// flag nothing alive in the tile
-				uint32_t tileAlive = 0;
 
 				// clear type mask
 				uint32_t typeMask = 0;
@@ -2785,17 +2771,11 @@ void nextGenerationSuperHex(
 				rowOccupied16[th] |= rowOccupied;
 				columnAliveOccupied16[leftX] |= colAliveOccupied;
 				rowAliveOccupied16[th] |= rowAliveOccupied;
-
-				// check if the row was alive
-				if (tileAlive) {
-					// update tile flag
-					nextTiles |= (1 << b);
-				}
 			}
 
 			// save the tile group
-			colourTileRow[tw] = origTiles | nextTiles;
-			colourTileHistoryRow[tw] |= origTiles | nextTiles;
+			colourTileRow[tw] = origTiles;
+			colourTileHistoryRow[tw] |= origTiles;
 
 			// next tile set
 			leftX = currentX + (xSize << 4);
@@ -2911,7 +2891,6 @@ void nextGenerationSuperVN(
 			// get the next tile group (16 tiles)
 			uint32_t tiles = tileGridRow[tw] | colourTileRow[tw];
 			uint32_t currentX = leftX;
-			uint32_t nextTiles = 0;
 			uint32_t origTiles = tiles;
 
 			// compute next colour for each tile in the set
@@ -2929,9 +2908,6 @@ void nextGenerationSuperVN(
 				uint32_t rowOccupied = 0;
 				uint32_t rowAliveOccupied = 0;
 				uint32_t rowIndex = 32768;
-
-				// flag nothing alive in the tile
-				uint32_t tileAlive = 0;
 
 				// clear type mask
 				uint32_t typeMask = 0;
@@ -3151,17 +3127,11 @@ void nextGenerationSuperVN(
 				rowOccupied16[th] |= rowOccupied;
 				columnAliveOccupied16[leftX] |= colAliveOccupied;
 				rowAliveOccupied16[th] |= rowAliveOccupied;
-
-				// check if the row was alive
-				if (tileAlive) {
-					// update tile flag
-					nextTiles |= (1 << b);
-				}
 			}
 
 			// save the tile group
-			colourTileRow[tw] = origTiles | nextTiles;
-			colourTileHistoryRow[tw] |= origTiles | nextTiles;
+			colourTileRow[tw] = origTiles;
+			colourTileHistoryRow[tw] |= origTiles;
 
 			// next tile set
 			leftX = currentX + (xSize << 4);

@@ -2735,18 +2735,27 @@ This file is part of LifeViewer
 		// custom timing items
 		/** @type {TimingManager} */ this.timingManager = new TimingManager();
 
-		// register event listeners for canvas click
-		registerEvent(mainCanvas, "mousedown", function(/** @type {MouseEvent} */ event) {me.canvasMouseDown(me, event);}, false);
-		registerEvent(mainCanvas, "mousemove", function(/** @type {MouseEvent} */ event) {me.canvasMouseMove(me, event);}, false);
-		registerEvent(mainCanvas, "mouseup", function(/** @type {MouseEvent} */ event) {me.canvasMouseUp(me, event);}, false);
-		registerEvent(mainCanvas, "mouseover", function(/** @type {MouseEvent} */ event) {me.canvasMouseOver(me, event);}, false);
-		registerEvent(mainCanvas, "mouseout", function(/** @type {MouseEvent} */ event) {me.canvasMouseOut(me, event);}, false);
+		// register pointer handlers
+		//if (Supports.pointerEvents) {
+			//registerEvent(mainCanvas, "pointerdown", function(/** @type {PointerEvent} */ event) {me.canvasPointerDown(me, event);}, false);
+			//registerEvent(mainCanvas, "pointermove", function(/** @type {PointerEvent} */ event) {me.canvasPointerMove(me, event);}, false);
+			//registerEvent(mainCanvas, "pointerup", function(/** @type {PointerEvent} */ event) {me.canvasPointerUp(me, event);}, false);
+			//registerEvent(mainCanvas, "pointerover", function(/** @type {PointerEvent} */ event) {me.canvasPointerOver(me, event);}, false);
+			//registerEvent(mainCanvas, "pointerout", function(/** @type {PointerEvent} */ event) {me.canvasPointerOut(me, event);}, false);
+		//} else {
+			// register mouse event listeners
+			registerEvent(mainCanvas, "mousedown", function(/** @type {MouseEvent} */ event) {me.canvasMouseDown(me, event);}, false);
+			registerEvent(mainCanvas, "mousemove", function(/** @type {MouseEvent} */ event) {me.canvasMouseMove(me, event);}, false);
+			registerEvent(mainCanvas, "mouseup", function(/** @type {MouseEvent} */ event) {me.canvasMouseUp(me, event);}, false);
+			registerEvent(mainCanvas, "mouseover", function(/** @type {MouseEvent} */ event) {me.canvasMouseOver(me, event);}, false);
+			registerEvent(mainCanvas, "mouseout", function(/** @type {MouseEvent} */ event) {me.canvasMouseOut(me, event);}, false);
 
-		// register event listeners for touch
-		registerEvent(mainCanvas, "touchstart", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
-		registerEvent(mainCanvas, "touchmove", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
-		registerEvent(mainCanvas, "touchend", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
-		registerEvent(mainCanvas, "touchcancel", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+			// register touch event listeners
+			registerEvent(mainCanvas, "touchstart", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+			registerEvent(mainCanvas, "touchmove", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+			registerEvent(mainCanvas, "touchend", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+			registerEvent(mainCanvas, "touchcancel", function(/** @type {TouchEvent} */ event) {me.touchHandler(me, event);}, false);
+		//}
 
 		// register event listeners for unload if LifeViewer home page
 		if (document.getElementById("ViewerCopy")) {

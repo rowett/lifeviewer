@@ -27,6 +27,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ littleEndian : false,
 		/** @type {boolean} */ copyWithin : false,
 		/** @type {boolean} */ cmdKey : false,
+		/** @type {boolean} */ pointerEvents : false,
 
 		// for determining endian
 		/** @type {Uint8Array} */ data8 : null,
@@ -60,6 +61,11 @@ This file is part of LifeViewer
 	if (!window.requestAnimationFrame) {
 		// @ts-ignore
 		window.requestAnimationFrame = (function() { return (window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame); }());
+	}
+
+	// check for pointer events
+	if (window.onpointerdown) {
+		Supports.pointerEvents = true;
 	}
 
 	// implement cross-browser typed arrays

@@ -1,3 +1,8 @@
+Build 1313
+- fixed hexagonal grid not displaying final row
+- disable Identify when PASTEs are defined
+- fixed Rule Table rules not reloading correctly from cache in Pro
+
 Build 1312
 - fixed Cell Frequency Map legend missing final entry
 

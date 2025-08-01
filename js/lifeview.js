@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1312,
+		/** @const {number} */ versionBuild : 1313,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7792,7 +7792,7 @@ This file is part of LifeViewer
 		shown = this.engine.isNone || !this.executable;
 		this.randomizeButton.locked = shown || this.engine.isRuleTree;
 		this.randomizePatternButton.locked = shown;
-		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom || (this.engine.boundedGridType !== -1 && (this.engine.boundedGridWidth === 0 || this.engine.boundedGridHeight === 0)) || this.engine.altSpecified;
+		this.identifyButton.locked = shown || this.viewOnly || this.engine.HROT.useRandom || (this.engine.boundedGridType !== -1 && (this.engine.boundedGridWidth === 0 || this.engine.boundedGridHeight === 0)) || this.engine.altSpecified || (this.pasteEvery > 0) || this.maxPasteGen >= 0;
 		this.lastIdentifyResultsButton.locked = shown || this.viewOnly || this.lastIdentifyType === "Empty" || this.lastIdentifyType === "none" || this.lastIdentifyType === "";
 		this.copyRuleButton.locked = shown;
 		this.copyAsMAPButton.locked = shown || !(this.engine.isRuleTree && this.engine.multiNumStates === 2 && !this.engine.ruleTableB0 && !(this.engine.ruleTableOutput && this.engine.ruleTableNeighbourhood === PatternConstants.ruleTableOneD));
@@ -22012,7 +22012,10 @@ This file is part of LifeViewer
 
 		// check whether autoidentify required
 		if (me.autoIdentify && !me.thumbLaunch) {
-			me.identifyPressed(me);
+			// disable if there are pastes
+			if (!(me.maxPasteGen >= 0 || me.pasteEvery > 0)) {
+				me.identifyPressed(me);
+			}
 		}
 
 		// set the pause button

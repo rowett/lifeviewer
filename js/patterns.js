@@ -271,12 +271,24 @@ This file is part of LifeViewer
 
 			// load retrieved record
 			if (record.isTree) {
+				if (pattern.allocator === null) {
+					pattern.allocator = WASM.allocator
+				}
 				pattern.ruleTreeStates = record.states;
 				pattern.ruleTreeNeighbours = record.neighbours;
 				pattern.ruleTreeNodes = record.nodes;
 				pattern.ruleTreeBase = record.base;
-				pattern.ruleTreeA = record.ruleA;
-				pattern.ruleTreeB = record.ruleB;
+
+				// allocate the rule tree
+				pattern.ruleTreeA = /** @type {!Uint32Array} */ (pattern.allocator.allocate(Type.Uint32, record.ruleA.length, "Life.ruleTreeA", Controller.useWASM));
+				pattern.ruleTreeB = /** @type {!Uint8Array} */ (pattern.allocator.allocate(Type.Uint8, record.ruleB.length, "Life.ruleTreeB", Controller.useWASM));
+				for (i = 0; i < record.ruleA.length; i += 1) {
+					pattern.ruleTreeA[i] = record.ruleA[i];
+				}
+				for (i = 0; i < record.ruleB.length; i += 1) {
+					pattern.ruleTreeB[i] = record.ruleB[i];
+				}
+
 				pattern.isHex = record.isHex;
 			} else {
 				pattern.ruleTableStates = record.states;
