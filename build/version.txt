@@ -1,3 +1,6 @@
+Build 1314
+- fixed Paste from system clipboard
+
 Build 1313
 - fixed hexagonal grid not displaying final row
 - disable Identify when PASTEs are defined
