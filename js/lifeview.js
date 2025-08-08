@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1314,
+		/** @const {number} */ versionBuild : 1315,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -13936,12 +13936,17 @@ This file is part of LifeViewer
 
 	// save button
 	View.prototype.savePressed = function(/** @type {View} */ me) {
+		var 	/** @type {boolean} */ wasActive = me.isSelection;
+
+		// disable selection if it is active
+		me.isSelection = false;
+
+		// save the current pattern
 		me.saveCurrentRLE(me);
-		if (me.isSelection) {
-			me.menuManager.notification.notify("Selection saved", 15, 120, 15, true);
-		} else {
-			me.menuManager.notification.notify("Pattern saved", 15, 120, 15, true);
-		}
+		me.menuManager.notification.notify("Pattern saved", 15, 120, 15, true);
+
+		// restore selection state
+		me.isSelection = wasActive;
 	};
 
 	// load button

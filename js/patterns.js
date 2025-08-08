@@ -199,7 +199,9 @@ This file is part of LifeViewer
 		var	/** @type {number} */ i = 0,
 			/** @type {number} */ l = this.rules.length,
 			/** @type {boolean} */ found = false,
-			/** @type {string} */ name = pattern.ruleName;
+			/** @type {string} */ name = pattern.ruleName,
+			/** @type {Uint32Array} */ localRuleA = null,
+			/** @type {Uint32Array} */ localRuleB = null;
 
 		// convert spaces to underscores
 		name = name.replace(/ /g, "_");
@@ -219,9 +221,21 @@ This file is part of LifeViewer
 			// create rule record
 			if (pattern.ruleTableOutput === null) {
 				// add @TREE
+
+				// create a local copy of the rule arrays
+				localRuleA = new Uint32Array(pattern.ruleTreeA.length);
+				localRuleB = new Uint32Array(pattern.ruleTreeB.length);
+				for (i = 0; i < pattern.ruleTreeA.length; i += 1) {
+					localRuleA[i] = pattern.ruleTreeA[i];
+				}
+				for (i = 0; i < pattern.ruleTreeB.length; i += 1) {
+					localRuleB[i] = pattern.ruleTreeB[i];
+				}
+
+				// add the rule to the cache
 				this.rules[l] = {name: name, isTree: true, states: pattern.ruleTreeStates, neighbours: pattern.ruleTreeNeighbours,
-					nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: pattern.ruleTreeA,
-					ruleB: pattern.ruleTreeB, colours: pattern.ruleTreeColours, icons: pattern.ruleTableIcons,
+					nodes: pattern.ruleTreeNodes, base: pattern.ruleTreeBase, ruleA: localRuleA,
+					ruleB: localRuleB, colours: pattern.ruleTreeColours, icons: pattern.ruleTableIcons,
 					names: pattern.ruleTableNames, isHex: pattern.ruleTreeIsHex, b0: ruleTableB0};
 			} else {
 				// add @TABLE

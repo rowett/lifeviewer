@@ -1,3 +1,7 @@
+Build 1315
+- Save Pattern will now always save the entire pattern (regardless of any selection)
+= fixed another Rule Table cache issue in Pro
+
 Build 1314
 - fixed Paste from system clipboard
 
