@@ -3885,7 +3885,7 @@ This file is part of LifeViewer
 								isNumeric = true;
 
 								// get the value
-								numberValue = scriptReader.getNextTokenAsNumber() | 0;
+								numberValue = Math.floor(scriptReader.getNextTokenAsNumber());
 
 								// check it is in range
 								if (numberValue >= 0 && numberValue <= ViewConstants.maxStartFromGeneration) {
