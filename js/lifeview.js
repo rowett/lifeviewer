@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1316,
+		/** @const {number} */ versionBuild : 1318,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -4453,7 +4453,8 @@ This file is part of LifeViewer
 			/** @type {Array<Uint8Array>} */ stateMap = null,
 			/** @type {Uint8Array} */ stateRow = null,
 			/** @type {number} */ numStates = this.engine.multiNumStates - 1,
-			/** @type {number} */ wasState6 = 0;
+			/** @type {number} */ wasState6 = 0,
+			/** @type {boolean} */ useHistory = this.engine.cellRenderer === LifeConstants.shaderCellAge && this.engine.themes[this.engine.colourTheme].hasHistory(this.engine.isLifeHistory, this);
 
 		// ignore PASTE for none rule
 		if (this.engine.isNone) {
@@ -4785,11 +4786,7 @@ This file is part of LifeViewer
 									result = ((mode & (8 >> ((sourceFlag + sourceFlag) | destFlag))) === 0 ? 0 : 1);
 									if ((result !== dest) || mode === ViewConstants.pasteModeCopy) {
 										if (!((source === 0) && (dest === 0))) {
-											if (this.engine.cellRenderer === LifeConstants.shaderCellAge) {
-												this.setStateWithCheck(xOff + x, yOff + y, result, false);
-											} else {
-												this.setStateWithCheck(xOff + x, yOff + y, result, true);
-											}
+											this.setStateWithCheck(xOff + x, yOff + y, result, !useHistory);
 										}
 									}
 								}

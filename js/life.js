@@ -16936,7 +16936,7 @@ This file is part of LifeViewer
 			maxY = topY - Math.abs(dx) * 4;
 			found = false;
 
-			while (!found && !(xc < minX || xc > maxX || yc < minY || yc > maxY)) {
+			while (!found && !(xc < minX - 2 || xc > maxX + 2 || yc < minY - 2 || yc > maxY + 2)) {
 				colourRow = colourGrid[yc];
 
 				/* TBD debug search area

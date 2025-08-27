@@ -1,10 +1,16 @@
+Build 1318
+- fixed KILLGLIDERS boundary
+
+Build 1317
+- fixed dead cells when using Cell Age and Themes with no history
+
 Build 1316
 - fixed dead cells when using Shaders other than Cell Age
 - fixed range check for [[ STARTFROM ]]
 
 Build 1315
 - Save Pattern will now always save the entire pattern (regardless of any selection)
-= fixed another Rule Table cache issue in Pro
+- fixed another Rule Table cache issue in Pro
 
 Build 1314
 - fixed Paste from system clipboard
