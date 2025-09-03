@@ -1410,7 +1410,8 @@ This file is part of LifeViewer
 			/** @type {Float32Array} */ snowY = this.snowY,
 			/** @type {Float32Array} */ snowDY = this.snowDY,
 			/** @type {Uint32Array} */ snowRevive = this.snowRevive,
-			/** @type {number} */ snowCol = this.view.snowColour;
+			/** @type {number} */ snowCol = this.view.snowColour,
+			/** @type {number} */ yScale = 60 / Controller.refreshRate;
 
 		// set snow colour
 		if (this.littleEndian) {
@@ -1423,9 +1424,10 @@ This file is part of LifeViewer
 		for (i = 0; i < LifeConstants.flakes; i += 1) {
 			lastX = snowX[i];
 			lastY = snowY[i];
-			dirY = snowDY[i];
+			dirY = snowDY[i] * yScale;
 			newX = lastX;
 			newY = lastY;
+
 			// check if the flake is on screen
 			if (lastY >= 0 && lastY < ht - 1) {
 				// check if the delta moves the flake a pixel down
@@ -16930,13 +16932,13 @@ This file is part of LifeViewer
 			yc = y + 3 + dy;
 			xc += dx;
 			yc += dy;
-			minX = leftX + Math.abs(dx) * 4;
-			maxX = rightX - Math.abs(dx) * 4;
-			minY = bottomY + Math.abs(dx) * 4;
-			maxY = topY - Math.abs(dx) * 4;
+			minX = leftX;
+			maxX = rightX;
+			minY = bottomY;
+			maxY = topY;
 			found = false;
 
-			while (!found && !(xc < minX - 2 || xc > maxX + 2 || yc < minY - 2 || yc > maxY + 2)) {
+			while (!found && !(xc < minX || xc > maxX || yc < minY || yc > maxY)) {
 				colourRow = colourGrid[yc];
 
 				/* TBD debug search area
@@ -49721,6 +49723,9 @@ This file is part of LifeViewer
 			/** @type {number} */ bottomY = (Math.round((this.height - height) / 2 - 1) + boxOffset),
 			/** @type {number} */ topY = bottomY + height + 1,
 
+			// alive cell value
+			/** @type {number} */ aliveStart = this.multiNumStates <= 2 ? this.aliveStart : this.historyStates + 1,
+
 			// counter
 			/** @type {number} */ i = 0,
 
@@ -49738,14 +49743,14 @@ This file is part of LifeViewer
 			// draw top and bottom only
 			row = colourGrid[topY];
 			for (i = 0; i < this.width; i += 1) {
-				if (row[i] === 0) {
+				if (row[i] < aliveStart) {
 					row[i] = border;
 				}
 			}
 
 			row = colourGrid[bottomY];
 			for (i = 0; i < this.width; i += 1) {
-				if (row[i] === 0) {
+				if (row[i] < aliveStart) {
 					row[i] = border;
 				}
 			}
@@ -49755,11 +49760,11 @@ This file is part of LifeViewer
 				// draw left and right only
 				for (i = 0; i < this.height; i += 1) {
 					col = colourGrid[i];
-					if (col[leftX] === 0) {
+					if (col[leftX] < aliveStart) {
 						col[leftX] = border;
 					}
 
-					if (col[rightX] === 0) {
+					if (col[rightX] < aliveStart) {
 						col[rightX] = border;
 					}
 				}
@@ -49767,14 +49772,14 @@ This file is part of LifeViewer
 				// draw top and bottom
 				row = colourGrid[topY];
 				for (i = leftX; i <= rightX; i += 1) {
-					if (row[i] === 0) {
+					if (row[i] < aliveStart) {
 						row[i] = border;
 					}
 				}
 
 				row = colourGrid[bottomY];
 				for (i = leftX; i <= rightX ; i += 1) {
-					if (row[i] === 0) {
+					if (row[i] < aliveStart) {
 						row[i] = border;
 					}
 				}
@@ -49782,11 +49787,11 @@ This file is part of LifeViewer
 				// draw left and right
 				for (i = bottomY + 1; i <= topY - 1; i += 1) {
 					col = colourGrid[i];
-					if (col[leftX] === 0) {
+					if (col[leftX] < aliveStart) {
 						col[leftX] = border;
 					}
 
-					if (col[rightX] === 0) {
+					if (col[rightX] < aliveStart) {
 						col[rightX] = border;
 					}
 				}

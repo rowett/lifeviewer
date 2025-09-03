@@ -487,8 +487,8 @@ void getHashSuper(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		uint32_t yshift = y - bottom;
-		uint32_t yPrime = yshift * primeY;
-		uint32_t yPrime2 = yshift * primeY2;
+		uint64_t yPrime = yshift * primeY;
+		uint64_t yPrime2 = yshift * primeY2;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -530,8 +530,8 @@ void getHashSuper(
 	}
 
 	// return data to JS
-	shared[0] = hash;
-	shared[1] = hash2;
+	shared[0] = (uint32_t)hash;
+	shared[1] = (uint32_t)hash2;
 }
 
 
@@ -592,7 +592,7 @@ void getHashLifeHistory(
 
 			// check for overlay state 6 cells
 			v128_t ov6Row = wasm_v128_load(overlayRow);
-			ov6Row = wasm_i8x16_eq(row, overlay6);
+			ov6Row = wasm_i8x16_eq(ov6Row, overlay6);
 
 			// combine the alive and overlay 6 cells
 			row = wasm_v128_or(row, ov6Row);
@@ -615,6 +615,7 @@ void getHashLifeHistory(
 
 			// next chunk
 			colourRow += 16;
+			overlayRow += 16;
 		}
 
 		// next row
@@ -623,8 +624,8 @@ void getHashLifeHistory(
 	}
 
 	// return data to JS
-	shared[0] = hash;
-	shared[1] = hash2;
+	shared[0] = (uint32_t)hash;
+	shared[1] = (uint32_t)hash2;
 }
 
 
@@ -700,8 +701,8 @@ void getHashRuleLoaderOrPCAOrExtended(
 	}
 
 	// return data to JS
-	shared[0] = hash;
-	shared[1] = hash2;
+	shared[0] = (uint32_t)hash;
+	shared[1] = (uint32_t)hash2;
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -777,6 +778,6 @@ void getHashGenerations(
 	}
 
 	// return data to JS
-	shared[0] = hash;
-	shared[1] = hash2;
+	shared[0] = (uint32_t)hash;
+	shared[1] = (uint32_t)hash2;
 }

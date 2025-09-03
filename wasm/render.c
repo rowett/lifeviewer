@@ -32,6 +32,7 @@ This file is part of LifeViewer
 #include <string.h>
 #include <wasm_simd128.h>
 #include <emscripten.h>
+#include <math.h>
 
 
 EMSCRIPTEN_KEEPALIVE
@@ -1370,7 +1371,7 @@ void renderGridClipNoRotate(
 	// precompute offsets
 	double x = sx;
 	for (uint32_t i = 0; i < displayWidth; i++) {
-		int32_t xi = (int32_t)x;
+		int32_t xi = (int32_t)floor(x);
 		if (x >= 0 && ((xi & wt) == (xi & wm))) {
 			xOffsets[i] = xi & wm;
 		} else {
@@ -1385,7 +1386,7 @@ void renderGridClipNoRotate(
 
 	x = sx;
 	for (uint32_t i = 0; i < displayWidth; i++) {
-		int32_t xi = (int32_t)x;
+		int32_t xi = (int32_t)floor(x);
 		if (xi + xadj >= 0 && xi + xadj < maxGridSize) {
 			xMaxOffsets[i] = 0;
 		} else {
@@ -1408,7 +1409,7 @@ void renderGridClipNoRotate(
 	// process each row
 	for (uint32_t h = 0; h < displayHeight; h++) {
 		// get the next grid row
-		int32_t yi = (int32_t)sy;
+		int32_t yi = (int32_t)floor(sy);
 
 		// check the row is on the grid
 		if (yi >= 0 && ((yi & ht) == (yi & hm))) {
@@ -1696,7 +1697,7 @@ void renderOverlayClipNoRotate(
 	// precompute offsets
 	double x = sx;
 	for (uint32_t i = 0; i < displayWidth; i++) {
-		int32_t xi = (int32_t)x;
+		int32_t xi = (int32_t)floor(x);
 		if (x >= 0 && ((xi & wt) == (xi & wm))) {
 			xOffsets[i] = xi & wm;
 		} else {
@@ -1711,7 +1712,7 @@ void renderOverlayClipNoRotate(
 
 	x = sx;
 	for (uint32_t i = 0; i < displayWidth; i++) {
-		int32_t xi = (int32_t)x;
+		int32_t xi = (int32_t)floor(x);
 		if (xi + xadj >= 0 && xi + xadj < maxGridSize) {
 			xMaxOffsets[i] = 0;
 		} else {
@@ -1740,7 +1741,7 @@ void renderOverlayClipNoRotate(
 	// process each row
 	for (uint32_t h = 0; h < displayHeight; h++) {
 		// get the next grid row
-		int32_t yi = (int32_t)sy;
+		int32_t yi = (int32_t)floor(sy);
 
 		// check the row is on the grid
 		if (yi >= 0 && ((yi & ht) == (yi & hm))) {
