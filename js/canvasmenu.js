@@ -2522,6 +2522,9 @@ This file is part of LifeViewer
 		var	/** @type {MenuManager} */ me = this,
 			/** @type {number} */ i = 0;
 
+		// whether frame completed successfully
+		/** @type {boolean} */ this.frameCompleted = true;
+
 		// whether thumblaunch disabled 
 		/** @type {boolean} */ this.disableLaunch = false;
 
@@ -3379,7 +3382,10 @@ This file is part of LifeViewer
 
 			// display scale
 			/** @type {number} */ xScale = 1,
-			/** @type {number} */ yScale = 1;
+			/** @type {number} */ yScale = 1,
+
+			// crash detection
+			/** @type {boolean} */ crash = false;
 
 		// move fps display if in thumbnail mode
 		if (me.thumbnail) {
@@ -3444,7 +3450,19 @@ This file is part of LifeViewer
 
 		// execute the callback if it exists
 		if (me.currentMenu.callback) {
-			me.currentMenu.callback(newFrame, me.currentMenu.caller);
+			if (!me.frameCompleted) {
+				message = "Crash detected!";
+				oc.font = ((32 * xScale) | 0) + "px Arial";
+				oc.fillStyle = "black";
+				oc.fillText(message, (6 * xScale) | 0, (202 * xScale) | 0);
+				oc.fillStyle = "red";
+				oc.fillText(message, (4 * xScale) | 0, (200 * xScale) | 0);
+				crash = true;
+			} else {
+				me.frameCompleted = false;
+				me.currentMenu.callback(newFrame, me.currentMenu.caller);
+				me.frameCompleted = true;
+			}
 		}
 
 		// get the callback work time
@@ -3461,7 +3479,9 @@ This file is part of LifeViewer
 		me.drawToolTip();
 
 		// draw the notification
-		me.notification.update();
+		if (!crash) {
+			me.notification.update();
+		}
 
 		// get the menu draw time
 		newMenu = performance.now() - newMenu;

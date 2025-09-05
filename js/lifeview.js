@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1319,
+		/** @const {number} */ versionBuild : 1321,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -22686,6 +22686,7 @@ This file is part of LifeViewer
 			view = viewer[1];
 			view.element = textItem;
 			view.viewStart(view);
+			view.engine.historyBox.set(view.engine.zoomBox);
 		} else {
 			// create canvas and set width and height
 			canvasItem = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));

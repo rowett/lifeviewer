@@ -1,3 +1,9 @@
+Build 1321
+- fixed a crash when consecutively loading different sized patterns with HISTORYFIT
+
+Build 1320
+- experimental LifeViewer crash detection
+
 Build 1319
 - fixed another KILLGLIIDERS boundary issue
 - fixed history states overwriting bounded grid border when zoomed out
