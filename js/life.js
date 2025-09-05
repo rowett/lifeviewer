@@ -16904,7 +16904,8 @@ This file is part of LifeViewer
 			/** @const {number} */ bottomY = box.bottomY,
 			/** @const {number} */ topY = box.topY,
 			/** @const {number} */ aliveStart = this.aliveStart,
-			/** @type {number} */ cell = 0;
+			/** @type {number} */ cell = 0,
+			/** @type {number} */ maxDelta = Math.abs(dx4 + dx4);
 
 		// search grid for glider
 		x -= 2;
@@ -16936,6 +16937,21 @@ This file is part of LifeViewer
 			maxX = rightX;
 			minY = bottomY;
 			maxY = topY;
+
+			// handle maximum grid edge
+			if (minX < maxDelta) {
+				minX = maxDelta;
+			}
+			if (minY < maxDelta) {
+				minY = maxDelta;
+			}
+			if (maxX > this.width - 1 - maxDelta) {
+				maxX = this.width - 1 - maxDelta;
+			}
+			if (maxY > this.height - 1 - maxDelta) {
+				maxY = this.height - 1 - maxDelta;
+			}
+
 			found = false;
 
 			while (!found && !(xc < minX || xc > maxX || yc < minY || yc > maxY)) {
