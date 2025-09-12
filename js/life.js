@@ -35,7 +35,7 @@ This file is part of LifeViewer
 		/** @const {number} */ maxOscillatorGens : 4194304,
 
 		// maximum number of generations for short oscillator buffer
-		/** @const {number} */ negOscillatorGens : 128,
+		/** @const {number} */ negOscillatorGens : 256,
 
 		// how often in seconds to save an Identify Snapshot after quick detection completes
 		/** @const {number} */ identifySnapshotInterval : 300,
