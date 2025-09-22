@@ -1,3 +1,6 @@
+Build 1323
+- fixed an issue with the RuleTable iterator (Pro)
+
 Build 1322
 - fixed a crash deleting gliders near the grid boundary
 

@@ -10194,7 +10194,7 @@ void nextGenerationRuleTableHex(
 							while (x < rightX - 1) {
 								// shift neighbourhood left
 								nw = n;
-								n = *(gridRow1 + x);
+								n = *(gridRow0 + x);
 								w = c;
 								c = e;
 								e = *(gridRow1 + x + 1);
