@@ -22801,6 +22801,11 @@ This file is part of LifeViewer
 		// set the standalone viewer size
 		view.displayWidth = ViewConstants.minViewerWidth;
 		view.displayHeight = ViewConstants.minMenuHeight + 80;
+
+		// reset the HROT bounding box so fit zoom works correctly
+		view.engine.HROTBox = new BoundingBox(0, 0, 0, 0);
+
+		// resize
 		view.resize();
 
 		// hide any notifications immediately
