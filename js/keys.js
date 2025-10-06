@@ -1651,7 +1651,7 @@ This file is part of LifeViewer
 						// check for defined POIs
 						if (me.waypointManager.numPOIs()) {
 							// check for controls locked
-							if (!me.controlsLocked) {
+							if (!me.controlsLocked && !me.resultsDisplayed) {
 								// check for shift key
 								if (shiftKey) {
 									// go to previous POI

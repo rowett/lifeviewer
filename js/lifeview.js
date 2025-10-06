@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1323,
+		/** @const {number} */ versionBuild : 1324,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7849,7 +7849,7 @@ This file is part of LifeViewer
 		this.hexCellButton.locked = !(this.engine.isHex || this.engine.isTriangular);
 
 		// POI controls
-		shown = hide || (this.waypointManager.numPOIs() === 0) || settingsMenuOpen;
+		shown = hide || (this.waypointManager.numPOIs() === 0) || settingsMenuOpen || this.resultsDisplayed;
 		this.nextPOIButton.deleted = shown;
 		this.prevPOIButton.deleted = shown;
 

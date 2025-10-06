@@ -7199,7 +7199,7 @@ This file is part of LifeViewer
 
 										// create the results
 										this.identifyDeferredResults = [message, period, deltaX, deltaY, boxWidth, boxHeight];
-										this.identifyDeferredCounter = LifeConstants.identifyNotificationDuration;
+										this.identifyDeferredCounter = Math.round(LifeConstants.identifyNotificationDuration * Controller.refreshRate / 60);
 										view.menuManager.notification.notify(message, 15, 40, 15, true);
 										view.menuManager.notification.notify("Calculating...", 15, 40, 15, false);
 									} else {
@@ -49584,6 +49584,7 @@ This file is part of LifeViewer
 			/** @type {number} */ loop = 1,
 			/** @type {number} */ w = this.displayWidth,
 			/** @type {number} */ h = this.displayHeight,
+			/** @type {number} */ xCol = 0,
 			/** @type {number} */ gridCol = this.gridLineColour,
 			/** @type {number} */ gridBoldCol = this.gridLineBoldColour,
 			/** @type {number} */ xZoomStep = this.camZoom,
@@ -49672,10 +49673,17 @@ This file is part of LifeViewer
 
 						// draw staggered vertical line
 						for (y = startY; y < endY; y += yZoomStep) {
-							if ((vLineNum & 1) === (extend & 1)) {
-								this.drawLine(Math.round(x + xOff), Math.round(y), Math.round(x + xOff), Math.round(y + yZoomStep - 1), drawCol);
-							} else {
-								this.drawLine(Math.round(x + xOff + xZoomStep / 2), Math.round(y), Math.round(x + xOff + xZoomStep / 2), Math.round(y + yZoomStep - 1), drawCol);
+							if (y >= 0 && y < h) {
+								if ((vLineNum & 1) === (extend & 1)) {
+									xCol = Math.round(x + xOff);
+								} else {
+									xCol = Math.round(x + xOff + xZoomStep / 2);
+								}
+
+								// can use VLine since hexagonal grids don't support camera rotation
+								if (xCol >= 0 && xCol < w) {
+									this.drawVLine(xCol, Math.round(y), Math.round(y + yZoomStep - 1), drawCol);
+								}
 							}
 							vLineNum += 1;
 						}

@@ -837,10 +837,9 @@ void convertToPensAge(
 					wasm_v128_store(colourRow, pens);
 
 					// update the tile alive flags
-					//pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 1, 0, 3, 2));
-					//pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 2, 3, 0, 1));
-					//tileAlive |= wasm_u32x4_extract_lane(pens, 0);
-					tileAlive |= wasm_v128_any_true(pens);
+					pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 1, 0, 3, 2));
+					pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 2, 3, 0, 1));
+					tileAlive |= wasm_u32x4_extract_lane(pens, 0);
 
 					h++;
 					colourRow += colourGridWidth;
@@ -1049,9 +1048,6 @@ void convertToPensNeighbours(
 						wasm_v128_store(colourRow, pens);
 
 						// update the tile alive flags
-						//pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 1, 0, 3, 2));
-						//pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 2, 3, 0, 1));
-						//tileAlive |= wasm_u32x4_extract_lane(pens, 0);
 						tileAlive |= wasm_v128_any_true(pens);
 					} else {
 						wasm_v128_store(colourRow, zeroVec);
