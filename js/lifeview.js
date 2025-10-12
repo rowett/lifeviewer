@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1324,
+		/** @const {number} */ versionBuild : 1325,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -2714,6 +2714,9 @@ This file is part of LifeViewer
 					y += this.engine.height >> 2;
 				}
 
+				wm = this.engine.widthMask;
+				hm = this.engine.heightMask;
+
 				growX = (this.engine.width < maxGridSize) && (x !== (x & wm));
 				growY = (this.engine.height < maxGridSize) && (y !== (y & hm));
 			}
@@ -2855,6 +2858,8 @@ This file is part of LifeViewer
 		}
 
 		// check for PCA, RuleTree or Super rules
+		colourGrid = this.engine.colourGrid;
+
 		if (this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper|| this.engine.isExtended) {
 			// swap grids every generation
 			if ((this.engine.counter & 1) !== 0) {

@@ -5223,8 +5223,10 @@ void cumulativeMooreCounts2(
 	const uint32_t nextCountRow = countWidth - (right - left + 1);
 
 	const uint32_t align16Left = (left + 15) & ~15;
-	const uint32_t align16Right = right & ~15;
+	const uint32_t align16Right = (right + 1) & ~15;
 	const uint32_t leftTarget = align16Left > align16Right ? align16Right : align16Left;
+
+	const v128_t addFour = wasm_i32x4_splat(4);	// add four
 
 	// alive cells
 	const v128_t alive = wasm_u8x16_splat(aliveStart);
@@ -5250,13 +5252,78 @@ void cumulativeMooreCounts2(
 			v128_t cellsAlive = wasm_u8x16_ge(row, alive);
 			uint32_t mask = wasm_i8x16_bitmask(cellsAlive);
 			if (mask) {
-				for (uint32_t b = 0; b < 16; b++) {
-					if (mask & (1 << b)) {
-						count++;
+				if (mask == 0xffff) {
+					// all cells alive so add 1, 2, 3, ... 16 to the previous counts
+					v128_t addCount = wasm_i32x4_make(count + 1, count + 2, count + 3, count + 4);
+
+					// set 1 of 4
+					v128_t previousCounts = wasm_v128_load(prevCountRow);
+					previousCounts = wasm_i32x4_add(previousCounts, addCount);
+					wasm_v128_store(countRow, previousCounts);
+					countRow += 4;
+					prevCountRow += 4;
+
+					// set 2 of 4
+					addCount = wasm_i32x4_add(addCount, addFour);
+					previousCounts = wasm_v128_load(prevCountRow);
+					previousCounts = wasm_i32x4_add(previousCounts, addCount);
+					wasm_v128_store(countRow, previousCounts);
+					countRow += 4;
+					prevCountRow += 4;
+
+					// set 3 of 4
+					addCount = wasm_i32x4_add(addCount, addFour);
+					previousCounts = wasm_v128_load(prevCountRow);
+					previousCounts = wasm_i32x4_add(previousCounts, addCount);
+					wasm_v128_store(countRow, previousCounts);
+					countRow += 4;
+					prevCountRow += 4;
+
+					// set 4 of 4
+					addCount = wasm_i32x4_add(addCount, addFour);
+					previousCounts = wasm_v128_load(prevCountRow);
+					previousCounts = wasm_i32x4_add(previousCounts, addCount);
+					wasm_v128_store(countRow, previousCounts);
+					countRow += 4;
+					prevCountRow += 4;
+					count += 16;
+				} else {
+					// unrolled loop for each bit in the mask
+					for (int32_t b = 0; b < 4; b++) {
+						if (mask & 15) {
+							count += mask & 1;
+							mask >>= 1;
+							*countRow = *prevCountRow + count;
+							countRow++;
+							prevCountRow++;
+
+							count += mask & 1;
+							mask >>= 1;
+							*countRow = *prevCountRow + count;
+							countRow++;
+							prevCountRow++;
+
+							count += mask & 1;
+							mask >>= 1;
+							*countRow = *prevCountRow + count;
+							countRow++;
+							prevCountRow++;
+
+							count += mask & 1;
+							mask >>= 1;
+							*countRow = *prevCountRow + count;
+							countRow++;
+							prevCountRow++;
+						} else {
+							const v128_t addCount = wasm_i32x4_splat(count);
+							v128_t previousCounts = wasm_v128_load(prevCountRow);
+							previousCounts = wasm_i32x4_add(previousCounts, addCount);
+							wasm_v128_store(countRow, previousCounts);
+							countRow += 4;
+							prevCountRow += 4;
+							mask >>= 4;
+						}
 					}
-					*countRow = *prevCountRow + count;
-					countRow++;
-					prevCountRow++;
 				}
 			} else {
 				// set the current chunk to the previous counts plus the current cumulative count

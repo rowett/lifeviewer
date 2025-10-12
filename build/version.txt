@@ -1,8 +1,13 @@
+Build 1325
+- fixed crash when drawing causes grid to grow
+- minor performance improvement to HROT Moore (Pro)
+
 Build 1324
 - improved offset square grid drawing performance
 - POI buttons are now disabled when Identify results are displayed
 - fixed cell history fading in range 1 algo (Pro)
 - ensure Identify message appears on high refresh rate monitors
+- fixed crash when PopUp loads different grid-sized HROT patterns
 
 Build 1323
 - fixed an issue with the RuleTable iterator (Pro)
