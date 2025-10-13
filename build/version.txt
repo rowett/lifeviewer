@@ -1,3 +1,7 @@
+Build 1326
+- fixed crash when opening hex pattern after larger square pattern
+- fixed crash after drawing cells in von Neumann HROT patterns
+
 Build 1325
 - fixed crash when drawing causes grid to grow
 - minor performance improvement to HROT Moore (Pro)

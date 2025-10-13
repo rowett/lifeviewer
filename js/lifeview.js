@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1325,
+		/** @const {number} */ versionBuild : 1326,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -5714,7 +5714,8 @@ This file is part of LifeViewer
 				if (this.engine.boundedGridType !== -1) {
 					result += this.engine.boundedGridHeight / 2;
 				} else {
-					result += this.engine.HROT.ncols / 2;
+					// TBD check this is sufficient
+					result += this.engine.HROT.ncols;
 				}
 			}
 		}
@@ -21351,14 +21352,6 @@ This file is part of LifeViewer
 			me.engine.HROT.setRandomSeed(me.randomSeed);
 		}
 
-		// check if popup width has changed
-		if (me.isInPopup) {
-			me.origDisplayWidth = me.displayWidth;
-			me.origDisplayHeight = me.displayHeight;
-			me.popupWidthChanged = true;
-			Controller.popupWindow.resizeWindow(Controller.popupWindow);
-		}
-
 		// if pattern is too big and has no paste commands then generate error
 		if (pattern && pattern.tooBig && me.pasteList.length === 0) {
 			me.executable = false;
@@ -21576,6 +21569,14 @@ This file is part of LifeViewer
 		// resize the HROT buffer to the current width and height
 		if (pattern && pattern.isHROT) {
 			me.engine.HROT.resize(me.engine.width, me.engine.height);
+		}
+
+		// check if popup width has changed
+		if (me.isInPopup) {
+			me.origDisplayWidth = me.displayWidth;
+			me.origDisplayHeight = me.displayHeight;
+			me.popupWidthChanged = true;
+			Controller.popupWindow.resizeWindow(Controller.popupWindow);
 		}
 
 		// compute pan X and Y for the pattern on the grid
@@ -22809,6 +22810,9 @@ This file is part of LifeViewer
 
 		// reset the HROT bounding box so fit zoom works correctly
 		view.engine.HROTBox = new BoundingBox(0, 0, 0, 0);
+		view.engine.zoomBox = new BoundingBox(0, 0, 0, 0);
+		view.engine.initialBox = new BoundingBox(0, 0, 0, 0);
+		view.engine.historyBox = new BoundingBox(0, 0, 0, 0);
 
 		// resize
 		view.resize();
