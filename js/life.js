@@ -2611,6 +2611,7 @@ This file is part of LifeViewer
 						hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 						if (overlayGrid[cy + bottom][cx + left] === state6) {
 							hash = (hash * factor) ^ 6;
+							hash2 = (hash2 * factor) ^ 6;
 						}
 					}
 				} else {
@@ -2621,6 +2622,7 @@ This file is part of LifeViewer
 							hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 							if (state === 6) {
 								hash = (hash * factor) ^ state;
+								hash2 = (hash2 * factor) ^ 6;
 							}
 						}
 					} else {
@@ -2661,17 +2663,20 @@ This file is part of LifeViewer
 								hash = (hash * factor) ^ (yPrime ^ (x * primeX));
 								hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 								hash = (hash * factor) ^ state;
+								hash2 = (hash2 * factor) ^ state;
 							} else {
 								if (this.isRuleTree || this.isExtended) {
 									// update the hash value
 									hash = (hash * factor) ^ (yPrime ^ (x * primeX));
 									hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 									hash = (hash * factor) ^ state;
+									hash2 = (hash2 * factor) ^ state;
 								} else {
 									state = this.multiNumStates - state;
 									hash = (hash * factor) ^ (yPrime ^ (x * primeX));
 									hash2 = (hash2 * factor2) ^ (yPrime2 ^ (x * primeX2));
 									hash = (hash * factor) ^ state;
+									hash2 = (hash2 * factor) ^ state;
 								}
 							}
 
@@ -3188,6 +3193,7 @@ This file is part of LifeViewer
 						hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
 						if (overlayRow[cx] === state6) {
 							hash = (hash * factor) ^ 6;
+							hash2 = (hash2 * factor) ^ 6;
 						}
 					}
 				}
@@ -3205,6 +3211,7 @@ This file is part of LifeViewer
 						hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
 						if (colourRow[cx] === 6) {
 							hash = (hash * factor) ^ 6;
+							hash2 = (hash2 * factor2) ^ 6;
 						}
 					}
 				}
@@ -3217,6 +3224,7 @@ This file is part of LifeViewer
 						hash = (hash * factor) ^ (yPrime ^ ((cx - hashX) * primeX));
 						hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
 						hash = (hash * factor) ^ state;
+						hash2 = (hash2 * factor2) ^ state;
 					}
 				}
 			} else {
@@ -3229,6 +3237,7 @@ This file is part of LifeViewer
 						hash = (hash * factor) ^ (yPrime ^ ((cx - hashX) * primeX));
 						hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((cx - hashX) * primeX2));
 						hash = (hash * factor) ^ state;
+						hash2 = (hash2 * factor2) ^ state;
 					}
 				}
 			}

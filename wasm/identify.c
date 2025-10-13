@@ -517,6 +517,7 @@ void getHashSuper(
 				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				if (*(colourRow + i) == 6) {
 					hash = (hash * factor) ^ 6;
+					hash2 = (hash2 * factor) ^ 6;
 				}
 				mask &= (mask - 1);
 			}
@@ -609,6 +610,7 @@ void getHashLifeHistory(
 				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				if (*(overlayRow + i) == state6) {
 					hash = (hash * factor) ^ 6;
+					hash2 = (hash2 * factor) ^ 6;
 				}
 				mask &= (mask - 1);
 			}
@@ -689,6 +691,7 @@ void getHashRuleLoaderOrPCAOrExtended(
 				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
 				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				hash = (hash * factor) ^ (*(colourRow + i) - historyStates);
+				hash2 = (hash2 * factor) ^ (*(colourRow + i) - historyStates);
 				mask &= (mask - 1);
 			}
 
@@ -766,6 +769,7 @@ void getHashGenerations(
 				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
 				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				hash = (hash * factor) ^ (numStates - (*(colourRow + i) - historyStates));
+				hash2 = (hash2 * factor) ^ (numStates - (*(colourRow + i) - historyStates));
 				mask &= (mask - 1);
 			}
 
