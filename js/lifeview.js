@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1328,
+		/** @const {number} */ versionBuild : 1329,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1207,9 +1207,11 @@ This file is part of LifeViewer
 
 		// PopUp Viewer title bar elements (for resize)
 		this.anchorItem = null;
+		this.fullScreenItem = null;
 		this.innerDivItem = null;
 		this.centerDivItem = null;
 		this.hiddenItem = null;
+		this.hiddenItem2 = null;
 		this.divItem = null;
 
 		// help font size
@@ -22669,6 +22671,10 @@ This file is part of LifeViewer
 			view.anchorItem.style.fontSize = itemFontSize + "px";
 			view.hiddenItem.style.height = itemHeight + "px";
 			view.hiddenItem.style.fontSize = itemFontSize + "px";
+			view.fullScreenItem.style.height = itemHeight + "px";
+			view.fullScreenItem.style.fontSize = itemFontSize + "px";
+			view.hiddenItem2.style.height = itemHeight + "px";
+			view.hiddenItem2.style.fontSize = itemFontSize + "px";
 			view.centerDivItem.style.height = itemHeight + "px";
 			view.centerDivItem.style.fontSize = itemFontSize + "px";
 			view.innerDivItem.style.height = itemHeight + "px";
@@ -22706,9 +22712,11 @@ This file is part of LifeViewer
 			/** @type {HTMLDivElement} */ divItem = null,
 			/** @type {Node} */ windowTitleItem = null,
 			/** @type {HTMLAnchorElement} */ anchorItem = null,
+			/** @type {HTMLAnchorElement} */ fullScreenItem = null,
 			/** @type {HTMLDivElement} */ innerDivItem = null,
 			/** @type {HTMLDivElement} */ centerDivItem = null,
 			/** @type {HTMLAnchorElement} */ hiddenItem = null,
+			/** @type {HTMLAnchorElement} */ hiddenItem2 = null,
 
 			// element sizes for scaling
 			/** @type {number} */ itemHeight = 28,
@@ -22739,6 +22747,29 @@ This file is part of LifeViewer
 			canvasItem.style.display = "block";
 			//canvasItem.style.outline = "none";
 			canvasItem.contentEditable = "false";
+
+			// add the fullscreen toggle
+			fullScreenItem = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
+			fullScreenItem.setAttribute('href', "#");
+			fullScreenItem.innerHTML = "&nbsp;^&nbsp;";
+			fullScreenItem.style.textDecoration = "none";
+			fullScreenItem.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
+			//fullScreenItem.style.color = "#FFFFFF";
+			//fullScreenItem.style.backgroundColor = "#C75050";
+			fullScreenItem.style.cssFloat = "right";
+			fullScreenItem.style.height = itemHeight + "px";
+			fullScreenItem.style.fontSize = itemFontSize + "px";
+			fullScreenItem.className = "notranslate";
+
+			// add a hidden fullscreen item to center the text
+			hiddenItem2 = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
+			hiddenItem2.innerHTML = "&nbsp;^&nbsp;";
+			hiddenItem2.style.textDecoration = "none";
+			hiddenItem2.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
+			hiddenItem2.style.visibility = "hidden";
+			hiddenItem2.style.cssFloat = "left";
+			hiddenItem2.style.height = itemHeight + "px";
+			hiddenItem2.style.fontSize = itemFontSize + "px";
 
 			// add a new anchor
 			anchorItem = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
@@ -22778,6 +22809,9 @@ This file is part of LifeViewer
 			// set the onclick
 			registerEvent(anchorItem, "click", hideCallback, false);
 			registerEvent(anchorItem, "touchend", hideCallback, false);
+			registerEvent(fullScreenItem, "click", fullScreenCallback, false);
+			registerEvent(fullScreenItem, "touchend", fullScreenCallback, false);
+
 
 			// create enclosing div and set style
 			divItem = /** @type {!HTMLDivElement} */ (document.createElement("div"));
@@ -22805,8 +22839,10 @@ This file is part of LifeViewer
 			innerDivItem.style.border = "0px";
 
 			// add the title, anchor and canvas to the div
+			innerDivItem.appendChild(hiddenItem2)
 			innerDivItem.appendChild(hiddenItem);
 			innerDivItem.appendChild(anchorItem);
+			innerDivItem.appendChild(fullScreenItem);
 			innerDivItem.appendChild(centerDivItem);
 			divItem.appendChild(innerDivItem);
 			divItem.appendChild(canvasItem);
@@ -22824,6 +22860,8 @@ This file is part of LifeViewer
 			view.titleElement = windowTitleItem;
 			view.anchorItem = anchorItem;
 			view.hiddenItem = hiddenItem;
+			view.fullScreenItem = fullScreenItem;
+			view.hiddenItem2 = hiddenItem2;
 			view.centerDivItem = centerDivItem;
 			view.innerDivItem = innerDivItem;
 			view.divItem = divItem;
@@ -23057,6 +23095,17 @@ This file is part of LifeViewer
 					completeIsPattern(pattern, [patternString, rleItem, textItem, canvasItem]);
 				}
 			}
+		}
+	}
+
+	// callback for fullscreen toggle anchor
+	function fullScreenCallback(/** @type {PointerEvent} */ event) {
+		var	/** @type {Array} */ viewer = Controller.standaloneViewer(),
+			/** @type {View} */ popup = null;
+
+		if (viewer) {
+			popup = viewer[1];
+			popup.fullScreenToggle.current = popup.viewFullScreenToggle([!Controller.popupWindow.maximized], true, popup);
 		}
 	}
 

@@ -1,3 +1,6 @@
+Build 1329
+- added Full Screen toggle button to PopUp Viewer title bar
+
 Build 1328
 - added Full Screen toggle button for PopUp Viewer to Settings menu
 - improved rendering performance on iOS
