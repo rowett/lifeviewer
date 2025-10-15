@@ -404,13 +404,13 @@ void getHashTwoState(
 	uint8_t *colourRow = colourGrid + bottom * colourGridWidth + align16Left;
 
 	// get offset to next row
-	uint32_t rowOffset = colourGridWidth - ((((right - align16Left) >> 4) + 1) << 4);
+	const uint32_t rowOffset = colourGridWidth - ((((right - align16Left) >> 4) + 1) << 4);
 
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
-		uint32_t yshift = y - bottom;
-		uint64_t yPrime = yshift * primeY;
-		uint64_t yPrime2 = yshift * primeY2;
+		const uint32_t yshift = y - bottom;
+		const uint64_t yPrime = yshift * primeY;
+		const uint64_t yPrime2 = yshift * primeY2;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
@@ -517,7 +517,7 @@ void getHashSuper(
 				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				if (*(colourRow + i) == 6) {
 					hash = (hash * factor) ^ 6;
-					hash2 = (hash2 * factor) ^ 6;
+					hash2 = (hash2 * factor2) ^ 6;
 				}
 				mask &= (mask - 1);
 			}
@@ -610,7 +610,7 @@ void getHashLifeHistory(
 				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				if (*(overlayRow + i) == state6) {
 					hash = (hash * factor) ^ 6;
-					hash2 = (hash2 * factor) ^ 6;
+					hash2 = (hash2 * factor2) ^ 6;
 				}
 				mask &= (mask - 1);
 			}
@@ -691,7 +691,7 @@ void getHashRuleLoaderOrPCAOrExtended(
 				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
 				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				hash = (hash * factor) ^ (*(colourRow + i) - historyStates);
-				hash2 = (hash2 * factor) ^ (*(colourRow + i) - historyStates);
+				hash2 = (hash2 * factor2) ^ (*(colourRow + i) - historyStates);
 				mask &= (mask - 1);
 			}
 
@@ -769,7 +769,7 @@ void getHashGenerations(
 				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
 				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
 				hash = (hash * factor) ^ (numStates - (*(colourRow + i) - historyStates));
-				hash2 = (hash2 * factor) ^ (numStates - (*(colourRow + i) - historyStates));
+				hash2 = (hash2 * factor2) ^ (numStates - (*(colourRow + i) - historyStates));
 				mask &= (mask - 1);
 			}
 

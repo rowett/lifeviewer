@@ -1,3 +1,8 @@
+Build 1328
+- added Full Screen toggle button for PopUp Viewer to Settings menu
+- improved rendering performance on iOS
+- Zoom slider can be wider in Full Screen mode
+
 Build 1327
 - improved Identify hash function to reduce chance of false positives
 

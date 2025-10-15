@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1327,
+		/** @const {number} */ versionBuild : 1328,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1979,6 +1979,9 @@ This file is part of LifeViewer
 
 		// theme section label
 		/** @type {MenuItem} */ this.themeSectionLabel = null;
+
+		// fullscreen toggle
+		/** @type {MenuItem} */ this.fullScreenToggle = null;
 
 		// angle item
 		/** @type {MenuItem} */ this.angleItem = null;
@@ -7704,6 +7707,7 @@ This file is part of LifeViewer
 		this.angleItem.deleted = shown;
 		this.tiltItem.deleted = shown;
 		this.layersItem.deleted = shown;
+		this.fullScreenToggle.deleted = shown || !this.isInPopup;
 
 		// setting category buttons
 		shown = hide || this.showThemeSelection || this.showClipboardSettings || this.showPatternSettings || this.showDisplaySettings || this.showInfoSettings || this.showPlaybackSettings || this.showPatternSettings || this.showActionsSettings;
@@ -9179,6 +9183,36 @@ This file is part of LifeViewer
 			me.hideGUI = newValue[0];
 		}
 		return [me.hideGUI];
+	};
+
+
+	// toggle fullscreen mode for PopUp viewer
+	/** @returns {Array<boolean>} */
+	View.prototype.viewFullScreenToggle = function(/** @type {Array<boolean>} */ newValue, /** @type {boolean} */ change, /** @type {View} */ me) {
+		var /** @type {boolean} */ result = false;
+
+		// check if changing
+		if (change) {
+			if (Controller.popupWindow) {
+				Controller.popupWindow.maximized = !Controller.popupWindow.maximized;
+				result = Controller.popupWindow.maximized;
+
+				Controller.popupWindow.resizeWindow(Controller.popupWindow);
+
+				// resize the zoom slider
+				if (me.displayWidth > ViewConstants.minViewerWidth * me.viewMenu.xScale) {
+					i = (me.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
+					if (i > ViewConstants.zoomSliderMaxWidth) {
+						i = ViewConstants.zoomSliderMaxWidth;
+					}
+					me.zoomItem.setWidth(i);
+				} else {
+					me.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
+				}
+			}
+		}
+
+		return [result];
 	};
 
 	// toggle hexagonal cells
@@ -18803,6 +18837,10 @@ This file is part of LifeViewer
 		this.angleItem = this.viewMenu.addRangeItem(this.viewAngleRange, Menu.north, 0, 50, 390, 40, 0, 359, 0, true, "Angle ", "\u00B0", 0);
 		this.angleItem.toolTip = "camera angle [< / >]";
 
+		// fullscreen button
+		this.fullScreenToggle = this.viewMenu.addListItem(this.viewFullScreenToggle, Menu.northEast, -40, 45, 40, 40, ["^"], [false], Menu.multi);
+		this.fullScreenToggle.toolTip = ["toggle fullscreen [F9]"];
+
 		// shrink button
 		this.shrinkButton = this.viewMenu.addButtonItem(this.shrinkPressed, Menu.southEast, -40, -90, 40, 40, "");
 		this.shrinkButton.icon = this.iconManager.icon("shrink");
@@ -19422,7 +19460,7 @@ This file is part of LifeViewer
 		this.libraryToggle.addItemsToToggleMenu([this.clipboardList], []);
 
 		// add items to the main toggle menu
-		this.navToggle.addItemsToToggleMenu([this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.tiltItem, this.backButton, this.themeButton,
+		this.navToggle.addItemsToToggleMenu([this.fullScreenToggle, this.themeSectionLabel, this.layersItem, this.depthItem, this.angleItem, this.tiltItem, this.backButton, this.themeButton,
 			this.patternButton, this.clipboardButton, this.infoButton, this.displayButton, this.playbackButton, this.throttleToggle, this.showLagToggle, this.shrinkButton,
 			this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.integerZoomButton, this.centerPatternButton, this.hexCellButton, this.bordersButton,
 			this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.clearDrawingStateButton, this.timingDetailButton, this.infoBarButton, this.starsButton,
@@ -19480,7 +19518,7 @@ This file is part of LifeViewer
 
 			// setup the 2d drawing context
 			//console.time("setup context");
-			this.mainContext = /** @type {!CanvasRenderingContext2D} */ (this.mainCanvas.getContext("2d", {alpha: false, "willReadFrequently": true}));
+			this.mainContext = /** @type {!CanvasRenderingContext2D} */ (this.mainCanvas.getContext("2d", {alpha: false}));
 			this.mainContext.globalAlpha = 1;
 			this.mainContext.fillStyle = "black";
 			this.mainContext.imageSmoothingEnabled = false;

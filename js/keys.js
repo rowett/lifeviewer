@@ -2299,8 +2299,7 @@ This file is part of LifeViewer
 					}
 				} else {
 					if (Controller.popupWindow) {
-						Controller.popupWindow.maximized = !Controller.popupWindow.maximized;
-						Controller.popupWindow.resizeWindow(Controller.popupWindow);
+						me.fullScreenToggle.current = me.viewFullScreenToggle([!Controller.popupWindow.maximized], true, me);
 					}
 				}
 				break;
