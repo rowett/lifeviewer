@@ -320,6 +320,8 @@ This file is part of LifeViewer
 		/** @const {string} */ uiBorderWordAlpha : "UIBORDERA",
 		/** @const {string} */ titleFGWord : "TITLEFOREGROUND",
 		/** @const {string} */ titleBGWord : "TITLEBACKGROUND",
+		/** @const {string} */ fullScreenFGWord : "FULLSCREENFOREGROUND",
+		/** @const {string} */ fullScreenBGWord : "FULLSCREENBACKGROUND",
 		/** @const {string} */ closeFGWord : "CLOSEFOREGROUND",
 		/** @const {string} */ closeBGWord : "CLOSEBACKGROUND",
 

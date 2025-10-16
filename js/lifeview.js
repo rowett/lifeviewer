@@ -313,7 +313,9 @@ This file is part of LifeViewer
 		/** @const {number} */ customThemeTitleBG : 33,
 		/** @const {number} */ customThemeCloseFG : 34,
 		/** @const {number} */ customThemeCloseBG : 35,
-		/** @const {number} */ customThemeSnow : 36,
+		/** @const {number} */ customThemeFullScreenFG : 36,
+		/** @const {number} */ customThemeFullScreenBG : 37,
+		/** @const {number} */ customThemeSnow : 38,
 
 		// state numbers
 		/** @const {number} */ offState : 0,
@@ -344,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1330,
+		/** @const {number} */ versionBuild : 1331,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -1677,6 +1679,10 @@ This file is part of LifeViewer
 		this.closeBGCol = "#C75050";
 		this.closeFGCol = "#FFFFFF";
 
+		// window fullscreen toggle colours (must be in #xxxxxx format)
+		this.fullScreenBGCol = "#EEEEEE";
+		this.fullScreenFGCol = "#536482";
+
 		// window title string
 		/** @type {string} */ this.windowTitle = "";
 
@@ -1785,7 +1791,7 @@ This file is part of LifeViewer
 		/** @type {boolean} */ this.customGridMajor = false;
 
 		// custom theme value
-		/** @type {Array<number>} */ this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+		/** @type {Array<number>} */ this.customThemeValue = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
 		// custom grid colour
 		/** @type {number} */ this.customGridColour = -1;
@@ -22775,7 +22781,7 @@ This file is part of LifeViewer
 			fullScreenItem.innerHTML = "&nbsp;^&nbsp;";
 			fullScreenItem.style.textDecoration = "none";
 			fullScreenItem.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
-			fullScreenItem.style.backgroundColor = "#EEEEEE";
+			//fullScreenItem.style.backgroundColor = "#EEEEEE";
 			fullScreenItem.style.cssFloat = "right";
 			fullScreenItem.style.height = itemHeight + "px";
 			fullScreenItem.style.fontSize = itemFontSize + "px";
@@ -22955,6 +22961,20 @@ This file is part of LifeViewer
 		} else {
 			view.anchorItem.style.backgroundColor = "#" + ("000000" + value.toString(16)).slice(-6);
 			view.escButton.bgCol = view.anchorItem.style.backgroundColor;
+		}
+
+		value = view.customThemeValue[ViewConstants.customThemeFullScreenFG];
+		if (value === -1) {
+			view.fullScreenItem.style.color = view.fullScreenFGCol;
+		} else {
+			view.fullScreenItem.style.color = "#" + ("000000" + value.toString(16)).slice(-6);
+		}
+
+		value = view.customThemeValue[ViewConstants.customThemeFullScreenBG];
+		if (value === -1) {
+			view.fullScreenItem.style.backgroundColor = view.fullScreenBGCol;
+		} else {
+			view.fullScreenItem.style.backgroundColor = "#" + ("000000" + value.toString(16)).slice(-6);
 		}
 	}
 

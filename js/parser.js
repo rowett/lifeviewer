@@ -3688,6 +3688,16 @@ This file is part of LifeViewer
 									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeCloseBG, whichColour);
 									break;
 
+								// full screen foreground
+								case Keywords.fullScreenFGWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeFullScreenFG, whichColour);
+									break;
+
+								// full screen background
+								case Keywords.fullScreenBGWord:
+									this.readCustomThemeElement(view, scriptReader, scriptErrors, ViewConstants.customThemeFullScreenBG, whichColour);
+									break;
+
 								// others are errors or state names
 								default:
 									// check if in untermintated string

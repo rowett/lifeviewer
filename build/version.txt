@@ -1,3 +1,6 @@
+Build 1331
+- added [[ COLOR FULLSCREENFOREGROUND r g b ]] and [[ COLOR FULLSCREENBACKGROUND r g b ]] script commands
+
 Build 1330
 - improvements to Full Screen mode
 

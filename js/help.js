@@ -1417,6 +1417,8 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.uiBorderWord + " R G B", "set UI border color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.titleFGWord + " R G B", "set title bar color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.titleBGWord + " R G B", "set title bar background color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.fullScreenFGWord + " R G B", "set full screen button foreground color", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.fullScreenBGWord + " R G B", "set full screen button background color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.closeFGWord + " R G B", "set close button color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colorWord + " " + Keywords.closeBGWord + " R G B", "set close button background color", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.colourWord, "same as " + Keywords.colorWord, ctx, x, y, height, helpLine);
@@ -2454,6 +2456,22 @@ This file is part of LifeViewer
 			}
 			this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 			y = this.renderHelpLine(view, "TitleBG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+			// display popup title full screen button foreground
+			value = view.customThemeValue[ViewConstants.customThemeFullScreenFG];
+			if (value === -1) {
+				value = Number("0x" + view.fullScreenFGCol.substring(1));
+			}
+			this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "FullFG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
+
+			// display popup title full screen button background
+			value = view.customThemeValue[ViewConstants.customThemeFullScreenBG];
+			if (value === -1) {
+				value = Number("0x" + view.closeBGCol.substring(1));
+			}
+			this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+			y = this.renderHelpLine(view, "FullBG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);
 
 			// display popup title close button foreground
 			value = view.customThemeValue[ViewConstants.customThemeCloseFG];
