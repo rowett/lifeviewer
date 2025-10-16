@@ -2299,7 +2299,9 @@ This file is part of LifeViewer
 					}
 				} else {
 					if (Controller.popupWindow) {
-						me.fullScreenToggle.current = me.viewFullScreenToggle([!Controller.popupWindow.maximized], true, me);
+						if (me.isInPopup) {
+							me.fullScreenToggle.current = me.viewFullScreenToggle([!Controller.popupWindow.maximized], true, me);
+						}
 					}
 				}
 				break;

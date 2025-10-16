@@ -344,7 +344,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1329,
+		/** @const {number} */ versionBuild : 1330,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -9211,6 +9211,9 @@ This file is part of LifeViewer
 				} else {
 					me.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
 				}
+
+				// ensure update happens
+				me.menuManager.setAutoUpdate(true);
 			}
 		}
 
@@ -19972,6 +19975,17 @@ This file is part of LifeViewer
 			Controller.popupWindow.resizeDx = this.lastPopupWidth - this.displayWidth;
 			this.lastPopupWidth = this.displayWidth;
 			this.popupWidthChanged = false;
+
+			// resize the zoom slider
+			if (this.displayWidth > ViewConstants.minViewerWidth * this.viewMenu.xScale) {
+				i = (this.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
+				if (i > ViewConstants.zoomSliderMaxWidth) {
+					i = ViewConstants.zoomSliderMaxWidth;
+				}
+				this.zoomItem.setWidth(i);
+			} else {
+				this.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
+			}
 		}
 		this.mainCanvas.width = this.displayWidth;
 		this.mainCanvas.height = this.displayHeight;
@@ -20227,7 +20241,14 @@ This file is part of LifeViewer
 			// check for maximize
 			if (Controller.popupWindow.maximized) {
 				displayWidth = windowWidth;
+				if (displayWidth < ViewConstants.minViewerWidth) {
+					displayWidth = ViewConstants.minViewerWidth;
+				}
+
 				displayHeight = windowHeight - 34;
+				if (displayHeight < ViewConstants.preferredMenuHeight) {
+					displayHeight = ViewConstants.preferredMenuHeight;
+				}
 				scale = 1;
 			} else {
 				// scale width and height
@@ -20240,7 +20261,7 @@ This file is part of LifeViewer
 			this.windowZoom = 1;
 
 			// check window fits on display
-			if (displayWidth > windowWidth || displayHeight > windowHeight) {
+			if (!Controller.popupWindow.maximized && (displayWidth > windowWidth || displayHeight > windowHeight)) {
 				// find the maximum x or y scaling factor for the window to fit
 				scale = displayWidth / windowWidth;
 				if (displayHeight / windowHeight > scale) {
@@ -22754,12 +22775,12 @@ This file is part of LifeViewer
 			fullScreenItem.innerHTML = "&nbsp;^&nbsp;";
 			fullScreenItem.style.textDecoration = "none";
 			fullScreenItem.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
-			//fullScreenItem.style.color = "#FFFFFF";
-			//fullScreenItem.style.backgroundColor = "#C75050";
+			fullScreenItem.style.backgroundColor = "#EEEEEE";
 			fullScreenItem.style.cssFloat = "right";
 			fullScreenItem.style.height = itemHeight + "px";
 			fullScreenItem.style.fontSize = itemFontSize + "px";
 			fullScreenItem.className = "notranslate";
+			fullScreenItem.title = "Toggle Fullscreen";
 
 			// add a hidden fullscreen item to center the text
 			hiddenItem2 = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
@@ -22783,6 +22804,7 @@ This file is part of LifeViewer
 			anchorItem.style.height = itemHeight + "px";
 			anchorItem.style.fontSize = itemFontSize + "px";
 			anchorItem.className = "notranslate";
+			anchorItem.title = "Close";
 
 			// add a hidden anchor to center the text
 			hiddenItem = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
@@ -23107,6 +23129,14 @@ This file is part of LifeViewer
 			popup = viewer[1];
 			popup.fullScreenToggle.current = popup.viewFullScreenToggle([!Controller.popupWindow.maximized], true, popup);
 		}
+
+		// stop event propagating
+		if (event.stopPropagation) {
+			event.stopPropagation();
+		}
+		event.preventDefault();
+
+		return false;
 	}
 
 	// callback for show in viewer anchor

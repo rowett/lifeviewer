@@ -1,3 +1,6 @@
+Build 1330
+- improvements to Full Screen mode
+
 Build 1329
 - added Full Screen toggle button to PopUp Viewer title bar
 
