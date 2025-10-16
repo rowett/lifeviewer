@@ -1,3 +1,6 @@
+Build 1332
+- fixed Annotation positioning on Hex grid
+
 Build 1331
 - added [[ COLOR FULLSCREENFOREGROUND r g b ]] and [[ COLOR FULLSCREENBACKGROUND r g b ]] script commands
 

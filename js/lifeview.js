@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1331,
+		/** @const {number} */ versionBuild : 1332,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -22839,7 +22839,6 @@ This file is part of LifeViewer
 			registerEvent(anchorItem, "touchend", hideCallback, false);
 			registerEvent(fullScreenItem, "click", fullScreenCallback, false);
 			registerEvent(fullScreenItem, "touchend", fullScreenCallback, false);
-
 
 			// create enclosing div and set style
 			divItem = /** @type {!HTMLDivElement} */ (document.createElement("div"));
