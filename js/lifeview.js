@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1332,
+		/** @const {number} */ versionBuild : 1333,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -18849,7 +18849,7 @@ This file is part of LifeViewer
 		this.angleItem.toolTip = "camera angle [< / >]";
 
 		// fullscreen button
-		this.fullScreenToggle = this.viewMenu.addListItem(this.viewFullScreenToggle, Menu.northEast, -40, 45, 40, 40, ["^"], [false], Menu.multi);
+		this.fullScreenToggle = this.viewMenu.addListItem(this.viewFullScreenToggle, Menu.northEast, -40, 45, 40, 40, ["\u2227"], [false], Menu.multi);
 		this.fullScreenToggle.toolTip = ["toggle fullscreen [F9]"];
 
 		// shrink button
@@ -19026,13 +19026,13 @@ This file is part of LifeViewer
 		this.multiverseButton.toolTip = "show all patterns [Home]";
 
 		// esc button
-		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -85, 40, 40, "X");
+		this.escButton = this.viewMenu.addButtonItem(this.escPressed, Menu.southEast, -40, -85, 40, 40, "\u00D7");
 		this.escButton.toolTip = "close window";
 		this.escButton.setFont("24px Arial");
 		this.escButton.bgCol = "red";
 
 		// clear errors button
-		this.closeErrorsButton = this.viewMenu.addButtonItem(this.closeErrorsPressed, Menu.southEast, -40, -85, 40, 40, "X");
+		this.closeErrorsButton = this.viewMenu.addButtonItem(this.closeErrorsPressed, Menu.southEast, -40, -85, 40, 40, "\u00D7");
 		this.closeErrorsButton.toolTip = "close errors [Esc]";
 
 		// previous POI button
@@ -22778,7 +22778,7 @@ This file is part of LifeViewer
 			// add the fullscreen toggle
 			fullScreenItem = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
 			fullScreenItem.setAttribute('href', "#");
-			fullScreenItem.innerHTML = "&nbsp;^&nbsp;";
+			fullScreenItem.innerHTML = "&and;";
 			fullScreenItem.style.textDecoration = "none";
 			fullScreenItem.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
 			//fullScreenItem.style.backgroundColor = "#EEEEEE";
@@ -22787,39 +22787,49 @@ This file is part of LifeViewer
 			fullScreenItem.style.fontSize = itemFontSize + "px";
 			fullScreenItem.className = "notranslate";
 			fullScreenItem.title = "Toggle Fullscreen";
+			fullScreenItem.style.width = itemHeight + "px";
+			fullScreenItem.style.display = "flex";
+			fullScreenItem.style.alignItems = "center";
+			fullScreenItem.style.justifyContent = "center";
 
 			// add a hidden fullscreen item to center the text
 			hiddenItem2 = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
-			hiddenItem2.innerHTML = "&nbsp;^&nbsp;";
+			hiddenItem2.innerHTML = "&and;";
 			hiddenItem2.style.textDecoration = "none";
 			hiddenItem2.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
 			hiddenItem2.style.visibility = "hidden";
 			hiddenItem2.style.cssFloat = "left";
 			hiddenItem2.style.height = itemHeight + "px";
 			hiddenItem2.style.fontSize = itemFontSize + "px";
+			hiddenItem2.style.width = itemHeight + "px";
 
 			// add a new anchor
 			anchorItem = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
 			anchorItem.setAttribute('href', "#");
-			anchorItem.innerHTML = "&nbsp;X&nbsp;";
+			anchorItem.innerHTML = "&times;";
 			anchorItem.style.textDecoration = "none";
 			anchorItem.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
 			//anchorItem.style.color = "#FFFFFF";
 			//anchorItem.style.backgroundColor = "#C75050";
 			anchorItem.style.cssFloat = "right";
 			anchorItem.style.height = itemHeight + "px";
+			anchorItem.style.width = itemHeight + "px";
 			anchorItem.style.fontSize = itemFontSize + "px";
 			anchorItem.className = "notranslate";
 			anchorItem.title = "Close";
+			anchorItem.style.display = "flex";
+			anchorItem.style.alignItems = "center";
+			anchorItem.style.justifyContent = "center";
 
 			// add a hidden anchor to center the text
 			hiddenItem = /** @type {!HTMLAnchorElement} */ (document.createElement('a'));
-			hiddenItem.innerHTML = "&nbsp;X&nbsp;";
+			hiddenItem.innerHTML = "&times;";
 			hiddenItem.style.textDecoration = "none";
 			hiddenItem.style.fontFamily = "Lucida Grande,Verdana,Helvetica,Arial,sans-serif";
 			hiddenItem.style.visibility = "hidden";
 			hiddenItem.style.cssFloat = "left";
 			hiddenItem.style.height = itemHeight + "px";
+			hiddenItem.style.width = itemHeight + "px";
 			hiddenItem.style.fontSize = itemFontSize + "px";
 
 			// create the center div with the window title text

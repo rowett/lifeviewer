@@ -2468,7 +2468,7 @@ This file is part of LifeViewer
 			// display popup title full screen button background
 			value = view.customThemeValue[ViewConstants.customThemeFullScreenBG];
 			if (value === -1) {
-				value = Number("0x" + view.closeBGCol.substring(1));
+				value = Number("0x" + view.fullScreenBGCol.substring(1));
 			}
 			this.renderColourBox(view, value >> 16, (value >> 8) & 255, value & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 			y = this.renderHelpLine(view, "FullBG", this.rgbString(value >> 16, (value >> 8) & 255, value & 255), ctx, x, y, height, helpLine);

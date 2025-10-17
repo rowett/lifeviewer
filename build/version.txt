@@ -1,3 +1,7 @@
+Build 1333
+- fixed incorrect colour in Help->Info->UI->FullBG
+- improved PopUp Viewer title bar Full Screen and Close buttons
+
 Build 1332
 - fixed Annotation positioning on Hex grid
 
