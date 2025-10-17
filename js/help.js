@@ -821,7 +821,7 @@ This file is part of LifeViewer
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Camera controls:", ctx, x, y, height, helpLine);
 		// only display navigation menu key if menu is available
-		if ((view.displayHeight >= ViewConstants.minMenuHeight) || ((view.thumbnail && view.thumbOrigHeight) >= ViewConstants.minMenuHeight)) {
+		if ((view.displayHeight >= (ViewConstants.minMenuHeight * view.viewMenu.yScale)) || ((view.thumbnail && view.thumbOrigHeight) >= (ViewConstants.minMenuHeight * view.viewMenu.yScale))) {
 			y = this.renderHelpLine(view, "M", "toggle settings menu", ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "V", "restore saved camera position", ctx, x, y, height, helpLine);
@@ -1144,6 +1144,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "A", "rule alias", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "D", "rule neighbourhood", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "T", "program title", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "Z", "program edition", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "S", "random seed", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "G", "current generation (Labels)", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.variablePrefixSymbol + "H", "reversible generation (Labels)", ctx, x, y, height, helpLine);
@@ -1872,12 +1873,14 @@ This file is part of LifeViewer
 					for (j = view.engine.popSubPeriodHelp.length - 1; j >= 0; j -= 1) {
 						i = view.engine.popSubPeriodHelp[j];
 						value = view.engine.popSubPeriod[i];
-						this.renderColourBox(view, view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-						colourValue = this.rgbString(view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255).trim();
-						if (i > 1) {
-							y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (Math.floor(10000 * value / view.engine.popTotal) / 100).toFixed(2) + "%\t" + (Math.floor(10000 * value / view.engine.popRotor) / 100).toFixed(2) + "%\t" + colourValue, ctx, x, y, height, helpLine);
-						} else {
-							y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (Math.floor(10000 * value / view.engine.popTotal) / 100).toFixed(2) + "%\t\t" + colourValue, ctx, x, y, height, helpLine);
+						if (value > 0) {
+							this.renderColourBox(view, view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+							colourValue = this.rgbString(view.engine.cellPeriodRGB[i] >> 16, (view.engine.cellPeriodRGB[i] >> 8) & 255, view.engine.cellPeriodRGB[i] & 255).trim();
+							if (i > 1) {
+								y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (Math.floor(10000 * value / view.engine.popTotal) / 100).toFixed(2) + "%\t" + (Math.floor(10000 * value / view.engine.popRotor) / 100).toFixed(2) + "%\t" + colourValue, ctx, x, y, height, helpLine);
+							} else {
+								y = this.renderHelpLine(view, "  " + i, "    " + value + "\t" + (Math.floor(10000 * value / view.engine.popTotal) / 100).toFixed(2) + "%\t\t" + colourValue, ctx, x, y, height, helpLine);
+							}
 						}
 					}
 					if (!view.engine.identifyAllCells) {
@@ -2352,19 +2355,22 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, "Line Color", this.rgbString(view.engine.gridLineRaw >> 16, (view.engine.gridLineRaw >> 8) & 255, view.engine.gridLineRaw & 255), ctx, x, y, height, helpLine);
 		}
 
-		// display grid line major colour if not disabled
-		if (view.engine.gridLineMajor > 0) {
-			this.renderColourBox(view, view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
-			y = this.renderHelpLine(view, "Major Color", this.rgbString(view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255), ctx, x, y, height, helpLine);
+		// grid line major interval (only display for square grid)
+		if (!(view.engine.isHex || view.engine.isTriangular)) {
+			// display grid line major colour if not disabled
+			if (view.engine.gridLineMajor > 0) {
+				this.renderColourBox(view, view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
+				y = this.renderHelpLine(view, "Major Color", this.rgbString(view.engine.gridLineBoldRaw >> 16, (view.engine.gridLineBoldRaw >> 8) & 255, view.engine.gridLineBoldRaw & 255), ctx, x, y, height, helpLine);
+			}
+
+			if (view.engine.gridLineMajor > 0 && view.engine.gridLineMajorEnabled) {
+				itemName = String(view.engine.gridLineMajor);
+			} else {
+				itemName = "Off";
+			}
+			y = this.renderHelpLine(view, "Interval", itemName, ctx, x, y, height, helpLine);
 		}
 
-		// grid line major interval
-		if (view.engine.gridLineMajor > 0 && view.engine.gridLineMajorEnabled) {
-			itemName = String(view.engine.gridLineMajor);
-		} else {
-			itemName = "Off";
-		}
-		y = this.renderHelpLine(view, "Interval", itemName, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		// UI colours

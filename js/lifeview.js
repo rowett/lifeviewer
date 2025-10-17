@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1333,
+		/** @const {number} */ versionBuild : 1334,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -3007,6 +3007,13 @@ This file is part of LifeViewer
 			// update graph data if at T=0
 			if (!this.graphDisabled && this.engine.counter === 0) {
 				this.engine.resetPopulationData();
+			}
+
+			// clear alternate grid for PCA
+			if (this.engine.isPCA) {
+				this.engine.counter += 1;
+				this.engine.setState(x, y, colour, deadZero);
+				this.engine.counter -= 1;
 			}
 		}
 
@@ -7341,30 +7348,33 @@ This file is part of LifeViewer
 			me.engine.drawPopGraph(me.popGraphLines, me.popGraphOpacity, false, me.thumbnail, me);
 		}
 
-		// draw identify table, cell period map or frequency period map
-		if (me.resultsDisplayed && me.identifyDisplayMode !== ViewConstants.identifyDisplayResults && me.engine.cellPeriod !== null) {
-			// don't display if Help, Errors or Settings open
-			if (me.displayHelp === 0 && me.displayErrors === 0 && me.navToggle.current[0] === false) {
-				switch (me.identifyDisplayMode) {
-					case ViewConstants.identifyDisplayTable:
-						if (me.identifyDisplayType === ViewConstants.identifyDisplayPeriod) {
-							// draw cell period table below the main banner
-							me.engine.drawCellPeriodTable(me.identifyBannerLabel);
-						} else {
-							// draw cell period frequency below the main banner
-							me.engine.drawCellFrequencyTable(me.identifyBannerLabel);
-						}
-						break;
+		// don't draw identify results if Hide GUI enabled with playback on
+		if (!(me.hideGUI && me.generationOn)) {
+			// draw identify table, cell period map or frequency period map
+			if (me.resultsDisplayed && me.identifyDisplayMode !== ViewConstants.identifyDisplayResults && me.engine.cellPeriod !== null) {
+				// don't display if Help, Errors or Settings open
+				if (me.displayHelp === 0 && me.displayErrors === 0 && me.navToggle.current[0] === false) {
+					switch (me.identifyDisplayMode) {
+						case ViewConstants.identifyDisplayTable:
+							if (me.identifyDisplayType === ViewConstants.identifyDisplayPeriod) {
+								// draw cell period table below the main banner
+								me.engine.drawCellPeriodTable(me.identifyBannerLabel);
+							} else {
+								// draw cell period frequency below the main banner
+								me.engine.drawCellFrequencyTable(me.identifyBannerLabel);
+							}
+							break;
 
-					case ViewConstants.identifyDisplayMap:
-						if (me.identifyDisplayType === ViewConstants.identifyDisplayPeriod) {
-							// draw cell period map
-							me.engine.drawCellPeriodMap(me.identifyBannerLabel);
-						} else {
-							// draw cell frequency map
-							me.engine.drawCellFrequencyMap(me.identifyBannerLabel);
-						}
-						break;
+						case ViewConstants.identifyDisplayMap:
+							if (me.identifyDisplayType === ViewConstants.identifyDisplayPeriod) {
+								// draw cell period map
+								me.engine.drawCellPeriodMap(me.identifyBannerLabel);
+							} else {
+								// draw cell frequency map
+								me.engine.drawCellFrequencyMap(me.identifyBannerLabel);
+							}
+							break;
+					}
 				}
 			}
 		}
@@ -8095,7 +8105,7 @@ This file is part of LifeViewer
 		this.iconToggle.locked = !this.engine.iconsAvailable;
 
 		// lock nav toggle if window height is too short
-		shown = this.displayHeight < ViewConstants.minMenuHeight;
+		shown = this.displayHeight < (ViewConstants.minMenuHeight * this.viewMenu.yScale);
 		this.navToggle.locked = shown;
 
 		// replace nav toggle with shrink button if window height too short for nav button and thumbnail mode enabled
@@ -8347,6 +8357,8 @@ This file is part of LifeViewer
 		if (cancelled) {
 			if (notify) {
 				me.menuManager.notification.notify("Cancelled", 15, 80, 15, true);
+			} else {
+				me.menuManager.notification.clear(false, false);
 			}
 		} else {
 			if (me.genNotifications) {
@@ -18332,7 +18344,7 @@ This file is part of LifeViewer
 		}
 	};
 
-	// update selection controls position based on window height
+	// update selection controls position based on rule
 	View.prototype.updateSelectionControlsPosition = function() {
 		if (this.engine.isLifeHistory || this.engine.isSuper) {
 			this.changeCellStateButton.setPosition(Menu.southEast, -85, -130);
@@ -18377,7 +18389,7 @@ This file is part of LifeViewer
 			/** @type {number} */ inc = 50,
 			/** @type {boolean} */ showThemes = !(this.engine.isNone || this.engine.isSuper || this.engine.isExtended|| this.engine.isRuleTree);
 
-		if (this.displayHeight < ViewConstants.minMenuHeight) {
+		if (this.displayHeight < (ViewConstants.minMenuHeight * this.viewMenu.yScale)) {
 			y = 50;
 			this.helpKeysButton.setPosition(Menu.northWest, 10, y);
 			this.helpScriptsButton.setPosition(Menu.north, 0, y);
@@ -21430,12 +21442,6 @@ This file is part of LifeViewer
 		// set the menu colours
 		me.setMenuColours();
 
-		// update help topic button positions based on window height
-		me.updateTopicButtonsPosition();
-
-		// update selection controls position based on window height
-		me.updateSelectionControlsPosition();
-
 		// process dynamic themes
 		me.engine.processMultiStateThemes();
 
@@ -21457,7 +21463,7 @@ This file is part of LifeViewer
 		// check pattern size (script command may have increased maximum allowed size)
 		borderSize = me.getSafeBorderSize();
 
-		if (pattern && ((pattern.width > (me.engine.maxGridSize - borderSize - (Math.abs(me.xOffset + me.posXOffset) * 2)) || (pattern.height > (me.engine.maxGridSize - borderSize - Math.abs(me.xOffset - me.posXOffset) * 2))))) {
+		if (pattern && ((pattern.width > (me.engine.maxGridSize - borderSize - (Math.abs(me.xOffset + me.posXOffset) * 2)) || (pattern.height > (me.engine.maxGridSize - borderSize - Math.abs(me.yOffset - me.posYOffset) * 2))))) {
 			// check if pattern would fit in the middle
 			if (!((pattern.width > me.engine.maxGridSize - borderSize) || (pattern.height > me.engine.maxGridSize - borderSize))) {
 				me.failureReason = "Pattern too big at specified location";
@@ -22365,6 +22371,12 @@ This file is part of LifeViewer
 
 		// set the icons control
 		me.iconToggle.current = me.viewIconList([me.useIcons], true, me);
+
+		// update help topic button positions based on window height
+		me.updateTopicButtonsPosition();
+
+		// update selection controls position based on window height
+		me.updateSelectionControlsPosition();
 
 		// check for chrome bug
 		me.checkForChromeBug();

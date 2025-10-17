@@ -1032,6 +1032,15 @@ This file is part of LifeViewer
 							result += ViewConstants.externalViewerTitle;
 							break;
 
+						case "Z":
+							// add the program edition
+							if (Controller.useWASM) {
+								result += ViewConstants.proEdition;
+							} else {
+								result += ViewConstants.standardEdition
+							}
+							break;
+
 						case "D":
 							// add the rule neighbourhood
 							result += view.getNeighbourhoodName();

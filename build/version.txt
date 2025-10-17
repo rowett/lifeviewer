@@ -1,3 +1,13 @@
+Build 1334
+- fixed PopUp Window height check when using window scaling
+- added text substitution #Z which outputs the edition (Pro or Standard)
+= fixed "Going to generation" persisting for empty patterns
+- fixed Help>Info>Gridlines display excess information for hexagonal and triangular grids
+- fixed deleted cell visual issue for PCA rules
+- fixed Help>Info>Identify having incorrect information for off-deathforcer cells
+- fixed #CXRLE Pos y axis checking
+- fixed Identify Cell Period Table and Cell Period Map not disappearing with AUTOHIDEGUI
+
 Build 1333
 - fixed incorrect colour in Help->Info->UI->FullBG
 - improved PopUp Viewer title bar Full Screen and Close buttons
