@@ -1,6 +1,12 @@
+Build 1335
+- fixed displaying GRIDMAJOR information from Help>Themes for hexagonal and triangular grids
+- fixed using GRIDMAJOR as a period multiplier for TRACKLOOP for hexagonal and triangular grids
+- fixed Nudge Selection boundary checking in Bounded Grids
+- fixed Annotation positioning again on Hex grid
+
 Build 1334
 - fixed PopUp Window height check when using window scaling
-- added text substitution #Z which outputs the edition (Pro or Standard)
+- added text substitution #Z which outputs the edition name (Pro or Standard)
 = fixed "Going to generation" persisting for empty patterns
 - fixed Help>Info>Gridlines display excess information for hexagonal and triangular grids
 - fixed deleted cell visual issue for PCA rules

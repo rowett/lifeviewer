@@ -2747,7 +2747,9 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "Grid:", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "GRID", "grid line colour", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "GRIDMAJOR", "major grid line colour and interval", ctx, x, y, height, helpLine);
+		if (!(view.engine.isHex || view.engine.isTriangular)) {
+			y = this.renderHelpLine(view, "GRIDMAJOR", "major grid line colour and interval", ctx, x, y, height, helpLine);
+		}
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		if (view.engine.multiNumStates <= 2) {
@@ -2806,16 +2808,18 @@ This file is part of LifeViewer
 				y = this.renderHelpLine(view, "GRID", this.rgbString(theme.gridColour >> 16, (theme.gridColour >> 8) & 255, theme.gridColour & 255), ctx, x, y, height, helpLine);
 
 				// major grid line colour
-				if (theme.gridMajor > 0) {
+				if (theme.gridMajor > 0 && !(view.engine.isHex || view.engine.isTriangular)) {
 					this.renderColourBox(view, theme.gridMajorColour >> 16, (theme.gridMajorColour >> 8) & 255, theme.gridMajorColour & 255, ctx, x + (view.tabs[0] * xScale), y, height, helpLine);
 					y = this.renderHelpLine(view, "GRIDMAJOR", this.rgbString(theme.gridMajorColour >> 16, (theme.gridMajorColour >> 8) & 255, theme.gridMajorColour & 255), ctx, x, y, height, helpLine);
 				}
 
 				// major grid line interval
-				if (view.engine.isMargolus && theme.gridMajor > 0) {
-					y = this.renderHelpLine(view, "GRIDMAJOR", 2, ctx, x, y, height, helpLine);
-				} else {
-					y = this.renderHelpLine(view, "GRIDMAJOR", theme.gridMajor, ctx, x, y, height, helpLine);
+				if (!(view.engine.isHex || view.engine.isTriangular)) {
+					if (view.engine.isMargolus && theme.gridMajor > 0) {
+						y = this.renderHelpLine(view, "GRIDMAJOR", 2, ctx, x, y, height, helpLine);
+					} else {
+						y = this.renderHelpLine(view, "GRIDMAJOR", theme.gridMajor, ctx, x, y, height, helpLine);
+					}
 				}
 			}
 		} else {

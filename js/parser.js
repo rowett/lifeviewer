@@ -5854,7 +5854,7 @@ This file is part of LifeViewer
 						numberValue = view.engine.themes[currentWaypoint.theme].gridMajor;
 					}
 
-					if (numberValue > 0) {
+					if ((numberValue > 0) && !(view.engine.isHex || view.engine.isTriangular)) {
 						// multiply track parameters by grid line major interval
 						trackPeriod *= numberValue;
 					}

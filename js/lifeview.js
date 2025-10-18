@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1334,
+		/** @const {number} */ versionBuild : 1335,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -15653,11 +15653,6 @@ This file is part of LifeViewer
 						bRightX -= me.engine.HROT.xrange * 2 + 1;
 						bBottomY += me.engine.HROT.yrange * 2 + 1;
 						bTopY -= me.engine.HROT.yrange * 2 + 1;
-					} else {
-						bLeftX += 1;
-						bRightX -= 1;
-						bBottomY += 1;
-						bTopY -= 1;
 					}
 				}
 
