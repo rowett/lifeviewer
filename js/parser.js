@@ -1712,7 +1712,7 @@ This file is part of LifeViewer
 													itemValid = true;
 												} else {
 													itemValid = true;
-													scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y + " "+ numberValue, "third argument must from 0 to " + ((y - x) >> 1)];
+													scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y + " " + numberValue, "third argument must from 0 to " + ((y - x) >> 1)];
 												}
 											} else {
 												isNumeric = false;
@@ -1990,7 +1990,7 @@ This file is part of LifeViewer
 													itemValid = true;
 												} else {
 													itemValid = true;
-													scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y + " "+ numberValue, "third argument must from 0 to " + ((y - x) >> 1)];
+													scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y + " " + numberValue, "third argument must from 0 to " + ((y - x) >> 1)];
 												}
 											} else {
 												isNumeric = false;
@@ -2318,7 +2318,7 @@ This file is part of LifeViewer
 													itemValid = true;
 												} else {
 													itemValid = true;
-													scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y + " "+ numberValue, "third argument must from 0 to " + ((y - x) >> 1)];
+													scriptErrors[scriptErrors.length] = [nextToken + " " + x + " " + y + " " + numberValue, "third argument must from 0 to " + ((y - x) >> 1)];
 												}
 											} else {
 												isNumeric = false;

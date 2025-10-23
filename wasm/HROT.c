@@ -687,7 +687,7 @@ void nextGenerationShaped2(
 				if (*(colourRow + i) >= aliveStart) {
 					count++;
 				}
-				if (*(colourRow+ i + 1) >= aliveStart) {
+				if (*(colourRow + i + 1) >= aliveStart) {
 					count++;
 				}
 			}
@@ -2172,7 +2172,7 @@ void nextGenerationShapedN(
 				if (*(colourRow + i) == maxGenState) {
 					count++;
 				}
-				if (*(colourRow+ i + 1) == maxGenState) {
+				if (*(colourRow + i + 1) == maxGenState) {
 					count++;
 				}
 			}

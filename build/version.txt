@@ -1,3 +1,6 @@
+Build 1336
+- fixed crash in HROT von Neumann rules with Bounded Grid
+
 Build 1335
 - fixed displaying GRIDMAJOR information from Help>Themes for hexagonal and triangular grids
 - fixed using GRIDMAJOR as a period multiplier for TRACKLOOP for hexagonal and triangular grids
@@ -5019,22 +5022,6 @@ Build 234
 - LifeHistory patterns were not respecting Themes at generation 0
 - [[ NOSOURCE ]] now also hides the "CODE: SELECT ALL" line
 - copy pattern source (hotkey "c") was not working correctly in the standalone viewer
-
-Build 233
-- added support for Larger Than Life rules
-	- support two rule formats:
-		- Rr,Cc,Mm,Ssmin..smax,Bbmin..bmax,Nn
-		- r,bmin,bmax,smin,smax
-	- r specifies the range from 1 to 15
-	- c specifies number of states from 0 to 255
-	- m specifies if the middle cell is included in neighbourhood count is 0 or 1
-	- smin..smax specify the count limits for a state 1 cell to survive
-	- bmin..bmax specify the count limits for a dead cell to become a birth
-	- n is the neighbourhood (M for Moore or N for von Neumann)
-- patterns are now centered in bounded grids
-
-Build 234
-- the [[ NOSOURCE ]] script command now also hides the "CODE: SELECT ALL" box on the forums
 
 Build 233
 - the RLE reader could skip rule definition if previous line was just a # character

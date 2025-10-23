@@ -9713,10 +9713,15 @@ void nextGenerationRuleTableMoore(
 												isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
 												if (isMatch) {
 													uint32_t iBit = 0;
-													uint32_t mask = 1;
-													while (!(isMatch & mask)) {
+													//uint32_t mask = 1;
+													//while (!(isMatch & mask)) {
+														//iBit++;
+														//mask <<= 1;
+													//}
+													uint32_t v = isMatch;
+													while ((v & 1) == 0) {
 														iBit++;
-														mask <<= 1;
+														v >>= 1;
 													}
 													state = output[(iRuleC << 5) + iBit];
 													break;
@@ -9772,10 +9777,15 @@ void nextGenerationRuleTableMoore(
 											isMatch &= lutsw[iRuleC] & lutw[iRuleC] & lutnw[iRuleC];
 											if (isMatch) {
 												uint32_t iBit = 0;
-												uint32_t mask = 1;
-												while (!(isMatch & mask)) {
+												//uint32_t mask = 1;
+												//while (!(isMatch & mask)) {
+													//iBit++;
+													//mask <<= 1;
+												//}
+												uint32_t v = isMatch;
+												while ((v & 1) == 0) {
 													iBit++;
-													mask <<= 1;
+													v >>= 1;
 												}
 												state = output[(iRuleC << 5) + iBit];
 												break;

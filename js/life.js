@@ -23803,7 +23803,7 @@ This file is part of LifeViewer
 									}
 									if (output1) {
 										if (h + 1 < newBottomY) {
-											newBottomY = h+ 1;
+											newBottomY = h + 1;
 										}
 										if (h + 1 > newTopY) {
 											newTopY = h + 1;

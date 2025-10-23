@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1335,
+		/** @const {number} */ versionBuild : 1336,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -5730,9 +5730,8 @@ This file is part of LifeViewer
 
 			if (this.engine.HROT.type === this.manager.vonNeumannHROT) {
 				if (this.engine.boundedGridType !== -1) {
-					result += this.engine.boundedGridHeight / 2;
+					result += this.engine.boundedGridHeight;
 				} else {
-					// TBD check this is sufficient
 					result += this.engine.HROT.ncols;
 				}
 			}
