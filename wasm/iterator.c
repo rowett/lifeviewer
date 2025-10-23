@@ -4751,7 +4751,7 @@ void nextGenerationRuleTreeMoore(
 	const uint32_t rightSet,
 	uint32_t *shared
 ) {
-	uint32_t n, e, s, w, c, ne, nw, se, sw;
+	uint8_t n, e, s, w, c, ne, nw, se, sw;
 
 	// population statistics
 	uint32_t population = 0, births = 0, deaths = 0;

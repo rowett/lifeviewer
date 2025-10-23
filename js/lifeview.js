@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1336,
+		/** @const {number} */ versionBuild : 1337,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -16802,6 +16802,15 @@ This file is part of LifeViewer
 		if (me.isSelection) {
 			// adjust in case specified is different than actual size
 			if (me.engine.boundedGridType !== -1) {
+				// check for infinte bounds
+				if (me.engine.boundedGridWidth === 0) {
+					leftX = boxOffset;
+					rightX = me.engine.width - 1 - boxOffset;
+				}
+				if (me.engine.boundedGridHeight === 0) {
+					bottomY = boxOffset;
+					topY = me.engine.height - 1 - boxOffset;
+				}
 				if (me.posDefined) {
 					xOff -= Math.floor((me.specifiedWidth - me.patternWidth) / 2);
 					yOff -= Math.floor((me.specifiedHeight - me.patternHeight) / 2);

@@ -3940,6 +3940,23 @@ This file is part of LifeViewer
 				this.clearHROTOutside(gridLeftX, gridBottomY, gridRightX, gridTopY);
 			}
 
+			// compute population
+			population = 0;
+			leftX = this.engine.zoomBox.leftX;
+			rightX = this.engine.zoomBox.rightX;
+			bottomY = this.engine.zoomBox.bottomY;
+			topY = this.engine.zoomBox.topY;
+			for (y = bottomY; y <= topY; y += 1) {
+				colourRow = colourGrid[y];
+				for (x = leftX; x <= rightX; x += 1) {
+					state = colourRow[x];
+					if (state >= aliveStart) {
+						population += 1;
+					}
+				}
+			}
+			this.engine.population = population;
+
 			if (Controller.wasmTiming) {
 				timing = performance.now() - timing;
 				this.engine.view.menuManager.updateTimingItem("clearHROTOutside", timing, Controller.useWASM && Controller.wasmEnableHROTClear && this.engine.view.wasmEnabled);
