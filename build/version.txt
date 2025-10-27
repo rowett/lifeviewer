@@ -1,3 +1,6 @@
+Build 1339
+- fixed a crash in Help>Info when icons are defined in non-square grids
+
 Build 1338
 - fixed using grid detection if rule is invalid
 

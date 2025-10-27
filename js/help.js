@@ -1804,10 +1804,12 @@ This file is part of LifeViewer
 				}
 
 				// draw the Icons
-				for (j = 0; j < iconHeight / iconWidth; j += 1) {
-					this.renderIcon(view, j, view.engine.cellIconCanvas31.width, ctx, x + view.tabs[0] * xScale, y, height, helpLine);
-					itemName = view.getStateName(j + 1);
-					y = this.renderHelpLine(view, "Icon " + String(j + 1), "      " + itemName, ctx, x, y, height, helpLine);
+				if (view.engine.iconsAvailable) {
+					for (j = 0; j < iconHeight / iconWidth; j += 1) {
+						this.renderIcon(view, j, view.engine.cellIconCanvas31.width, ctx, x + view.tabs[0] * xScale, y, height, helpLine);
+						itemName = view.getStateName(j + 1);
+						y = this.renderHelpLine(view, "Icon " + String(j + 1), "      " + itemName, ctx, x, y, height, helpLine);
+					}
 				}
 			}
 		}
