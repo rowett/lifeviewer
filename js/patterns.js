@@ -5390,6 +5390,12 @@ This file is part of LifeViewer
 			}
 		}
 
+		if (!result) {
+			// disable auto-detected grid typesd
+			pattern.isHex = false;
+			pattern.isTriangular = false;
+		}
+
 		return result;
 	};
 

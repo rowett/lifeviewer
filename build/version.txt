@@ -1,3 +1,6 @@
+Build 1338
+- fixed using grid detection if rule is invalid
+
 Build 1337
 - fixed Rotate Selection not being allowed in a Bounded Grid with an infinite dimension
 - fixed Population calculation for HROT patterns in Bounded Grids

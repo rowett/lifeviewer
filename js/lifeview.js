@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1337,
+		/** @const {number} */ versionBuild : 1338,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -19063,7 +19063,7 @@ This file is part of LifeViewer
 		this.opacityItem.toolTip = "graph opacity [7 / 9]";
 
 		// identify close button
-		this.identifyCloseButton = this.viewMenu.addButtonItem(this.identifyClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
+		this.identifyCloseButton = this.viewMenu.addButtonItem(this.identifyClosePressed, Menu.northEast, -40, 45, 40, 40, "\u00D7");
 		this.identifyCloseButton.toolTip = "close results [Esc]";
 
 		// identify results display mode
@@ -19093,7 +19093,7 @@ This file is part of LifeViewer
 		this.identifyPageDownButton.toolTip = "scroll table down [PgDown]";
 
 		// graph close button
-		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "X");
+		this.graphCloseButton = this.viewMenu.addButtonItem(this.graphClosePressed, Menu.northEast, -40, 45, 40, 40, "\u00D7");
 		this.graphCloseButton.toolTip = "close graph [Y]";
 
 		// points/lines toggle

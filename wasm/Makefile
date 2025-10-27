@@ -1,6 +1,11 @@
 # Compile LifeViewer WebAssembly
 # C source -> WASM binary -> WASM base64 -> Javascript
 
+# Ensure repository root is set
+ifndef REPO
+$(error REPO is not set. Please pass the repository root directory as REPO=/path/to/repo)
+endif
+
 # Emscripten compiler
 CC = emcc
 
@@ -40,9 +45,6 @@ SETTINGS = -s INITIAL_MEMORY=1792MB -s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS="
 	'_create16x16ColourGrid', '_create32x32ColourGrid', \
 	'_resetColourGridNormal', '_resetPopulationBit', '_resetBoxesBit', '_shrinkTileGrid']"
 
-# Repository base
-REPO = /mnt/c/Users/crowe/Documents/GitHub/lifeviewer
-
 # C sources
 SOURCES = $(REPO)/wasm/HROT.c $(REPO)/wasm/render.c $(REPO)/wasm/identify.c $(REPO)/wasm/iterator.c
 
@@ -67,7 +69,7 @@ DEST = $(REPO)/js/
 
 # WASM javascript file
 $(JSCRIPT): $(B64)
-	./makejs.sh $(MAKEJSFLAGS) $< > $@ && cp $@ $(DEST)
+	./makejs.sh $(REPO) $< > $@ && cp $@ $(DEST)
 
 # Create base64 encoding of binary WASM
 $(B64): $(WASM)
