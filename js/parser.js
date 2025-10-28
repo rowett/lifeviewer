@@ -5630,6 +5630,11 @@ This file is part of LifeViewer
 								// get the value
 								numberValue = scriptReader.getNextTokenAsNumber() | 0;
 
+								// if the value is valid for Pro edition and this is Standard then cap it
+								if (!Controller.useWASM && (numberValue > ViewConstants.maxStepSpeed && numberValue <= ViewConstants.wasmMaxStepSpeed)) {
+									numberValue = ViewConstants.maxStepSpeed;
+								}
+
 								// check it is in range
 								if (numberValue >= ViewConstants.minStepSpeed && numberValue <= view.maxStepSpeed) {
 									// check if step already defined

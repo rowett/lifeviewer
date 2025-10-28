@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1339,
+		/** @const {number} */ versionBuild : 1340,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -5732,7 +5732,11 @@ This file is part of LifeViewer
 				if (this.engine.boundedGridType !== -1) {
 					result += this.engine.boundedGridHeight;
 				} else {
-					result += this.engine.HROT.ncols;
+					if (this.engine.HROT.ncols === 0) {
+						result += (this.engine.HROTBox.rightX + this.engine.HROT.xrange) - (this.engine.HROTBox.leftX - this.engine.HROT.xrange) + 1;
+					} else {
+						result += this.engine.HROT.ncols;
+					}
 				}
 			}
 		}
@@ -9387,7 +9391,7 @@ This file is part of LifeViewer
 		if (Math.round(me.genSpeed) < ViewConstants.defaultRefreshRate) {
 			label = String(Math.round(me.genSpeed)) + "/s";
 		} else {
-			label = String(Math.round(me.gensPerStep)) + "x";
+			label = String(Math.round(me.gensPerStep)) + "\u00D7";
 		}
 
 		return [value, label];
@@ -19276,8 +19280,8 @@ This file is part of LifeViewer
 		this.themeDebugLabel = this.viewMenu.addLabelItem(Menu.north, 210, 60, 120, 40, "Basic");
 
 		// 1x speed button
-		this.speed1Button = this.viewMenu.addButtonItem(this.speed1Pressed, Menu.southEast, -405, -40, 40, 40, "1x");
-		this.speed1Button.toolTip = "set 1x playback speed [0]";
+		this.speed1Button = this.viewMenu.addButtonItem(this.speed1Pressed, Menu.southEast, -405, -40, 40, 40, "1\u00D7");
+		this.speed1Button.toolTip = "set 1\u00D7 playback speed [0]";
 
 		// add the speed range
 		this.speedRange = this.viewMenu.addRangeItem(this.viewSpeedRange, Menu.southEast, -360, -40, 105, 40, 0, 2, 1, true, "", "", -1);

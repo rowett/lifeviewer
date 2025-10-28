@@ -1,5 +1,9 @@
+Build 1340
+- [[ STEP ]] sizes from 65-96 are now capped to 64 when using LifeViewer Standard
+- fixed crash in HROT von Neumann rules without Bounded Grid
+
 Build 1339
-- fixed a crash in Help>Info when icons are defined in non-square grids
+- fixed crash in Help>Info when icons are defined in non-square grids
 
 Build 1338
 - fixed using grid detection if rule is invalid
