@@ -1029,7 +1029,7 @@ This file is part of LifeViewer
 			/** @type {number} */ radius = 0,
 			/** @type {number} */ theta = 0,
 			/** @type {number} */ rangeFromTarget = 0,
-			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) -(view.patternHeight / 26) + 0.3 : 0,
+			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
 			/** @type {number} */ headSize = 0,
 			/** @type {number} */ headAngle = 0,
 			/** @type {number} */ shadowOffset = 0,
@@ -1048,7 +1048,7 @@ This file is part of LifeViewer
 
 		// adjust for hex
 		if (engine.isHex) {
-			xOff += yOff * (xZoom / yZoom) / 2;
+			xOff += yOff / 2;
 		}
 
 		// use the shadow colour if drawing shadows
@@ -1187,7 +1187,8 @@ This file is part of LifeViewer
 
 						// adjust for hex
 						if (engine.isHex) {
-							cx -= cy * (xZoom / yZoom) / 2;
+							cx -= cy / 2;
+							cx += 0.27;
 						}
 
 						// draw the arrow
@@ -1310,7 +1311,7 @@ This file is part of LifeViewer
 			/** @type {number} */ radius = 0,
 			/** @type {number} */ theta = 0,
 			/** @type {number} */ rangeFromTarget = 0,
-			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) -(view.patternHeight / 26) + 0.3 : 0,
+			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
 			/** @type {number} */ tilt = engine.tilt,
 			/** @type {number} */ mode7Angle = tilt - 1,
 			/** @type {number} */ pz = 1,
@@ -1330,7 +1331,7 @@ This file is part of LifeViewer
 
 		// adjust for hex
 		if (engine.isHex) {
-			xOff += yOff * (xZoom / yZoom) / 2;
+			xOff += yOff / 2;
 		}
 
 		// get bounded box offset
@@ -1462,7 +1463,8 @@ This file is part of LifeViewer
 
 						// adjust for hex
 						if (engine.isHex) {
-							cx -= cy * (xZoom / yZoom) / 2;
+							cx -= cy / 2;
+							cx += 0.27;
 						}
 
 						// draw the polygon
@@ -1522,7 +1524,7 @@ This file is part of LifeViewer
 								cx2 = (coords[coord] - coords[0]) * xZoom / pz;
 								cy2 = (coords[coord + 1] - coords[1]) * yZoom / pz;
 								if (engine.isHex) {
-									cx2 -= (cy2 * (xZoom / yZoom)) / 2;
+									cx2 -= cy2 * (xZoom / yZoom) / 2;
 								}
 								coord += 2;
 								context.lineTo(cx2, cy2);
@@ -1594,12 +1596,12 @@ This file is part of LifeViewer
 			/** @type {number} */ currentX = 0,
 			/** @type {number} */ currentY = 0,
 			/** @type {number} */ currentAlign = 0,
-			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) -(view.patternHeight / 26) + 0.3 : 0,
+			/** @type {number} */ hexAdjust = engine.isHex ? -(engine.height >> 2) : 0,
 			/** @type {number} */ floatCounter = view.fixedPointCounter / view.refreshRate;
 
 		// adjust for hex
 		if (engine.isHex) {
-			xOff += yOff * (xZoom / yZoom) / 2;
+			xOff += yOff / 2;
 		}
 
 		// draw each label
@@ -1729,7 +1731,8 @@ This file is part of LifeViewer
 
 						// adjust for hex
 						if (engine.isHex) {
-							cx -= cy * (xZoom / yZoom) / 2;
+							cx -= cy / 2;
+							cx += 0.27;
 						}
 
 						// draw each line of the label

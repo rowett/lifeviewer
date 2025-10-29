@@ -478,7 +478,7 @@ This file is part of LifeViewer
 		}
 
 		// return the area string
-		result = width + " x " + height;
+		result = width + " \u00D7 " + height;
 		return result;
 	};
 
@@ -854,18 +854,18 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "]", "zoom in", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift [", "halve zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift ]", "double zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "1", "1x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "2", "2x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "4", "4x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "8", "8x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "6", "16x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "3", "32x zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "1", "1\u00D7 zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "2", "2\u00D7 zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "4", "4\u00D7 zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "8", "8\u00D7 zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "6", "16\u00D7 zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "3", "32\u00D7 zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Shift 1", "integer zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift 2", "-2x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift 4", "-4x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift 8", "-8x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift 6", "-16x zoom", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Shift 3", "-32x zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift 2", "-2\u00D7 zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift 4", "-4\u00D7 zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift 8", "-8\u00D7 zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift 6", "-16\u00D7 zoom", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift 3", "-32\u00D7 zoom", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Left", "pan left", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Right", "pan right", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Up", "pan up", ctx, x, y, height, helpLine);
@@ -1556,7 +1556,7 @@ This file is part of LifeViewer
 		view.helpSections[sectionNum] = [view.lineNo, "Display"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Display:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Size", view.displayWidth + " x " + view.displayHeight, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Size", view.displayWidth + " \u00D7 " + view.displayHeight, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Scale", view.viewMenu.xScale.toFixed(2), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Pixel Ratio", view.devicePixelRatio.toFixed(2), ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Window Zoom", view.windowZoom.toFixed(2), ctx, x, y, height, helpLine);
@@ -1633,13 +1633,13 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, "Originator", view.patternOriginator, ctx, x, y, height, helpLine);
 		}
 
-		y = this.renderHelpLine(view, "Actual Size", view.patternWidth + " x " + view.patternHeight, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Actual Size", view.patternWidth + " \u00D7 " + view.patternHeight, ctx, x, y, height, helpLine);
 		if (view.specifiedWidth !== -999999 && view.specifiedHeight !== -999999) {
-			y = this.renderHelpLine(view, "Specified", view.specifiedWidth + " x " + view.specifiedHeight, ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Specified", view.specifiedWidth + " \u00D7 " + view.specifiedHeight, ctx, x, y, height, helpLine);
 		}
 		if (view.pasteList.length > 0) {
 			y = this.renderHelpLine(view, "Pastes", view.pasteList.length, ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Paste Size", (view.pasteRightX - view.pasteLeftX + 1) + " x " + (view.pasteTopY - view.pasteBottomY + 1) + " from (" + view.pasteLeftX + ", " + view.pasteBottomY + ") to (" + view.pasteRightX + ", " + view.pasteTopY + ")", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Paste Size", (view.pasteRightX - view.pasteLeftX + 1) + " \u00D7 " + (view.pasteTopY - view.pasteBottomY + 1) + " from (" + view.pasteLeftX + ", " + view.pasteBottomY + ") to (" + view.pasteRightX + ", " + view.pasteTopY + ")", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Paste Max T", view.maxPasteGen + (view.isPasteEvery ? (" + " + Keywords.everyWord) : ""), ctx, x, y, height, helpLine);
 		}
 		if (view.rleList.length > 0) {
@@ -1657,7 +1657,7 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, "CXRLE Pos", "X " + view.posXOffset + "  Y " + view.posYOffset, ctx, x, y, height, helpLine);
 		}
 		if (view.wasClipped) {
-			y = this.renderHelpLine(view, "Clipped", (view.engine.boundedGridWidth === 0 ? "Inf" : view.engine.boundedGridWidth) + " x " + (view.engine.boundedGridHeight === 0 ? "Inf" : view.engine.boundedGridHeight) + " " + view.manager.boundedGridName(view.engine.boundedGridType), ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Clipped", (view.engine.boundedGridWidth === 0 ? "Inf" : view.engine.boundedGridWidth) + " \u00D7 " + (view.engine.boundedGridHeight === 0 ? "Inf" : view.engine.boundedGridHeight) + " " + view.manager.boundedGridName(view.engine.boundedGridType), ctx, x, y, height, helpLine);
 		}
 
 		if (!view.executable) {
@@ -1799,7 +1799,7 @@ This file is part of LifeViewer
 				for (j = 0; j < view.engine.ruleTableIcons.length; j += 1) {
 					iconWidth = view.engine.ruleTableIcons[j].width;
 					iconHeight = view.engine.ruleTableIcons[j].height;
-					itemName = iconWidth + "x" + iconWidth + "\t" + iconHeight / iconWidth + "\t" + view.engine.ruleTableIcons[j].numColours + "\t" + (view.engine.ruleTableIcons[j].greyScale ? "Yes" : "No");
+					itemName = iconWidth + "\u00D7" + iconWidth + "\t" + iconHeight / iconWidth + "\t" + view.engine.ruleTableIcons[j].numColours + "\t" + (view.engine.ruleTableIcons[j].greyScale ? "Yes" : "No");
 					y = this.renderHelpLine(view, " ", itemName, ctx, x, y, height, helpLine);
 				}
 
@@ -1929,8 +1929,8 @@ This file is part of LifeViewer
 		view.helpSections[sectionNum] = [view.lineNo, "Grid"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Grid:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Size", view.engine.width + " x " + view.engine.height, ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Maximum", view.engine.maxGridSize + " x " + view.engine.maxGridSize, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Size", view.engine.width + " \u00D7 " + view.engine.height, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Maximum", view.engine.maxGridSize + " \u00D7 " + view.engine.maxGridSize, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Area", this.areaString(view), ctx, x, y, height, helpLine);
 		if (view.engine.isRuleTree || view.engine.isExtended) {
 			if ((view.engine.counter & 1) !== 0) {
@@ -1948,7 +1948,7 @@ This file is part of LifeViewer
 		if (view.engine.state6TileGrid) {
 			y = this.renderHelpLine(view, "State6", view.engine.tileCount(view.engine.state6TileGrid), ctx, x, y, height, helpLine);
 		}
-		y = this.renderHelpLine(view, "Tile Size", (view.engine.tileX << 3) + " x " + view.engine.tileY, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Tile Size", (view.engine.tileX << 3) + " \u00D7 " + view.engine.tileY, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Generation", view.engine.counter, ctx, x, y, height, helpLine);
 		if (view.genOffset !== 0) {
 			y = this.renderHelpLine(view, "AbsoluteGen", view.engine.counter + view.genOffset, ctx, x, y, height, helpLine);
@@ -2058,7 +2058,7 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, "Redo", view.numEdits - view.editNum, ctx, x, y, height, helpLine);
 			for (i = 0; i < ViewConstants.numPasteBuffers; i += 1) {
 				if (view.pasteBuffers[i] !== null) {
-					y = this.renderHelpLine(view, "Clip " + i + (i === view.currentPasteBuffer ? "*" : ""), view.pasteBuffers[i].width + " x " + view.pasteBuffers[i].height, ctx, x, y, height, helpLine);
+					y = this.renderHelpLine(view, "Clip " + i + (i === view.currentPasteBuffer ? "*" : ""), view.pasteBuffers[i].width + " \u00D7 " + view.pasteBuffers[i].height, ctx, x, y, height, helpLine);
 				}
 			}
 		}
@@ -2102,7 +2102,7 @@ This file is part of LifeViewer
 			for (i = 0; i < value; i += 1) {
 				y = this.renderHelpLine(view, (String(i + 1) + ((i === view.universe) ? "*" : "")), Controller.patterns[i].name, ctx, x, y, height, helpLine);
 				y = this.renderHelpLine(view, " ", Controller.patterns[i].rule, ctx, x, y, height, helpLine);
-				y = this.renderHelpLine(view, " ", Controller.patterns[i].width + " x " + Controller.patterns[i].height, ctx, x, y, height, helpLine);
+				y = this.renderHelpLine(view, " ", Controller.patterns[i].width + " \u00D7 " + Controller.patterns[i].height, ctx, x, y, height, helpLine);
 			}
 			view.wrapHelpText = false;
 		} else {

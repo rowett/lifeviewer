@@ -6875,9 +6875,9 @@ This file is part of LifeViewer
 			maxY = minY + boxHeight;
 		}
 
-		boxResult = String(boxWidth + " x " + boxHeight + " = " + (boxWidth * boxHeight));
+		boxResult = String(boxWidth + " \u00D7 " + boxHeight + " = " + (boxWidth * boxHeight));
 		if (!(minBoxWidth === maxBoxWidth && minBoxHeight === maxBoxHeight)) {
-			this.identifyBoxWithTMessage = String(minBoxWidth + " x " + minBoxHeight + " = " + minBoxSize + " @ T" + minT + " | " + maxBoxWidth + " x " + maxBoxHeight + " = " + maxBoxSize + " @ T" + maxT);
+			this.identifyBoxWithTMessage = String(minBoxWidth + " \u00D7 " + minBoxHeight + " = " + minBoxSize + " @ T" + minT + " | " + maxBoxWidth + " \u00D7 " + maxBoxHeight + " = " + maxBoxSize + " @ T" + maxT);
 		}
 
 		// compute the heat

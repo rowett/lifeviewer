@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1340,
+		/** @const {number} */ versionBuild : 1342,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -545,6 +545,9 @@ This file is part of LifeViewer
 
 		// popup window
 		/** @type {PopupWindow} */ popupWindow : null,
+
+		// whether to force resize of the popup window
+		/** @type {boolean} */ forceResize : false,
 
 		// list of patterns in multiverse mode
 		/** @type {Array} */ patterns : [],
@@ -2653,7 +2656,7 @@ This file is part of LifeViewer
 			}
 			tip += "clipboard";
 			if (buffer[i] !== null) {
-				tip += " (" + buffer[i].width + " x " + buffer[i].height + ", " + buffer[i].count + " cell";
+				tip += " (" + buffer[i].width + " \u00D7 " + buffer[i].height + ", " + buffer[i].count + " cell";
 				if (buffer[i].count !== 1) {
 					tip += "s";
 				}
@@ -6640,7 +6643,7 @@ This file is part of LifeViewer
 			} else {
 				yPos = this.selectionBox.bottomY - this.selectionBox.topY + 1;
 			}
-			this.selSizeLabel.preText = xPos + " x " + yPos;
+			this.selSizeLabel.preText = xPos + " \u00D7 " + yPos;
 		} else {
 			this.selSizeLabel.enabled = false;
 		}
@@ -9220,7 +9223,9 @@ This file is part of LifeViewer
 				Controller.popupWindow.maximized = !Controller.popupWindow.maximized;
 				result = Controller.popupWindow.maximized;
 
+				Controller.forceResize = true;
 				Controller.popupWindow.resizeWindow(Controller.popupWindow);
+				Controller.forceResize = false;
 
 				// resize the zoom slider
 				if (me.displayWidth > ViewConstants.minViewerWidth * me.viewMenu.xScale) {
@@ -11703,7 +11708,7 @@ This file is part of LifeViewer
 				} else {
 					height = selBox.topY - selBox.bottomY + 1;
 				}
-				me.afterEdit("selection (" + width + " x " + height + ")");
+				me.afterEdit("selection (" + width + " \u00D7 " + height + ")");
 			} else {
 				me.removeSelection(me);
 			}
@@ -14533,7 +14538,7 @@ This file is part of LifeViewer
 				height = selBox.topY - selBox.bottomY + 1;
 			}
 			if (markUndo) {
-				this.afterEdit("select all (" + width + " x " + height + ")");
+				this.afterEdit("select all (" + width + " \u00D7 " + height + ")");
 			}
 		} else {
 			this.menuManager.notification.notify("No live cells to Select", 15, 120, 15, false);
@@ -21493,10 +21498,12 @@ This file is part of LifeViewer
 			}
 		}
 
-		// disable Fast Lookup if pattern invalid
+		// disable Fast Lookup, AUTOSTART and AUTOIDENTIFY if pattern invalid
 		if (!me.executable) {
 			me.engine.ruleLoaderLookupEnabled = false;
 			me.engine.ruleLoaderStep = -1;
+			me.autoStart = false;
+			me.autoIdentify = false;
 		}
 
 		// update the life rule
@@ -22663,6 +22670,15 @@ This file is part of LifeViewer
 		if (canvasItem) {
 			viewer = Controller.findViewerByCanvas(canvasItem.tabIndex);
 			if (viewer) {
+				// reset the HROT bounding box so fit zoom works correctly
+				viewer.engine.HROTBox = new BoundingBox(0, 0, 0, 0);
+				viewer.engine.zoomBox = new BoundingBox(0, 0, 0, 0);
+				viewer.engine.initialBox = new BoundingBox(0, 0, 0, 0);
+				viewer.engine.historyBox = new BoundingBox(0, 0, 0, 0);
+
+				// reset HROT state
+				viewer.engine.HROT.ncols = 0;
+
 				// copy the text item into the inner html
 				textItem.innerHTML = textItem.value;
 
@@ -22945,6 +22961,9 @@ This file is part of LifeViewer
 		view.engine.zoomBox = new BoundingBox(0, 0, 0, 0);
 		view.engine.initialBox = new BoundingBox(0, 0, 0, 0);
 		view.engine.historyBox = new BoundingBox(0, 0, 0, 0);
+
+		// reset HROT state
+		view.engine.HROT.ncols = 0;
 
 		// resize
 		view.resize();

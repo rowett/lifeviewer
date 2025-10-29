@@ -1,3 +1,13 @@
+Build 1342
+- displayed Zoom value is now rounded towards zero
+- fixed AUTOSTART and AUTOIDENTIFY not being disabled when pattern is too big
+- fixed size calculation when new HROT pattern opened over original one
+- fixed Annotation horizontal centering on Hex grid
+- fixed Full Screen mode not always adjusting window height
+
+Build 1341
+- fixed Annotation positioning on Hex grid again
+
 Build 1340
 - [[ STEP ]] sizes from 65-96 are now capped to 64 when using LifeViewer Standard
 - fixed crash in HROT von Neumann rules without Bounded Grid

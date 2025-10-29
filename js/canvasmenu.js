@@ -1518,7 +1518,8 @@ This file is part of LifeViewer
 	MenuList.prototype.drawRangeValue = function(/** @type {MenuItem} */ item, /** @type {boolean} */ highlight) {
 		var	/** @type {number} */ markerPos,
 			/** @type {number} */ highlightSize,
-			/** @type {string} */ itemString;
+			/** @type {string} */ itemString,
+			/** @type {number} */ factor;
 
 		// compute the marker position in the range
 		markerPos = (item.current[0] - /** @type {!number} */ (item.lower)) / (item.upper - /** @type {!number} */ (item.lower));
@@ -1581,7 +1582,12 @@ This file is part of LifeViewer
 		// check whether to display the caption
 		if (item.valueDisplay) {
 			if (item.fixed >= 0) {
-				itemString += item.current[1].toFixed(item.fixed);
+				factor = Math.pow(10, item.fixed);
+				if (item.current[1] < 0) {
+					itemString += (Math.ceil(item.current[1] * factor) / factor).toFixed(item.fixed);
+				} else {
+					itemString += (Math.floor(item.current[1] * factor) / factor).toFixed(item.fixed);
+				}
 			} else {
 				itemString += item.current[1];
 			}
@@ -3336,7 +3342,7 @@ This file is part of LifeViewer
 								oc.fillStyle = this.adjustColour([255,0,0], lastUpdate - latestUpdate);
 							}
 						}
-						message = ratio.toFixed(1) + "x";
+						message = ratio.toFixed(1) + "\u00D7";
 						width = oc.measureText(message).width;
 						oc.fillText(message, ((thirdTab - j - width + leftX) * xScale) | 0, ((topY - j + (rowY * i)) * yScale) | 0);
 					}

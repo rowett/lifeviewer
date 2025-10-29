@@ -169,7 +169,7 @@ This file is part of LifeViewer
 	// resize window
 	/* eslint-disable no-unused-vars */
 	PopupWindow.prototype.resizeWindow = function(/** @type {PopupWindow} */ me) {
-		var	/** @type {View} */ view = this.view;
+		var	/** @type {View} */ view = me.view;
 
 		// check if window needs rescaling
 		view.displayWidth = view.origDisplayWidth;
@@ -177,8 +177,8 @@ This file is part of LifeViewer
 		view.scalePopup();
 		view.divItem.style.transform = "scale(" + view.windowZoom + "," + view.windowZoom + ")";
 		view.divItem.style.transformOrigin = "top left";
-		if (view.popupWidthChanged) {
-			this.menuManager.setAutoUpdate(true);
+		if (view.popupWidthChanged || Controller.forceResize) {
+			view.menuManager.setAutoUpdate(true);
 			view.resize();
 		}
 
