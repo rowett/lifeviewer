@@ -108,6 +108,12 @@ This file is part of LifeViewer
 		// buffer full
 		/** @const {string} */ bufferFullMessage : "Buffer Full",
 
+		// Golly Theme colours for regular and [R]History states
+		/** @const {ColourRange} */ gollyStandardAliveRange : new ColourRange(new Colour(255, 255, 255), new Colour(255, 255, 255)),
+		/** @const {ColourRange} */ gollyHistoryAliveRange : new ColourRange(new Colour(0, 255, 0), new Colour(0, 255, 0)),
+		/** @const {ColourRange} */ gollyStandardDeadRange : new ColourRange(new Colour(48, 48, 48), new Colour(48, 48, 48)),
+		/** @const {ColourRange} */ gollyHistoryDeadRange : new ColourRange(new Colour(0, 0, 128), new Colour(0, 0, 128)),
+
 		// [R]Extended state colours
 		/** @const {Array<Array<number>>} */ coloursExtended : [[0, 0, 0], [0, 236, 91], [0, 192, 254], [254, 0, 0], [254, 254, 254], [75, 75, 75],
 															 [233, 41, 254], [64, 0, 128], [254, 230, 0], [150, 128, 0], [130, 200, 0],

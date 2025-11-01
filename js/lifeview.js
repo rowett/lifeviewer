@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1342,
+		/** @const {number} */ versionBuild : 1343,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -21296,9 +21296,13 @@ This file is part of LifeViewer
 		if (me.engine.isLifeHistory) {
 			me.colourList = [0, 255 << 8, 128, (216 << 16) | (255 << 8) | 216, 255 << 16, (255 << 16) | (255 << 8), (96 << 16) | ( 96 << 8) | 96];
 			me.colourSetName = "[R]History";
+			me.engine.themes[12].aliveRange.set(LifeConstants.gollyHistoryAliveRange)
+			me.engine.themes[12].deadRange.set(LifeConstants.gollyHistoryDeadRange)
 		} else {
 			me.colourList = ColourManager.defaultSet();
 			me.colourSetName = "(default)";
+			me.engine.themes[12].aliveRange.set(LifeConstants.gollyStandardAliveRange)
+			me.engine.themes[12].deadRange.set(LifeConstants.gollyStandardDeadRange)
 		}
 
 		// reset controls a script can overwrite

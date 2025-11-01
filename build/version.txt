@@ -1,3 +1,6 @@
+Build 1343
+- fixed Golly Theme for [R]History
+
 Build 1342
 - displayed Zoom value is now rounded towards zero
 - fixed AUTOSTART and AUTOIDENTIFY not being disabled when pattern is too big
