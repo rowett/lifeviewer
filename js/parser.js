@@ -5003,13 +5003,13 @@ This file is part of LifeViewer
 											view.engine.cellRenderer = LifeConstants.shaderRainbow;
 											view.defaultRenderer = LifeConstants.shaderRainbow;
 											break;
-	
+
 										case Keywords.neighborCountWord:
 										case Keywords.neighbourCountWord:
 											view.engine.cellRenderer = LifeConstants.shaderNeighbourCount;
 											view.defaultRenderer = LifeConstants.shaderNeighbourCount;
 											break;
-	
+
 										case Keywords.basicWord:
 											view.engine.cellRenderer = LifeConstants.shaderBasic;
 											view.defaultRenderer = LifeConstants.shaderBasic;

@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1343,
+		/** @const {number} */ versionBuild : 1344,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -12481,10 +12481,147 @@ This file is part of LifeViewer
 		me.startViewer(patternText, false);
 	};
 
+	/**
+	 * displays a modal input dialog and returns the user's input.
+	 * @param {MenuManager} menuManager - the menu manager instance.
+	 * @param {string} message - message to display in the dialog.
+	 * @param {string} [defaultValue=""] - default input text.
+	 * @returns {Promise<string|null>} resolves to the entered text or null if cancelled.
+	*/
+	function showModal(menuManager, message, defaultValue = "") {
+		return new Promise((resolve) => {
+			// remember previous focused element
+			const previousFocus = document.activeElement;
+
+			// overlay
+			const overlay = document.createElement("div");
+			Object.assign(overlay.style, {
+				position: "fixed",
+				top: 0,
+				left: 0,
+				width: "100%",
+				height: "100%",
+				background: "rgba(0, 0, 0, 0.3)",
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				zIndex: 9999
+			});
+			document.body.appendChild(overlay);
+
+			// dialog
+			const dialog = document.createElement("div");
+			Object.assign(dialog.style, {
+				background: "#fff",
+				borderRadius: "10px",
+				boxShadow: "0 6px 20px rgba(0,0,0,0.3)",
+				padding: "18px 20px",
+				minWidth: "280px",
+				maxWidth: "90%",
+				display: "flex",
+				flexDirection: "column",
+				gap: "12px",
+				fontFamily: "sans-serif"
+			});
+			overlay.appendChild(dialog);
+
+			// header
+			const header = document.createElement("div");
+			header.textContent = message;
+			Object.assign(header.style, {
+				fontWeight: "500",
+				fontSize: "15px",
+				userSelect: "none"
+			});
+			dialog.appendChild(header);
+
+			let closed = false;
+
+			// input field
+			const input = document.createElement("input");
+			input.type = "text";
+			input.value = defaultValue;
+			Object.assign(input.style, {
+				padding: "6px",
+				fontSize: "14px",
+				borderRadius: "6px",
+				border: "1px solid #ccc",
+				outline: "none"
+			});
+			dialog.appendChild(input);
+
+			// buttons
+			const btnRow = document.createElement("div");
+			Object.assign(btnRow.style, {
+				display: "flex",
+				justifyContent: "flex-end",
+				gap: "10px"
+			});
+			dialog.appendChild(btnRow);
+
+			const makeButton = (/** @type {string} */ text, /** @type {string} */ color, /** @type {string} */ textColor) => {
+				const btn = document.createElement("button");
+				btn.textContent = text;
+				Object.assign(btn.style, {
+					padding: "6px 12px",
+					borderRadius: "6px",
+					border: "none",
+					background: color,
+					color: textColor,
+					cursor: "pointer",
+					boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+					userSelect: "none"
+				});
+				btn.addEventListener("mouseenter", () => btn.style.filter = "brightness(0.9)");
+				btn.addEventListener("mouseleave", () => btn.style.filter = "brightness(1)");
+				return btn;
+			};
+
+			const okBtn = makeButton("OK", "#1976d2", "#fff");
+			const cancelBtn = makeButton("Cancel", "#bbb", "#000");
+			btnRow.append(cancelBtn, okBtn);
+
+			const close = (/** @type {string|null} */ value) => {
+				if (closed) return;
+				closed = true;
+
+				// Prevent any further event handlers from firing
+				dialog.onkeydown = null;
+
+				// Remove overlay from DOM
+				document.body.removeChild(overlay);
+
+				if (previousFocus instanceof HTMLElement) {
+					previousFocus.focus();
+					menuManager.hasFocus = true;
+					menuManager.notification.clear(true, true);
+					menuManager.setAutoUpdate(true);
+				}
+
+				resolve(value);
+			}
+
+			okBtn.onclick = () => close(input.value);
+			cancelBtn.onclick = () => close(null);
+
+			// keyboard handling
+			dialog.addEventListener("keydown", (e) => {
+				if (e.key === "Enter") okBtn.click();
+				else if (e.key === "Escape") cancelBtn.click();
+			});
+
+			dialog.addEventListener("click", (e) => e.stopPropagation());
+			dialog.addEventListener("touchend", (e) => e.stopPropagation());
+
+			// initial focus, select all text
+			input.focus();
+			input.select();
+		});
+	}
+
 	// change rule
 	View.prototype.changeRule = function(/** @type {View} */ me) {
-		var	/** @type {string} */ ruleName = me.patternRuleName + me.patternBoundedGridDef,
-			/** @type {string|null} */ result = null;
+		var	/** @type {string} */ ruleName = me.patternRuleName + me.patternBoundedGridDef;
 
 		// if the current rule name is blank (typically after an error) then use the last valid one
 		if (ruleName === "") {
@@ -12492,24 +12629,24 @@ This file is part of LifeViewer
 		}
 
 		// prompt for the new rule name
-		result = window.prompt("Change rule", ruleName);
+		showModal(me.menuManager, "Change rule", ruleName).then((result) => {
+			// check if the prompt was confirmed
+			if (result !== null) {
+				// save the current rule name as the last valid one
+				me.lastRuleName = ruleName;
 
-		// check if the prompt was confirmed
-		if (result !== null) {
-			// save the current rule name as the last valid one
-			this.lastRuleName = ruleName;
+				// check if the rule is valid
+				result = me.ruleIsValid(result, me.changeRuleSuccess, me.changeRuleFailed);
 
-			// check if the rule is valid
-			result = me.ruleIsValid(result, me.changeRuleSuccess, me.changeRuleFailed);
-
-			if (!me.manager.loadingFromRepository) {
-				if (result !== "") {
-					me.changeRuleSuccess(null, [result], me);
-				} else {
-					me.changeRuleFailed(null, [result], me);
+				if (!me.manager.loadingFromRepository) {
+					if (result !== "") {
+						me.changeRuleSuccess(null, [result], me);
+					} else {
+						me.changeRuleFailed(null, [result], me);
+					}
 				}
 			}
-		}
+		});
 	};
 
 	// convert a pattern from one rule to another
@@ -13473,20 +13610,21 @@ This file is part of LifeViewer
 
 	// new pattern
 	View.prototype.newPattern = function(/** @type {View} */ me) {
-		var	/** @type {string|null} */ result = window.prompt("Create new pattern with rule", me.patternRuleName + me.patternBoundedGridDef);
+		// prompt for rule name
+		showModal(me.menuManager, "Create new pattern with rule", me.patternRuleName + me.patternBoundedGridDef).then((result) => {
+			// check if the prompt was confirmed
+			if (result !== null) {
+				result = me.ruleIsValid(result, me.newPatternSuccess, me.newPatternFailed);
 
-		// check if the prompt was confirmed
-		if (result !== null) {
-			result = me.ruleIsValid(result, me.newPatternSuccess, me.newPatternFailed);
-
-			if (!me.manager.loadingFromRepository) {
-				if (result !== "") {
-					me.newPatternSuccess(null, [result], me);
-				} else {
-					me.newPatternFailed(null, [result], me);
+				if (!me.manager.loadingFromRepository) {
+					if (result !== "") {
+						me.newPatternSuccess(null, [result], me);
+					} else {
+						me.newPatternFailed(null, [result], me);
+					}
 				}
 			}
-		}
+		});
 	};
 
 	// complete new pattern after invalid rule found
@@ -13910,37 +14048,39 @@ This file is part of LifeViewer
 	View.prototype.viewRefreshPressed = function(/** @type {View} */ me) {
 		// prompt for rate
 		var	/** @type {number} */ lastInput = Controller.loadIntegerSetting(ViewConstants.refreshRateSettingName),
-			/** @type {string|null} */ result = window.prompt("Enter refresh rate", lastInput === 0 ? "Auto" : String(lastInput)),
 			/** @type {number} */ number = 0;
 
-		// check one was entered
-		if (result !== null) {
-			// validate
-			if (result.toLowerCase() === "auto") {
-				number = 0;
-			} else {
-				number = parseInt(result, 10);
-				if (number < 25 || number > 500) {
-					me.menuManager.notification.notify("Invalid refresh rate specified", 15, 240, 15, true);
-					number = -1;
-				}
-			}
 
-			// save setting if valid
-			if (number >= 0) {
-				Controller.saveIntegerSetting(ViewConstants.refreshRateSettingName, number);
-				Controller.refreshOverride = (number !== 0);
-
-				// set it as the current refresh rate
-				if (number === 0) {
-					number = Controller.autoRefreshRate;
+		showModal(me.menuManager, "Enter refresh rate", lastInput === 0 ? "Auto" : String(lastInput)).then((result) => {	
+			// check one was entered
+			if (result !== null) {
+				// validate
+				if (result.toLowerCase() === "auto") {
+					number = 0;
+				} else {
+					number = parseInt(result, 10);
+					if (number < 25 || number > 500) {
+						me.menuManager.notification.notify("Invalid refresh rate specified", 15, 240, 15, true);
+						number = -1;
+					}
 				}
 
-				me.refreshRate = number;
-				me.menuManager.refreshRate = number;
-				Controller.refreshRate = number;
+				// save setting if valid
+				if (number >= 0) {
+					Controller.saveIntegerSetting(ViewConstants.refreshRateSettingName, number);
+					Controller.refreshOverride = (number !== 0);
+
+					// set it as the current refresh rate
+					if (number === 0) {
+						number = Controller.autoRefreshRate;
+					}
+
+					me.refreshRate = number;
+					me.menuManager.refreshRate = number;
+					Controller.refreshRate = number;
+				}
 			}
-		}
+		});
 	};
 
 	// back button
@@ -17363,73 +17503,75 @@ This file is part of LifeViewer
 	View.prototype.goToGenPressed = function(/** @type {View} */ me) {
 		// prompt for generation
 		var	/** @type {string} */ lastInput = me.lastGoto === "" ? String(me.engine.counter) : me.lastGoto,
-			/** @type {string|null} */ result = window.prompt("Enter generation", String(lastInput)),
 			/** @type {number} */ number = 0,
 			/** @type {string} */ input = "",
 			/** @type {boolean} */ timing = false;
 
 		// check one was entered
 		me.startFromTiming = -1;
-		if (result !== null) {
-			// save original result
-			input = result;
 
-			// check for timing mode
-			if ((result.substring(result.length - 1)).toLowerCase() === "b") {
-				result = result.substring(0, result.length - 1);
-				timing = true;
-			}
+		showModal(me.menuManager, "Enter generation", String(lastInput)).then((result) => {
+			if (result !== null) {
+				// save original result
+				input = result;
 
-			// check for relative generation
-			if (result.substring(0, 1) === "+") {
-				number = /** @type {!number} */ (me.engine.counter);
-				number += parseInt(result.substring(1), 10);
-			} else {
-				if (result.substring(0, 1) === "-") {
-					number = /** @type {!number} */ (me.engine.counter);
-					number -= parseInt(result.substring(1), 10);
-				} else {
-					number = parseInt(result, 10);
+				// check for timing mode
+				if ((result.substring(result.length - 1)).toLowerCase() === "b") {
+					result = result.substring(0, result.length - 1);
+					timing = true;
 				}
-			}
 
-			if (number >= 0 && number <= ViewConstants.maxStartFromGeneration) {
-				// save the input for next time since it is valid
-				me.lastGoto = input;
-
-				if (number !== me.engine.counter) {
-					// check for zero population
-					if (me.lifeEnded()) {
-						me.menuManager.notification.notify("No live cells", 15, 360, 15, false);
+				// check for relative generation
+				if (result.substring(0, 1) === "+") {
+					number = /** @type {!number} */ (me.engine.counter);
+					number += parseInt(result.substring(1), 10);
+				} else {
+					if (result.substring(0, 1) === "-") {
+						number = /** @type {!number} */ (me.engine.counter);
+						number -= parseInt(result.substring(1), 10);
 					} else {
-						// move to specified generation
-						me.startFrom = number;
-						me.navToggle.current = me.toggleSettings([false], true, me);
-						me.menuManager.toggleRequired = true;
-						if (me.genNotifications) {
-							me.menuManager.notification.notify("Going to generation " + number, 15, 10000, 15, false);
-						}
-						me.menuManager.notification.clear(true, false);
-
-						// if the required generation is earlier then reset
-						if (number < me.engine.counter) {
-							me.engine.restoreSavedGrid(me, false);
-							me.setUndoGen(me.engine.counter);
-						}
-
-						// setup timing if requested
-						if (timing) {
-							me.startFromTiming = performance.now();
-						}
-
-						// calculate number of generations to move
-						me.startFromGens = number - me.engine.counter;
+						number = parseInt(result, 10);
 					}
 				}
-			} else {
-				me.menuManager.notification.notify("Invalid generation specified", 15, 240, 15, true);
+
+				if (number >= 0 && number <= ViewConstants.maxStartFromGeneration) {
+					// save the input for next time since it is valid
+					me.lastGoto = input;
+
+					if (number !== me.engine.counter) {
+						// check for zero population
+						if (me.lifeEnded()) {
+							me.menuManager.notification.notify("No live cells", 15, 360, 15, false);
+						} else {
+							// move to specified generation
+							me.startFrom = number;
+							me.navToggle.current = me.toggleSettings([false], true, me);
+							me.menuManager.toggleRequired = true;
+							if (me.genNotifications) {
+								me.menuManager.notification.notify("Going to generation " + number, 15, 10000, 15, false);
+							}
+							me.menuManager.notification.clear(true, false);
+
+							// if the required generation is earlier then reset
+							if (number < me.engine.counter) {
+								me.engine.restoreSavedGrid(me, false);
+								me.setUndoGen(me.engine.counter);
+							}
+
+							// setup timing if requested
+							if (timing) {
+								me.startFromTiming = performance.now();
+							}
+
+							// calculate number of generations to move
+							me.startFromGens = number - me.engine.counter;
+						}
+					}
+				} else {
+					me.menuManager.notification.notify("Invalid generation specified", 15, 240, 15, true);
+				}
 			}
-		}
+		});
 	};
 
 	// identify button pressed

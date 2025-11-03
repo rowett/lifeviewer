@@ -943,16 +943,16 @@ void convertToPensNeighbours(
 						// cells stores the lower 8 bits in the first byte and the upper in the second byte
 						lower = wasm_u8x16_splat(midCells >> 8);
 						cells = wasm_u8x16_splat(midCells & 0xff);
-	
+
 						// combine upper and lower into a single 128-bit vector
 						cells = wasm_v8x16_shuffle(lower, cells, 0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23);
-	
+
 						// apply the bitmask to isolate individual bits in each lane
 						cells = wasm_v128_and(cells, maskVec);
-	
+
 						// test for zero or non-zero in each lane to create 0 or 255
 						aliveCells = wasm_u8x16_gt(cells, zeroVec);
-	
+
 						// get middle row as 0 or 1 in each lane
 						midVec = wasm_v128_and(aliveCells, oneVec);
 
@@ -978,19 +978,19 @@ void convertToPensNeighbours(
 						v128_t above5Vec = wasm_i8x16_add(aboveVec, wasm_i8x16_shl(aboveVec, 2));
 						v128_t mid5Vec = wasm_i8x16_add(midVec, wasm_i8x16_shl(midVec, 2));
 						v128_t below5Vec = wasm_i8x16_add(belowVec, wasm_i8x16_shl(belowVec, 2));
-	
+
 						// apply the following weighted neighbourhood
 						// 1 5 1
 						// 5 0 5
 						// 1 5 1
-	
+
 						// above row = shifted one lane left + shifted one lane right + lane x 5
 						aboveVec = wasm_i8x16_add(
 							wasm_i8x16_swizzle(aboveVec, leftVec),
 							wasm_i8x16_swizzle(aboveVec, rightVec)
 						);
 						aboveVec = wasm_i8x16_add(aboveVec, above5Vec);
-	
+
 						// middle row = shifted one lane left x 5 + shifted one lane right x 5
 						midVec = wasm_i8x16_add(
 							wasm_i8x16_swizzle(mid5Vec, leftVec),
@@ -1183,7 +1183,7 @@ void nextGenerationGenerations(
 					v128_t setToAliveMask = wasm_v128_and(
 						cells,
 						wasm_v128_or(
-							wasm_i8x16_le(colourVec, deadStateVec),
+							wasm_u8x16_le(colourVec, deadStateVec),
 							wasm_i8x16_eq(colourVec, maxGenStateVec)
 						)
 					);
@@ -1211,11 +1211,11 @@ void nextGenerationGenerations(
 					*gridRow = aliveCells;
 
 					// determine if any cells in the row are non-zero
-					if (wasm_v128_any_true(wasm_i8x16_gt(newColourVec, minDeadStateVec))) {
+					if (wasm_v128_any_true(wasm_u8x16_gt(newColourVec, minDeadStateVec))) {
 						tileAlive = 1;
 
 						// check if any cells in the row are alive
-						uint32_t aliveBits = wasm_i8x16_bitmask(wasm_i8x16_gt(newColourVec, deadStateVec));
+						uint32_t aliveBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, deadStateVec));
 
 						// compute the left and right most occupied cell
 						if (aliveBits) {

@@ -4179,7 +4179,7 @@ void updateGridFromCountsN(
 			v128_t setToAliveMask = wasm_v128_and(
 				cells,
 				wasm_v128_or(
-					wasm_i8x16_le(colourVec, deadStateVec),
+					wasm_u8x16_le(colourVec, deadStateVec),
 					wasm_i8x16_eq(colourVec, maxGenStateVec)
 				)
 			);
@@ -4204,7 +4204,7 @@ void updateGridFromCountsN(
 			wasm_v128_store(colourRow + x, newColourVec);
 
 			// determine if any cells in the row are non-zero
-			uint32_t occupiedBits = wasm_i8x16_bitmask(wasm_i8x16_gt(newColourVec, minDeadStateVec));
+			uint32_t occupiedBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, minDeadStateVec));
 			if (occupiedBits) {
 				rowOccupied = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
@@ -4222,7 +4222,7 @@ void updateGridFromCountsN(
 				}
 
 				// check if any cells in the row are alive
-				uint32_t aliveBits = wasm_i8x16_bitmask(wasm_i8x16_gt(newColourVec, deadStateVec));
+				uint32_t aliveBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, deadStateVec));
 				if (aliveBits) {
 					rowAlive = true;
 
@@ -5028,7 +5028,7 @@ void nextGenerationHROTMooreN(
 			v128_t setToAliveMask = wasm_v128_and(
 				cells,
 				wasm_v128_or(
-					wasm_i8x16_le(colourVec, deadStateVec),
+					wasm_u8x16_le(colourVec, deadStateVec),
 					wasm_i8x16_eq(colourVec, maxGenStateVec)
 				)
 			);
@@ -5053,7 +5053,7 @@ void nextGenerationHROTMooreN(
 			wasm_v128_store(colourRow, newColourVec);
 
 			// determine if any cells in the row are non-zero
-			uint32_t occupiedBits = wasm_i8x16_bitmask(wasm_i8x16_gt(newColourVec, minDeadStateVec));
+			uint32_t occupiedBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, minDeadStateVec));
 			if (occupiedBits) {
 				rowAlive = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
@@ -5071,7 +5071,7 @@ void nextGenerationHROTMooreN(
 				}
 
 				// check if any cells in the row are alive
-				uint32_t aliveBits = wasm_i8x16_bitmask(wasm_i8x16_gt(newColourVec, deadStateVec));
+				uint32_t aliveBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, deadStateVec));
 				if (aliveBits) {
 					liveRowAlive = true;
 

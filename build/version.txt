@@ -1,3 +1,7 @@
+Build 1344
+- fixed iterator issue in Generations and multi-state HROT rules (Pro)
+- switched to custom dialog box to prevent navigating away from page without prompting
+
 Build 1343
 - fixed Golly Theme for [R]History
 
