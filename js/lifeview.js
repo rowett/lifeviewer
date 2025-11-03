@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1344,
+		/** @const {number} */ versionBuild : 1345,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -17513,7 +17513,7 @@ This file is part of LifeViewer
 		// check one was entered
 		me.startFromTiming = -1;
 
-		showModal(me.menuManager, "Enter generation", String(lastInput)).then((result) => {
+		showModal(me.menuManager, "Go to generation", String(lastInput)).then((result) => {
 			if (result !== null) {
 				// save original result
 				input = result;

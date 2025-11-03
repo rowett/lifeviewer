@@ -10373,6 +10373,7 @@ This file is part of LifeViewer
 		if (snapshot) {
 			// restore the snapshot
 			this.restoreSnapshot(snapshot, view);
+			view.pasteRLEList();
 			view.pasteEdits();
 		}
 

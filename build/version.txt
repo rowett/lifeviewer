@@ -1,3 +1,6 @@
+Build 1345
+- Step Back was not Pasting immediately after a Snapshot
+
 Build 1344
 - fixed iterator issue in Generations and multi-state HROT rules (Pro)
 - switched to custom dialog box to prevent navigating away from page without prompting
