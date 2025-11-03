@@ -740,12 +740,12 @@ This file is part of LifeViewer
 
 	// return the View for the given canvas
 	/** @returns {View} */
-	Controller.findViewerByCanvas = function(/** @type {number} */ tab) {
+	Controller.findViewerByCanvas = function(/** @type {string} */ viewId) {
 		var	/** @type {View} */ result = null,
 			/** @type {number} */ i = 0;
 
 		while (i < Controller.viewers.length) {
-			if (Controller.viewers[i][0].tabIndex === tab) {
+			if (Controller.viewers[i][0].dataset.viewId === viewId) {
 				result = Controller.viewers[i][1];
 				break;
 			}
@@ -12546,7 +12546,8 @@ This file is part of LifeViewer
 				fontSize: "14px",
 				borderRadius: "6px",
 				border: "1px solid #ccc",
-				outline: "none"
+				outline: "none",
+				marginTop: "12px"
 			});
 			dialog.appendChild(input);
 
@@ -12555,7 +12556,8 @@ This file is part of LifeViewer
 			Object.assign(btnRow.style, {
 				display: "flex",
 				justifyContent: "flex-end",
-				gap: "10px"
+				gap: "10px",
+				marginTop: "12px"
 			});
 			dialog.appendChild(btnRow);
 
@@ -12570,7 +12572,8 @@ This file is part of LifeViewer
 					color: textColor,
 					cursor: "pointer",
 					boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-					userSelect: "none"
+					userSelect: "none",
+					marginLeft: "12px"
 				});
 				btn.addEventListener("mouseenter", () => btn.style.filter = "brightness(0.9)");
 				btn.addEventListener("mouseleave", () => btn.style.filter = "brightness(1)");
@@ -22560,7 +22563,7 @@ This file is part of LifeViewer
 		//console.time("startView");
 		i = 0;
 		while (i < Controller.viewers.length && !newView) {
-			if (Controller.viewers[i][0].tabIndex === canvasItem.tabIndex) {
+			if (Controller.viewers[i][0].dataset.viewId === canvasItem.dataset.viewId) {
 				newView = Controller.viewers[i][1];
 			} else {
 				i += 1;
@@ -22584,7 +22587,8 @@ This file is part of LifeViewer
 			}
 
 			// add a tab index to the canvas
-			canvasItem.tabIndex = Controller.viewers.length + 1;
+			canvasItem.tabIndex = 0;
+			canvasItem.dataset.viewId = String(Controller.viewers.length + 1);
 
 			// wrap it in a popup window if hidden
 			if (parentItem.style.display === "none") {
@@ -22814,7 +22818,7 @@ This file is part of LifeViewer
 
 		// find the View attached to this canvas
 		if (canvasItem) {
-			viewer = Controller.findViewerByCanvas(canvasItem.tabIndex);
+			viewer = Controller.findViewerByCanvas(canvasItem.dataset.viewId);
 			if (viewer) {
 				// reset the HROT bounding box so fit zoom works correctly
 				viewer.engine.HROTBox = new BoundingBox(0, 0, 0, 0);
