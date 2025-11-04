@@ -27292,7 +27292,8 @@ This file is part of LifeViewer
 						this.smallColourGrid.whole.byteOffset | 0,
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
 						this.tileX | 0,
-						this.tileRows | 0, this.tileCols | 0,
+						this.tileRows | 0,
+						this.tileCols | 0,
 						colourGrid32[0].length | 0
 					);
 				} else {
@@ -27467,7 +27468,6 @@ This file is part of LifeViewer
 						this.overlayGrid32.whole.byteOffset | 0,
 						this.smallOverlayGrid.whole.byteOffset | 0,
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
-						this.tileY | 0,
 						this.tileX | 0,
 						this.tileRows | 0,
 						this.tileCols | 0,
@@ -27518,7 +27518,6 @@ This file is part of LifeViewer
 						this.overlayGrid32.whole.byteOffset | 0,
 						this.smallOverlayGrid.whole.byteOffset | 0,
 						this.colourTileHistoryGrid.whole.byteOffset | 0,
-						this.tileY | 0,
 						this.tileX | 0,
 						this.tileRows | 0,
 						this.tileCols | 0,

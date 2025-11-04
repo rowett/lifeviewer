@@ -1,3 +1,6 @@
+Build 1346
+- fixed [R]History rendering issue (Pro)
+
 Build 1345
 - Step Back was not Pasting immediately after a Snapshot
 
