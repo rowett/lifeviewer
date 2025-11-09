@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1346,
+		/** @const {number} */ versionBuild : 1347,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -8114,6 +8114,16 @@ This file is part of LifeViewer
 		shown = this.displayHeight < (ViewConstants.minMenuHeight * this.viewMenu.yScale);
 		this.navToggle.locked = shown;
 
+		// hide settings menu if nav toggle locked
+		if (this.navToggle.locked) {
+			// close setting menu if open
+			if (this.navToggle.current[0]) {
+				this.navToggle.current = this.toggleSettings([false], true, this);
+				this.menuManager.toggleRequired = true;
+				this.menuManager.setAutoUpdate(true);
+			}
+		}
+
 		// replace nav toggle with shrink button if window height too short for nav button and thumbnail mode enabled
 		if (shown && this.thumbnailEverOn) {
 			this.navToggle.deleted = true;
@@ -9226,17 +9236,6 @@ This file is part of LifeViewer
 				Controller.forceResize = true;
 				Controller.popupWindow.resizeWindow(Controller.popupWindow);
 				Controller.forceResize = false;
-
-				// resize the zoom slider
-				if (me.displayWidth > ViewConstants.minViewerWidth * me.viewMenu.xScale) {
-					i = (me.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
-					if (i > ViewConstants.zoomSliderMaxWidth) {
-						i = ViewConstants.zoomSliderMaxWidth;
-					}
-					me.zoomItem.setWidth(i);
-				} else {
-					me.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
-				}
 
 				// ensure update happens
 				me.menuManager.setAutoUpdate(true);
@@ -20416,27 +20415,19 @@ This file is part of LifeViewer
 			// check for maximize
 			if (Controller.popupWindow.maximized) {
 				displayWidth = windowWidth;
-				if (displayWidth < ViewConstants.minViewerWidth) {
-					displayWidth = ViewConstants.minViewerWidth;
-				}
-
-				displayHeight = windowHeight - 34;
-				if (displayHeight < ViewConstants.preferredMenuHeight) {
-					displayHeight = ViewConstants.preferredMenuHeight;
-				}
-				scale = 1;
-			} else {
-				// scale width and height
-				displayWidth *= this.devicePixelRatio;
-				displayHeight *= this.devicePixelRatio;
-				scale = this.devicePixelRatio;
+				displayHeight = windowHeight - 40;
 			}
+
+			// scale width and height
+			displayWidth *= this.devicePixelRatio;
+			displayHeight *= this.devicePixelRatio;
+			scale = this.devicePixelRatio;
 
 			// assume window will fit and scale controls
 			this.windowZoom = 1;
 
 			// check window fits on display
-			if (!Controller.popupWindow.maximized && (displayWidth > windowWidth || displayHeight > windowHeight)) {
+			if (displayWidth > windowWidth || displayHeight > windowHeight) {
 				// find the maximum x or y scaling factor for the window to fit
 				scale = displayWidth / windowWidth;
 				if (displayHeight / windowHeight > scale) {
@@ -20451,6 +20442,12 @@ This file is part of LifeViewer
 				scale = displayWidth / this.displayWidth;
 				if (displayHeight / this.displayHeight < scale) {
 					scale = displayHeight / this.displayHeight;
+				}
+
+				// ensure window is maximized
+				if (Controller.popupWindow.maximized) {
+					displayWidth = windowWidth;
+					displayHeight = windowHeight - 40;
 				}
 
 				// check if the window size is above minimum

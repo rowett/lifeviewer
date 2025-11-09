@@ -180,6 +180,20 @@ This file is part of LifeViewer
 		if (view.popupWidthChanged || Controller.forceResize) {
 			view.menuManager.setAutoUpdate(true);
 			view.resize();
+
+			// resize the zoom slider
+			if (view.displayWidth > ViewConstants.minViewerWidth * view.viewMenu.xScale) {
+				i = (view.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
+				if (i > ViewConstants.zoomSliderMaxWidth) {
+					i = ViewConstants.zoomSliderMaxWidth;
+				}
+				view.zoomItem.setWidth(i);
+			} else {
+				view.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
+			}
+
+			// update Help topic buttons position
+			view.updateTopicButtonsPosition();
 		}
 
 		/* eslint-enable no-unused-vars */
@@ -201,8 +215,8 @@ This file is part of LifeViewer
 			/** @type {number} */ height = this.wrappedElement.clientHeight * this.windowZoom,
 
 			// get the maximum x and y position
-			/** @type {number} */ maxX = window.innerWidth - width,
-			/** @type {number} */ maxY = window.innerHeight - height,
+			/** @type {number} */ maxX = window.innerWidth - width - 6,
+			/** @type {number} */ maxY = window.innerHeight - height - 6,
 
 			// scrollbar width
 			/** @type {number} */ scrollBarWidth = window.innerWidth - document.body.clientWidth;

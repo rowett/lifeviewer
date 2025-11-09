@@ -1,3 +1,6 @@
+Build 1347
+- made some improvements to Full Screen mode
+
 Build 1346
 - fixed [R]History rendering issue (Pro)
 
