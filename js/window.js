@@ -177,24 +177,22 @@ This file is part of LifeViewer
 		view.scalePopup();
 		view.divItem.style.transform = "scale(" + view.windowZoom + "," + view.windowZoom + ")";
 		view.divItem.style.transformOrigin = "top left";
-		if (view.popupWidthChanged || Controller.forceResize) {
-			view.menuManager.setAutoUpdate(true);
-			view.resize();
+		view.menuManager.setAutoUpdate(true);
+		view.resize();
 
-			// resize the zoom slider
-			if (view.displayWidth > ViewConstants.minViewerWidth * view.viewMenu.xScale) {
-				i = (view.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
-				if (i > ViewConstants.zoomSliderMaxWidth) {
-					i = ViewConstants.zoomSliderMaxWidth;
-				}
-				view.zoomItem.setWidth(i);
-			} else {
-				view.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
+		// resize the zoom slider
+		if (view.displayWidth > ViewConstants.minViewerWidth * view.viewMenu.xScale) {
+			i = (view.displayWidth - ViewConstants.minViewerWidth) + ViewConstants.zoomSliderDefaultWidth;
+			if (i > ViewConstants.zoomSliderMaxWidth) {
+				i = ViewConstants.zoomSliderMaxWidth;
 			}
-
-			// update Help topic buttons position
-			view.updateTopicButtonsPosition();
+			view.zoomItem.setWidth(i);
+		} else {
+			view.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
 		}
+
+		// update Help topic buttons position
+		view.updateTopicButtonsPosition();
 
 		/* eslint-enable no-unused-vars */
 		// check the popup window is on the display

@@ -546,9 +546,6 @@ This file is part of LifeViewer
 		// popup window
 		/** @type {PopupWindow} */ popupWindow : null,
 
-		// whether to force resize of the popup window
-		/** @type {boolean} */ forceResize : false,
-
 		// list of patterns in multiverse mode
 		/** @type {Array} */ patterns : [],
 
@@ -9233,9 +9230,7 @@ This file is part of LifeViewer
 				Controller.popupWindow.maximized = !Controller.popupWindow.maximized;
 				result = Controller.popupWindow.maximized;
 
-				Controller.forceResize = true;
 				Controller.popupWindow.resizeWindow(Controller.popupWindow);
-				Controller.forceResize = false;
 
 				// ensure update happens
 				me.menuManager.setAutoUpdate(true);
