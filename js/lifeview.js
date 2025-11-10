@@ -23209,7 +23209,7 @@ This file is part of LifeViewer
 
 	// create error
 	function createError(rleItem, textItem, /** @type {string} */ message) {
-		// add the show in viewer anchor
+		// add the show pattern error anchor
 		var	/** @type {HTMLAnchorElement} */ anchorItem = rleItem.getElementsByTagName("a")[0],
 			/** @type {HTMLAnchorElement} */ newAnchor = /** @type {!HTMLAnchorElement} */ (document.createElement("a")),
 			/** @type {Node} */ nodeItem = null;

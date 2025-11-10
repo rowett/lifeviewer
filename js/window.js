@@ -194,6 +194,10 @@ This file is part of LifeViewer
 		// update Help topic buttons position
 		view.updateTopicButtonsPosition();
 
+		// update Help sections
+		view.updateSectionControl = true;
+		view.updateUIForHelp(view.displayHelp !== 0 || view.displayErrors !== 0);
+
 		/* eslint-enable no-unused-vars */
 		// check the popup window is on the display
 		me.setWindowPosition(me.left + me.resizeDx, me.top);
