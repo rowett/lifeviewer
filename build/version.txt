@@ -1,3 +1,6 @@
+Build 1348
+- fixed Cell Period Map and Cell Frequency Map legend height
+
 Build 1347
 - made some improvements to Full Screen mode
 

@@ -4393,7 +4393,7 @@ This file is part of LifeViewer
 			/** @type {number} */ cellBorderSize = this.cellBorderSize,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ testY = 0,
+			/** @type {number} */ maxY = 0,
 			/** @type {number} */ itemNum = 0,
 			/** @type {number} */ legendCols = 1,
 			/** @type {number} */ alpha = label.bgAlpha,
@@ -4482,24 +4482,28 @@ This file is part of LifeViewer
 		}
 
 		// check if the legend fits in one column
-		testY = legendBorder;
 		y = 0;
+		maxY = 0;
 		for (k = this.popSubPeriodHelp.length - 1; k >= 0; k -= 1) {
 			x = this.popSubPeriodHelp[k];
 			p = this.popSubPeriod[x];
 			if (p > 0) {
-				if ((testY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
+				if (y >= this.displayHeight - 2 * legendBorder) {
+					if (y > maxY) {
+						maxY = y;
+					}
 					y = 0;
 					legendCols += 1;
+				} else {
+					y += rowSize;
 				}
-				y += 1;
 			}
 		}
 
 		if (legendCols > 1) {
 			bottomY = legendBorder;
 		} else {
-			bottomY = (this.displayHeight - (testY + (y - 1) * rowSize + 2 + (1 * displayScale))) >> 1;
+			bottomY = (this.displayHeight - y) / 2;
 		}
 
 		// draw the legend box
@@ -4507,7 +4511,7 @@ This file is part of LifeViewer
 		ctx.fillStyle = bgCol;
 
 		if (legendCols > 1) {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, this.displayHeight - legendBorder * 2 + rowSize / 2);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, maxY);
 		} else {
 			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, (numCols + 2) * rowSize + 3 * displayScale);
 		}
@@ -4545,7 +4549,7 @@ This file is part of LifeViewer
 		for (k = this.popSubPeriodHelp.length - 1; k >= 0; k -= 1) {
 			x = this.popSubPeriodHelp[k];
 			p = this.popSubPeriod[x];
-			if (p > 0 && y < this.displayHeight - 2 * legendBorder * displayScale) {
+			if (p > 0 && y < this.displayHeight - 2 * legendBorder) {
 				if (itemNum >= (this.tableStartRow | 0)) {
 					// draw colour
 					ctx.fillStyle = this.view.menuManager.bgCol;
@@ -4587,7 +4591,7 @@ This file is part of LifeViewer
 			/** @type {number} */ cellBorderSize = this.cellBorderSize,
 			/** @type {number} */ leftX = 0,
 			/** @type {number} */ bottomY = 0,
-			/** @type {number} */ testY = 0,
+			/** @type {number} */ maxY = 0,
 			/** @type {number} */ itemNum = 0,
 			/** @type {number} */ legendCols = 1,
 			/** @type {number} */ numCols = 0,
@@ -4664,20 +4668,24 @@ This file is part of LifeViewer
 			numCols += 1;
 		}
 
-		testY = legendBorder;
 		y = 0;
+		maxY = 0;
 		for (x = numCols - 1; x >= 0; x -= 1) {
-			if ((testY + y * rowSize + 2 + (1 * displayScale)) > this.displayHeight - 2 * legendBorder) {
+			if (y >= this.displayHeight - 2 * legendBorder) {
+				if (y > maxY) {
+					maxY = y;
+				}
 				y = 0;
 				legendCols += 1;
+			} else {
+				y += rowSize;
 			}
-			y += 1;
 		}
 
 		if (legendCols > 1) {
 			bottomY = legendBorder;
 		} else {
-			bottomY = (this.displayHeight - (testY + (y - 1) * rowSize + 2 + (1 * displayScale))) >> 1;
+			bottomY = (this.displayHeight - y) / 2;
 		}
 
 		// draw the legend box
@@ -4685,7 +4693,7 @@ This file is part of LifeViewer
 		ctx.fillStyle = bgCol;
 
 		if (legendCols > 1) {
-			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, this.displayHeight - legendBorder * 2 + rowSize / 2);
+			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, maxY);
 		} else {
 			ctx.fillRect(leftX - legendWidth - 2, bottomY - 2, boxSize + maxLabelWidth + 8 * displayScale, numCols * rowSize + 3 * displayScale);
 		}
@@ -4722,7 +4730,7 @@ This file is part of LifeViewer
 		}
 
 		for (x = numCols - 1; x >= 0; x -= 1) {
-			if (y < this.displayHeight - 2 * legendBorder * displayScale) {
+			if (y < this.displayHeight - 2 * legendBorder) {
 				if (itemNum >= (this.tableStartRow | 0)) {
 					// draw colour
 					ctx.fillStyle = this.view.menuManager.bgCol;
