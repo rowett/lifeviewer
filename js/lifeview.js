@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1348,
+		/** @const {number} */ versionBuild : 1349,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -20156,6 +20156,15 @@ This file is part of LifeViewer
 				this.zoomItem.setWidth(ViewConstants.zoomSliderDefaultWidth);
 			}
 		}
+
+		// ensure minimum size
+		if (this.displayWidth < 8) {
+			this.displayWidth = 8;
+		}
+		if (this.displayHeight < 4) {
+			this.displayHeight = 4;
+		}
+
 		this.mainCanvas.width = this.displayWidth;
 		this.mainCanvas.height = this.displayHeight;
 

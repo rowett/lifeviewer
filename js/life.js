@@ -4222,7 +4222,7 @@ This file is part of LifeViewer
 			for (k = this.popSubPeriodHelp.length - 1; k >= 0; k -= 1) {
 				i = this.view.engine.popSubPeriodHelp[k];
 				value = this.popSubPeriod[i];
-				if (value > 0 && y < this.displayHeight - 80 * displayScale) {
+				if (value > 0 && (y - (rowHeight >> 1)) < this.displayHeight - 80 * displayScale) {
 					if (itemNum >= (this.tableStartRow | 0)) {
 						// draw row data
 						x = leftX;
@@ -4328,7 +4328,7 @@ This file is part of LifeViewer
 
 			for (i = numCols - 1; i >= 0; i -= 1) {
 				value = this.uniqueCellCounts[i];
-				if (y < this.displayHeight - 80 * displayScale) {
+				if ((y - (rowHeight >> 1)) < this.displayHeight - 80 * displayScale) {
 					if (itemNum >= (this.tableStartRow | 0)) {
 						// draw row data
 						x = leftX;
