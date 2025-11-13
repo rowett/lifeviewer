@@ -1776,6 +1776,20 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// subsitute icon colours
+	Life.prototype.substituteIconColours = function(/** @type {ImageData} */ imageData) {
+		var	/** @type {number} */ i = 0,
+			/** @type {number} */ blackPixel = this.littleEndian ? 0xff000000 : 0x000000ff,
+			/** @type {number} */ bgPixel = this.ruleTreeColours[0],
+			/** @type {Uint32Array} */ data32 = new Uint32Array(imageData.data.buffer);
+
+		for (i = 0; i < data32.length; i += 1) {
+			if (data32[i] === 0 || data32[i] === blackPixel) {
+				data32[i] = bgPixel;
+			}
+		}
+	};
+
 	// process icons
 	Life.prototype.processIcons = function(/** @type {Array} */ icons) {
 		var	/** @type {number} */ i = 0,
@@ -1798,7 +1812,10 @@ This file is part of LifeViewer
 			/** @type {CanvasRenderingContext2D} */ ctx = null,
 			/** @type {boolean} */ size31 = false,
 			/** @type {boolean} */ size15 = false,
-			/** @type {boolean} */ size7 = false;
+			/** @type {boolean} */ size7 = false,
+			/** @type {boolean} */ done31 = false,
+			/** @type {boolean} */ done15 = false,
+			/** @type {boolean} */ done7 = false;
 
 		// get the icon definitions
 		this.ruleTableIcons = icons;
@@ -1920,10 +1937,12 @@ This file is part of LifeViewer
 					if (size15 === false) {
 						// create size 15 from size 7 since it must exist
 						this.cellIconImageData15 = this.scaleIconSet(this.cellIconContext15, this.cellIconContext7);
+						done15 = true;
 					}
 
 					// create size 31 from size 15
 					this.cellIconImageData31 = this.scaleIconSet(this.cellIconContext31, this.cellIconContext15);
+					done31 = true;
 				}
 
 				// by now at least size 31 exists
@@ -1932,16 +1951,32 @@ This file is part of LifeViewer
 					if (size7) {
 						// create size 15 from size 7
 						this.cellIconImageData15 = this.scaleIconSet(this.cellIconContext15, this.cellIconContext7);
+						done15 = true;
 					} else {
 						// create size 15 from size 31
 						this.cellIconImageData15 = this.scaleIconSet(this.cellIconContext15, this.cellIconContext31);
+						done15 = true;
 					}
 				}
 
 				// by now both sizes 31 and 15 exist so create size 7 from size 15
 				if (size7 === false) {
 					this.cellIconImageData7 = this.scaleIconSet(this.cellIconContext7, this.cellIconContext15);
+					done7 = true;
 				}
+			}
+
+			// subsitute colours in any non scaled icons (since scaling does this)
+			if (!done7) {
+				this.substituteIconColours(this.cellIconImageData7);
+			}
+
+			if (!done15) {
+				this.substituteIconColours(this.cellIconImageData15);
+			}
+
+			if (!done31) {
+				this.substituteIconColours(this.cellIconImageData31);
 			}
 
 			// mark icons available
