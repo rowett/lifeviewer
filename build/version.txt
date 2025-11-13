@@ -1,3 +1,6 @@
+Build 1352
+- fixed Population Graph forgetting history during Step Back when using PASTE
+
 Build 1351
 - fixed some scaled icons having black pixels incorrectly
 

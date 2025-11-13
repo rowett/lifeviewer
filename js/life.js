@@ -10437,10 +10437,10 @@ This file is part of LifeViewer
 			this.nextGeneration(true);
 			view.fixedPointCounter += view.refreshRate;
 			this.convertToPensTile();
-			this.savePopulationData();
 
 			this.saveSnapshotIfNeeded(view);
 			view.pasteRLEList();
+			this.savePopulationData();
 		}
 	};
 
