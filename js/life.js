@@ -50035,6 +50035,14 @@ This file is part of LifeViewer
 
 		// get a copy of the camera zoom
 		camZoom = this.camZoom;
+		if (this.isHex) {
+			// adjust zoom for hexagonal grids since it makes the zoom larger in the Y direction
+			// which means cells may end up in the wrong NxN cell box when subsampled
+			camZoom *= ViewConstants.hexagonalYFactor;
+			if (camZoom < ViewConstants.minZoom) {
+				camZoom = ViewConstants.minZoom;
+			}
+		}
 
 		// check for hex
 		if (this.isHex || this.isTriangular || this.view.useIcons) {
@@ -50062,9 +50070,9 @@ This file is part of LifeViewer
 				if  (this.boundedGridType !== -1) {
 					this.drawBoundedGridBorder(colourGrid, 0);
 				}
-				this.createSmallColourGrids(colourGrid16, colourGrid32, this.camZoom);
+				this.createSmallColourGrids(colourGrid16, colourGrid32, camZoom);
 				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorderMask(this.smallColourGrid, this.boundedBorderColour, this.getMaskFromZoom(this.camZoom));
+					this.drawBoundedGridBorderMask(this.smallColourGrid, this.boundedBorderColour, this.getMaskFromZoom(camZoom));
 				}
 			}
 
@@ -50499,7 +50507,7 @@ This file is part of LifeViewer
 			sx = -((this.displayWidth / 2) * dyy + (this.displayHeight / 2) * dxy) + this.camXOff;
 
 			// draw each pixel
-			idx = 0 | 0;
+			idx = 0;
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				x = sx;
@@ -50674,6 +50682,7 @@ This file is part of LifeViewer
 		}
 
 		// compute deltas in horizontal and vertical direction based on rotation
+		dyx = 1 / this.camZoom;
 		dyy = 1 / this.camZoom;
 
 		if (this.isTriangular) {
@@ -50682,8 +50691,11 @@ This file is part of LifeViewer
 
 		if (this.isHex) {
 			dyy /= ViewConstants.hexagonalYFactor;
+			if (dyy > 1 / ViewConstants.minZoom) {
+				dyy = 1 / ViewConstants.minZoom;
+				dyx = dyy * ViewConstants.hexagonalYFactor
+			}
 		}
-		dyx = 1 / this.camZoom;
 
 		// compute starting position
 		sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
@@ -50919,7 +50931,7 @@ This file is part of LifeViewer
 			sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 			// draw each pixel
-			idx = 0 | 0;
+			idx = 0;
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				// clip rows to the grid
@@ -51096,7 +51108,7 @@ This file is part of LifeViewer
 		this.createPixelColours(brightness);
 
 		// draw each pixel
-		idx = 0 | 0;
+		idx = 0;
 		y = sy;
 
 		for (h = 0; h < this.displayHeight; h += 1) {
@@ -51209,7 +51221,7 @@ This file is part of LifeViewer
 			sx = -((this.displayWidth / 2) * dyy + (this.displayHeight / 2) * dxy) + this.camXOff;
 
 			// draw each pixel
-			idx = 0 | 0;
+			idx = 0;
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				x = sx;
@@ -51351,6 +51363,7 @@ This file is part of LifeViewer
 		}
 
 		// compute deltas in horizontal and vertical direction
+		dyx = 1 / this.camZoom;
 		dyy = 1 / this.camZoom;
 
 		if (this.isTriangular) {
@@ -51359,9 +51372,12 @@ This file is part of LifeViewer
 
 		if (this.isHex) {
 			dyy /= ViewConstants.hexagonalYFactor;
+			if (dyy > 1 / ViewConstants.minZoom) {
+				dyy = 1 / ViewConstants.minZoom;
+				dyx = dyy * ViewConstants.hexagonalYFactor
+			}
 		}
 
-		dyx = 1 / this.camZoom;
 
 		// compute starting position
 		sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
@@ -51377,7 +51393,7 @@ This file is part of LifeViewer
 		this.createPixelColours(brightness);
 
 		// draw each pixel
-		idx = 0 | 0;
+		idx = 0;
 		y = sy;
 
 		for (h = 0; h < this.displayHeight; h += 1) {
@@ -51489,7 +51505,7 @@ This file is part of LifeViewer
 			sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 			// draw each pixel
-			idx = 0 | 0;
+			idx = 0;
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				// get the colour grid row
@@ -53272,7 +53288,7 @@ This file is part of LifeViewer
 			sx = -((this.displayWidth / 2) * dyy + (this.displayHeight / 2) * dxy) + this.camXOff;
 
 			// draw each pixel
-			idx = 0 | 0;
+			idx = 0;
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				x = sx;
@@ -53460,7 +53476,7 @@ This file is part of LifeViewer
 		this.createPixelColours(brightness);
 
 		// draw each pixel
-		idx = 0 | 0;
+		idx = 0;
 		y = sy;
 
 		for (h = 0; h < this.displayHeight; h += 1) {
@@ -53722,7 +53738,7 @@ This file is part of LifeViewer
 			sx = -((this.displayWidth / 2) * dyy + (this.displayHeight / 2) * dxy) + this.camXOff;
 
 			// draw each pixel
-			idx = 0 | 0;
+			idx = 0;
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				x = sx;
@@ -53881,6 +53897,7 @@ This file is part of LifeViewer
 
 		// compute deltas in horizontal and vertical direction based on rotation
 		dyy = 1 / this.camZoom;
+		dyx = 1/ this.camZoom;
 
 		if (this.isTriangular) {
 			dyy /= ViewConstants.triangularYFactor;
@@ -53888,9 +53905,11 @@ This file is part of LifeViewer
 
 		if (this.isHex) {
 			dyy /= ViewConstants.hexagonalYFactor;
+			if (dyy > 1 / ViewConstants.minZoom) {
+				dyy = 1 / ViewConstants.minZoom;
+				dyx = dyy * ViewConstants.hexagonalYFactor
+			}
 		}
-
-		dyx = 1/ this.camZoom;
 
 		// compute starting position
 		sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
@@ -53906,7 +53925,7 @@ This file is part of LifeViewer
 		this.createPixelColours(brightness);
 
 		// draw each pixel
-		idx = 0 | 0;
+		idx = 0;
 		y = sy;
 
 		for (h = 0; h < this.displayHeight; h += 1) {
@@ -54169,7 +54188,7 @@ This file is part of LifeViewer
 			sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 			// draw each pixel
-			idx = 0 | 0;
+			idx = 0;
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				// get the colour grid row
@@ -54346,6 +54365,7 @@ This file is part of LifeViewer
 
 		// compute deltas in horizontal and vertical direction based on rotation
 		dyy = 1 / this.camZoom;
+		dyx = 1 / this.camZoom;
 
 		if (this.isTriangular) {
 			dyy /= ViewConstants.triangularYFactor;
@@ -54353,9 +54373,11 @@ This file is part of LifeViewer
 
 		if (this.isHex) {
 			dyy /= ViewConstants.hexagonalYFactor;
+			if (dyy > 1 / ViewConstants.minZoom) {
+				dyy = 1 / ViewConstants.minZoom;
+				dyx = dyy * ViewConstants.hexagonalYFactor
+			}
 		}
-
-		dyx = 1 / this.camZoom;
 
 		// compute starting position
 		sy = -((this.displayHeight / 2) * dyy) + this.camYOff;
@@ -54742,7 +54764,7 @@ This file is part of LifeViewer
 			sx = -((this.displayWidth / 2) * dyx) + this.camXOff;
 
 			// draw each pixel
-			idx = 0 | 0;
+			idx = 0;
 			y = sy;
 			for (h = 0; h < this.displayHeight; h += 1) {
 				// clip rows to the grid

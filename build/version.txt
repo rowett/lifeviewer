@@ -1,3 +1,9 @@
+Build 1350
+- fixed rendering issue when zoomed out on Hexagonal grid
+
+Build 1349
+- fixed Cell Period Table and Cell Frequency Table height
+
 Build 1348
 - fixed Cell Period Map and Cell Frequency Map legend height
 
