@@ -293,24 +293,27 @@ This file is part of LifeViewer
 
 		// ignore if using touch
 		if (!me.usingTouch) {
-			// get event position
-			if (event.pageX || event.pageY) {
-				x = event.pageX;
-				y = event.pageY;
-			} else {
-				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+			// check for left button only
+			if (event.button === 0) {
+				// get event position
+				if (event.pageX || event.pageY) {
+					x = event.pageX;
+					y = event.pageY;
+				} else {
+					x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+					y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+				}
+	
+				// perform down event
+				me.performDown(me, x, y);
 			}
 
-			// perform down event
-			me.performDown(me, x, y);
+			// stop event propagating
+			if (event.stopPropagation) {
+				event.stopPropagation();
+			}
+			event.preventDefault();
 		}
-
-		// stop event propagating
-		if (event.stopPropagation) {
-			event.stopPropagation();
-		}
-		event.preventDefault();
 	};
 
 	// mouse up event

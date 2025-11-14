@@ -736,17 +736,6 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "", "Keyboard commands", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
-		// mouse controls
-		view.helpSections[sectionNum] = [view.lineNo, "Mouse"];
-		sectionNum += 1;
-		y = this.renderHelpLine(view, "", "Mouse controls:", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Left Btn", "use button / draw / select", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Right Btn", "same as left", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Middle Btn", "same as left", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Scroll Down", "zoom out", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "Scroll Up", "zoom in", ctx, x, y, height, helpLine);
-		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
-
 		// playback controls
 		view.helpSections[sectionNum] = [view.lineNo, "Playback"];
 		sectionNum += 1;
@@ -1097,6 +1086,15 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, "Home", "go to first help page", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "End", "go to last help page", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "Ins", "show help sections", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
+
+		// mouse controls
+		view.helpSections[sectionNum] = [view.lineNo, "Mouse"];
+		sectionNum += 1;
+		y = this.renderHelpLine(view, "", "Mouse controls:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Left Button", "use button / draw / select", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Scroll Down", "zoom out", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Scroll Up", "zoom in", ctx, x, y, height, helpLine);
 	};
 
 	// render scripts topic

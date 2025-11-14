@@ -1,3 +1,8 @@
+Build 1353
+- fixed missing border on colour icons in Help>Pattern and Draw state display
+- improved the Show Help Topics button symbol
+- only use primary mouse button and mouse wheel for mouse control
+
 Build 1352
 - fixed Population Graph forgetting history during Step Back when using PASTE
 

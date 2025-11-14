@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1352,
+		/** @const {number} */ versionBuild : 1353,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -18854,7 +18854,7 @@ This file is part of LifeViewer
 		this.helpToggle.setFont("16px Arial");
 
 		// help show topics button
-		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, "^");
+		this.topicsButton = this.viewMenu.addButtonItem(this.topicsPressed, Menu.northEast, -40, 50, 40, 40, "\u2227");
 		this.topicsButton.toolTip = "show help topics [Backspace]";
 
 		// help sections button

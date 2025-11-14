@@ -4181,24 +4181,26 @@ This file is part of LifeViewer
 
 		// check if passing events
 		if (!me.passEvents) {
-			// get event position
-			if (event.pageX || event.pageY) {
-				x = event.pageX;
-				y = event.pageY;
-			} else {
-				x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-				y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+			if (event.button === 0) {
+				// get event position
+				if (event.pageX || event.pageY) {
+					x = event.pageX;
+					y = event.pageY;
+				} else {
+					x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+					y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+				}
+	
+				// perform down event
+				me.performDown(me, x, y);
+	
+				// stop event propagating
+				if (event.stopPropagation) {
+					event.stopPropagation();
+				}
+				event.preventDefault();
+				me.eventWasTouch = false;
 			}
-
-			// perform down event
-			me.performDown(me, x, y);
-
-			// stop event propagating
-			if (event.stopPropagation) {
-				event.stopPropagation();
-			}
-			event.preventDefault();
-			me.eventWasTouch = false;
 		}
 	};
 

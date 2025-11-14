@@ -1766,28 +1766,74 @@ This file is part of LifeViewer
 		// replace empty pixels with background colour
 		result = dest.getImageData(0, 0, dest.canvas.width, dest.canvas.height);
 
-		data32 = new Uint32Array(result.data.buffer);
-		for (i = 0; i < data32.length; i += 1) {
-			if (data32[i] === 0 || data32[i] === blackPixel) {
-				data32[i] = bgPixel;
-			}
-		}
+		this.substituteIconColours(result, dest);
 
 		return result;
 	};
 
 	// subsitute icon colours
-	Life.prototype.substituteIconColours = function(/** @type {ImageData} */ imageData) {
+	Life.prototype.substituteIconColours = function(/** @type {ImageData} */ imageData, /** @type {CanvasRenderingContext2D} */ ctx) {
 		var	/** @type {number} */ i = 0,
+			/** @type {number} */ x = 0,
+			/** @type {number} */ y = 0,
+			/** @type {number} */ iconSize = ctx.canvas.width,
+			/** @type {number} */ offset = 0,
 			/** @type {number} */ blackPixel = this.littleEndian ? 0xff000000 : 0x000000ff,
 			/** @type {number} */ bgPixel = this.ruleTreeColours[0],
-			/** @type {Uint32Array} */ data32 = new Uint32Array(imageData.data.buffer);
+			/** @type {Uint32Array} */ data32 = new Uint32Array(imageData.data.buffer),
+			/** @type {Uint32Array} */ copy32 = new Uint32Array(data32.length),
+			/** @type {number} */ numIcons = ctx.canvas.height / iconSize,
+			/** @type {number} */ border = 0;
 
+		switch (iconSize) {
+			case 7:
+				border = 1;
+				break;
+			case 15:
+				border = 2;
+				break;
+			case 31:
+				border = 4;
+				break;
+		}
+
+		// colour any empty of black pixels with the background colour
 		for (i = 0; i < data32.length; i += 1) {
 			if (data32[i] === 0 || data32[i] === blackPixel) {
 				data32[i] = bgPixel;
 			}
 		}
+
+		// duplicate the icon
+		copy32.set(data32);
+
+		// clear right columns and bottom rows to make a border
+		for (i = 0; i < numIcons; i += 1) {
+			offset = (i + 1) * iconSize * iconSize - iconSize * border;
+			for (y = 0; y < border; y += 1) {
+				for (x = 0; x < iconSize; x += 1) {
+					if (data32[offset] === bgPixel) {
+						data32[offset] = blackPixel;
+					}
+					offset += 1;
+				}
+			}
+			offset = i * iconSize * iconSize + iconSize - border;
+			for (y = 0; y < iconSize; y += 1) {
+				for (x = 0; x < border; x += 1) {
+					if (data32[offset + x] === bgPixel) {
+						data32[offset + x] = blackPixel;
+					}
+				}
+				offset += iconSize;
+			}
+		}
+
+		// updat the icon image
+		ctx.putImageData(imageData, 0, 0);
+
+		// restore the icon data
+		data32.set(copy32);
 	};
 
 	// process icons
@@ -1968,15 +2014,15 @@ This file is part of LifeViewer
 
 			// subsitute colours in any non scaled icons (since scaling does this)
 			if (!done7) {
-				this.substituteIconColours(this.cellIconImageData7);
+				this.substituteIconColours(this.cellIconImageData7, this.cellIconContext7);
 			}
 
 			if (!done15) {
-				this.substituteIconColours(this.cellIconImageData15);
+				this.substituteIconColours(this.cellIconImageData15, this.cellIconContext15);
 			}
 
 			if (!done31) {
-				this.substituteIconColours(this.cellIconImageData31);
+				this.substituteIconColours(this.cellIconImageData31, this.cellIconContext31);
 			}
 
 			// mark icons available
