@@ -1,3 +1,6 @@
+Build 1357
+- fixed a crash in @ICONS decoding
+
 Build 1356
 - improved Hexagonal and Triangular bounded grid borders
 

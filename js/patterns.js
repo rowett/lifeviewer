@@ -8901,6 +8901,9 @@ This file is part of LifeViewer
 			if (nextToken[0] === "@") {
 				nextToken = "";
 			}
+		} else {
+			// no icons present
+			valid = false;
 		}
 
 		// decode each XPM section
