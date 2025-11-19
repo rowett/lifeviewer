@@ -49982,11 +49982,22 @@ This file is part of LifeViewer
 				}
 			} else {
 				// draw top and bottom
-				bottomRow.fill(border, leftX, rightX + 1);
-				topRow.fill(border, leftX, rightX + 1);
+				if (this.isHex) {
+					bottomRow.fill(border, leftX, rightX);
+					topRow.fill(border, leftX + 1, rightX + 1);
+				} else {
+					bottomRow.fill(border, leftX, rightX + 1);
+					topRow.fill(border, leftX, rightX + 1);
+				}
+
 				if (this.isTriangular && leftX > 0) {
-					bottomRow[leftX - 1] = border;
-					topRow[leftX - 1] = border;
+					if ((width & 3) !== (height & 3)) {
+						bottomRow[rightX + 1] = border;
+						topRow[rightX + 1] = border;
+					} else{
+						bottomRow[leftX - 1] = border;
+						topRow[leftX - 1] = border;
+					}
 				}
 
 				// draw left and right

@@ -1,3 +1,6 @@
+Build 1356
+- improved Hexagonal and Triangular bounded grid borders
+
 Build 1355
 - fixed cells not rendering correctly after hitting grid boundary at some zooms
 - added Help>Info>Grid>Last Delete which shows number of cells and generation of the last time cells were deleted
