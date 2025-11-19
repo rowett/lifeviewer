@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1353,
+		/** @const {number} */ versionBuild : 1355,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -9551,6 +9551,9 @@ This file is part of LifeViewer
 		var	/** @type {boolean} */ hardReset = false,
 			/** @type {boolean} */ looping = false,
 			/** @type {Waypoint} */ currentWaypoint = me.waypointManager.firstWaypoint();
+
+		// clear last cleared generation (for cells cleared by hitting grid boundary)
+		this.engine.lastClearedGen = -1;
 
 		// clear just died flag
 		this.justDied = false;

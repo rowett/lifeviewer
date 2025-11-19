@@ -1,3 +1,11 @@
+Build 1355
+- fixed cells not rendering correctly after hitting grid boundary at some zooms
+- added Help>Info>Grid>Last Delete which shows number of cells and generation of the last time cells were deleted
+
+Build 1354
+- fixed some scaled icons having black pixels again
+- fixed icons sometimes not being drawn in top right or left column
+
 Build 1353
 - fixed missing border on colour icons in Help>Pattern and Draw state display
 - improved the Show Help Topics button symbol

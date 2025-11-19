@@ -1965,6 +1965,7 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, "Direction", (flag ? "Reverse" : "Forward"), ctx, x, y, height, helpLine);
 		}
 		y = this.renderHelpLine(view, "DeleteRange", view.engine.removePatternRadius, ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Last Delete", view.engine.lastClearedGen === -1 ? "None" : view.engine.lastClearedNumber + " @ T" + view.engine.lastClearedGen, ctx, x, y, height, helpLine);
 		if (view.engine.clearGliders) {
 			y = this.renderHelpLine(view, "KillGliders", view.engine.numClearedGliders, ctx, x, y, height, helpLine);
 		}

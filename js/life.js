@@ -924,6 +924,10 @@ This file is part of LifeViewer
 		// number of cells killed in the last generation by hitting the grid boundary
 		/** @type {number} */ this.cellsCleared = 0;
 
+		// last generation that cells were cleared
+		/** @type {number} */ this.lastClearedGen = -1;
+		/** @type {number} */ this.lastClearedNumber = 0;
+
 		// population of grid
 		/** @type {number} */ this.population = 0;
 
@@ -1738,17 +1742,7 @@ This file is part of LifeViewer
 			/** @type {number} */ numIcons = source.canvas.height / sourceSize,
 			/** @type {number} */ scaledSize = 0,
 			/** @type {number} */ i = 0,
-			/** @type {number} */ blackPixel = this.littleEndian ? 0xff000000 : 0x000000ff,
-			/** @type {number} */ bgPixel = this.ruleTreeColours[0],
-			/** @type {Uint32Array} */ data32 = null,
 			/** @type {ImageData} */ result = null;
-
-		// get the pixel colour from the RuleLoader background colour
-		if (this.littleEndian) {
-			bgPixel = (0xff000000 | ((bgPixel & 0xff) << 16) | ((bgPixel & 0xff00)) | ((bgPixel & 0xff0000) >> 16)) >>> 0;
-		} else {
-			bgPixel = ((bgPixel << 8) | 0xff) >>> 0;
-		}
 
 		// check if the size is increasing or decreasing
 		if (sourceSize > destSize) {
@@ -1784,6 +1778,13 @@ This file is part of LifeViewer
 			/** @type {Uint32Array} */ copy32 = new Uint32Array(data32.length),
 			/** @type {number} */ numIcons = ctx.canvas.height / iconSize,
 			/** @type {number} */ border = 0;
+
+		// get the pixel colour from the RuleLoader background colour
+		if (this.littleEndian) {
+			bgPixel = (0xff000000 | ((bgPixel & 0xff) << 16) | ((bgPixel & 0xff00)) | ((bgPixel & 0xff0000) >> 16)) >>> 0;
+		} else {
+			bgPixel = ((bgPixel << 8) | 0xff) >>> 0;
+		}
 
 		switch (iconSize) {
 			case 7:
@@ -1846,6 +1847,9 @@ This file is part of LifeViewer
 			/** @type {number} */ y = 0,
 			/** @type {number} */ col = 0,
 			/** @type {number} */ rgb = 0,
+			/** @type {number} */ red = 0,
+			/** @type {number} */ green = 0,
+			/** @type {number} */ blue = 0,
 			/** @type {number} */ stateCol = 0,
 			/** @type {number} */ stateZeroCol = this.ruleTreeColours[0],
 			/** @type {number} */ iconSize = 0,
@@ -1942,7 +1946,15 @@ This file is part of LifeViewer
 							}
 
 							// write the rgb to the canvas
-							data32[dst] = (255 << 24) | ((rgb & 255) << 16) | (rgb & 0xff00) | (rgb >> 16);
+							red = rgb >> 16;
+							green = (rgb >> 8) & 255;
+							blue = rgb & 255;
+
+							if (this.littleEndian) {
+								data32[dst] = (255 << 24) | (blue << 16) | (green << 8) | red;
+							} else {
+								data32[dst] = (red << 24) | (green << 16) | (blue << 8) | 255;
+							}
 							dst += 1;
 						}
 					}
@@ -21001,11 +21013,9 @@ This file is part of LifeViewer
 
 				// check if cells were deleted
 				if (currentPop !== this.population) {
-					this.cellsCleared = this.population - currentPop;
-
-					// update bounding box
-					this.shrinkNeeded = true;
-					this.doShrink();
+					this.cellsCleared = currentPop - this.population;
+					this.lastClearedGen = this.counter;
+					this.lastClearedNumber = this.cellsCleared;
 
 					// notify user
 					if (this.view.genNotifications) {
@@ -51882,8 +51892,8 @@ This file is part of LifeViewer
 			/** @type {number} */ width = rightX - leftX,
 			/** @type {number} */ height = topY - bottomY,
 			/** @const {number} */ yZoom = this.getYZoom(this.camZoom),
-			/** @const {number} */ dx = leftX < 0 ? -(leftX - Math.ceil(leftX)) * this.camZoom : -(leftX - Math.floor(leftX)) * this.camZoom,
-			/** @const {number} */ dy = bottomY < 0 ? -(bottomY - Math.ceil(bottomY)) * yZoom : -(bottomY - Math.floor(bottomY)) * yZoom,
+			/** @type {number} */ dx = leftX < 0 ? -(leftX - Math.ceil(leftX)) * this.camZoom : -(leftX - Math.floor(leftX)) * this.camZoom,
+			/** @type {number} */ dy = bottomY < 0 ? -(bottomY - Math.ceil(bottomY)) * yZoom : -(bottomY - Math.floor(bottomY)) * yZoom,
 			/** @type {number} */ x = 0,
 			/** @type {number} */ y = 0,
 			/** @type {number} */ i = 0,
@@ -51973,6 +51983,16 @@ This file is part of LifeViewer
 
 		// draw each row of cells
 		j = 0;
+
+		// adjust for zoom and offset
+		dy -= yZoom;
+		bottomY -= 1;
+		height += 1;
+
+		dx -= this.camZoom;
+		leftX -= 1;
+		width += 1;
+
 		for (y = bottomY; y < topY; y += 1) {
 			if ((y & heightMask) === y) {
 				gridRow = grid[y];
