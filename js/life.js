@@ -3705,6 +3705,12 @@ This file is part of LifeViewer
 				inc = -0.5;
 			}
 
+			if (this.boundedGridType !== -1) {
+				pixCol = boundedCol;
+			} else {
+				pixCol = gridCol;
+			}
+
 			ex = 0;
 			if ((this.cellPeriodHeight & 1) !== 0) {
 				ex += inc;
@@ -3712,13 +3718,13 @@ This file is part of LifeViewer
 
 			row = rowWidth * (colHeight - 1);
 			for (x = 0; x < rowWidth - offset; x += 1) {
-				data32[x + offset] = gridCol;
-				data32[x + row] = gridCol;
+				data32[x + offset] = pixCol;
+				data32[x + row] = pixCol;
 			}
 
 			for (y = 0; y < colHeight; y += 1) {
-				data32[y * rowWidth + (offset | 0)] = gridCol;
-				data32[y * rowWidth + rowWidth - 1 + (ex | 0)] = gridCol;
+				data32[y * rowWidth + (offset | 0)] = pixCol;
+				data32[y * rowWidth + rowWidth - 1 + (ex | 0)] = pixCol;
 				offset += inc;
 				ex += inc;
 			}
@@ -4085,6 +4091,12 @@ This file is part of LifeViewer
 				inc = -0.5;
 			}
 
+			if (this.boundedGridType !== -1) {
+				pixCol = boundedCol;
+			} else {
+				pixCol = gridCol;
+			}
+
 			ex = 0;
 			if ((this.cellPeriodHeight & 1) !== 0) {
 				ex += inc;
@@ -4092,13 +4104,13 @@ This file is part of LifeViewer
 
 			row = rowWidth * (colHeight - 1);
 			for (x = 0; x < rowWidth - offset; x += 1) {
-				data32[x + offset] = gridCol;
-				data32[x + row] = gridCol;
+				data32[x + offset] = pixCol;
+				data32[x + row] = pixCol;
 			}
 
 			for (y = 0; y < colHeight; y += 1) {
-				data32[y * rowWidth + (offset | 0)] = gridCol;
-				data32[y * rowWidth + rowWidth - 1 + (ex | 0)] = gridCol;
+				data32[y * rowWidth + (offset | 0)] = pixCol;
+				data32[y * rowWidth + rowWidth - 1 + (ex | 0)] = pixCol;
 				offset += inc;
 				ex += inc;
 			}

@@ -1,3 +1,7 @@
+Build 1359
+- fixed border colour for Cell Period Map and Cell Frequency Map with Bounded Grid
+- state list will now resize with window
+
 Build 1358
 - improved drawing on Hexagonal grid
 
@@ -5,7 +9,7 @@ Build 1357
 - fixed a crash in @ICONS decoding
 
 Build 1356
-- improved Hexagonal and Triangular bounded grid borders
+- improved Hexagonal and Triangular Bounded Grid borders
 
 Build 1355
 - fixed cells not rendering correctly after hitting grid boundary at some zooms

@@ -198,6 +198,12 @@ This file is part of LifeViewer
 		view.updateSectionControl = true;
 		view.updateUIForHelp(view.displayHelp !== 0 || view.displayErrors !== 0);
 
+		// setup drawing states list
+		i = view.drawState;
+		view.setupStateList();
+		view.drawState = i;
+		view.updateStatesList();
+
 		/* eslint-enable no-unused-vars */
 		// check the popup window is on the display
 		me.setWindowPosition(me.left + me.resizeDx, me.top);
