@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1357,
+		/** @const {number} */ versionBuild : 1358,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6144,8 +6144,145 @@ This file is part of LifeViewer
 		this.cellY = yPos + this.panY;
 	};
 
-	// draw a line of cells using Bresenham
+	/** @returns {number} */
 	View.prototype.drawCellLine = function(/** @type {number} */ startX, /** @type {number} */ startY, /** @type {number} */ endX, /** @type {number} */ endY, /** @type {number} */ colour) {
+		if (this.engine.isHex) {
+			return this.drawHexCellLine(startX, startY, endX, endY, colour);
+		} else {
+			return this.drawRectCellLine(startX, startY, endX, endY, colour);
+		}
+	};
+
+	// draw a line of cells for hex grid
+	/** @returns {number} */
+	View.prototype.drawHexCellLine = function(/** @type {number} */ startX, /** @type {number} */ startY, /** @type {number} */ endX, /** @type {number} */ endY, /** @type {number} */ colour) {
+		var	/** @type {number} */ result = 0,
+			/** @type {number} */ dx = endX - startX,
+			/** @type {number} */ dy = endY - startY,
+			/** @type {number} */ absDx = Math.abs(dx),
+			/** @type {number} */ absDy = Math.abs(dy),
+			/** @type {number} */ steps = absDx > absDy ? absDx : absDy,
+			/** @type {number} */ xInc = dx / steps,
+			/** @type {number} */ yInc = dy / steps,
+			/** @type {number} */ x = startX,
+			/** @type {number} */ y = startY,
+			/** @type {number} */ intX = x,
+			/** @type {number} */ intY = y,
+			/** @type {number} */ i = 0,
+			/** @type {number} */ width = this.engine.width,
+			/** @type {number} */ height = this.engine.height,
+			/** @type {number} */ lastX = startX,
+			/** @type {number} */ lastY = startY;
+
+		// draw the first cell
+		result |= this.setStateWithUndo(intX, intY, colour, true, true);
+
+		// check for grid growth
+		while (width !== this.engine.width || height !== this.engine.height) {
+			if (width !== this.engine.width) {
+				// double width
+				width <<= 1;
+
+				// adjust drawing cell position
+				x += width >> 2;
+				lastX += width >> 2;
+				endX += width >> 2;
+
+				// update the default x
+				this.defaultX += width >> 2;
+				this.savedX += width >> 2;
+
+				// check for hex mode
+				if (this.engine.isHex) {
+					this.defaultX -= height >> 3;
+					this.savedX -= height >> 3;
+				}
+
+				// update pan position
+				this.panX += width >> 2;
+			}
+
+			if (height !== this.engine.height) {
+				// same for height
+				height <<= 1;
+				y += height >> 2;
+				lastY += height >> 2;
+				endY += height >> 2;
+				this.defaultY += height >> 2;
+				this.savedY += height >> 2;
+				this.panY += height >> 2;
+			}
+		}
+
+		// draw the remaining cells
+		for (i = 0; i < steps; i += 1) {
+			x += xInc;
+			y += yInc;
+			intX = Math.round(x);
+			intY = Math.round(y);
+			if (!(x === lastX && y === lastY)) {
+				result |= this.setStateWithUndo(intX, intY, colour, true, true);
+
+				// check for grid growth
+				while (width !== this.engine.width || height !== this.engine.height) {
+					if (width !== this.engine.width) {
+						// double width
+						width <<= 1;
+
+						// adjust drawing cell position
+						x += width >> 2;
+						intX += width >> 2;
+						lastX += width >> 2;
+						endX += width >> 2;
+
+						// update the default x
+						this.defaultX += width >> 2;
+						this.savedX += width >> 2;
+
+						// check for hex mode
+						if (this.engine.isHex) {
+							this.defaultX -= height >> 3;
+							this.savedX -= height >> 3;
+						}
+
+						// update pan position
+						this.panX += width >> 2;
+					}
+
+					if (height !== this.engine.height) {
+						// same for height
+						height <<= 1;
+						y += height >> 2;
+						intY += height >> 2;
+						lastY += height >> 2;
+						endY += height >> 2;
+						this.defaultY += height >> 2;
+						this.savedY += height >> 2;
+						this.panY += height >> 2;
+					}
+				}
+
+				// check for missing cells
+				if (intY !== lastY) {
+					if (dx > 0 && dy < 0 || dx < 0 && dy > 0) {
+						result |= this.setStateWithUndo(lastX, intY, colour, true, true);
+					}
+				}
+				lastX = intX;
+				lastY = intY;
+			}
+		}
+
+		// draw final cell if needed
+		if (!(endX === lastX && endY === lastY)) {
+			result |= this.setStateWithUndo(endX, endY, colour, true, true);
+		}
+
+		return result;
+	};
+
+	/** @returns {number} */
+	View.prototype.drawRectCellLine = function(/** @type {number} */ startX, /** @type {number} */ startY, /** @type {number} */ endX, /** @type {number} */ endY, /** @type {number} */ colour) {
 		var	/** @type {number} */ dx = Math.abs(endX - startX),
 			/** @type {number} */ dy = Math.abs(endY - startY),
 			/** @type {number} */ sx = (startX < endX) ? 1 : -1,

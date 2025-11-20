@@ -1,3 +1,6 @@
+Build 1358
+- improved drawing on Hexagonal grid
+
 Build 1357
 - fixed a crash in @ICONS decoding
 
