@@ -1,3 +1,7 @@
+Build 1360
+- fixed displaying ignored Icons in Help>Pattern
+- fixed State List not appearing in PopUp for [R]History rules
+
 Build 1359
 - fixed border colour for Cell Period Map and Cell Frequency Map with Bounded Grid
 - state list will now resize with window

@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1359,
+		/** @const {number} */ versionBuild : 1360,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -20367,6 +20367,14 @@ This file is part of LifeViewer
 			/** @type {number} */ state = 0,
 			/** @type {string} */ message = "";
 
+		if (states === -1) {
+			if (this.engine.isLifeHistory) {
+				states = 7;
+			} else {
+				states = 2;
+			}
+		}
+
 		// update the states list and colours list
 		if (states > this.maxDisplayStates) {
 			states = this.maxDisplayStates;
@@ -20395,8 +20403,18 @@ This file is part of LifeViewer
 		// update the selected state
 		state = this.drawState;
 		if (state > 0) {
-			if (!(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper|| this.engine.isExtended)) {
-				state = this.engine.multiNumStates - state;
+			states = this.engine.multiNumStates;
+			if (states === -1) {
+				if (this.engine.isLifeHistory) {
+					states = 7;
+				} else {
+					states = 2;
+				}
+			}
+
+			// check for Generations rules
+			if (!(this.engine.isNone || this.engine.isPCA || this.engine.isRuleTree || this.engine.isSuper|| this.engine.isExtended || this.engine.isLifeHistory || this.engine.multiNumStates === -1)) {
+				state = states - state;
 			}
 		}
 		this.stateList.current = state - this.startState;
@@ -20411,6 +20429,14 @@ This file is part of LifeViewer
 		this.drawState = 1;
 		this.startState = 0;
 		this.statesToggle.current = [this.toggleStates([true], true, this)];
+
+		if (states === -1) {
+			if (this.engine.isLifeHistory) {
+				states = 7;
+			} else {
+				states = 2;
+			}
+		}
 
 		// compute the maximum number of display states based on width
 		this.maxDisplayStates = 7 + (((this.displayWidth / xScale - ViewConstants.minViewerWidth) / (40 * xScale)) | 0);

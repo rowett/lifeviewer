@@ -1793,7 +1793,7 @@ This file is part of LifeViewer
 				// draw the @ICONS information
 				y = this.renderHelpLine(view, "Icons", "Size\tNumber\tColours\tGrayScale", ctx, x, y, height, helpLine);
 
-				// find the largest defined set
+				// draw info about each icon set
 				for (j = 0; j < view.engine.ruleTableIcons.length; j += 1) {
 					iconWidth = view.engine.ruleTableIcons[j].width;
 					iconHeight = view.engine.ruleTableIcons[j].height;
@@ -1801,9 +1801,9 @@ This file is part of LifeViewer
 					y = this.renderHelpLine(view, " ", itemName, ctx, x, y, height, helpLine);
 				}
 
-				// draw the Icons
+				// draw the icons
 				if (view.engine.iconsAvailable) {
-					for (j = 0; j < iconHeight / iconWidth; j += 1) {
+					for (j = 0; (j < iconHeight / iconWidth) && j < view.engine.multiNumStates - 1; j += 1) {
 						this.renderIcon(view, j, view.engine.cellIconCanvas31.width, ctx, x + view.tabs[0] * xScale, y, height, helpLine);
 						itemName = view.getStateName(j + 1);
 						y = this.renderHelpLine(view, "Icon " + String(j + 1), "      " + itemName, ctx, x, y, height, helpLine);
