@@ -8006,7 +8006,7 @@ void nextGenerationRuleLoaderVNLookup2(
 								n = gridRow0[x];
 								e = gridRow1[x + 1];
 								s = gridRow2[x];
-								index = ((index << 1) & 960) | (e << 4) | (n << 2) | s;
+								index = ((index << 2) & 960) | (e << 4) | (n << 2) | s;
 
 								state = lookup[index];
 								*(nextRow + x) = state;
