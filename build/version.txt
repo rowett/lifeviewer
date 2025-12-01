@@ -1,3 +1,7 @@
+Build 1362
+- fixed Help>Info>Grid>Last Delete not being reset on pattern load
+- fixed Icon rendering
+
 Build 1361
 - fixed a bug in the range 1 von Neumann iterator (Pro)
 

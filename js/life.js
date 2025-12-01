@@ -1741,6 +1741,7 @@ This file is part of LifeViewer
 			/** @type {number} */ sourceSize = source.canvas.width,
 			/** @type {number} */ numIcons = source.canvas.height / sourceSize,
 			/** @type {number} */ scaledSize = 0,
+			/** @type {number} */ stateZeroCol = this.ruleTreeColours[0],
 			/** @type {number} */ i = 0,
 			/** @type {ImageData} */ result = null;
 
@@ -1753,88 +1754,19 @@ This file is part of LifeViewer
 
 		// copy each icon at scale
 		dest.imageSmoothingEnabled = false;
+
+		// fill the destination with the state 0 colour
+		dest.fillStyle = "rgb(" + ((stateZeroCol >> 16) & 255) + "," + ((stateZeroCol >> 8) & 255) + "," + (stateZeroCol & 255) + ")";
+		dest.fillRect(0, 0, dest.canvas.width, dest.canvas.height);
+
+		// draw each scaled icon
 		for (i = 0; i < numIcons; i += 1) {
 			dest.drawImage(source.canvas, 0, i * sourceSize, sourceSize, sourceSize, 0, i * destSize, scaledSize, scaledSize);
 		}
 
-		// replace empty pixels with background colour
 		result = dest.getImageData(0, 0, dest.canvas.width, dest.canvas.height);
 
-		this.substituteIconColours(result, dest);
-
 		return result;
-	};
-
-	// subsitute icon colours
-	Life.prototype.substituteIconColours = function(/** @type {ImageData} */ imageData, /** @type {CanvasRenderingContext2D} */ ctx) {
-		var	/** @type {number} */ i = 0,
-			/** @type {number} */ x = 0,
-			/** @type {number} */ y = 0,
-			/** @type {number} */ iconSize = ctx.canvas.width,
-			/** @type {number} */ offset = 0,
-			/** @type {number} */ blackPixel = this.littleEndian ? 0xff000000 : 0x000000ff,
-			/** @type {number} */ bgPixel = this.ruleTreeColours[0],
-			/** @type {Uint32Array} */ data32 = new Uint32Array(imageData.data.buffer),
-			/** @type {Uint32Array} */ copy32 = new Uint32Array(data32.length),
-			/** @type {number} */ numIcons = ctx.canvas.height / iconSize,
-			/** @type {number} */ border = 0;
-
-		// get the pixel colour from the RuleLoader background colour
-		if (this.littleEndian) {
-			bgPixel = (0xff000000 | ((bgPixel & 0xff) << 16) | ((bgPixel & 0xff00)) | ((bgPixel & 0xff0000) >> 16)) >>> 0;
-		} else {
-			bgPixel = ((bgPixel << 8) | 0xff) >>> 0;
-		}
-
-		switch (iconSize) {
-			case 7:
-				border = 1;
-				break;
-			case 15:
-				border = 2;
-				break;
-			case 31:
-				border = 4;
-				break;
-		}
-
-		// colour any empty of black pixels with the background colour
-		for (i = 0; i < data32.length; i += 1) {
-			if (data32[i] === 0 || data32[i] === blackPixel) {
-				data32[i] = bgPixel;
-			}
-		}
-
-		// duplicate the icon
-		copy32.set(data32);
-
-		// clear right columns and bottom rows to make a border
-		for (i = 0; i < numIcons; i += 1) {
-			offset = (i + 1) * iconSize * iconSize - iconSize * border;
-			for (y = 0; y < border; y += 1) {
-				for (x = 0; x < iconSize; x += 1) {
-					if (data32[offset] === bgPixel) {
-						data32[offset] = blackPixel;
-					}
-					offset += 1;
-				}
-			}
-			offset = i * iconSize * iconSize + iconSize - border;
-			for (y = 0; y < iconSize; y += 1) {
-				for (x = 0; x < border; x += 1) {
-					if (data32[offset + x] === bgPixel) {
-						data32[offset + x] = blackPixel;
-					}
-				}
-				offset += iconSize;
-			}
-		}
-
-		// updat the icon image
-		ctx.putImageData(imageData, 0, 0);
-
-		// restore the icon data
-		data32.set(copy32);
 	};
 
 	// process icons
@@ -1936,12 +1868,19 @@ This file is part of LifeViewer
 
 							// check if greyscale set
 							if (greyScale) {
+								// check for black pixel
 								if (rgb === 0) {
 									// black pixels are replaced by state 0 colour
 									rgb = stateZeroCol;
 								} else {
 									// other pixels control current state colour transparency
 									rgb = this.applyGreyScale(rgb, stateCol);
+								}
+							} else {
+								// multi-colour icons, check for black pixel
+								if (rgb === 0) {
+									// black pixels are replaced by state 0 colour
+									rgb = stateZeroCol;
 								}
 							}
 
@@ -2022,19 +1961,6 @@ This file is part of LifeViewer
 					this.cellIconImageData7 = this.scaleIconSet(this.cellIconContext7, this.cellIconContext15);
 					done7 = true;
 				}
-			}
-
-			// subsitute colours in any non scaled icons (since scaling does this)
-			if (!done7) {
-				this.substituteIconColours(this.cellIconImageData7, this.cellIconContext7);
-			}
-
-			if (!done15) {
-				this.substituteIconColours(this.cellIconImageData15, this.cellIconContext15);
-			}
-
-			if (!done31) {
-				this.substituteIconColours(this.cellIconImageData31, this.cellIconContext31);
 			}
 
 			// mark icons available

@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1361,
+		/** @const {number} */ versionBuild : 1362,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6846,7 +6846,7 @@ This file is part of LifeViewer
 				// find the icon in the canvas
 				yPos = (i + me.startState - 1) * iconSize;
 				if (yPos >= 0 && yPos < iconCanvas.height) {
-					ctx.drawImage(iconCanvas, 0, yPos, iconSize, iconSize, (i * (width / me.maxDisplayStates) * xScale + x), y, height * xScale, height * yScale);
+					ctx.drawImage(iconCanvas, 0, yPos, iconSize, iconSize, ((i + 0.5) * (width / me.maxDisplayStates) * xScale + x), y, height * xScale, height * yScale);
 				}
 			}
 
@@ -20903,6 +20903,9 @@ This file is part of LifeViewer
 
 		// zero population
 		me.engine.population = 0;
+
+		// clear last deleted generation
+		me.engine.lastClearedGen = -1;
 
 		// reset starfield colour
 		if (me.starField) {
