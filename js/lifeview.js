@@ -16177,7 +16177,11 @@ This file is part of LifeViewer
 				if (y < pattern.multiStateMap.length) {
 					patternRow = pattern.multiStateMap[y];
 					for (x = 0; x < width; x += 1) {
-						state = patternRow[x];
+						if (x < patternRow.length) {
+							state = patternRow[x];
+						} else {
+							state = 0;
+						}
 
 						// convert the state using the map and save it in the paste buffer
 						buffer[i] = map[state];
