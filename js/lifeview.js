@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1362,
+		/** @const {number} */ versionBuild : 1363,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -16174,18 +16174,26 @@ This file is part of LifeViewer
 
 			// read the states from the pattern
 			for (y = 0; y < height; y += 1) {
-				patternRow = pattern.multiStateMap[y];
-				for (x = 0; x < width; x += 1) {
-					state = patternRow[x];
+				if (y < pattern.multiStateMap.length) {
+					patternRow = pattern.multiStateMap[y];
+					for (x = 0; x < width; x += 1) {
+						state = patternRow[x];
 
-					// convert the state using the map and save it in the paste buffer
-					buffer[i] = map[state];
+						// convert the state using the map and save it in the paste buffer
+						buffer[i] = map[state];
 
-					// count number of non-zero cells for the clipboard tooltip
-					if (state > 0) {
-						count += 1;
+						// count number of non-zero cells for the clipboard tooltip
+						if (state > 0) {
+							count += 1;
+						}
+						i += 1;
 					}
-					i += 1;
+				} else {
+					for (x = 0; x < width; x += 1) {
+						state = 0;
+						buffer[i] = map[state];
+						i += 1;
+					}
 				}
 			}
 
@@ -16219,6 +16227,7 @@ This file is part of LifeViewer
 			// if it works then use the contents
 			me.handleSuccessfulRead(text, shift, evolveStep);
 		} catch(error) {
+			console.warn(error);
 
 			// if it fails then use the internal clipboard
 			me.handleFailedRead(shift, evolveStep);
