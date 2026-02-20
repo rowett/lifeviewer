@@ -747,8 +747,8 @@ This file is part of LifeViewer
 			y = this.renderHelpLine(view, "Space", "pause / next generation", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "B", "pause / previous generation", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Backspace", "pause / previous generation", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Tab", "pause / next step", ctx, x, y, height, helpLine);
-			y = this.renderHelpLine(view, "Shift Tab", "pause / previous step", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "\\", "pause / next step", ctx, x, y, height, helpLine);
+			y = this.renderHelpLine(view, "Shift \\", "pause / previous step", ctx, x, y, height, helpLine);
 			if (view.engine.isMargolus || view.engine.isPCA) {
 				y = this.renderHelpLine(view, "U", "toggle playback direction", ctx, x, y, height, helpLine);
 			}
