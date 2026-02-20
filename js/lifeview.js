@@ -81,6 +81,9 @@ This file is part of LifeViewer
 		/** @const {number} */ identifyDisplayPeriod : 0,
 		/** @const {number} */ identifyDisplayFrequency : 1,
 
+		// safe update period in ms (just under 3 per second)
+		/** @type {number} */ safeUpdatePeriod : 350,
+
 		// default snow colour (white)
 		/** @const {number} */ defaultSnowColour : 0xffffff,
 
@@ -101,6 +104,12 @@ This file is part of LifeViewer
 
 		// refresh rate override setting name
 		/** @type {string} */ refreshRateSettingName : "refreshRate",
+
+		// photosensitivity consent
+		/** @type {string} */ photosensitivityConsentName : "photosensitivityAck",
+
+		// photosensitivity consent requested
+		/** @type {string} */ photosensitibityRequestedName : "photosensitivityReq",
 
 		// Wolfram RuleTable emulation colours
 		/** @const {string} */ wolframEmulationColours : "0 0 0 0\n1 0 255 192\n2 0 192 255\n",
@@ -500,7 +509,7 @@ This file is part of LifeViewer
 		/** @const {number} */ maxViewerHeight : 4096,
 
 		// height of the input area when full screen
-		/** @const {number} */ inputAreaHeight : 200,
+		/** @const {number} */ inputAreaHeight : 190,
 
 		// minimum height to display navigation menu in the Viewer
 		/** @const {number} */ minMenuHeight : 480,
@@ -968,6 +977,9 @@ This file is part of LifeViewer
 		// whether WASM enabled for this viewer
 		/** @type {boolean} */ this.wasmEnabled = true;
 
+		// last draw time
+		/** @type {number} */ this.lastDraw = performance.now() - ViewConstants.safeUpdatePeriod;
+
 		// WASM memory reset point after initial construction
 		/** @type {number} */ this.wasmResetPoint = 0;
 
@@ -998,6 +1010,9 @@ This file is part of LifeViewer
 
 		// safe mode
 		/** @type {boolean} */ this.safeMode = false;
+
+		// photosenstivity update rate limiter
+		/** @type {boolean} */ this.allowFast = false;
 
 		// pinch touch start locations
 		/** @type {number} */ this.pinchStartX1 = 0;
@@ -7364,7 +7379,23 @@ This file is part of LifeViewer
 			/** @type {boolean} */ saveMajor = me.engine.gridLineMajorEnabled,
 			/** @type {boolean} */ saveDisplayGrid = me.engine.displayGrid,
 			/** @type {number} */ saveZoom = me.engine.zoom,
-			/** @type {number} */ saveLayers = me.engine.layers;
+			/** @type {number} */ saveLayers = me.engine.layers,
+			/** @type {boolean} */ drawNow = true,
+			/** @type {ImageData} */ copyData,
+			/** @type {CanvasRenderingContext2D} */ ctx = me.engine.context;
+
+		// check if fast update is allowed during playback
+		if (!this.allowFast) {
+			if (this.generationOn || this.computeHistory || this.identify || this.startFrom !== -1) {
+				if (performance.now() - this.lastDraw < ViewConstants.safeUpdatePeriod) {
+					drawNow = false;
+				}
+			}
+		}
+
+		if (drawNow) {
+			this.lastDraw = performance.now();
+		}
 
 		// check for autofit
 		if (me.autoFit && me.generationOn) {
@@ -7372,9 +7403,11 @@ This file is part of LifeViewer
 		}
 
 		// render grid (without layers if selection displayed)
-		me.engine.layers = (me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan) ? 1 : saveLayers;
-		me.engine.renderGrid(me.drawingSnow, me.starsOn);
-		me.engine.layers = saveLayers;
+		if (drawNow) {
+			me.engine.layers = (me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan) ? 1 : saveLayers;
+			me.engine.renderGrid(me.drawingSnow, me.starsOn);
+			me.engine.layers = saveLayers;
+		}
 
 		// draw stars if switched on
 		if (me.starsOn) {
@@ -7391,10 +7424,26 @@ This file is part of LifeViewer
 
 		// check if hexagons or triangles should be drawn
 		if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
-			me.engine.drawHexagons();
+			if (drawNow) {
+				me.engine.drawHexagons();
+
+				// if fast rendering is not allowed then copy the hexagons to the image buffer so it will render between frame updates
+				if (!this.allowFast && (this.generationOn || this.computeHistory || this.identify || this.startFrom !== -1)) {
+					copyData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+					me.engine.imageData.data.set(copyData.data);
+				}
+			}
 		} else {
 			if (!me.engine.forceRectangles && me.engine.isTriangular && me.engine.zoom >= 4) {
-				me.engine.drawTriangles();
+				if (drawNow) {
+					me.engine.drawTriangles();
+
+					// if fast rendering is not allowed then copy the triangles to the image buffer so it will render between frame udpates
+					if (!this.allowFast && (this.generationOn || this.computeHistory || this.identify || this.startFrom !== -1)) {
+						copyData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+						me.engine.imageData.data.set(copyData.data);
+					}
+				}
 			}
 		}
 
@@ -20762,6 +20811,8 @@ This file is part of LifeViewer
 		this.safeMode = Controller.loadBooleanSetting(ViewConstants.safeModeSettingName);
 		this.defaultSpeedSet = Controller.loadBooleanSetting(ViewConstants.defaultSpeedSettingName);
 		this.defaultSpeedToggle.current = [this.defaultSpeedSet];
+		//this.allowFast = Controller.loadBooleanSetting(ViewConstants.photosensitivityConsentName);  TBD
+		this.allowFast = true;
 
 		// reset playback speed
 		this.genSpeed = ViewConstants.defaultRefreshRate;

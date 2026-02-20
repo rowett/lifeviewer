@@ -25,6 +25,9 @@ This file is part of LifeViewer
 		// how long to show notification before Identify phase 2 begins
 		/** @const {number} */ identifyNotificationDuration : 15,
 
+		// safe update period in ms (just under 3 per second)
+		/** @type {number} */ safeUpdatePeriod : 350,
+
 		// cell shader modes for 2-state Life-like patterns
 		/** @const {number} */ shaderBasic : 0,
 		/** @const {number} */ shaderCellAge : 1,
