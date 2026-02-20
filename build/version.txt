@@ -1,3 +1,6 @@
+Build 1364
+- replace hotkey Tab with Backslash to allow page navigation
+
 Build 1363
 - fixed a bug in Paste from external clipboard
 

@@ -751,8 +751,8 @@ This file is part of LifeViewer
 				}
 				break;
 
-			// tab for pause/next step
-			case 9:
+			// backslash for pause/next step
+			case 220:
 				// do not pause if view only mode
 				if (!me.viewOnly) {
 					// check if playing
@@ -2318,8 +2318,8 @@ This file is part of LifeViewer
 
 			// ignore other keys
 			default:
-				// flag key not handled if specified or f5 (browser refresh) if not implemented above
-				if (keyCode === -1 || keyCode === 116) {
+				// flag key not handled if not specified or f5 (browser refresh) or tab
+				if (keyCode === -1 || keyCode === 116 || keyCode === 9) {
 					processed = false;
 				}
 				break;

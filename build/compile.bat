@@ -9,6 +9,6 @@ copy /b start.txt+..\js\compatibility.js+..\js\allocator.js+..\js\alias.js+..\js
 
 @rem run the closure compiler
 echo Compiling with Closure...
-"C:\Program Files\Java\jdk-20\bin\java.exe" -jar compiler.jar -W VERBOSE --jscomp_off=checkVars --compilation_level ADVANCED_OPTIMIZATIONS --js=all.js --js_output_file=lv-plugin.js
+"C:\Program Files\Java\latest\jdk-25\bin\java.exe" -jar compiler.jar -W VERBOSE --jscomp_off=checkVars --compilation_level ADVANCED_OPTIMIZATIONS --js=all.js --js_output_file=lv-plugin.js
 
 echo Done

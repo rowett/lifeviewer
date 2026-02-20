@@ -11265,7 +11265,7 @@ This file is part of LifeViewer
 		// update the drawing context
 		const /** @type {Uint8ClampedArray} */ buffer = /** @type {Uint8ClampedArray} */ (this.allocator.allocateTop(Type.Uint8Clamped, context.canvas.width * context.canvas.height * 4, "Life.imageData", Controller.useWASM));
 		/** @suppress {checkTypes} */
-		this.imageData = new ImageData(buffer, context.canvas.width, context.canvas.height);
+		this.imageData = new ImageData(/** @type {Uint8ClampedArray<ArrayBuffer>} */ (buffer), context.canvas.width, context.canvas.height);
 
 		if (Controller.useWASM) {
 			this.xOffsets = /** @type {!Uint32Array}*/ (this.allocator.allocateTop(Type.Uint32, this.displayWidth, "Life.xOffsets", Controller.useWASM));

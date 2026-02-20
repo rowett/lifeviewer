@@ -346,7 +346,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1363,
+		/** @const {number} */ versionBuild : 1364,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -498,6 +498,9 @@ This file is part of LifeViewer
 		// minimum and maximum height of the Viewer
 		/** @const {number} */ minViewerHeight : 240,
 		/** @const {number} */ maxViewerHeight : 4096,
+
+		// height of the input area when full screen
+		/** @const {number} */ inputAreaHeight : 200,
 
 		// minimum height to display navigation menu in the Viewer
 		/** @const {number} */ minMenuHeight : 480,
@@ -21741,7 +21744,7 @@ This file is part of LifeViewer
 
 			if (DocConfig.fullScreen) {
 				me.displayWidth = clientWidth;
-				me.displayHeight = window.innerHeight - 130;
+				me.displayHeight = window.innerHeight - ViewConstants.inputAreaHeight;
 				if (me.displayWidth < ViewConstants.minViewerWidth) {
 					me.displayWidth = ViewConstants.minViewerWidth;
 				}
@@ -23563,7 +23566,7 @@ This file is part of LifeViewer
 			// find default viewer
 			view = Controller.viewers[0][1];
 			view.displayWidth = (document.body.clientWidth & ~7) - 8;
-			view.displayHeight = window.innerHeight - 130;
+			view.displayHeight = window.innerHeight - ViewConstants.inputAreaHeight;
 			if (view.displayWidth < ViewConstants.minViewerWidth) {
 				view.displayWidth = ViewConstants.minViewerWidth;
 			}
