@@ -173,6 +173,46 @@ This file is part of LifeViewer
 		return processed;
 	};
 
+	// process keys in photosensitivity dialog mode
+	/** @returns {boolean} */
+	KeyProcessor.processKeyPhoto = function(/** @type {View} */ me, /** @type {number} */ keyCode, /** @type {KeyboardEvent} */ event) {
+		// flag event processed
+		var	/** @type {boolean} */ processed = true,
+			/** @type {boolean} */ shiftKey = event.shiftKey,
+			/** @type {boolean} */ ctrlKey = event.ctrlKey,
+			/** @type {boolean} */ metaKey = event.metaKey,
+			/** @type {boolean} */ altKey = event.altKey;
+
+		// check for control, meta or alt
+		if (ctrlKey || metaKey || altKey) {
+			// clear key code so it is not handled here
+			keyCode = -1;
+		}
+
+		// determine if the key can be processed
+		switch (keyCode) {
+		// e for enable high-speed rendering
+		case 69:
+			me.photoAllowHighSpeedPressed(me);
+			break;
+
+		// k or Esc for keep safe rendering speed
+		case 27:
+		case 75:
+			me.photoKeepSafeSpeedPressed(me);
+			break;
+
+		// ignore other keys
+		default:
+			// flag not handled
+			processed = false;
+			break;
+		}
+
+		// return whether key processed
+		return processed;
+	};
+
 	// switch between Help welcome screen and specific topic
 	KeyProcessor.toggleHelpTopic = function(/** @type {View} */ me, /** @type {number} */ topic) {
 		if (me.helpTopic === ViewConstants.welcomeTopic) {
@@ -954,33 +994,35 @@ This file is part of LifeViewer
 
 			// y for toggle graph
 			case 89:
-				// check for Help
-				if (me.displayHelp !== 0) {
-					this.toggleHelpTopic(me, ViewConstants.memoryTopic);
-				} else {
-					if (ctrlKey) {
-						me.redo(me);
+				if (!me.viewMenu.locked) {
+					// check for Help
+					if (me.displayHelp !== 0) {
+						this.toggleHelpTopic(me, ViewConstants.memoryTopic);
 					} else {
-						// check if graph disabled
-						if (me.graphDisabled) {
-							me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
+						if (ctrlKey) {
+							me.redo(me);
 						} else {
-							// check for shift
-							if (shiftKey) {
-								// toggle lines
-								me.popGraphLines = !me.popGraphLines;
-								me.linesToggle.current = me.toggleLines([me.popGraphLines], true, me);
-								me.menuManager.notification.notify("Graph " + (me.popGraphLines ? "Lines" : "Points"), 15, 40, 15, true);
+							// check if graph disabled
+							if (me.graphDisabled) {
+								me.menuManager.notification.notify("Graph Disabled", 15, 40, 15, true);
 							} else {
-								// check for selection or paste
-								if (me.isSelection || me.isPasting) {
-									// flip selection vertically
-									me.flipYPressed(me);
+								// check for shift
+								if (shiftKey) {
+									// toggle lines
+									me.popGraphLines = !me.popGraphLines;
+									me.linesToggle.current = me.toggleLines([me.popGraphLines], true, me);
+									me.menuManager.notification.notify("Graph " + (me.popGraphLines ? "Lines" : "Points"), 15, 40, 15, true);
 								} else {
-									// toggle population graph
-									me.popGraph = !me.popGraph;
-									me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
-									me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
+									// check for selection or paste
+									if (me.isSelection || me.isPasting) {
+										// flip selection vertically
+										me.flipYPressed(me);
+									} else {
+										// toggle population graph
+										me.popGraph = !me.popGraph;
+										me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
+										me.menuManager.notification.notify("Population Graph " + (me.popGraph ? "On" : "Off"), 15, 40, 15, true);
+									}
 								}
 							}
 						}
@@ -1857,19 +1899,21 @@ This file is part of LifeViewer
 
 			// m for menu or cycle paste mode
 			case 77:
-				if (ctrlKey) {
-					me.fitZoomDisplay(true, true, ViewConstants.fitZoomMiddle);
-					me.menuManager.notification.notify("Center Pattern", 15, 80, 15, true);
-				} else {
-					if (shiftKey) {
-						me.cyclePasteMode(me);
+				if (!me.viewMenu.locked) {
+					if (ctrlKey) {
+						me.fitZoomDisplay(true, true, ViewConstants.fitZoomMiddle);
+						me.menuManager.notification.notify("Center Pattern", 15, 80, 15, true);
 					} else {
-						if (me.navToggle && !me.navToggle.deleted && !me.navToggle.locked) {
-							// toggle navigation menu
-							me.navToggle.current = me.toggleSettings([!me.navToggle.current[0]], true, me);
+						if (shiftKey) {
+							me.cyclePasteMode(me);
+						} else {
+							if (me.navToggle && !me.navToggle.deleted && !me.navToggle.locked) {
+								// toggle navigation menu
+								me.navToggle.current = me.toggleSettings([!me.navToggle.current[0]], true, me);
 
-							// mark toggle required
-							me.menuManager.toggleRequired = true;
+								// mark toggle required
+								me.menuManager.toggleRequired = true;
+							}
 						}
 					}
 				}
@@ -1931,71 +1975,75 @@ This file is part of LifeViewer
 
 			// h for display help
 			case 72:
-				// check for shift key
-				if (shiftKey) {
-					// toggle history fit mode
-					me.historyFitButton.current = me.viewHistoryFitToggle([!me.historyFit], true, me);
-					me.menuManager.notification.notify("AutoFit History Mode " + (me.historyFit ? "On" : "Off"), 15, 40, 15, true);
-				} else {
-					// if errors then set script help page
-					if (me.scriptErrors.length) {
-						// toggle help page
-						if (me.displayHelp) {
-							me.displayHelp = 0;
-						} else {
-							// open help
-							me.displayHelp = 1;
-						}
+				if (!me.viewMenu.locked) {
+					// check for shift key
+					if (shiftKey) {
+						// toggle history fit mode
+						me.historyFitButton.current = me.viewHistoryFitToggle([!me.historyFit], true, me);
+						me.menuManager.notification.notify("AutoFit History Mode " + (me.historyFit ? "On" : "Off"), 15, 40, 15, true);
 					} else {
-						// toggle help
-						if (me.displayHelp) {
-							me.displayHelp = 0;
-						} else {
-							// do not display help if in thumbnail mode
-							if (!me.thumbnail) {
+						// if errors then set script help page
+						if (me.scriptErrors.length) {
+							// toggle help page
+							if (me.displayHelp) {
+								me.displayHelp = 0;
+							} else {
 								// open help
 								me.displayHelp = 1;
 							}
+						} else {
+							// toggle help
+							if (me.displayHelp) {
+								me.displayHelp = 0;
+							} else {
+								// do not display help if in thumbnail mode
+								if (!me.thumbnail) {
+									// open help
+									me.displayHelp = 1;
+								}
+							}
 						}
-					}
 
-					// update the help UI
-					me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
-					me.menuManager.toggleRequired = true;
+						// update the help UI
+						me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
+						me.menuManager.toggleRequired = true;
+					}
 				}
 
 				break;
 
 			// i for display information
 			case 73:
-				// check for ctrl and shift
-				if (ctrlKey && shiftKey) {
-					// pass up to browser
-					processed = false;
-				} else {
-					// check for ctrl key
-					if (ctrlKey) {
-						me.invertSelectionPressed(me);
+				if (!me.viewMenu.locked) {
+					// check for ctrl and shift
+					if (ctrlKey && shiftKey) {
+						// pass up to browser
+						processed = false;
 					} else {
-						// check for shift key
-						if (shiftKey) {
-							// toggle infobar
-							me.infoBarButton.current = me.viewInfoBarToggle([!me.infoBarEnabled], true, me);
+						// check for ctrl key
+						if (ctrlKey) {
+							me.invertSelectionPressed(me);
 						} else {
-							// check if help displayed
-							if (me.displayHelp) {
-								// check if on the info topic
-								this.toggleHelpTopic(me, ViewConstants.informationTopic);
+							// check for shift key
+							if (shiftKey) {
+								// toggle infobar
+								me.infoBarButton.current = me.viewInfoBarToggle([!me.infoBarEnabled], true, me);
 							} else {
-								// do not display information if in thumbnail mode
-								if (!me.thumbnail) {
-									me.setHelpTopic(ViewConstants.informationTopic, me);
+								// check if help displayed
+								if (me.displayHelp) {
+									// check if on the info topic
+									this.toggleHelpTopic(me, ViewConstants.informationTopic);
+								} else {
+									// do not display information if in thumbnail mode
+									if (!me.thumbnail) {
+										me.setHelpTopic(ViewConstants.informationTopic, me);
+									}
 								}
-							}
 
-							// update the help UI
-							me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
-							me.menuManager.toggleRequired = true;
+								// update the help UI
+								me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
+								me.menuManager.toggleRequired = true;
+							}
 						}
 					}
 				}
@@ -2196,10 +2244,16 @@ This file is part of LifeViewer
 
 			// f1 for toggle edit mode
 			case 112:
-				if (!me.viewOnly) {
-					me.drawing = !me.drawing;
-					me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
-					me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
+				if (!me.viewMenu.locked) {
+					if (shiftKey) {
+						me.photosensitivityPressed(me);
+					} else {
+						if (!me.viewOnly) {
+							me.drawing = !me.drawing;
+							me.modeList.current = me.viewModeList((me.drawing ? ViewConstants.modeDraw : ViewConstants.modePan), true, me);
+							me.menuManager.notification.notify((me.drawing ? "Draw" : "Pan") + " Mode", 15, 40, 15, true);
+						}
+					}
 				}
 				break;
 

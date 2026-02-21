@@ -895,6 +895,7 @@ This file is part of LifeViewer
 		view.helpSections[sectionNum] = [view.lineNo, "Display"];
 		sectionNum += 1;
 		y = this.renderHelpLine(view, "", "Display controls:", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, "Shift F1", "open photosensitivity dialog", ctx, x, y, height, helpLine);
 		if (!view.multiStateView) {
 			y = this.renderHelpLine(view, "G", "toggle generation statistics", ctx, x, y, height, helpLine);
 			y = this.renderHelpLine(view, "Shift G", "toggle generation display mode", ctx, x, y, height, helpLine);

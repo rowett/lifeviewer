@@ -106,10 +106,10 @@ This file is part of LifeViewer
 		/** @type {string} */ refreshRateSettingName : "refreshRate",
 
 		// photosensitivity consent
-		/** @type {string} */ photosensitivityConsentName : "photosensitivityAck",
+		/** @type {string} */ photosensitivitySafeSpeedName : "photosensitivitySafe",
 
 		// photosensitivity consent requested
-		/** @type {string} */ photosensitibityRequestedName : "photosensitivityReq",
+		/** @type {string} */ photosensitibityRequestedName : "photosensitivityRequested",
 
 		// Wolfram RuleTable emulation colours
 		/** @const {string} */ wolframEmulationColours : "0 0 0 0\n1 0 255 192\n2 0 192 255\n",
@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1364,
+		/** @const {number} */ versionBuild : 1365,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -979,6 +979,9 @@ This file is part of LifeViewer
 
 		// last draw time
 		/** @type {number} */ this.lastDraw = performance.now() - ViewConstants.safeUpdatePeriod;
+
+		// whether confirming photosensitivity mode
+		/** @type {boolean} */ this.confirmingPhotosensitivity = false;
 
 		// WASM memory reset point after initial construction
 		/** @type {number} */ this.wasmResetPoint = 0;
@@ -2079,6 +2082,27 @@ This file is part of LifeViewer
 
 		// done button for bug confirmation
 		/** @type {MenuItem} */ this.doneButton = null;
+
+		// open photosensitivity mode selection button
+		/** @type {MenuItem} */ this.photosensitivityButton = null;
+
+		// photosensitivity allow high speed button
+		/** @type {MenuItem} */ this.photoAllowHighSpeedButton = null;
+
+		// photosensitivity keep safe speed button
+		/** @type {MenuItem} */ this.photoKeepSafeSpeedButton = null;
+
+		// photosensitivity information label
+		/** @type {MenuItem} */ this.photosensitivityLabel1 = null;
+		/** @type {MenuItem} */ this.photosensitivityLabel2 = null;
+		/** @type {MenuItem} */ this.photosensitivityLabel3 = null;
+		/** @type {MenuItem} */ this.photosensitivityLabel4 = null;
+		/** @type {MenuItem} */ this.photosensitivityLabel5 = null;
+		/** @type {MenuItem} */ this.photosensitivityLabel6 = null;
+		/** @type {MenuItem} */ this.photosensitivityLabel7 = null;
+		/** @type {MenuItem} */ this.photosensitivityLabel8 = null;
+		/** @type {MenuItem} */ this.photosensitivityLabel9 = null;
+		/** @type {MenuItem} */ this.photosensitivityLabel10 = null;
 
 		// help button
 		/** @type {MenuItem} */ this.helpToggle = null;
@@ -7776,6 +7800,21 @@ This file is part of LifeViewer
 			/** @type {boolean} */ settingsMenuOpen = this.navToggle.current[0],
 			/** @type {boolean} */ shown = false;
 
+		// photosensitivity dialog mode
+		shown = !this.confirmingPhotosensitivity;
+		this.photoAllowHighSpeedButton.deleted = shown;
+		this.photoKeepSafeSpeedButton.deleted = shown;
+		this.photosensitivityLabel1.deleted = shown;
+		this.photosensitivityLabel2.deleted = shown;
+		this.photosensitivityLabel3.deleted = shown;
+		this.photosensitivityLabel4.deleted = shown;
+		this.photosensitivityLabel5.deleted = shown;
+		this.photosensitivityLabel6.deleted = shown;
+		this.photosensitivityLabel7.deleted = shown;
+		this.photosensitivityLabel8.deleted = shown;
+		this.photosensitivityLabel9.deleted = shown || this.mainCanvas.height < 630;
+		this.photosensitivityLabel10.deleted = shown || this.mainCanvas.height < 630;
+
 		// step back button
 		if (this.noHistory || (this.engine.counter === 0 && !((this.engine.isMargolus || this.engine.isPCA) && this.engine.margolusReverseLookup1 !== null))) {
 			this.playList.itemLocked[1] = true;
@@ -7997,6 +8036,7 @@ This file is part of LifeViewer
 		this.stopAllButton.deleted = shown;
 		this.stopOthersButton.deleted = shown;
 		this.resetAllButton.deleted = shown;
+		this.photosensitivityButton.deleted = shown;
 
 		// playback category
 		shown = hide || !this.showPlaybackSettings;
@@ -8849,6 +8889,26 @@ This file is part of LifeViewer
 		me.menuManager.setAutoUpdate(true);
 	};
 
+	// view update for confirming photosensitivity
+	View.prototype.viewAnimatePhoto = function(/** @type {View} */ me) {
+		var	/** @type {CanvasRenderingContext2D} */ ctx = me.mainContext;
+
+		// lock the view menu
+		me.viewMenu.locked = true;
+
+		// render world
+		me.renderWorld(me, false, 0, false);
+
+		// dim the background
+		ctx.fillStyle = me.menuManager.bgCol;
+		ctx.globalAlpha = 0.7;
+		ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+		ctx.globalAlpha = 1;
+
+		// set the auto update mode
+		me.menuManager.setAutoUpdate(true);
+	};
+
 	// view update for history calculation
 	View.prototype.viewAnimateHistory = function(/** @type {View} */ me) {
 		// target generation
@@ -9088,24 +9148,29 @@ This file is part of LifeViewer
 			me.menuManager.toggleRequired = true;
 		}
 
-		if (me.computeHistory) {
-			// computing history
-			me.viewAnimateHistory(me);
+		if (me.confirmingPhotosensitivity) {
+			// confirming photosensitivity
+			me.viewAnimatePhoto(me);
 		} else {
-			if (me.identify) {
-				// identifying pattern
-				me.viewAnimateIdentify(me);
+			if (me.computeHistory) {
+				// computing history
+				me.viewAnimateHistory(me);
 			} else {
-				if (me.startFrom !== -1) {
-					// starting from a specified generation
-					me.viewAnimateStartFrom(me);
+				if (me.identify) {
+					// identifying pattern
+					me.viewAnimateIdentify(me);
 				} else {
-					// normal
-					me.viewAnimateNormal(timeSinceLastUpdate, me);
+					if (me.startFrom !== -1) {
+						// starting from a specified generation
+						me.viewAnimateStartFrom(me);
+					} else {
+						// normal
+						me.viewAnimateNormal(timeSinceLastUpdate, me);
 
-					// check if initializing Fast Lookup
-					if (me.engine.isRuleTree && me.engine.ruleLoaderStep !== -1) {
-						me.viewAnimateInitLookup(me, startTime);
+						// check if initializing Fast Lookup
+						if (me.engine.isRuleTree && me.engine.ruleLoaderStep !== -1) {
+							me.viewAnimateInitLookup(me, startTime);
+						}
 					}
 				}
 			}
@@ -10013,6 +10078,26 @@ This file is part of LifeViewer
 	View.prototype.multiversePressed = function(/** @type {View} */ me) {
 		Controller.overview = true;
 		me.menuManager.activeMenu(me.overviewMenu);
+	};
+
+	// photosensitive enable high speed pressed
+	View.prototype.photoAllowHighSpeedPressed = function(/** @type {View} */ me) {
+		me.allowFast = true;
+		Controller.saveBooleanSetting(ViewConstants.photosensitivitySafeSpeedName, me.allowFast);
+		Controller.saveBooleanSetting(ViewConstants.photosensitibityRequestedName, true);
+
+		me.confirmingPhotosensitivity = false;
+		me.viewMenu.locked = false;
+	};
+
+	// photosensitive keep safe speed pressed
+	View.prototype.photoKeepSafeSpeedPressed = function(/** @type {View} */ me) {
+		me.allowFast = false;
+		Controller.saveBooleanSetting(ViewConstants.photosensitivitySafeSpeedName, me.allowFast);
+		Controller.saveBooleanSetting(ViewConstants.photosensitibityRequestedName, true);
+
+		me.confirmingPhotosensitivity = false;
+		me.viewMenu.locked = false;
 	};
 
 	// done button pressed
@@ -18142,6 +18227,25 @@ This file is part of LifeViewer
 		Controller.stopOtherViewers(me);
 	};
 
+	// photosensitivity pressed
+	View.prototype.photosensitivityPressed = function(/** @type {View} */ me) {
+		// close Help or Errors if open
+		if (me.displayHelp !== 0 || me.displayErrors !== 0) {
+			me.displayHelp = 0;
+			me.helpToggle.current = me.toggleHelp([me.displayHelp !== 0], true, me);
+			me.displayErrors = 0;
+		}
+
+		// close graph if open
+		if (me.popGraph) {
+			me.popGraph = !me.popGraph;
+			me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
+		}
+
+		// open photosensitivity dialog
+		me.confirmingPhotosensitivity = true;
+	};
+
 	// reset all viewers
 	View.prototype.resetAllPressed = function(/** @type {View} */ me) {
 		Controller.resetAllViewers();
@@ -18665,25 +18769,29 @@ This file is part of LifeViewer
 			// flag if key processed
 			/** @type {boolean} */ processed = false;
 
-		// ignore keys in compute history mode
-		if (me.computeHistory) {
-			// process the key in history mode
-			processed = KeyProcessor.processKeyHistory(me, keyCode, event);
+		// check for photosensitivity dialog mode
+		if (me.confirmingPhotosensitivity) {
+			processed = KeyProcessor.processKeyPhoto(me, keyCode, event);
 		} else {
-			if (me.identify) {
-				// process the key in identify mode
-				processed = KeyProcessor.processKeyIdentify(me, keyCode, event);
+			if (me.computeHistory) {
+				// process the key in history mode
+				processed = KeyProcessor.processKeyHistory(me, keyCode, event);
 			} else {
-				// check for go to generation
-				if (me.startFrom !== -1) {
-					processed = KeyProcessor.processKeyGoTo(me, keyCode, event);
+				if (me.identify) {
+					// process the key in identify mode
+					processed = KeyProcessor.processKeyIdentify(me, keyCode, event);
 				} else {
-					// check for overview
-					if (Controller.overview) {
-						processed = KeyProcessor.processKeyOverview(me, keyCode, event);
+					// check for go to generation
+					if (me.startFrom !== -1) {
+						processed = KeyProcessor.processKeyGoTo(me, keyCode, event);
 					} else {
-						// process the key
-						processed = KeyProcessor.processKey(me, keyCode, event);
+						// check for overview
+						if (Controller.overview) {
+							processed = KeyProcessor.processKeyOverview(me, keyCode, event);
+						} else {
+							// process the key
+							processed = KeyProcessor.processKey(me, keyCode, event);
+						}
 					}
 				}
 			}
@@ -18931,6 +19039,58 @@ This file is part of LifeViewer
 
 		// add callback for pinch on touch devices
 		this.menuManager.pinchCallback = this.viewPinch;
+
+		// photosensitivity allow high speed button
+		this.photoAllowHighSpeedButton = this.viewMenu.addButtonItem(this.photoAllowHighSpeedPressed, Menu.south, 0, -120, 340, 40, "Enable High-Speed Rendering");
+		this.photoAllowHighSpeedButton.overrideLocked = true;
+		this.photoAllowHighSpeedButton.toolTip = "enable high-speed rendering [E]";
+
+		// photosensitivity keep safe speed button
+		this.photoKeepSafeSpeedButton = this.viewMenu.addButtonItem(this.photoKeepSafeSpeedPressed, Menu.south, 0, -180, 340, 40, "Keep Safe Rendering Speed");
+		this.photoKeepSafeSpeedButton.overrideLocked = true;
+		this.photoKeepSafeSpeedButton.toolTip = "keep safe rendering speed [K / Esc]";
+
+		// photosensitivity label
+		this.photosensitivityLabel1 = this.viewMenu.addLabelItem(Menu.north, 0, 80, 560, 40, "Photosensitivity Warning");
+		this.photosensitivityLabel1.setFont("32px Arial");
+		this.photosensitivityLabel1.bgAlpha = 0;
+		this.photosensitivityLabel1.overrideLocked = true;
+
+		this.photosensitivityLabel2 = this.viewMenu.addLabelItem(Menu.north, 0, 130, 560, 40, "Rapidly changing visuals may trigger seizures");
+		this.photosensitivityLabel2.overrideLocked = true;
+		this.photosensitivityLabel2.bgAlpha = 0;
+
+		this.photosensitivityLabel3 = this.viewMenu.addLabelItem(Menu.north, 0, 162, 560, 40, "in people with photosensitive epilepsy.");
+		this.photosensitivityLabel3.overrideLocked = true;
+		this.photosensitivityLabel3.bgAlpha = 0;
+
+		this.photosensitivityLabel4 = this.viewMenu.addLabelItem(Menu.north, 0, 202, 560, 40, "By default, the cell grid display updates at most");
+		this.photosensitivityLabel4.overrideLocked = true;
+		this.photosensitivityLabel4.bgAlpha = 0;
+
+		this.photosensitivityLabel5 = this.viewMenu.addLabelItem(Menu.north, 0, 234, 560, 40, "once every 350ms (roughly 3 times per second),");
+		this.photosensitivityLabel5.overrideLocked = true;
+		this.photosensitivityLabel5.bgAlpha = 0;
+
+		this.photosensitivityLabel6 = this.viewMenu.addLabelItem(Menu.north, 0, 266, 560, 40, "to keep the display within safe limits.");
+		this.photosensitivityLabel6.overrideLocked = true;
+		this.photosensitivityLabel6.bgAlpha = 0;
+
+		this.photosensitivityLabel7 = this.viewMenu.addLabelItem(Menu.north, 0, 306, 560, 40, "If you have a history of seizures or photosensitivity,");
+		this.photosensitivityLabel7.overrideLocked = true;
+		this.photosensitivityLabel7.bgAlpha = 0;
+
+		this.photosensitivityLabel8 = this.viewMenu.addLabelItem(Menu.north, 0, 338, 560, 40, "keep high-speed rendering disabled.");
+		this.photosensitivityLabel8.overrideLocked = true;
+		this.photosensitivityLabel8.bgAlpha = 0;
+
+		this.photosensitivityLabel9 = this.viewMenu.addLabelItem(Menu.north, 0, 378, 560, 40, "You can change this at any time in");
+		this.photosensitivityLabel9.overrideLocked = true;
+		this.photosensitivityLabel9.bgAlpha = 0;
+
+		this.photosensitivityLabel10 = this.viewMenu.addLabelItem(Menu.north, 0, 410, 560, 40, "Settings\u2192General or by pressing Shift F1.");
+		this.photosensitivityLabel10.overrideLocked = true;
+		this.photosensitivityLabel10.bgAlpha = 0;
 
 		// identify banner label
 		this.identifyBannerLabel = this.viewMenu.addLabelItem(Menu.north, 0, 52, 480, 48, "Banner");
@@ -19548,6 +19708,10 @@ This file is part of LifeViewer
 		this.resetAllButton = this.viewMenu.addButtonItem(this.resetAllPressed, Menu.middle, -100, 100, 180, 40, "Reset All");
 		this.resetAllButton.toolTip = "reset all Viewers [Shift R]";
 
+		// open photosensitivity selection dialog
+		this.photosensitivityButton = this.viewMenu.addButtonItem(this.photosensitivityPressed, Menu.middle, 100, 100, 180, 40, "Photosensitivity");
+		this.photosensitivityButton.toolTip = ["open photosensitivy mode selection [Shift F1]"];
+
 		// add the advanced button
 		this.infoButton = this.viewMenu.addButtonItem(this.infoPressed, Menu.middle, 100, 25, 150, 40, "Advanced");
 		this.infoButton.toolTip = "advanced settings and actions";
@@ -19844,7 +20008,7 @@ This file is part of LifeViewer
 			this.escButton, this.autoHideButton, this.autoGridButton, this.altGridButton, this.integerZoomButton, this.centerPatternButton, this.hexCellButton, this.bordersButton,
 			this.labelButton, this.killButton, this.graphButton, this.fpsButton, this.clearDrawingStateButton, this.timingDetailButton, this.infoBarButton, this.starsButton,
 			this.resetAllButton, this.stopAllButton, this.stopOthersButton, this.snapToNearest45Button, this.historyFitButton, this.majorButton, this.prevUniverseButton,
-			this.nextUniverseButton, this.multiverseButton, this.actionsButton, this.saveViewButton, this.restoreViewButton, this.lastIdentifyResultsButton], []);
+			this.nextUniverseButton, this.multiverseButton, this.actionsButton, this.saveViewButton, this.restoreViewButton, this.lastIdentifyResultsButton, this.photosensitivityButton], []);
 
 		// add statistics items to the toggle
 		this.genToggle.addItemsToToggleMenu([this.popLabel, this.popValue, this.birthsLabel, this.birthsValue, this.deathsLabel, this.deathsValue, this.genLabel, this.genValueLabel, this.timeLabel, this.elapsedTimeLabel, this.ruleLabel], []);
@@ -20798,7 +20962,8 @@ This file is part of LifeViewer
 			/** @type {number} */ savedH = 0,
 			/** @type {Pattern} */ pattern = null,
 			/** @type {Pattern} */ temp = null,
-			/** @type {number} */ speed = 0;
+			/** @type {number} */ speed = 0,
+			/** @type {boolean} */ photoConfirmed = false;
 
 		// prevent touches on the canvas since we handle them explicitly
 		this.mainCanvas.style.touchAction = "none";
@@ -20811,8 +20976,16 @@ This file is part of LifeViewer
 		this.safeMode = Controller.loadBooleanSetting(ViewConstants.safeModeSettingName);
 		this.defaultSpeedSet = Controller.loadBooleanSetting(ViewConstants.defaultSpeedSettingName);
 		this.defaultSpeedToggle.current = [this.defaultSpeedSet];
-		//this.allowFast = Controller.loadBooleanSetting(ViewConstants.photosensitivityConsentName);  TBD
-		this.allowFast = true;
+
+		// check if photosensitivity mode is confirmed
+		photoConfirmed = Controller.loadBooleanSetting(ViewConstants.photosensitibityRequestedName);
+		if (photoConfirmed) {
+			this.allowFast = Controller.loadBooleanSetting(ViewConstants.photosensitivitySafeSpeedName);
+			this.confirmingPhotosensitivity = false;
+		} else {
+			this.confirmingPhotosensitivity = true;
+			this.updateUIForHelp(false);
+		}
 
 		// reset playback speed
 		this.genSpeed = ViewConstants.defaultRefreshRate;

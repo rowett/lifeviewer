@@ -1,3 +1,11 @@
+Build 1365
+- added photosensitivity warning and screen update dialog
+	- safe mode only updates the cell grid every 350ms
+	- high-speed mode updates the cell grid at the monitor refresh rate
+	- this is only enabled during pattern playback
+	- Settings>General>Photosensitivity (hotkey Shift F1) will display the dialog any time
+	- your choice will be remembered for the current browser
+
 Build 1364
 - replace hotkey Tab with Backslash to allow page navigation
 
