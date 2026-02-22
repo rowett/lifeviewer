@@ -50021,6 +50021,25 @@ This file is part of LifeViewer
 		return result;
 	};
 
+	// update colours
+	Life.prototype.updateColours = function() {
+		// check if colour is changing
+		if (this.colourChange) {
+			this.createColours();
+
+			this.colourChange -= 1;
+			if (!this.colourChange) {
+				// make target current
+				this.aliveColCurrent.set(this.aliveColTarget);
+				this.deadColCurrent.set(this.deadColTarget);
+				this.unoccupiedCurrent.set(this.unoccupiedTarget);
+				this.aliveGenColCurrent.set(this.aliveGenColTarget);
+				this.dyingGenColCurrent.set(this.dyingGenColTarget);
+				this.unoccupiedGenCurrent.set(this.unoccupiedGenTarget);
+			}
+		}
+	};
+
 	// project the life grid onto the canvas
 	Life.prototype.renderGrid = function(/** @type {boolean} */ drawingSnow, /** @type {boolean} */ drawingStars) {
 		var	/** @type {number} */ colour0 = this.pixelColours[0],
@@ -50043,24 +50062,11 @@ This file is part of LifeViewer
 			}
 		}
 
-		// check if colour is changing
-		if (this.colourChange) {
-			this.createColours();
+		// update colours
+		this.updateColours();
 
-			// update background colour since it may have changed
-			colour0 = this.pixelColours[0];
-
-			this.colourChange -= 1;
-			if (!this.colourChange) {
-				// make target current
-				this.aliveColCurrent.set(this.aliveColTarget);
-				this.deadColCurrent.set(this.deadColTarget);
-				this.unoccupiedCurrent.set(this.unoccupiedTarget);
-				this.aliveGenColCurrent.set(this.aliveGenColTarget);
-				this.dyingGenColCurrent.set(this.dyingGenColTarget);
-				this.unoccupiedGenCurrent.set(this.unoccupiedGenTarget);
-			}
-		}
+		// update background colour in case it changed
+		colour0 = this.pixelColours[0];
 
 		// read the camera position
 		this.camZoom = this.zoom * this.originZ;

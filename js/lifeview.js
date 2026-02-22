@@ -81,8 +81,8 @@ This file is part of LifeViewer
 		/** @const {number} */ identifyDisplayPeriod : 0,
 		/** @const {number} */ identifyDisplayFrequency : 1,
 
-		// safe update period in ms (just under 3 per second)
-		/** @type {number} */ safeUpdatePeriod : 350,
+		// safe update period in ms (2.5 times per second)
+		/** @type {number} */ safeUpdatePeriod : 400,
 
 		// default snow colour (white)
 		/** @const {number} */ defaultSnowColour : 0xffffff,
@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1365,
+		/** @const {number} */ versionBuild : 1366,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7431,6 +7431,8 @@ This file is part of LifeViewer
 			me.engine.layers = (me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan) ? 1 : saveLayers;
 			me.engine.renderGrid(me.drawingSnow, me.starsOn);
 			me.engine.layers = saveLayers;
+		} else {
+			me.engine.updateColours();
 		}
 
 		// draw stars if switched on
@@ -18242,6 +18244,12 @@ This file is part of LifeViewer
 			me.graphButton.current = me.viewGraphToggle([me.popGraph], true, me);
 		}
 
+		// close settings if open
+		if (me.navToggle.current[0]) {
+			me.navToggle.current = me.toggleSettings([false], true, me);
+			me.menuManager.toggleRequired = true;
+		}
+
 		// open photosensitivity dialog
 		me.confirmingPhotosensitivity = true;
 	};
@@ -19064,11 +19072,11 @@ This file is part of LifeViewer
 		this.photosensitivityLabel3.overrideLocked = true;
 		this.photosensitivityLabel3.bgAlpha = 0;
 
-		this.photosensitivityLabel4 = this.viewMenu.addLabelItem(Menu.north, 0, 202, 560, 40, "By default, the cell grid display updates at most");
+		this.photosensitivityLabel4 = this.viewMenu.addLabelItem(Menu.north, 0, 202, 560, 40, "During playback, the cell grid display updates at");
 		this.photosensitivityLabel4.overrideLocked = true;
 		this.photosensitivityLabel4.bgAlpha = 0;
 
-		this.photosensitivityLabel5 = this.viewMenu.addLabelItem(Menu.north, 0, 234, 560, 40, "once every 350ms (roughly 3 times per second),");
+		this.photosensitivityLabel5 = this.viewMenu.addLabelItem(Menu.north, 0, 234, 560, 40, "most once every " + ViewConstants.safeUpdatePeriod + "ms (" + (1000 / ViewConstants.safeUpdatePeriod).toFixed(1) + " times per second),");
 		this.photosensitivityLabel5.overrideLocked = true;
 		this.photosensitivityLabel5.bgAlpha = 0;
 

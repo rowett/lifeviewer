@@ -1,3 +1,6 @@
+Build 1366
+- close Setting menu when displaying photosensitivity dialog
+
 Build 1365
 - added photosensitivity warning and screen update dialog
 	- safe mode only updates the cell grid every 350ms
