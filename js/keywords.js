@@ -33,6 +33,9 @@ This file is part of LifeViewer
 		// quality
 		/** @const {string} */ qualityWord : "QUALITY",
 
+		// maximize popup
+		/** @const {string} */ maximizeWord : "MAXIMIZE",
+
 		// time
 		/** @const {string} */ timeIntervalWord : "TIME",
 

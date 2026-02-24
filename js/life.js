@@ -1101,19 +1101,24 @@ This file is part of LifeViewer
 		// colour grid
 		/** @type {Array<Uint8Array>} */ this.colourGrid = null;
 
-		// next colour grid for PCA rules
-		/** @type {Array<Uint8Array>} */ this.nextColourGrid = null;
-		/** @type {Array<Uint16Array>} */ this.nextColourGrid16 = null;
-		/** @type {Array<Uint32Array>} */ this.nextColourGrid32 = null;
-
-		// small colour grid used for zooms < 1
-		/** @type {Array<Uint8Array>} */ this.smallColourGrid = null;
-
 		// 16bit view of colour grid
 		/** @type {Array<Uint16Array>} */ this.colourGrid16 = null;
 
 		// 32bit view of colour grid
 		/** @type {Array<Uint32Array>} */ this.colourGrid32 = null;
+
+		// next colour grid for PCA, RuleTree, Super or Extended rules
+		/** @type {Array<Uint8Array>} */ this.nextColourGrid = null;
+		/** @type {Array<Uint16Array>} */ this.nextColourGrid16 = null;
+		/** @type {Array<Uint32Array>} */ this.nextColourGrid32 = null;
+
+		// safe colour grid used when in Photosensitive mode to keep the current grid static for 400ms
+		/** @type {Array<Uint8Array>} */ this.safeColourGrid = null;
+		/** @type {Array<Uint16Array>} */ this.safeColourGrid16 = null;
+		/** @type {Array<Uint32Array>} */ this.safeColourGrid32 = null;
+
+		// small colour grid used for zooms < 1
+		/** @type {Array<Uint8Array>} */ this.smallColourGrid = null;
 
 		// overlay grid for LifeHistory
 		/** @type {Array<Uint8Array>} */ this.overlayGrid = null;

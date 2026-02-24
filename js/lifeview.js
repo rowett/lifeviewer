@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1366,
+		/** @const {number} */ versionBuild : 1368,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -22964,6 +22964,9 @@ This file is part of LifeViewer
 
 		// disable thumb launch if in safe mode and pattern size is MAXGRIDSIZE 14
 		me.menuManager.disableLaunch = me.safeMode && (me.engine.maxGridSize === (1 << ViewConstants.maxGridPower));
+
+		// schedule window resize
+		setTimeout(resizeWindow);
 	};
 
 	// start a viewer

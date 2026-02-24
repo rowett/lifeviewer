@@ -147,6 +147,7 @@ This file is part of LifeViewer
 			case Keywords.gridWord:
 			case Keywords.gridMajorWord:
 			case Keywords.qualityWord:
+			case Keywords.maximizeWord:
 			case Keywords.suppressWord:
 			case Keywords.colorWord:
 			case Keywords.colourWord:
@@ -2637,6 +2638,14 @@ This file is part of LifeViewer
 								}
 							}
 
+							break;
+
+						// maximize window
+						case Keywords.maximizeWord:
+							if (Controller.popupWindow) {
+								Controller.popupWindow.maximized = true;
+							}
+							itemValid = true;
 							break;
 
 						// quality rendering

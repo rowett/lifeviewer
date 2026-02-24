@@ -1321,6 +1321,7 @@ This file is part of LifeViewer
 		y = this.renderHelpLine(view, " " + Keywords.neighborCountWord, "use neighbour count colours", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, " " + Keywords.neighbourCountWord, "same as " + Keywords.neighborCountWord, ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, Keywords.qualityWord, "use high quality rendering", ctx, x, y, height, helpLine);
+		y = this.renderHelpLine(view, Keywords.maximizeWord, "maximize window", ctx, x, y, height, helpLine);
 		y = this.renderHelpLine(view, "", "", ctx, x, y, height, helpLine);
 
 		view.helpSections[sectionNum] = [view.lineNo, "Thumb"];

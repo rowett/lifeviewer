@@ -1,11 +1,16 @@
+Build 1368
+- trigger window resize on start
+
+Build 1367
+- new script command [[ MAXIMIZE ]] which will maximize the PopUp Viewer when it opens
+
 Build 1366
-- close Setting menu when displaying photosensitivity dialog
+- close Settings menu when displaying photosensitivity dialog
 
 Build 1365
 - added photosensitivity warning and screen update dialog
-	- safe mode only updates the cell grid every 350ms
+	- safe mode only updates the cell grid every 400ms during playback
 	- high-speed mode updates the cell grid at the monitor refresh rate
-	- this is only enabled during pattern playback
 	- Settings>General>Photosensitivity (hotkey Shift F1) will display the dialog any time
 	- your choice will be remembered for the current browser
 
