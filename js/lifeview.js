@@ -7409,16 +7409,16 @@ This file is part of LifeViewer
 			/** @type {CanvasRenderingContext2D} */ ctx = me.engine.context;
 
 		// check if fast update is allowed during playback
-		if (!this.allowFast) {
-			if (this.generationOn || this.computeHistory || this.identify || this.startFrom !== -1) {
-				if (performance.now() - this.lastDraw < ViewConstants.safeUpdatePeriod) {
+		if (!me.allowFast) {
+			if (me.generationOn || me.computeHistory || me.identify || me.startFrom !== -1) {
+				if (me.lastDraw >= 0 && (performance.now() - me.lastDraw < ViewConstants.safeUpdatePeriod)) {
 					drawNow = false;
 				}
 			}
 		}
 
 		if (drawNow) {
-			this.lastDraw = performance.now();
+			me.lastDraw = performance.now();
 		}
 
 		// check for autofit
@@ -7454,7 +7454,7 @@ This file is part of LifeViewer
 				me.engine.drawHexagons();
 
 				// if fast rendering is not allowed then copy the hexagons to the image buffer so it will render between frame updates
-				if (!this.allowFast && (this.generationOn || this.computeHistory || this.identify || this.startFrom !== -1)) {
+				if (!me.allowFast && (me.generationOn || me.computeHistory || me.identify || me.startFrom !== -1)) {
 					copyData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 					me.engine.imageData.data.set(copyData.data);
 				}
@@ -7465,7 +7465,7 @@ This file is part of LifeViewer
 					me.engine.drawTriangles();
 
 					// if fast rendering is not allowed then copy the triangles to the image buffer so it will render between frame udpates
-					if (!this.allowFast && (this.generationOn || this.computeHistory || this.identify || this.startFrom !== -1)) {
+					if (!me.allowFast && (me.generationOn || me.computeHistory || me.identify || me.startFrom !== -1)) {
 						copyData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
 						me.engine.imageData.data.set(copyData.data);
 					}
@@ -20987,6 +20987,7 @@ This file is part of LifeViewer
 
 		// check if photosensitivity mode is confirmed
 		photoConfirmed = Controller.loadBooleanSetting(ViewConstants.photosensitibityRequestedName);
+		this.lastDraw = performance.now();
 		if (photoConfirmed) {
 			this.allowFast = Controller.loadBooleanSetting(ViewConstants.photosensitivitySafeSpeedName);
 			this.confirmingPhotosensitivity = false;
@@ -21906,6 +21907,11 @@ This file is part of LifeViewer
 			}
 
 			me.readScript(comments, numberValue);
+
+			// disable autostart if photosensitivity throttling is on
+			if (!me.allowFast) {
+				me.autoStart = false;
+			}
 
 			// save the pattern comments after removing script commands, originator and name, and "#C " or "# " comment prefixes
 			if (pattern) {
