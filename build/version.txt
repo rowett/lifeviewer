@@ -1,3 +1,9 @@
+Build 1370
+- disable Auto Start and Auto Identify when photosensitivity throttling enabled
+
+Build 1369
+- fixed tooltips for step forward and step back
+
 Build 1368
 - trigger window resize on start
 

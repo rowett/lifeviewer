@@ -348,14 +348,14 @@ This file is part of LifeViewer
 		/** @const {number} */ perfMin : 0,
 		/** @const {number} */ perfMax : 16,
 
-		// error notification duration in ms
+		// error notification duration in frames
 		/** @const {number} */ errorDuration : 1800,
 
 		// external viewer window
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1368,
+		/** @const {number} */ versionBuild : 1370,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -10032,19 +10032,19 @@ This file is part of LifeViewer
 			if (reverse) {
 				forwardIconName = "stepback";
 				backIconName = "stepforward";
-				forwardToolTip = "step back [Shift Tab]";
-				backToolTip = "step forward [Tab]";
+				forwardToolTip = "step back [Shift \\]";
+				backToolTip = "step forward [\\]";
 			} else {
 				forwardIconName = "stepforward";
 				backIconName = "stepback";
-				forwardToolTip = "step forward [Tab]";
-				backToolTip = "step back [Shift Tab]";
+				forwardToolTip = "step forward [\\]";
+				backToolTip = "step back [Shift \\]";
 			}
 		} else {
 			forwardIconName = "stepforward";
 			backIconName = "stepback";
-			forwardToolTip = "step forward [Tab]";
-			backToolTip = "step back [Shift Tab]";
+			forwardToolTip = "step forward [\\]";
+			backToolTip = "step back [Shift \\]";
 		}
 
 		// set the step back and forward icons and tooltips
@@ -19831,7 +19831,7 @@ This file is part of LifeViewer
 		// add play and pause list
 		this.playList = this.viewMenu.addListItem(this.viewPlayList, Menu.southEast, -205, -40, 160, 40, ["", "", "", ""], ViewConstants.modePause, Menu.single);
 		this.playList.icon = [this.iconManager.icon("tostart"), this.iconManager.icon("stepback"), this.iconManager.icon("stepforward"), this.iconManager.icon("play")];
-		this.playList.toolTip = ["reset [R]", "previous generation [Shift Tab]", "next generation [Tab]", "play [Enter]"];
+		this.playList.toolTip = ["reset [R]", "previous generation [Shift \\]", "next generation [\\]", "play [Enter]"];
 
 		// add states for editor
 		this.stateList = this.viewMenu.addListItem(this.viewStateList, Menu.northEast, -280, 45, 280, 20, ["0", "1", "2", "3", "4", "5", "6"], this.drawState, Menu.single);
@@ -21908,9 +21908,17 @@ This file is part of LifeViewer
 
 			me.readScript(comments, numberValue);
 
-			// disable autostart if photosensitivity throttling is on
+			// disable autostart and audoidentify if photosensitivity throttling is on
 			if (!me.allowFast) {
-				me.autoStart = false;
+				if (me.autoStart) {
+					me.autoStart = false;
+					me.menuManager.notification.notify("Auto Start Disabled", 15, 300, 15, false);
+				}
+
+				if (me.autoIdentify) {
+					me.autoIdentify = false;
+					me.menuManager.notification.notify("Auto Identify Disabled", 15, 300, 15, false);
+				}
 			}
 
 			// save the pattern comments after removing script commands, originator and name, and "#C " or "# " comment prefixes
