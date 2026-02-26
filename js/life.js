@@ -281,7 +281,31 @@ This file is part of LifeViewer
 		/** @const {number} */ topLeftSet : 16,
 		/** @const {number} */ topRightSet : 32,
 		/** @const {number} */ bottomLeftSet : 64,
-		/** @const {number} */ bottomRightSet : 128
+		/** @const {number} */ bottomRightSet : 128,
+
+		// predefined Cell Period map subperiod colours
+		/** @const <Array{string}> */ subPeriodColours : [
+			"#1C92CD",
+			"#0AB87B",
+			"#E86075",
+			"#F8F290",
+			"#BA4117",
+			"#D91E9B",
+			"#BEF0E9",
+			"#428C28",
+			"#6F1044",
+			"#76ADF4",
+			"#2D5963",
+			"#D9B790",
+			"#80FF80",
+			"#9090FF",
+			"#C0C000",
+			"#80FFFF",
+			"#FFC0FF",
+			"#FFC0C0",
+			"#FFFF00",
+			"#FF8000",
+		]
 	};
 
 	// ModCheck object
@@ -3388,12 +3412,15 @@ This file is part of LifeViewer
 			/** @type {number} */ width = this.displayWidth - (displayScale * (legendWidth + legendWidth + 20)),
 			/** @type {number} */ height = this.displayHeight - (displayScale * 90),
 			/** @type {number} */ offset = 0,
+			/** @type {number} */ i = 0,
 			/** @type {number} */ vy = 0,
 			/** @type {number} */ vo = 0,
 			/** @type {number} */ sx = 0,
 			/** @type {number} */ ex = 0,
 			/** @type {number} */ inc = 0,
 			/** @type {number} */ xPos = 0,
+			/** @type {Array<number>} */ subPeriodIndices = [],
+			/** @type {Array<string>} */ subPeriodColours = LifeConstants.subPeriodColours,
 			/** @type {number} */ cellPeriodWidth = this.origCellPeriodWidth;
 
 		// adjust the colours based on endian
@@ -3434,46 +3461,22 @@ This file is part of LifeViewer
 		}
 
 		// find subperiods excluding period 1 and oscillator period
-		const subperiodIndices = [];
-		for (let i = 2; i < this.popSubPeriod.length - 1; ++i) {
+		for (i = 2; i < this.popSubPeriod.length - 1; i += 1) {
 			if (this.popSubPeriod[i] > 0) {
-				subperiodIndices.push(i);
+				subPeriodIndices.push(i);
 			}
 		}
-		numCols = subperiodIndices.length;
+		numCols = subPeriodIndices.length;
 		this.cellPeriodNumCols = numCols;
 
-		// set predefined colours where available
-		const subperiodColours = [
-			"#1C92CD",
-			"#0AB87B",
-			"#E86075",
-			"#F8F290",
-			"#BA4117",
-			"#D91E9B",
-			"#BEF0E9",
-			"#428C28",
-			"#6F1044",
-			"#76ADF4",
-			"#2D5963",
-			"#D9B790",
-			"#80FF80",
-			"#9090FF",
-			"#C0C000",
-			"#80FFFF",
-			"#FFC0FF",
-			"#FFC0C0",
-			"#FFFF00",
-			"#FF8000",
-		];
-		for (let i = 0; i < subperiodColours.length && i < subperiodIndices.length; ++i) {
-			periodCols[subperiodIndices[subperiodIndices.length - 1 - i]] = subperiodColours[i];
+		for (i = 0; i < subPeriodColours.length && i < subPeriodIndices.length; i += 1) {
+			periodCols[subPeriodIndices[subPeriodIndices.length - 1 - i]] = subPeriodColours[i];
 		}
 
 		// generate colours for the rest
-		for (let i = 0; i < subperiodIndices.length - subperiodColours.length; ++i) {
-			hue = Math.floor(360 * (i / (subperiodIndices.length - subperiodColours.length)));
-			periodCols[subperiodIndices[i]] = "hsl(" + hue + ",100%," + (70 - (i & 3) * 12) + "%)";
+		for (i = 0; i < subPeriodIndices.length - subPeriodColours.length; i += 1) {
+			hue = Math.floor(360 * (i / (subPeriodIndices.length - subPeriodColours.length)));
+			periodCols[subPeriodIndices[i]] = "hsl(" + hue + ",100%," + (70 - (i & 3) * 12) + "%)";
 		}
 
 		// set colours for period 1 and oscillator period

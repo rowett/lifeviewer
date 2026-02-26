@@ -1,3 +1,6 @@
+Build 1371
+- changed the Cell Period Map and Cell Period Table to use up to 20 predefined subperiod colours
+
 Build 1370
 - disable Auto Start and Auto Identify when photosensitivity throttling enabled
 
@@ -15,8 +18,8 @@ Build 1366
 
 Build 1365
 - added photosensitivity warning and screen update dialog
-	- safe mode only updates the cell grid every 400ms during playback
-	- high-speed mode updates the cell grid at the monitor refresh rate
+	- safe mode only renders the cell grid every 400ms during playback
+	- high-speed mode renders the cell grid at the monitor refresh rate (when possible)
 	- Settings>General>Photosensitivity (hotkey Shift F1) will display the dialog any time
 	- your choice will be remembered for the current browser
 
