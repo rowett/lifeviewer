@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1372,
+		/** @const {number} */ versionBuild : 1374,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -5768,18 +5768,6 @@ This file is part of LifeViewer
 
 			if (this.engine.boundedGridType !== -1) {
 				result += this.engine.HROT.xrange * 2;
-			}
-
-			if (this.engine.HROT.type === this.manager.vonNeumannHROT) {
-				if (this.engine.boundedGridType !== -1) {
-					result += this.engine.boundedGridHeight;
-				} else {
-					if (this.engine.HROT.ncols === 0) {
-						result += (this.engine.HROTBox.rightX + this.engine.HROT.xrange) - (this.engine.HROTBox.leftX - this.engine.HROT.xrange) + 1;
-					} else {
-						result += this.engine.HROT.ncols;
-					}
-				}
 			}
 		}
 

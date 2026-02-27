@@ -4302,14 +4302,21 @@ This file is part of LifeViewer
 				}
 				if (result) {
 					if (partName === "S") {
-						this.maxSurvivalHROT = upper;
+						// check if upper range is greater than any earlier values
+						if (upper > this.maxSurvivalHROT) {
+							this.maxSurvivalHROT = upper;
+						}
+
 						// algos include middle cell so if rule is outer totalistic add middle cell count for survival
 						if (outer) {
 							lower += 1;
 							upper += 1;
 						}
 					} else {
-						this.maxBirthHROT = upper;
+						// check if upper range is greater than any earlier values
+						if (lower > this.maxBirthHROT) {
+							this.maxBirthHROT = upper;
+						}
 					}
 
 					if (lower > maxCount) {

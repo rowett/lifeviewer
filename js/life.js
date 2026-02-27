@@ -3565,6 +3565,9 @@ This file is part of LifeViewer
 		}
 
 		// check for hex grid
+		sx = 0;
+		ex = (this.origCellPeriodWidth + 2) * cellSize;
+
 		if (this.isHex) {
 			// set the offset for drawing
 			inc = -cellSize / 2;
@@ -3572,6 +3575,8 @@ This file is part of LifeViewer
 			if ((this.cellPeriodHeight & 1) === 0) {
 				offset += inc;
 			}
+			sx = cellSize;
+			ex = (this.origCellPeriodWidth + 1) * cellSize;
 		}
 
 		// draw the bounded grid or border cells
@@ -3580,13 +3585,13 @@ This file is part of LifeViewer
 		for (cy = 0; cy < cellSize; cy += 1) {
 			// draw top row
 			row = cy * rowWidth + offset;
-			for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
+			for (x = 0; x < ex; x += 1) {
 				data32[row + x] = pixCol;
 			}
 
 			// draw bottom row
 			row += (this.cellPeriodHeight + 1) * cellSize * rowWidth - offset;
-			for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
+			for (x = sx; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
 				data32[row + x] = pixCol;
 			}
 		}
@@ -3619,13 +3624,27 @@ This file is part of LifeViewer
 			for (y = -1; y <= this.cellPeriodHeight + 1; y += 1) {
 				offset += inc;
 				row = ((y + cellBorderSize) * cellSize) * rowWidth;
-				for (x = offset; x < (this.origCellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1 + offset; x += 1) {
+				if (this.isHex && y === -1) {
+					ex = (this.origCellPeriodWidth + cellBorderSize) * cellSize;
+				} else {
+					ex = (this.origCellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize;
+				}
+
+				if (this.isHex && y === this.cellPeriodHeight) {
+					sx = -inc;
+				} else if (this.isHex && y === this.cellPeriodHeight + 1) {
+					sx = cellSize - inc;
+				} else {
+					sx = 0;
+				}
+
+				for (x = sx + offset; x < ex + offset; x += 1) {
 					if (x >= 0) {
 						data32[row + x] = gridCol;
 					}
 				}
-				if (this.isHex) {
-					for (cx = 0; cx < -inc; cx += 1) {
+				if (this.isHex && y > 0) {
+					for (cx = 0; cx < -inc + 1; cx += 1) {
 						if (x + cx < rowWidth) {
 							data32[row + x + cx] = gridCol;
 						}
@@ -3655,7 +3674,11 @@ This file is part of LifeViewer
 
 					xPos = ((x + cellBorderSize) * cellSize) + vo;
 					if (xPos >= 0 && xPos < this.cellPeriodCanvas.width) {
-						data32[(y * rowWidth) + xPos] = gridCol;
+						if (this.isHex && ((x === ex && y < cellSize) || (x === sx && y >= (this.cellPeriodHeight + cellBorderSize) * cellSize))) {
+							// do nothing
+						} else {
+							data32[(y * rowWidth) + xPos] = gridCol;
+						}
 					}
 				}
 			}
@@ -3951,6 +3974,9 @@ This file is part of LifeViewer
 		}
 
 		// check for hex grid
+		sx = 0;
+		ex = (this.origCellPeriodWidth + 2) * cellSize;
+
 		if (this.isHex) {
 			// set the offset for drawing
 			inc = -cellSize / 2;
@@ -3958,6 +3984,8 @@ This file is part of LifeViewer
 			if ((this.cellPeriodHeight & 1) === 0) {
 				offset += inc;
 			}
+			sx = cellSize;
+			ex = (this.origCellPeriodWidth + 1) * cellSize;
 		}
 
 		// draw the bounded grid or border cells
@@ -3966,13 +3994,13 @@ This file is part of LifeViewer
 		for (cy = 0; cy < cellSize; cy += 1) {
 			// draw top row
 			row = cy * rowWidth + offset;
-			for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
+			for (x = 0; x < ex; x += 1) {
 				data32[row + x] = pixCol;
 			}
 
 			// draw bottom row
 			row += (this.cellPeriodHeight + 1) * cellSize * rowWidth - offset;
-			for (x = 0; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
+			for (x = sx; x < (this.origCellPeriodWidth + 2) * cellSize; x += 1) {
 				data32[row + x] = pixCol;
 			}
 		}
@@ -4005,12 +4033,27 @@ This file is part of LifeViewer
 			for (y = -1; y <= this.cellPeriodHeight + 1; y += 1) {
 				offset += inc;
 				row = ((y + cellBorderSize) * cellSize) * rowWidth;
-				for (x = offset; x < (this.origCellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize + 1 + offset; x += 1) {
+
+				if (this.isHex && y === -1) {
+					ex = (this.origCellPeriodWidth + cellBorderSize) * cellSize;
+				} else {
+					ex = (this.origCellPeriodWidth + cellBorderSize + cellBorderSize) * cellSize;
+				}
+
+				if (this.isHex && y === this.cellPeriodHeight) {
+					sx = -inc;
+				} else if (this.isHex && y === this.cellPeriodHeight + 1) {
+					sx = cellSize - inc;
+				} else {
+					sx = 0;
+				}
+
+				for (x = sx + offset; x < ex + offset + 1; x += 1) {
 					if (x >= 0) {
 						data32[row + x] = gridCol;
 					}
 				}
-				if (this.isHex) {
+				if (this.isHex && y > 0) {
 					for (cx = 0; cx < -inc; cx += 1) {
 						if (x + cx < rowWidth) {
 							data32[row + x + cx] = gridCol;
@@ -4041,7 +4084,11 @@ This file is part of LifeViewer
 
 					xPos = ((x + cellBorderSize) * cellSize) + vo;
 					if (xPos >= 0 && xPos < this.cellPeriodCanvas.width) {
-						data32[(y * rowWidth) + xPos] = gridCol;
+						if (this.isHex && ((x === ex && y < cellSize) || (x === sx && y >= (this.cellPeriodHeight + cellBorderSize) * cellSize))) {
+							// do nothing
+						} else {
+							data32[(y * rowWidth) + xPos] = gridCol;
+						}
 					}
 				}
 			}
@@ -8791,13 +8838,13 @@ This file is part of LifeViewer
 			}
 
 			// draw hexagon
-			context.moveTo(x, y);
-			context.lineTo((cx2 + x), (cy2 + y));
+			context.moveTo((x | 0) + 0.5, (y | 0) + 0.5);
+			context.lineTo(((cx2 + x) | 0) + 0.5, ((cy2 + y) | 0) + 0.5);
 			while (coord < target) {
 				cy2 = (coords[coord + 1] - cy0) * yzoom;
 				cx2 = (coords[coord] - cx0) * xzoom;
 				coord += 2;
-				context.lineTo((cx2 + x), (cy2 + y));
+				context.lineTo(((cx2 + x) | 0) + 0.5, ((cy2 + y) | 0) + 0.5);
 			}
 			target += batch;
 		}
@@ -20935,26 +20982,7 @@ This file is part of LifeViewer
 		if (this.width === this.maxGridSize || this.height === this.maxGridSize) {
 			// check for LtL or HROT
 			if (this.isHROT) {
-				if (this.HROT.type === this.manager.vonNeumannHROT) {
-					var lx = zoomBox.leftX - 2 * this.HROT.xrange;
-					var rx = zoomBox.rightX + 2 * this.HROT.xrange;
-					var by = zoomBox.bottomY - 2 * this.HROT.xrange;
-					var ty = zoomBox.topY + 2 * this.HROT.xrange;
-					var rows = ty - by + 1;
-					var cols = rx - lx + 1;
-					var ccht = (rows + (cols - 1) / 2) | 0;
-					if (ccht > this.height) {
-						if (zoomBox.bottomY > this.height - zoomBox.topY) {
-							boundarySize = zoomBox.bottomY + 1;
-						} else {
-							boundarySize = this.height - zoomBox.topY;
-						}
-					} else {
-						boundarySize = this.HROT.xrange * 2;
-					}
-				} else {
-					boundarySize = this.HROT.xrange * 2;
-				}
+				boundarySize = this.HROT.xrange * 2;
 			} else {
 				if (this.isExtended || this.isRuleTree) {
 					boundarySize = 1;
@@ -49539,7 +49567,8 @@ This file is part of LifeViewer
 			result = intV + 1;
 		}
 
-		return result;
+		// add 0.5 for canvas line draw
+		return result + 0.5;
 	};
 
 	// draw box
@@ -49618,12 +49647,7 @@ This file is part of LifeViewer
 					ctx.lineTo(coords[0], coords[1]);
 					ctx.fill();
 				} else {
-					ctx.beginPath();
-					ctx.moveTo(this.ceilAbove(x1), this.ceilAbove(y1));
-					ctx.lineTo(this.ceilAbove(x2), this.ceilAbove(y1));
-					ctx.lineTo(this.ceilAbove(x2), this.ceilAbove(y2));
-					ctx.lineTo(this.ceilAbove(x1), this.ceilAbove(y2));
-					ctx.fill();
+					ctx.fillRect(this.ceilAbove(x1), this.ceilAbove(y1), x2 - x1 + 1, y2 - y1 + 1);
 				}
 			}
 		} else {
