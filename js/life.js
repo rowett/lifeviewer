@@ -22623,7 +22623,7 @@ This file is part of LifeViewer
 					}
 				}
 			}
-			zoomBox.topY = ht - yrange;
+			zoomBox.topY = ht - yrange - 1;
 		}
 
 		// clear bottom boundary
@@ -22674,7 +22674,7 @@ This file is part of LifeViewer
 					}
 				}
 			}
-			zoomBox.rightX = wd - xrange;
+			zoomBox.rightX = wd - xrange - 1;
 		}
 	};
 

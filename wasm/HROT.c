@@ -5523,6 +5523,7 @@ static inline int32_t getCount2(int32_t i, int32_t j, int32_t *const countRow) {
 EMSCRIPTEN_KEEPALIVE
 // cumulative counts for HROT von Neumann neighbourhood 2-state
 void cumulativeVNCounts2(
+	const int32_t height,
 	const int32_t ccht,
 	const int32_t ncols,
 	const int32_t nrows,
@@ -5544,25 +5545,27 @@ void cumulativeVNCounts2(
 	g_countsWidth = countsWidth;
 
 	for (int32_t i = 0; i < ccht; i++) {
-		int32_t *countRow = counts + i * countsWidth;
-		uint8_t *colourRow = colourGrid + (i + bottomY) * colourGridWidth + leftX;
-		const int32_t im1 = i - 1;
-		const int32_t im2 = im1 - 1;
-		int32_t *countRowIm1 = countRow - countsWidth;
-		int32_t *countRowIm2 = countRowIm1 - countsWidth;
+		if (i + bottomY < height) {
+			int32_t *countRow = counts + i * countsWidth;
+			uint8_t *colourRow = colourGrid + (i + bottomY) * colourGridWidth + leftX;
+			const int32_t im1 = i - 1;
+			const int32_t im2 = im1 - 1;
+			int32_t *countRowIm1 = countRow - countsWidth;
+			int32_t *countRowIm2 = countRowIm1 - countsWidth;
 
-		for (int32_t j = 0; j <= ncols; j++) {
-			const int32_t count1 = (im1 < 0 || im1 + j - 1 < 0 || j - 1 - im1 >= ncols) ? 0 : getCount2(im1, j - 1, countRowIm1);
-			const int32_t count2 = (im1 < 0 || im1 + j + 1 < 0 || j + 1 - im1 >= ncols) ? 0 : getCount2(im1, j + 1, countRowIm1);
-			const int32_t count3 = (im2 < 0 || im2 + j < 0 || j - im2 >= ncols) ? 0 : getCount2(im2, j, countRowIm2);
+			for (int32_t j = 0; j <= ncols; j++) {
+				const int32_t count1 = (im1 < 0 || im1 + j - 1 < 0 || j - 1 - im1 >= ncols) ? 0 : getCount2(im1, j - 1, countRowIm1);
+				const int32_t count2 = (im1 < 0 || im1 + j + 1 < 0 || j + 1 - im1 >= ncols) ? 0 : getCount2(im1, j + 1, countRowIm1);
+				const int32_t count3 = (im2 < 0 || im2 + j < 0 || j - im2 >= ncols) ? 0 : getCount2(im2, j, countRowIm2);
 
-			*countRow = count1 + count2 - count3;
+				*countRow = count1 + count2 - count3;
 
-			if (i < nrows && (colourRow[j] >= aliveStart)) {
-				*countRow += 1;
+				if (i < nrows && (colourRow[j] >= aliveStart)) {
+					*countRow += 1;
+				}
+
+				countRow++;
 			}
-
-			countRow++;
 		}
 	}
 }
@@ -5571,6 +5574,7 @@ void cumulativeVNCounts2(
 EMSCRIPTEN_KEEPALIVE
 // cumulative counts for HROT von Neumann neighbourhood N-state
 void cumulativeVNCountsN(
+	const int32_t height,
 	const int32_t ccht,
 	const int32_t ncols,
 	const int32_t nrows,
@@ -5592,25 +5596,27 @@ void cumulativeVNCountsN(
 	g_countsWidth = countsWidth;
 
 	for (int32_t i = 0; i < ccht; i++) {
-		int32_t *countRow = counts + i * countsWidth;
-		uint8_t *colourRow = colourGrid + (i + bottomY) * colourGridWidth + leftX;
-		const int32_t im1 = i - 1;
-		const int32_t im2 = im1 - 1;
-		int32_t *countRowIm1 = countRow - countsWidth;
-		int32_t *countRowIm2 = countRowIm1 - countsWidth;
+		if (i + bottomY < height) {
+			int32_t *countRow = counts + i * countsWidth;
+			uint8_t *colourRow = colourGrid + (i + bottomY) * colourGridWidth + leftX;
+			const int32_t im1 = i - 1;
+			const int32_t im2 = im1 - 1;
+			int32_t *countRowIm1 = countRow - countsWidth;
+			int32_t *countRowIm2 = countRowIm1 - countsWidth;
 
-		for (int32_t j = 0; j <= ncols; j++) {
-			const int32_t count1 = (im1 < 0 || im1 + j - 1 < 0 || j - 1 - im1 >= ncols) ? 0 : getCount2(im1, j - 1, countRowIm1);
-			const int32_t count2 = (im1 < 0 || im1 + j + 1 < 0 || j + 1 - im1 >= ncols) ? 0 : getCount2(im1, j + 1, countRowIm1);
-			const int32_t count3 = (im2 < 0 || im2 + j < 0 || j - im2 >= ncols) ? 0 : getCount2(im2, j, countRowIm2);
+			for (int32_t j = 0; j <= ncols; j++) {
+				const int32_t count1 = (im1 < 0 || im1 + j - 1 < 0 || j - 1 - im1 >= ncols) ? 0 : getCount2(im1, j - 1, countRowIm1);
+				const int32_t count2 = (im1 < 0 || im1 + j + 1 < 0 || j + 1 - im1 >= ncols) ? 0 : getCount2(im1, j + 1, countRowIm1);
+				const int32_t count3 = (im2 < 0 || im2 + j < 0 || j - im2 >= ncols) ? 0 : getCount2(im2, j, countRowIm2);
 
-			*countRow = count1 + count2 - count3;
+				*countRow = count1 + count2 - count3;
 
-			if (i < nrows && (colourRow[j] == maxGridState)) {
-				*countRow += 1;
+				if (i < nrows && (colourRow[j] == maxGridState)) {
+					*countRow += 1;
+				}
+
+				countRow++;
 			}
-
-			countRow++;
 		}
 	}
 }

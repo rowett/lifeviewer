@@ -3575,6 +3575,7 @@ This file is part of LifeViewer
 				// calculate cumulative counts in top left corner of colcounts
 				if (Controller.useWASM && Controller.wasmEnableHROTCounts && this.engine.view.wasmEnabled) {
 					WASM.cumulativeVNCounts2(
+						this.engine.height | 0,
 						this.ccht | 0,
 						this.ncols | 0,
 						this.nrows | 0,
@@ -3589,17 +3590,19 @@ This file is part of LifeViewer
 					);
 				} else {
 					for (i = 0; i < this.ccht; i += 1) {
-						countRow = counts[i];
-						colourRow = colourGrid[i + bottomY];
-						im1 = i - 1;
-						im2 = im1 - 1;
-						countRowIm1 = counts[im1];
-						countRowIm2 = counts[im2];
-						for (j = 0; j <= this.ncols; j += 1) {
-							countRow[j] = this.getCount2(im1, j - 1, countRowIm1) + this.getCount2(im1, j + 1, countRowIm1) - this.getCount2(im2, j, countRowIm2);
-							if (i < this.nrows) {
-								if (colourRow[j + leftX] >= aliveStart) {
-									countRow[j] += 1;
+						if (i + bottomY < this.engine.height) {
+							countRow = counts[i];
+							colourRow = colourGrid[i + bottomY];
+							im1 = i - 1;
+							im2 = im1 - 1;
+							countRowIm1 = counts[im1];
+							countRowIm2 = counts[im2];
+							for (j = 0; j <= this.ncols; j += 1) {
+								countRow[j] = this.getCount2(im1, j - 1, countRowIm1) + this.getCount2(im1, j + 1, countRowIm1) - this.getCount2(im2, j, countRowIm2);
+								if (i < this.nrows) {
+									if (colourRow[j + leftX] >= aliveStart) {
+										countRow[j] += 1;
+									}
 								}
 							}
 						}
@@ -6329,6 +6332,7 @@ This file is part of LifeViewer
 				// calculate cumulative counts in top left corner of colcounts
 				if (Controller.useWASM && Controller.wasmEnableHROTCounts && this.engine.view.wasmEnabled) {
 					WASM.cumulativeVNCountsN(
+						this.engine.height | 0,
 						this.ccht | 0,
 						this.ncols | 0,
 						this.nrows | 0,
@@ -6343,17 +6347,19 @@ This file is part of LifeViewer
 					);
 				} else {
 					for (i = 0; i < this.ccht; i += 1) {
-						countRow = counts[i];
-						colourRow = colourGrid[i + bottomY];
-						im1 = i - 1;
-						im2 = im1 - 1;
-						countRowIm1 = counts[im1];
-						countRowIm2 = counts[im2];
-						for (j = 0; j <= this.ncols; j += 1) {
-							countRow[j] = this.getCount2(im1, j - 1, countRowIm1) + this.getCount2(im1, j + 1, countRowIm1) - this.getCount2(im2, j, countRowIm2);
-							if (i < this.nrows) {
-								if (colourRow[j + leftX] === maxGenState) {
-									countRow[j] += 1;
+						if (i + bottomY < this.engine.height) {
+							countRow = counts[i];
+							colourRow = colourGrid[i + bottomY];
+							im1 = i - 1;
+							im2 = im1 - 1;
+							countRowIm1 = counts[im1];
+							countRowIm2 = counts[im2];
+							for (j = 0; j <= this.ncols; j += 1) {
+								countRow[j] = this.getCount2(im1, j - 1, countRowIm1) + this.getCount2(im1, j + 1, countRowIm1) - this.getCount2(im2, j, countRowIm2);
+								if (i < this.nrows) {
+									if (colourRow[j + leftX] === maxGenState) {
+										countRow[j] += 1;
+									}
 								}
 							}
 						}

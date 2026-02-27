@@ -1,3 +1,6 @@
+Build 1372
+- fixed a crash in the HROT von Neumann interator
+
 Build 1371
 - changed the Cell Period Map and Cell Period Table to use up to 20 predefined subperiod colours
 
