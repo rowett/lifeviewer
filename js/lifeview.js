@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1374,
+		/** @const {number} */ versionBuild : 1375,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7780,6 +7780,33 @@ This file is part of LifeViewer
 		this.zoomItem.current = this.viewZoomRange([this.engine.zoom, this.engine.zoom], false, this);
 	};
 
+	// update photosensitivty UI based on window height
+	View.prototype.updatePhotoUI = function() {
+		if (this.mainCanvas.height < 560) {
+			this.photosensitivityLabel2.setY(60);
+			this.photosensitivityLabel3.setY(95);
+
+			this.photoAllowHighSpeedButton.setPosition(Menu.southEast, -290, -100);
+			this.photoAllowHighSpeedButton.setWidth(230);
+			this.photoAllowHighSpeedButton.preText = "Enable High-Speed";
+
+			this.photoKeepSafeSpeedButton.setPosition(Menu.southWest, 60, -100);
+			this.photoKeepSafeSpeedButton.setWidth(230);
+			this.photoKeepSafeSpeedButton.preText = "Keep Safe Speed";
+		} else {
+			this.photosensitivityLabel2.setY(130);
+			this.photosensitivityLabel3.setY(162);
+
+			this.photoAllowHighSpeedButton.setPosition(Menu.south, 0, -120);
+			this.photoAllowHighSpeedButton.setWidth(340);
+			this.photoAllowHighSpeedButton.preText = "Enable High-Speed Rendering";
+
+			this.photoKeepSafeSpeedButton.setPosition(Menu.south, 0, -180);
+			this.photoKeepSafeSpeedButton.setWidth(340);
+			this.photoKeepSafeSpeedButton.preText = "Keep Safe Rendering Speed";
+		}
+	};
+
 	// udpate UI controls if help or errors are displayed
 	View.prototype.updateUIForHelp = function(/** @type {boolean} */ hide) {
 		var	/** @type {boolean} */ showTopicButtons = !(this.displayHelp && (this.helpTopic === ViewConstants.welcomeTopic)),
@@ -7791,17 +7818,19 @@ This file is part of LifeViewer
 			/** @type {boolean} */ shown = false;
 
 		// photosensitivity dialog mode
+		this.updatePhotoUI();
+
 		shown = !this.confirmingPhotosensitivity;
 		this.photoAllowHighSpeedButton.deleted = shown;
 		this.photoKeepSafeSpeedButton.deleted = shown;
-		this.photosensitivityLabel1.deleted = shown;
+		this.photosensitivityLabel1.deleted = shown || this.mainCanvas.height < 560;
 		this.photosensitivityLabel2.deleted = shown;
 		this.photosensitivityLabel3.deleted = shown;
-		this.photosensitivityLabel4.deleted = shown;
-		this.photosensitivityLabel5.deleted = shown;
-		this.photosensitivityLabel6.deleted = shown;
-		this.photosensitivityLabel7.deleted = shown;
-		this.photosensitivityLabel8.deleted = shown;
+		this.photosensitivityLabel4.deleted = shown || this.mainCanvas.height < 560;
+		this.photosensitivityLabel5.deleted = shown || this.mainCanvas.height < 560;
+		this.photosensitivityLabel6.deleted = shown || this.mainCanvas.height < 560;
+		this.photosensitivityLabel7.deleted = shown || this.mainCanvas.height < 560;
+		this.photosensitivityLabel8.deleted = shown || this.mainCanvas.height < 560;
 		this.photosensitivityLabel9.deleted = shown || this.mainCanvas.height < 630;
 		this.photosensitivityLabel10.deleted = shown || this.mainCanvas.height < 630;
 

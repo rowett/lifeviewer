@@ -1,3 +1,6 @@
+Build 1375
+- use concise photosensitivity warning when window height is small
+
 Build 1374
 - improved hexagonal Cell Period Maps and Cell Frequency Maps
 - slight adjustment to hexagon coordinates
