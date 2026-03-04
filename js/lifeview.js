@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1375,
+		/** @const {number} */ versionBuild : 1376,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7782,7 +7782,7 @@ This file is part of LifeViewer
 
 	// update photosensitivty UI based on window height
 	View.prototype.updatePhotoUI = function() {
-		if (this.mainCanvas.height < 560) {
+		if (this.mainCanvas.height < ViewConstants.preferredMenuHeight) {
 			this.photosensitivityLabel2.setY(60);
 			this.photosensitivityLabel3.setY(95);
 
@@ -7823,16 +7823,19 @@ This file is part of LifeViewer
 		shown = !this.confirmingPhotosensitivity;
 		this.photoAllowHighSpeedButton.deleted = shown;
 		this.photoKeepSafeSpeedButton.deleted = shown;
-		this.photosensitivityLabel1.deleted = shown || this.mainCanvas.height < 560;
+
+		value = ViewConstants.preferredMenuHeight * this.viewMenu.xScale;
+
+		this.photosensitivityLabel1.deleted = shown || this.mainCanvas.height < value;
 		this.photosensitivityLabel2.deleted = shown;
 		this.photosensitivityLabel3.deleted = shown;
-		this.photosensitivityLabel4.deleted = shown || this.mainCanvas.height < 560;
-		this.photosensitivityLabel5.deleted = shown || this.mainCanvas.height < 560;
-		this.photosensitivityLabel6.deleted = shown || this.mainCanvas.height < 560;
-		this.photosensitivityLabel7.deleted = shown || this.mainCanvas.height < 560;
-		this.photosensitivityLabel8.deleted = shown || this.mainCanvas.height < 560;
-		this.photosensitivityLabel9.deleted = shown || this.mainCanvas.height < 630;
-		this.photosensitivityLabel10.deleted = shown || this.mainCanvas.height < 630;
+		this.photosensitivityLabel4.deleted = shown || this.mainCanvas.height < value;
+		this.photosensitivityLabel5.deleted = shown || this.mainCanvas.height < value;
+		this.photosensitivityLabel6.deleted = shown || this.mainCanvas.height < value;
+		this.photosensitivityLabel7.deleted = shown || this.mainCanvas.height < value;
+		this.photosensitivityLabel8.deleted = shown || this.mainCanvas.height < value;
+		this.photosensitivityLabel9.deleted = shown || this.mainCanvas.height < value + 70 * this.viewMenu.xScale;
+		this.photosensitivityLabel10.deleted = shown || this.mainCanvas.height < value + 70 * this.viewMenu.xScale;
 
 		// step back button
 		if (this.noHistory || (this.engine.counter === 0 && !((this.engine.isMargolus || this.engine.isPCA) && this.engine.margolusReverseLookup1 !== null))) {
@@ -18878,7 +18881,7 @@ This file is part of LifeViewer
 			/** @type {number} */ inc = 50,
 			/** @type {boolean} */ showThemes = !(this.engine.isNone || this.engine.isSuper || this.engine.isExtended|| this.engine.isRuleTree);
 
-		if (this.displayHeight < (ViewConstants.minMenuHeight * this.viewMenu.yScale)) {
+		if (this.displayHeight < ViewConstants.preferredMenuHeight * this.viewMenu.xScale) {
 			y = 50;
 			this.helpKeysButton.setPosition(Menu.northWest, 10, y);
 			this.helpScriptsButton.setPosition(Menu.north, 0, y);
