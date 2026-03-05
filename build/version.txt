@@ -1,3 +1,6 @@
+Build 1377
+- fixed missing pixel in Cell Period Map
+
 Build 1376
 - fixed UI layout for Photosensitivity and Help Topics
 

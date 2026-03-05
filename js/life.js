@@ -3624,6 +3624,7 @@ This file is part of LifeViewer
 			for (y = -1; y <= this.cellPeriodHeight + 1; y += 1) {
 				offset += inc;
 				row = ((y + cellBorderSize) * cellSize) * rowWidth;
+
 				if (this.isHex && y === -1) {
 					ex = (this.origCellPeriodWidth + cellBorderSize) * cellSize;
 				} else {
@@ -3638,13 +3639,13 @@ This file is part of LifeViewer
 					sx = 0;
 				}
 
-				for (x = sx + offset; x < ex + offset; x += 1) {
+				for (x = sx + offset; x < ex + offset + 1; x += 1) {
 					if (x >= 0) {
 						data32[row + x] = gridCol;
 					}
 				}
 				if (this.isHex && y > 0) {
-					for (cx = 0; cx < -inc + 1; cx += 1) {
+					for (cx = 0; cx < -inc; cx += 1) {
 						if (x + cx < rowWidth) {
 							data32[row + x + cx] = gridCol;
 						}
