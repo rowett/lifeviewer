@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1377,
+		/** @const {number} */ versionBuild : 1378,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -5769,6 +5769,8 @@ This file is part of LifeViewer
 			if (this.engine.boundedGridType !== -1) {
 				result += this.engine.HROT.xrange * 2;
 			}
+
+			result += 2;
 		}
 
 		return result;

@@ -1,3 +1,6 @@
+Build 1378
+- fixed HROT von Neumann grid growth issue
+
 Build 1377
 - fixed missing pixel in Cell Period Map
 
