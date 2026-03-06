@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1378,
+		/** @const {number} */ versionBuild : 1379,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6869,7 +6869,7 @@ This file is part of LifeViewer
 			/** @type {number} */ iconSize = 0;
 
 		// check if icons are available
-		if (iconCanvas !== null && me.useIcons) {
+		if (iconCanvas !== null && me.engine.iconsAvailable) {
 			ctx.imageSmoothingEnabled = true;
 			iconSize = iconCanvas.width;
 

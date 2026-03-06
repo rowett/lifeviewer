@@ -1,3 +1,6 @@
+Build 1379
+- show Icons in Draw menu if Icons available (even if not displayed)
+
 Build 1378
 - fixed HROT von Neumann grid growth issue
 
