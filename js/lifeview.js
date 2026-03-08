@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1379,
+		/** @const {number} */ versionBuild : 1380,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -6740,10 +6740,11 @@ This file is part of LifeViewer
 					topY = this.engine.maxGridSize;
 				}
 				if (xPos < leftX || xPos > rightX || yPos < bottomY || yPos > topY) {
-					if (((xPos === leftX - 1 || xPos === rightX + 1) && (yPos >= bottomY - 1 && yPos <= topY + 1)) ||
+					if ((((xPos === leftX - 1 || xPos === rightX + 1) && (yPos >= bottomY - 1 && yPos <= topY + 1)) ||
 						((yPos === bottomY - 1 || yPos === topY + 1) && (xPos >= leftX - 1 && xPos <= rightX + 1)) ||
 						(this.engine.isTriangular && ((xPos === leftX - 2 || xPos === rightX + 2) && (yPos > bottomY - 1 && yPos < topY + 1))) ||
-						(this.engine.isTriangular && (yPos === bottomY - 1 || yPos === topY + 1) && (xPos === leftX - 2))) {
+						(this.engine.isTriangular && (yPos === bottomY - 1 || yPos === topY + 1) && (xPos === leftX - 2))) &&
+						!(this.engine.isHex && (xPos === rightX + 1 && yPos === bottomY - 1) || (xPos === leftX - 1 && yPos === topY + 1))) {
 						this.xyLabel.preText = xDisplay + "," + yDisplay + "=" + "[bounded]";
 						if (this.stateNumberDisplayed) {
 							this.xyLabel.preText += " " + String(rawState);
@@ -21523,6 +21524,7 @@ This file is part of LifeViewer
 
 			// decode icons (this must happen after the neighbourhood is read above since icons are not available on hex and triangular grids)
 			if (pattern.isPCA) {
+				// mark icons available since otherwise createPixelColours won't create colour strings
 				me.engine.createPCAIcons(pattern);
 				me.engine.ruleTableIcons = pattern.ruleTableIcons;
 			} else {
@@ -22392,6 +22394,11 @@ This file is part of LifeViewer
 
 		// create the pixel colours from the palette at full brightness
 		me.engine.createPixelColours(1);
+
+		// re-create the PCA Icons if PCA since palette may have changed
+		if (me.engine.isPCA && me.engine.iconsAvailable && pattern) {
+			me.engine.createPCAIcons(pattern);
+		}
 
 		// set the cell borders control
 		me.bordersButton.current = [me.engine.cellBorders];
