@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1380,
+		/** @const {number} */ versionBuild : 1381,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -7396,8 +7396,20 @@ This file is part of LifeViewer
 			/** @type {number} */ saveZoom = me.engine.zoom,
 			/** @type {number} */ saveLayers = me.engine.layers,
 			/** @type {boolean} */ drawNow = true,
+			/** @type {number} */ camZoom = 1,
 			/** @type {ImageData} */ copyData,
 			/** @type {CanvasRenderingContext2D} */ ctx = me.engine.context;
+
+		// get a copy of the camera zoom
+		camZoom = this.engine.camZoom;
+		if (this.engine.isHex) {
+			// adjust zoom for hexagonal grids since it makes the zoom larger in the Y direction
+			// which means cells may end up in the wrong NxN cell box when subsampled
+			camZoom *= ViewConstants.hexagonalYFactor;
+			if (camZoom < ViewConstants.minZoom) {
+				camZoom = ViewConstants.minZoom;
+			}
+		}
 
 		// check if fast update is allowed during playback
 		if (!me.allowFast) {
@@ -7440,7 +7452,7 @@ This file is part of LifeViewer
 		me.engine.drawGrid((!(me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 		// check if hexagons or triangles should be drawn
-		if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
+		if (!me.engine.forceRectangles && me.engine.isHex && camZoom >= 4) {
 			if (drawNow) {
 				me.engine.drawHexagons();
 
@@ -7451,7 +7463,7 @@ This file is part of LifeViewer
 				}
 			}
 		} else {
-			if (!me.engine.forceRectangles && me.engine.isTriangular && me.engine.zoom >= 4) {
+			if (!me.engine.forceRectangles && me.engine.isTriangular && camZoom >= 4) {
 				if (drawNow) {
 					me.engine.drawTriangles();
 
@@ -7487,10 +7499,10 @@ This file is part of LifeViewer
 				me.engine.drawGrid((!(me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 				// check if hexagons or triangles should be drawn
-				if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
+				if (!me.engine.forceRectangles && me.engine.isHex && camZoom >= 4) {
 					me.engine.drawHexagons();
 				} else {
-					if (!me.engine.forceRectangles && me.engine.isTriangular && me.engine.zoom >= 4) {
+					if (!me.engine.forceRectangles && me.engine.isTriangular && camZoom >= 4) {
 						me.engine.drawTriangles();
 					}
 				}
@@ -7522,10 +7534,10 @@ This file is part of LifeViewer
 				me.engine.drawGrid((!(me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 				// check if hexagons or triangles should be drawn
-				if (!me.engine.forceRectangles && me.engine.isHex && me.engine.zoom >= 4) {
+				if (!me.engine.forceRectangles && me.engine.isHex && camZoom >= 4) {
 					me.engine.drawHexagons();
 				} else {
-					if (!me.engine.forceRectangles && me.engine.isTriangular && me.engine.zoom >= 4) {
+					if (!me.engine.forceRectangles && me.engine.isTriangular && camZoom >= 4) {
 						me.engine.drawTriangles();
 					}
 				}

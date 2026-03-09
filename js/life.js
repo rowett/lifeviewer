@@ -49411,7 +49411,7 @@ This file is part of LifeViewer
 				}
 			}
 		} else {
-			if (!this.forceRectangles && this.zoom >= 4) {
+			if (!this.forceRectangles && yZoom >= 4) {
 				if (view.posDefined) {
 					xOff -= view.posXOffset * 2;
 					yOff -= view.posYOffset * 2;
@@ -49460,7 +49460,7 @@ This file is part of LifeViewer
 
 			// draw cells
 			ctx.fillStyle = this.selectedCellsColour;
-			if (this.isHex && !this.forceRectangles && this.zoom >= 4) {
+			if (this.isHex && !this.forceRectangles && yZoom >= 4) {
 				this.drawHexCellsInSelection(mouseCellX, mouseCellY, mouseCellX + width - 1, mouseCellY + height - 1, xOff, yOff, view.pasteBuffer);
 			} else {
 				if (!this.forceRectangles && this.isTriangular && this.zoom >= 4) {
@@ -49653,7 +49653,7 @@ This file is part of LifeViewer
 			}
 		} else {
 			// check for hexagons (rather than offset squares)
-			if (!this.forceRectangles && this.zoom >= 4) {
+			if (!this.forceRectangles && yZoom >= 4) {
 				if (view.posDefined) {
 					xOff += view.posXOffset * 2;
 					yOff += view.posYOffset * 2;
@@ -49841,7 +49841,7 @@ This file is part of LifeViewer
 	/** @returns {boolean} */
 	Life.prototype.canDisplayGrid = function() {
 		// grid can be displayed if zoom >= 4
-		return (this.camZoom >= 4);
+		return (this.getYZoom(this.camZoom) >= 4);
 	};
 
 	// draw the bounded grid border using mask for sub-sampled grids

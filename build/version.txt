@@ -1,3 +1,6 @@
+Build 1381
+- fixed some hex rendering issues
+
 Build 1380
 - fixed cell information for hexagonal bounded grid top-left and bottom-right cells
 - fixed PCA Icons inital colours
