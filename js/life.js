@@ -48943,67 +48943,67 @@ This file is part of LifeViewer
 				rightX = rightX - bottomY / 2;
 				width = rightX - leftX + 1;
 			} else {
-				minX = (this.width + this.height) * 2;
-				maxX = -minX;
-				bottomY |= 0;
-				topY |= 0;
-				leftX |= 0;
-				rightX |= 0;
+				if (this.population === 0) {
+					leftX = leftX - topY / 2;
+					rightX = rightX - bottomY / 2;
+					width = rightX - leftX + 1;
+				} else {
+					minX = (this.width + this.height) * 2;
+					maxX = -minX;
+					bottomY |= 0;
+					topY |= 0;
+					leftX |= 0;
+					rightX |= 0;
 
-				// draw the bounded grid border
-				if (this.boundedGridType !== -1) {
-					this.drawBoundedGridBorder(colourGrid, this.boundedBorderColour);
-				}
+					// draw the bounded grid border
+					if (this.boundedGridType !== -1) {
+						this.drawBoundedGridBorder(colourGrid, this.boundedBorderColour);
+					}
 
-				// find the pattern on the grid
-				targetState = aliveState;
-				if (historyFit) {
-					targetState = 1;
-				}
+					// find the pattern on the grid
+					targetState = aliveState;
+					if (historyFit) {
+						targetState = 1;
+					}
 
-				// check for [R]History
-				if (this.isLifeHistory) {
-					for (y = bottomY; y <= topY; y += 1) {
-						colourRow = colourGrid[y];
-						overlayRow = overlayGrid[y];
-						for (x = leftX; x <= rightX; x += 1) {
-							state = colourRow[x];
-							if (state >= targetState || overlayRow[x] > 0) {
-								count += 1;
-								hexX = x - y / 2;
-								if (hexX < minX) {
-									minX = hexX;
+					// check for [R]History
+					if (this.isLifeHistory) {
+						for (y = bottomY; y <= topY; y += 1) {
+							colourRow = colourGrid[y];
+							overlayRow = overlayGrid[y];
+							for (x = leftX; x <= rightX; x += 1) {
+								state = colourRow[x];
+								if (state >= targetState || overlayRow[x] > 0) {
+									count += 1;
+									hexX = x - y / 2;
+									if (hexX < minX) {
+										minX = hexX;
+									}
+									if (hexX > maxX) {
+										maxX = hexX;
+									}
 								}
-								if (hexX > maxX) {
-									maxX = hexX;
+							}
+						}
+					} else {
+						for (y = bottomY; y <= topY; y += 1) {
+							colourRow = colourGrid[y];
+							for (x = leftX; x <= rightX; x += 1) {
+								state = colourRow[x];
+								if (state >= targetState) {
+									count += 1;
+									hexX = x - y / 2;
+									if (hexX < minX) {
+										minX = hexX;
+									}
+									if (hexX > maxX) {
+										maxX = hexX;
+									}
 								}
 							}
 						}
 					}
-				} else {
-					for (y = bottomY; y <= topY; y += 1) {
-						colourRow = colourGrid[y];
-						for (x = leftX; x <= rightX; x += 1) {
-							state = colourRow[x];
-							if (state >= targetState) {
-								count += 1;
-								hexX = x - y / 2;
-								if (hexX < minX) {
-									minX = hexX;
-								}
-								if (hexX > maxX) {
-									maxX = hexX;
-								}
-							}
-						}
-					}
-				}
 
-				// check for empty pattern
-				if (count === 0) {
-					leftX = leftX - bottomY / 2;
-					rightX = leftX + 1;
-				} else {
 					leftX = minX;
 					rightX = maxX;
 					if (leftX > rightX) {

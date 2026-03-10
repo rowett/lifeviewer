@@ -1,3 +1,6 @@
+Build 1383
+- fixed AutoFit when all cells die
+
 Build 1382
 - fixed some more hex and triangular rendering issues
 

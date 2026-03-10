@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1382,
+		/** @const {number} */ versionBuild : 1383,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -8526,7 +8526,7 @@ This file is part of LifeViewer
 		this.engine.savePopulationData();
 
 		// if nothing alive now then restore last bounding box
-		if (this.engine.population === 0 && initialPopulation !== 0) {
+		if (this.engine.population === 0) {
 			zoomBox.set(this.engine.saveBox);
 			historyBox.set(this.engine.saveHistoryBox);
 		}
