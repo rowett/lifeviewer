@@ -1,3 +1,6 @@
+Build 1382
+- fixed some more hex and triangular rendering issues
+
 Build 1381
 - fixed some hex rendering issues
 

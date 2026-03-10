@@ -1786,7 +1786,7 @@ This file is part of LifeViewer
 									}
 								} else {
 									// assume x was zoom
-									if (x >= ViewConstants.minZoom && x <= ViewConstants.maxZoom) {
+									if (x >= ViewConstants.minZoom && x <= view.maxZoom) {
 										z = x;
 									} else if (x >= ViewConstants.minNegZoom && x <= ViewConstants.maxNegZoom) {
 										z = -(1 / x);
@@ -2110,7 +2110,7 @@ This file is part of LifeViewer
 
 																// check it is in range
 																z = -1000;
-																if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+																if (numberValue >= ViewConstants.minZoom && numberValue <= view.maxZoom) {
 																	z = numberValue;
 																} else {
 																	// check for negative zoom format
@@ -2600,7 +2600,7 @@ This file is part of LifeViewer
 
 												// check it is in range
 												z = -1000;
-												if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+												if (numberValue >= ViewConstants.minZoom && numberValue <= view.maxZoom) {
 													z = numberValue;
 												} else {
 													// check for negative zoom format
@@ -4677,7 +4677,7 @@ This file is part of LifeViewer
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+								if (numberValue >= ViewConstants.minZoom && numberValue <= view.maxZoom) {
 									// set thumbnail zoom
 									view.thumbZoomDefined = true;
 									view.thumbZoomValue = numberValue;
@@ -4705,7 +4705,7 @@ This file is part of LifeViewer
 								numberValue = scriptReader.getNextTokenAsNumber();
 
 								// check it is in range
-								if (numberValue >= ViewConstants.minZoom && numberValue <= ViewConstants.maxZoom) {
+								if (numberValue >= ViewConstants.minZoom && numberValue <= view.maxZoom) {
 									// check if zoom already defined
 									if (currentWaypoint.zoomDefined && !view.initialZ && !suppressErrors.zoom) {
 										if (currentWaypoint.zoom < 1) {

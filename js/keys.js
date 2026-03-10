@@ -1289,7 +1289,7 @@ This file is part of LifeViewer
 					// check for shift key
 					if (shiftKey) {
 						// zoom in by a factor of 2
-						me.adjustZoomPosition(me.zoomItem.current[0], Math.log((me.engine.zoom * me.engine.originZ) * 2 / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom) - me.zoomItem.current[0]);
+						me.adjustZoomPosition(me.zoomItem.current[0], Math.log((me.engine.zoom * me.engine.originZ) * 2 / ViewConstants.minZoom) / Math.log(me.maxZoom / ViewConstants.minZoom) - me.zoomItem.current[0]);
 					} else {
 						// zoom in slowly
 						me.adjustZoomPosition(me.zoomItem.current[0], 0.01);
@@ -1304,7 +1304,7 @@ This file is part of LifeViewer
 					// check for shift key
 					if (shiftKey) {
 						// zoom out by a factor of 2
-						me.adjustZoomPosition(me.zoomItem.current[0], Math.log((me.engine.zoom * me.engine.originZ) / 2 / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom) - me.zoomItem.current[0]);
+						me.adjustZoomPosition(me.zoomItem.current[0], Math.log((me.engine.zoom * me.engine.originZ) / 2 / ViewConstants.minZoom) / Math.log(me.maxZoom / ViewConstants.minZoom) - me.zoomItem.current[0]);
 					} else {
 						// zoom out slowly
 						me.adjustZoomPosition(me.zoomItem.current[0], -0.01);

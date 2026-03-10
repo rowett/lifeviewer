@@ -1298,7 +1298,7 @@ This file is part of LifeViewer
 	Life.prototype.initPretty = function() {
 		var	/** @type {number} */ displayWidth = this.displayWidth,
 			/** @type {number} */ displayHeight = this.displayHeight,
-			/** @type {number} */ maxZoom = ViewConstants.maxZoom,
+			/** @type {number} */ maxZoom = this.view.maxZoom,
 			/** @type {number} */ width = (displayWidth + maxZoom + maxZoom) << 1,
 			/** @type {number} */ height = (displayHeight + maxZoom + maxZoom) << 1;
 
@@ -1755,8 +1755,8 @@ This file is part of LifeViewer
 		if (this.iconCanvas === null) {
 			// create the icon canvas to be the display width and height plus one cell in each direction
 			this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
-			this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
-			this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
+			this.iconCanvas.width = this.displayWidth + this.view.maxZoom;
+			this.iconCanvas.height = this.displayHeight + this.view.maxZoom;
 
 			this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 			this.iconImageData = this.iconContext.createImageData(this.iconCanvas.width, this.iconCanvas.height);
@@ -1951,8 +1951,8 @@ This file is part of LifeViewer
 			// create the icon drawing canvas
 			if (this.iconCanvas === null) {
 				this.iconCanvas = /** @type {!HTMLCanvasElement} */ (document.createElement("canvas"));
-				this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
-				this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
+				this.iconCanvas.width = this.displayWidth + this.view.maxZoom;
+				this.iconCanvas.height = this.displayHeight + this.view.maxZoom;
 
 				this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 				this.iconImageData = this.iconContext.createImageData(this.iconCanvas.width, this.iconCanvas.height);
@@ -11377,8 +11377,8 @@ This file is part of LifeViewer
 			// resize the icon drawing canvas if it exists
 			if (this.iconCanvas !== null) {
 				// icon canvas is display width plus one zoom cell
-				this.iconCanvas.width = this.displayWidth + ViewConstants.maxZoom;
-				this.iconCanvas.height = this.displayHeight + ViewConstants.maxZoom;
+				this.iconCanvas.width = this.displayWidth + this.view.maxZoom;
+				this.iconCanvas.height = this.displayHeight + this.view.maxZoom;
 
 				this.iconContext = /** @type {!CanvasRenderingContext2D} */ (this.iconCanvas.getContext("2d", {alpha: false}));
 				this.iconImageData = this.iconContext.createImageData(this.iconCanvas.width, this.iconCanvas.height);
@@ -15875,22 +15875,11 @@ This file is part of LifeViewer
 			/** @type {number} */ overlayLeftX = this.width,
 			/** @type {number} */ overlayRightX = -1,
 
-			// new identify history extent
-			/** @type {number} */ identifyHistoryBottomY = this.height,
-			/** @type {number} */ identifyHistoryTopY = -1,
-			/** @type {number} */ identifyHistoryLeftX = this.width,
-			/** @type {number} */ identifyHistoryRightX = -1,
-
 			// flag if something in the row was alive
 			/** @type {number} */ rowAlive = 0,
 
 			// safe border size
 			/** @type {number} */ safeBorder = this.isHROT ? (this.view.getSafeBorderSize() >> 1) : 0,
-
-			// [R]History states to include in bounding box
-			/** @const {number} */ state3 = ViewConstants.stateMap[3] + 128,
-			/** @const {number} */ state5 = ViewConstants.stateMap[5] + 128,
-			/** @const {number} */ state6 = ViewConstants.stateMap[6] + 128,
 
 			// flags if something in the column was alive
 			/** @type {Uint16Array} */ columnOccupied16 = this.columnOccupied16;
@@ -16145,7 +16134,47 @@ This file is part of LifeViewer
 			initialBox.leftX = newLeftX;
 			initialBox.rightX = newRightX;
 
-			// copy to the history box (for LifeHistory)
+			// compute history extent if drawing with hexagons or triangles
+			if (this.isHex || this.isTriangular) {
+				newBottomY = this.height;
+				newTopY = -1;
+				newLeftX = this.width;
+				newRightX = -1;
+
+				// check each row
+				for (h = 0; h < height; h += 1) {
+					colourGridRow = colourGrid[h];
+
+					// flag nothing in the row
+					rowAlive = 0;
+
+					// check each column
+					for (w = 0; w < width; w += 1) {
+						input = colourGridRow[w];
+						rowAlive |= input;
+
+						if (input) {
+							if (w < newLeftX) {
+								newLeftX = w;
+							}
+							if (w > newRightX) {
+								newRightX = w;
+							}
+						}
+					}
+
+					// check if the row was alive
+					if (rowAlive) {
+						if (h < newBottomY) {
+							newBottomY = h;
+						}
+						if (h > newTopY) {
+							newTopY = h;
+						}
+					}
+				}
+			}
+
 			historyBox.topY = newTopY;
 			historyBox.bottomY = newBottomY;
 			historyBox.leftX = newLeftX;
@@ -50131,8 +50160,8 @@ This file is part of LifeViewer
 		if (this.camZoom < ViewConstants.minZoom) {
 			this.camZoom = ViewConstants.minZoom;
 		} else {
-			if (this.camZoom > ViewConstants.maxZoom) {
-				this.camZoom = ViewConstants.maxZoom;
+			if (this.camZoom > this.view.maxZoom) {
+				this.camZoom = this.view.maxZoom;
 			}
 		}
 		this.camXOff = this.xOff + this.originX;
@@ -50140,15 +50169,7 @@ This file is part of LifeViewer
 		this.camLayerDepth = (this.layerDepth / 2) + 1;
 
 		// get a copy of the camera zoom
-		camZoom = this.camZoom;
-		if (this.isHex) {
-			// adjust zoom for hexagonal grids since it makes the zoom larger in the Y direction
-			// which means cells may end up in the wrong NxN cell box when subsampled
-			camZoom *= ViewConstants.hexagonalYFactor;
-			if (camZoom < ViewConstants.minZoom) {
-				camZoom = ViewConstants.minZoom;
-			}
-		}
+		camZoom = this.getYZoom(this.camZoom);
 
 		// check for hex
 		if (this.isHex || this.isTriangular || this.view.useIcons) {

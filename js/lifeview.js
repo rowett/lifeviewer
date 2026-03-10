@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1381,
+		/** @const {number} */ versionBuild : 1382,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
@@ -979,6 +979,9 @@ This file is part of LifeViewer
 
 		// last draw time
 		/** @type {number} */ this.lastDraw = performance.now() - ViewConstants.safeUpdatePeriod;
+
+		// current maximum zoom (changes for triangular rules)
+		/** @type {number} */ this.maxZoom = ViewConstants.maxZoom;
 
 		// whether confirming photosensitivity mode
 		/** @type {boolean} */ this.confirmingPhotosensitivity = false;
@@ -5379,10 +5382,10 @@ This file is part of LifeViewer
 			me.manualChange = true;
 
 			// convert the range into a zoom value
-			me.engine.zoom = ViewConstants.minZoom * Math.pow(ViewConstants.maxZoom / ViewConstants.minZoom, newValue[0]) / me.engine.originZ;
+			me.engine.zoom = ViewConstants.minZoom * Math.pow(me.maxZoom / ViewConstants.minZoom, newValue[0]) / me.engine.originZ;
 		} else {
 			// convert the zoom value into a range
-			result = Math.log(me.engine.zoom * me.engine.originZ / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom);
+			result = Math.log(me.engine.zoom * me.engine.originZ / ViewConstants.minZoom) / Math.log(me.maxZoom / ViewConstants.minZoom);
 
 			// ensure the result is in range
 			if (result < 0) {
@@ -5405,8 +5408,8 @@ This file is part of LifeViewer
 		if (displayValue < ViewConstants.minZoom) {
 			displayValue = ViewConstants.minZoom;
 		} else {
-			if (displayValue > ViewConstants.maxZoom) {
-				displayValue = ViewConstants.maxZoom;
+			if (displayValue > me.maxZoom) {
+				displayValue = me.maxZoom;
 			}
 		}
 
@@ -5491,13 +5494,13 @@ This file is part of LifeViewer
 
 		// check for thumbnail
 		if (this.thumbnail) {
-			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.state1Fit, this.autoFit);
+			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.displayWidth * this.thumbnailDivisor, this.displayHeight * this.thumbnailDivisor, ViewConstants.minZoom, this.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.state1Fit, this.autoFit);
 			fitZoom[0] /= this.thumbnailDivisor;
 		} else {
 			if (this.noGUI) {
 				heightAdjust = 0;
 			}
-			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.state1Fit, this.autoFit);
+			fitZoom = this.engine.fitZoomDisplay(fitType, middleBox, this.displayWidth, this.displayHeight - heightAdjust, ViewConstants.minZoom, this.maxZoom, ViewConstants.zoomScaleFactor, this.patternWidth, this.patternHeight, this.viewOnly && this.multiStateView, this.historyFit, this.state1Fit, this.autoFit);
 		}
 
 		// check for auto fit
@@ -5724,15 +5727,15 @@ This file is part of LifeViewer
 		}
 
 		// convert zooms to actual zoom
-		currentZoom = ViewConstants.minZoom * Math.pow(ViewConstants.maxZoom / ViewConstants.minZoom, currentZoom);
-		newZoom = ViewConstants.minZoom * Math.pow(ViewConstants.maxZoom / ViewConstants.minZoom, newZoom);
+		currentZoom = ViewConstants.minZoom * Math.pow(this.maxZoom / ViewConstants.minZoom, currentZoom);
+		newZoom = ViewConstants.minZoom * Math.pow(this.maxZoom / ViewConstants.minZoom, newZoom);
 
 		// ensure the new zoom is in range
 		if (newZoom < ViewConstants.minZoom) {
 			newZoom = ViewConstants.minZoom;
 		} else {
-			if (newZoom > ViewConstants.maxZoom) {
-				newZoom = ViewConstants.maxZoom;
+			if (newZoom > this.maxZoom) {
+				newZoom = this.maxZoom;
 			}
 		}
 
@@ -5753,7 +5756,7 @@ This file is part of LifeViewer
 		this.engine.yOff -= dx * sinAngle + dy * cosAngle;
 
 		// apply zoom
-		newZoom = Math.log(newZoom / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom);
+		newZoom = Math.log(newZoom / ViewConstants.minZoom) / Math.log(this.maxZoom / ViewConstants.minZoom);
 		this.zoomItem.current = this.viewZoomRange([newZoom, newZoom], true, this);
 	};
 
@@ -7400,17 +7403,6 @@ This file is part of LifeViewer
 			/** @type {ImageData} */ copyData,
 			/** @type {CanvasRenderingContext2D} */ ctx = me.engine.context;
 
-		// get a copy of the camera zoom
-		camZoom = this.engine.camZoom;
-		if (this.engine.isHex) {
-			// adjust zoom for hexagonal grids since it makes the zoom larger in the Y direction
-			// which means cells may end up in the wrong NxN cell box when subsampled
-			camZoom *= ViewConstants.hexagonalYFactor;
-			if (camZoom < ViewConstants.minZoom) {
-				camZoom = ViewConstants.minZoom;
-			}
-		}
-
 		// check if fast update is allowed during playback
 		if (!me.allowFast) {
 			if (me.generationOn || me.computeHistory || me.identify || me.startFrom !== -1) {
@@ -7452,6 +7444,8 @@ This file is part of LifeViewer
 		me.engine.drawGrid((!(me.isSelection || me.drawingSelection || me.isPasting || me.modeList.current !== ViewConstants.modePan)));
 
 		// check if hexagons or triangles should be drawn
+		camZoom = me.engine.getYZoom(me.engine.camZoom);
+
 		if (!me.engine.forceRectangles && me.engine.isHex && camZoom >= 4) {
 			if (drawNow) {
 				me.engine.drawHexagons();
@@ -7781,8 +7775,8 @@ This file is part of LifeViewer
 			this.engine.originY = originCounter * (this.trackBoxN + this.trackBoxS) / 2;
 
 			// compute initial zoom
-			initialZoom = this.engine.zoomAt(0, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.displayWidth, this.displayHeight - 80, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor);
-			currentZoom = this.engine.zoomAt(originCounter, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.displayWidth, this.displayHeight - 80, ViewConstants.minZoom, ViewConstants.maxZoom, ViewConstants.zoomScaleFactor);
+			initialZoom = this.engine.zoomAt(0, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.displayWidth, this.displayHeight - 80, ViewConstants.minZoom, this.maxZoom, ViewConstants.zoomScaleFactor);
+			currentZoom = this.engine.zoomAt(originCounter, this.trackBoxN, this.trackBoxE, this.trackBoxS, this.trackBoxW, this.displayWidth, this.displayHeight - 80, ViewConstants.minZoom, this.maxZoom, ViewConstants.zoomScaleFactor);
 			this.engine.originZ = currentZoom / initialZoom;
 		} else {
 			// reset origin
@@ -8532,7 +8526,7 @@ This file is part of LifeViewer
 		this.engine.savePopulationData();
 
 		// if nothing alive now then restore last bounding box
-		if (this.engine.population === 0) {
+		if (this.engine.population === 0 && initialPopulation !== 0) {
 			zoomBox.set(this.engine.saveBox);
 			historyBox.set(this.engine.saveHistoryBox);
 		}
@@ -9816,8 +9810,8 @@ This file is part of LifeViewer
 		if (this.engine.zoom < ViewConstants.minZoom) {
 			this.engine.zoom = ViewConstants.minZoom;
 		} else {
-			if (this.engine.zoom > ViewConstants.maxZoom) {
-				this.engine.zoom = ViewConstants.maxZoom;
+			if (this.engine.zoom > this.maxZoom) {
+				this.engine.zoom = this.maxZoom;
 			}
 		}
 	};
@@ -11449,7 +11443,7 @@ This file is part of LifeViewer
 			/** @type {number} */ currentDelta = Math.sqrt((currentDx * currentDx) + (currentDy * currentDy)),
 
 			// get the current zoom
-			/** @type {number} */ currentZoom = ViewConstants.minZoom * Math.pow(ViewConstants.maxZoom / ViewConstants.minZoom, this.zoomItem.current[0]);
+			/** @type {number} */ currentZoom = ViewConstants.minZoom * Math.pow(this.maxZoom / ViewConstants.minZoom, this.zoomItem.current[0]);
 
 		// adjust the zoom by the ratio of the distance between touches now and at start
 		currentZoom *= (currentDelta / startDelta);
@@ -11458,13 +11452,13 @@ This file is part of LifeViewer
 		if (currentZoom < ViewConstants.minZoom) {
 			currentZoom = ViewConstants.minZoom;
 		} else {
-			if (currentZoom > ViewConstants.maxZoom) {
-				currentZoom = ViewConstants.maxZoom;
+			if (currentZoom > this.maxZoom) {
+				currentZoom = this.maxZoom;
 			}
 		}
 
 		// apply new zoom
-		currentZoom = Math.log(currentZoom / ViewConstants.minZoom) / Math.log(ViewConstants.maxZoom / ViewConstants.minZoom);
+		currentZoom = Math.log(currentZoom / ViewConstants.minZoom) / Math.log(this.maxZoom / ViewConstants.minZoom);
 		this.zoomItem.current = this.viewZoomRange([currentZoom, currentZoom], true, this);
 
 		// save current position as start position
@@ -19247,7 +19241,7 @@ This file is part of LifeViewer
 		this.modeList.toolTip = ["draw [F2]", "select [F4]", "pan [F5]"];
 
 		// help section list
-		this.helpSectionList = this.viewMenu.addListItem(this.viewHelpSectionList, Menu.northEast, -80, 100, 80, 60, ["1", "2"], 0, Menu.single);
+		this.helpSectionList = this.viewMenu.addListItem(this.viewHelpSectionList, Menu.northEast, -86, 100, 86, 60, ["1", "2"], 0, Menu.single);
 		this.helpSectionList.orientation = Menu.vertical;
 		this.helpSectionList.toolTip = ["", ""];
 		this.helpSectionList.setFont("14px Arial");
@@ -23019,6 +23013,13 @@ This file is part of LifeViewer
 
 		// disable thumb launch if in safe mode and pattern size is MAXGRIDSIZE 14
 		me.menuManager.disableLaunch = me.safeMode && (me.engine.maxGridSize === (1 << ViewConstants.maxGridPower));
+
+		// adjust maximum zoom for triangular rules
+		if (me.engine.isTriangular) {
+			me.maxZoom = ViewConstants.maxZoom / ViewConstants.triangularYFactor;
+		} else {
+			me.maxZoom = ViewConstants.maxZoom;
+		}
 
 		// schedule window resize
 		setTimeout(resizeWindow);
