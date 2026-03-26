@@ -380,6 +380,8 @@ This file is part of LifeViewer
 
 		/** @const {Array<string>} */ ruleTableIconNames : ["circles", "diamonds", "hexagons", "triangles"],
 
+		/** @const {string} */ illegalWhitespace : "Illegal whitespace in pattern",
+
 		/** @const {number} */ invalidSize : -999999
 	};
 
@@ -5277,7 +5279,8 @@ This file is part of LifeViewer
 			/** @type {string|null} */ alias1 = null,
 			/** @type {string|null} */ alias2 = null,
 			/** @type {boolean} */ nestedAlternate = false,
-			/** @type {boolean} */ result = false;
+			/** @type {boolean} */ result = false,
+			/** @type {number} */ boundedIndex = -1;
 
 		// mark not using Wolfram RuleTable emulation
 		this.wolframEmulation = false;
@@ -5353,6 +5356,19 @@ This file is part of LifeViewer
 									this.createTriMap(firstPattern, this.ruleAltTriangularArray, null);
 									this.createTriMap(pattern, this.ruleTriangularArray, null);
 								}
+
+								// remove any bounded grid definitions from the rule names
+								boundedIndex = firstPattern.ruleName.indexOf(this.boundedGridPrefix);
+								if (boundedIndex !== -1) {
+									firstPattern.ruleName = firstPattern.ruleName.substring(0, boundedIndex);
+								}
+
+								boundedIndex = pattern.ruleName.indexOf(this.boundedGridPrefix);
+								if (boundedIndex !== -1) {
+									pattern.boundedGridDef = pattern.ruleName.substring(boundedIndex);
+									pattern.ruleName = pattern.ruleName.substring(0, boundedIndex);
+								}
+
 								// add the alternate alias names if at least one is set or the whole rule was an alias
 								if (aliasName !== "") {
 									pattern.aliasName = /*** @type {!string} */ (aliasName);
@@ -5376,6 +5392,9 @@ This file is part of LifeViewer
 								if (aliasName !== null) {
 									pattern.aliasName = aliasName;
 								}
+
+								// add any bounded grid
+								pattern.ruleName += pattern.boundedGridDef;
 
 								// if HROT then copy arrays across
 								if (pattern.isHROT || pattern.isLTL) {
@@ -6790,7 +6809,8 @@ This file is part of LifeViewer
 						// all ok
 						valid = true;
 					} else {
-						this.failureReason = "Illegal whitespace in pattern";
+						this.failureReason = PatternConstants.illegalWhitespace;
+						pattern.lifeMap = null;
 						pattern.invalid = true;
 						finished = true;
 					}
@@ -10520,6 +10540,11 @@ This file is part of LifeViewer
 			newPattern.invalid = true;
 			this.tooBig = true;
 			this.executable = false;
+		}
+
+		// check if the new pattern contained illegal whitespace
+		if (newPattern && this.failureReason === PatternConstants.illegalWhitespace) {
+			newPattern = null;
 		}
 
 		// remove bounded grid postfix if present

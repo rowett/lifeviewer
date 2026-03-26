@@ -1,3 +1,7 @@
+Build 1384
+- fixed missing error message
+- fixed Change Rule adding extra bounded grid specification
+
 Build 1383
 - fixed AutoFit when all cells die
 
