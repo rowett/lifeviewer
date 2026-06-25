@@ -1,12 +1,26 @@
+Build 1386
+- significant performance improvements for LifeViewer Pro to the following 2-state HROT neighbourhoods (tested at R7)
+	- Star 5.4x
+	- Hash 4.6x
+	- Cross 3.0x
+	- Saltire 4.5x
+	- Checkerboard 3.5x
+	- Aligned Checkerboard 3.4x
+	- L2 2.6x
+	- Circular 2.5x
+	- Hexagonal 2.2x
+	- Asterisk 4.2x
+	- Tripod 4.5x
+
 Build 1385
-- improved Pro performance: 
-	- 2 state HROT algo (Moore)
-	- [R]Super algo (Moore)
-	- Generations algo
+- improved LifeViewer Pro performance: 
+	- 2-state HROT Moore
+	- [R]Super Moore
+	- Generations
 	- Cell Age Shader
-	- 2 State Shader
-	- renderGrid
-	- 2 state hash for Identify
+	- 2-State Shader
+	- Render Grid (no rotate)
+	- 2-state hash for Identify
 
 Build 1384
 - fixed missing error message

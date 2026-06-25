@@ -55,7 +55,7 @@ This file is part of LifeViewer
 #include <emscripten.h>
 
 
-EMSCRIPTEN_KEEPALIVE
+// EMSCRIPTEN_KEEPALIVE
 void nextGenerationCheckerBoth2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
@@ -71,128 +71,171 @@ void nextGenerationCheckerBoth2(
 	const int32_t start
 ) {
 	int32_t x, y, i, j;
-	int32_t count, count2, offset;
+	int32_t startX = leftX - xrange;
+	int32_t endX = rightX + xrange;
+
+	// Align chunks for 16-lane SIMD processing
+	int32_t alignedStart = (startX + 15) & ~15;
+	int32_t alignedEnd = (endX + 1) & ~15;
+	if (alignedStart > endX + 1) {
+		alignedStart = endX + 1;
+	}
+
+	// Calculate max possible operations dynamically.
+	// Checkerboard O(R^2) area can easily exceed 65k for large rules.
+	int32_t max_ops = 0;
+	int32_t temp_offset = start;
+	for (j = -yrange; j <= yrange; j++) {
+		for (i = -xrange + temp_offset; i <= xrange - temp_offset; i += 2) {
+			max_ops++;
+		}
+		temp_offset = 1 - temp_offset;
+	}
+	if (start == 1) max_ops++;
+
+	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
+	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
-		x = leftX - xrange;
+		x = startX;
 
-		// for the first two cells in a row count the entire neighbourhood
-		count = 0;
-		offset = start;
-		uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-		uint8_t *midColourRow = colourGrid + y * colourGridWidth;
-
-		for (j = -yrange; j <= yrange; j++) {
-			for (i = -xrange + offset; i <= xrange - offset; i += 2) {
-				if (*(colourRow + i) >= aliveStart) {
-					count++;
-				}
-			}
-			offset = 1 - offset;
-
-			colourRow += colourGridWidth;
-		}
-
-		// check for survival
-		if (start == 1 && *(midColourRow + x) >= aliveStart) {
-			count++;
-		}
-		*(countRow + x) = count;
-		x++;
-
-		// check if there are two cells in the row
-		if (x <= rightX + xrange) {
-			count2 = 0;
-			offset = start;
-			colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-
+		// -------------------------------------------------------------
+		// PROLOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x < alignedStart) {
+			int32_t count = 0;
+			int32_t offset = start;
 			for (j = -yrange; j <= yrange; j++) {
+				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
 				for (i = -xrange + offset; i <= xrange - offset; i += 2) {
-					if (*(colourRow + i) >= aliveStart) {
-						count2++;
-					}
+					count += (cRow[i] > aliveThresh_scalar);
 				}
 				offset = 1 - offset;
-
-				colourRow += colourGridWidth;
 			}
-
-			// check for survival
-			if (start == 1 && *(midColourRow + x) >= aliveStart) {
-				count2++;
+			if (start == 1) {
+				uint8_t *midRow = colourGrid + y * colourGridWidth + x;
+				count += (midRow[0] > aliveThresh_scalar);
 			}
-			*(countRow + x) = count2;
+			countRow[x] = count;
 			x++;
+		}
 
-			// for the remaining cell pairs on the row subtract the left and add the right cells
-			while (x <= rightX + xrange) {
-				offset = start;
-				colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
+		// -------------------------------------------------------------
+		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
+		// -------------------------------------------------------------
+		if (max_ops <= 255) {
+			// FAST PATH: Small range. Accumulate entirely in 8-bit vectors.
+			while (x < alignedEnd) {
+				v128_t c8 = wasm_i8x16_splat(0);
+				int32_t offset = start;
 
 				for (j = -yrange; j <= yrange; j++) {
-					if (*(colourRow - xrange + offset - 2) >= aliveStart) {
-						count--;
-					}
-					if (*(colourRow + xrange - offset) >= aliveStart) {
-						count++;
+					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+					for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 					}
 					offset = 1 - offset;
-
-					colourRow += colourGridWidth;
 				}
 
-				// check for survival
 				if (start == 1) {
-					if (*(midColourRow + x - 2) >= aliveStart) {
-						count--;
-					}
-					if (*(midColourRow + x) >= aliveStart) {
-						count++;
-					}
+					uint8_t *midRow = colourGrid + y * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(midRow), aliveThresh));
 				}
-				*(countRow + x) = count;
-				x++;
 
-				if (x <= rightX + xrange) {
-					offset = start;
-					colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
+				// Widen directly to 32-bit & store
+				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
-					for (j = -yrange; j <= yrange; j++) {
-						if (*(colourRow - xrange + offset - 2) >= aliveStart) {
-							count2--;
-						}
-						if (*(colourRow + xrange - offset) >= aliveStart) {
-							count2++;
-						}
-						offset = 1 - offset;
-
-						colourRow += colourGridWidth;
-					}
-
-					// check for survival
-					if (start == 1) {
-						if (*(midColourRow + x - 2) >= aliveStart) {
-							count2--;
-						}
-						if (*(midColourRow + x) >= aliveStart) {
-							count2++;
-						}
-					}
-					*(countRow + x) = count2;
-					x++;
-				}
+				x += 16;
 			}
+		} else {
+			// SAFE PATH: Large range (O(R^2)). Flush 8-bit into 32-bit accumulators directly
+			// to avoid both 8-bit and 16-bit integer overflows completely.
+			while (x < alignedEnd) {
+				v128_t sum_0 = wasm_i32x4_splat(0);
+				v128_t sum_1 = wasm_i32x4_splat(0);
+				v128_t sum_2 = wasm_i32x4_splat(0);
+				v128_t sum_3 = wasm_i32x4_splat(0);
+
+				v128_t c8 = wasm_i8x16_splat(0);
+				int ops = 0;
+				int32_t offset = start;
+
+				for (j = -yrange; j <= yrange; j++) {
+					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+					for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+						ops++;
+						if (ops == 255) {
+							v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+							v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+							sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
+							sum_1 = wasm_i32x4_add(sum_1, wasm_u32x4_extend_high_u16x8(c16_lo));
+							sum_2 = wasm_i32x4_add(sum_2, wasm_u32x4_extend_low_u16x8(c16_hi));
+							sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
+							c8 = wasm_i8x16_splat(0);
+							ops = 0;
+						}
+					}
+					offset = 1 - offset;
+				}
+
+				if (start == 1) {
+					uint8_t *midRow = colourGrid + y * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(midRow), aliveThresh));
+					ops++;
+				}
+
+				if (ops > 0) {
+					v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+					v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+					sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
+					sum_1 = wasm_i32x4_add(sum_1, wasm_u32x4_extend_high_u16x8(c16_lo));
+					sum_2 = wasm_i32x4_add(sum_2, wasm_u32x4_extend_low_u16x8(c16_hi));
+					sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
+				}
+
+				wasm_v128_store(countRow + x,      sum_0);
+				wasm_v128_store(countRow + x + 4,  sum_1);
+				wasm_v128_store(countRow + x + 8,  sum_2);
+				wasm_v128_store(countRow + x + 12, sum_3);
+
+				x += 16;
+			}
+		}
+
+		// -------------------------------------------------------------
+		// EPILOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x <= endX) {
+			int32_t count = 0;
+			int32_t offset = start;
+			for (j = -yrange; j <= yrange; j++) {
+				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+				for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+					count += (cRow[i] > aliveThresh_scalar);
+				}
+				offset = 1 - offset;
+			}
+			if (start == 1) {
+				uint8_t *midRow = colourGrid + y * colourGridWidth + x;
+				count += (midRow[0] > aliveThresh_scalar);
+			}
+			countRow[x] = count;
+			x++;
 		}
 
 		countRow += countsWidth;
-		midColourRow += colourGridWidth;
 	}
 }
 
-
-
+// Wrappers stay untouched
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationCheckerboard2(
 	int32_t *const counts,
@@ -209,7 +252,6 @@ void nextGenerationCheckerboard2(
 ) {
 	nextGenerationCheckerBoth2(counts, countsWidth, colourGrid, colourGridWidth, leftX, bottomY, rightX, topY, xrange, yrange, aliveStart, 1);
 }
-
 
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationAlignedCheckerboard2(
@@ -654,7 +696,7 @@ void nextGenerationWeightedStates2(
 }
 
 
-EMSCRIPTEN_KEEPALIVE
+// EMSCRIPTEN_KEEPALIVE
 void nextGenerationShaped2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
@@ -669,51 +711,141 @@ void nextGenerationShaped2(
 	const int32_t yrange,
 	const int32_t aliveStart
 ) {
-	int32_t i, j, x, y, width, count;
+	int32_t x, y, i, j;
+	int32_t startX = leftX - xrange;
+	int32_t endX = rightX + xrange;
 
-	// L2 or Circular
+	// Align chunks for 16-lane SIMD processing
+	int32_t alignedStart = (startX + 15) & ~15;
+	int32_t alignedEnd = (endX + 1) & ~15;
+	if (alignedStart > endX + 1) {
+		alignedStart = endX + 1;
+	}
+
+	// Calculate maximum possible neighbors dynamically.
+	// Circular/L2 areas scale by O(R^2) and can exceed 65,535 for large rules.
+	int32_t max_ops = 0;
+	for (j = -yrange; j <= yrange; j++) {
+		max_ops += (2 * widths[j + yrange]) + 1;
+	}
+
+	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
+	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
+
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
-		x = leftX - xrange;
+		x = startX;
 
-		// for the first cell in the row count the entire neighborhood
-		count = 0;
-		uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-
-		for (j = -yrange; j <= yrange; j++) {
-			width = widths[j + yrange];
-			for (i = -width; i < width; i += 2) {
-				if (*(colourRow + i) >= aliveStart) {
-					count++;
-				}
-				if (*(colourRow + i + 1) >= aliveStart) {
-					count++;
-				}
-			}
-			if (*(colourRow + i) >= aliveStart) {
-				count++;
-			}
-
-			colourRow += colourGridWidth;
-		}
-		countRow[x] = count;
-		x++;
-
-		// for the remaining rows subtract the left and add the right cells
-		while (x <= rightX + xrange) {
-			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-
+		// -------------------------------------------------------------
+		// PROLOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x < alignedStart) {
+			int32_t count = 0;
 			for (j = -yrange; j <= yrange; j++) {
-				width = widths[j + yrange];
-				if (*(colourRow - width - 1) >= aliveStart) {
-					count--;
+				int32_t width = widths[j + yrange];
+				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+				for (i = -width; i <= width; i++) {
+					count += (cRow[i] > aliveThresh_scalar);
 				}
-				if (*(colourRow + width) >= aliveStart) {
-					count++;
+			}
+			countRow[x] = count;
+			x++;
+		}
+
+		// -------------------------------------------------------------
+		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
+		// -------------------------------------------------------------
+		if (max_ops <= 255) {
+			// FAST PATH: Small shape. Accumulate safely into 8-bit registers.
+			while (x < alignedEnd) {
+				v128_t c8 = wasm_i8x16_splat(0);
+
+				for (j = -yrange; j <= yrange; j++) {
+					int32_t width = widths[j + yrange];
+					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+					for (i = -width; i <= width; i++) {
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+					}
 				}
 
-				colourRow += colourGridWidth;
+				// Widen 8-bit -> 16-bit
+				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+
+				// Widen 16-bit -> 32-bit & store
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
+
+				x += 16;
+			}
+		} else {
+			// SAFE PATH: Large shapes. Flush 8-bit counts directly to 32-bit
+			// accumulators to avoid any chance of integer overflow.
+			while (x < alignedEnd) {
+				v128_t sum_0 = wasm_i32x4_splat(0);
+				v128_t sum_1 = wasm_i32x4_splat(0);
+				v128_t sum_2 = wasm_i32x4_splat(0);
+				v128_t sum_3 = wasm_i32x4_splat(0);
+
+				v128_t c8 = wasm_i8x16_splat(0);
+				int ops = 0;
+
+				for (j = -yrange; j <= yrange; j++) {
+					int32_t width = widths[j + yrange];
+					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+
+					for (i = -width; i <= width; i++) {
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+						ops++;
+
+						// Flush to 32-bit accumulators right before 8-bit wrap
+						if (ops == 255) {
+							v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+							v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+							sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
+							sum_1 = wasm_i32x4_add(sum_1, wasm_u32x4_extend_high_u16x8(c16_lo));
+							sum_2 = wasm_i32x4_add(sum_2, wasm_u32x4_extend_low_u16x8(c16_hi));
+							sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
+
+							c8 = wasm_i8x16_splat(0);
+							ops = 0;
+						}
+					}
+				}
+
+				// Final flush for remaining counts
+				if (ops > 0) {
+					v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+					v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+					sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
+					sum_1 = wasm_i32x4_add(sum_1, wasm_u32x4_extend_high_u16x8(c16_lo));
+					sum_2 = wasm_i32x4_add(sum_2, wasm_u32x4_extend_low_u16x8(c16_hi));
+					sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
+				}
+
+				wasm_v128_store(countRow + x,      sum_0);
+				wasm_v128_store(countRow + x + 4,  sum_1);
+				wasm_v128_store(countRow + x + 8,  sum_2);
+				wasm_v128_store(countRow + x + 12, sum_3);
+
+				x += 16;
+			}
+		}
+
+		// -------------------------------------------------------------
+		// EPILOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x <= endX) {
+			int32_t count = 0;
+			for (j = -yrange; j <= yrange; j++) {
+				int32_t width = widths[j + yrange];
+				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+				for (i = -width; i <= width; i++) {
+					count += (cRow[i] > aliveThresh_scalar);
+				}
 			}
 			countRow[x] = count;
 			x++;
@@ -724,7 +856,7 @@ void nextGenerationShaped2(
 }
 
 
-EMSCRIPTEN_KEEPALIVE
+// EMSCRIPTEN_KEEPALIVE
 void nextGenerationHexagonal2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
@@ -738,63 +870,191 @@ void nextGenerationHexagonal2(
 	const int32_t yrange,
 	const int32_t aliveStart
 ) {
-	int32_t x, y, i, j, count;
+	int32_t x, y, i, j;
+	int32_t startX = leftX - xrange;
+	int32_t endX = rightX + xrange;
+
+	// Align chunks for 16-lane SIMD processing
+	int32_t alignedStart = (startX + 15) & ~15;
+	int32_t alignedEnd = (endX + 1) & ~15;
+	if (alignedStart > endX + 1) {
+		alignedStart = endX + 1;
+	}
+
+	// Calculate maximum possible neighbors dynamically.
+	// Hexagonal shapes scale by O(R^2) and can exceed safe accumulator limits.
+	int32_t max_ops = 0;
+	for (j = -yrange; j < 0; j++) {
+		for (i = -xrange; i <= xrange + j; i++) {
+			max_ops++;
+		}
+	}
+	for (j = 0; j <= yrange; j++) {
+		for (i = -xrange + j; i <= xrange; i++) {
+			max_ops++;
+		}
+	}
+
+	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
+	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
-		x = leftX - xrange;
+		x = startX;
 
-		// for the first cell count the entire neighbourhood
-		count = 0;
-		uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-		for (j = -yrange; j < 0; j++) {
-			for (i = -xrange; i <= xrange + j; i++) {
-				if (*(colourRow + i) >= aliveStart) {
-					count++;
-				}
-			}
+		// -------------------------------------------------------------
+		// PROLOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x < alignedStart) {
+			int32_t count = 0;
+			uint8_t *cRow;
 
-			colourRow += colourGridWidth;
-		}
-
-		for (j = 0; j <= yrange; j++) {
-			for (i = -xrange + j; i <= xrange; i++) {
-				if (*(colourRow + i) >= aliveStart) {
-					count++;
-				}
-			}
-
-			colourRow += colourGridWidth;
-		}
-
-		countRow[x] = count;
-		x++;
-
-		// for the remaining rows subtract the left and add the right cells
-		while (x <= rightX + xrange) {
-			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-
+			// Top half
 			for (j = -yrange; j < 0; j++) {
-				if (*(colourRow - xrange - 1) >= aliveStart) {
-					count--;
+				cRow = colourGrid + (y + j) * colourGridWidth + x;
+				for (i = -xrange; i <= xrange + j; i++) {
+					count += (cRow[i] > aliveThresh_scalar);
 				}
-				if (*(colourRow + xrange + j) >= aliveStart) {
-					count++;
+			}
+			// Bottom half
+			for (j = 0; j <= yrange; j++) {
+				cRow = colourGrid + (y + j) * colourGridWidth + x;
+				for (i = -xrange + j; i <= xrange; i++) {
+					count += (cRow[i] > aliveThresh_scalar);
 				}
-
-				colourRow += colourGridWidth;
 			}
 
-			for (j = 0; j <= yrange; j++) {
-				if (*(colourRow - xrange + j - 1) >= aliveStart) {
-					count--;
+			countRow[x] = count;
+			x++;
+		}
+
+		// -------------------------------------------------------------
+		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
+		// -------------------------------------------------------------
+		if (max_ops <= 255) {
+			// FAST PATH: Small shape. Accumulate safely into 8-bit registers.
+			while (x < alignedEnd) {
+				v128_t c8 = wasm_i8x16_splat(0);
+				uint8_t *cRow;
+
+				// Top half
+				for (j = -yrange; j < 0; j++) {
+					cRow = colourGrid + (y + j) * colourGridWidth + x;
+					for (i = -xrange; i <= xrange + j; i++) {
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+					}
 				}
-				if (*(colourRow + xrange) >= aliveStart) {
-					count++;
+				// Bottom half
+				for (j = 0; j <= yrange; j++) {
+					cRow = colourGrid + (y + j) * colourGridWidth + x;
+					for (i = -xrange + j; i <= xrange; i++) {
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+					}
 				}
 
-				colourRow += colourGridWidth;
+				// Widen 8-bit -> 16-bit
+				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+
+				// Widen 16-bit -> 32-bit & store
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
+
+				x += 16;
+			}
+		} else {
+			// SAFE PATH: Large shapes. Flush 8-bit counts directly to 32-bit
+			// accumulators to avoid integer overflow.
+			while (x < alignedEnd) {
+				v128_t sum_0 = wasm_i32x4_splat(0);
+				v128_t sum_1 = wasm_i32x4_splat(0);
+				v128_t sum_2 = wasm_i32x4_splat(0);
+				v128_t sum_3 = wasm_i32x4_splat(0);
+
+				v128_t c8 = wasm_i8x16_splat(0);
+				int ops = 0;
+				uint8_t *cRow;
+
+				// Top half
+				for (j = -yrange; j < 0; j++) {
+					cRow = colourGrid + (y + j) * colourGridWidth + x;
+					for (i = -xrange; i <= xrange + j; i++) {
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+						ops++;
+						if (ops == 255) {
+							v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+							v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+							sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
+							sum_1 = wasm_i32x4_add(sum_1, wasm_u32x4_extend_high_u16x8(c16_lo));
+							sum_2 = wasm_i32x4_add(sum_2, wasm_u32x4_extend_low_u16x8(c16_hi));
+							sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
+							c8 = wasm_i8x16_splat(0);
+							ops = 0;
+						}
+					}
+				}
+
+				// Bottom half
+				for (j = 0; j <= yrange; j++) {
+					cRow = colourGrid + (y + j) * colourGridWidth + x;
+					for (i = -xrange + j; i <= xrange; i++) {
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+						ops++;
+						if (ops == 255) {
+							v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+							v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+							sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
+							sum_1 = wasm_i32x4_add(sum_1, wasm_u32x4_extend_high_u16x8(c16_lo));
+							sum_2 = wasm_i32x4_add(sum_2, wasm_u32x4_extend_low_u16x8(c16_hi));
+							sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
+							c8 = wasm_i8x16_splat(0);
+							ops = 0;
+						}
+					}
+				}
+
+				// Final flush for remaining counts
+				if (ops > 0) {
+					v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+					v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+					sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
+					sum_1 = wasm_i32x4_add(sum_1, wasm_u32x4_extend_high_u16x8(c16_lo));
+					sum_2 = wasm_i32x4_add(sum_2, wasm_u32x4_extend_low_u16x8(c16_hi));
+					sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
+				}
+
+				wasm_v128_store(countRow + x,      sum_0);
+				wasm_v128_store(countRow + x + 4,  sum_1);
+				wasm_v128_store(countRow + x + 8,  sum_2);
+				wasm_v128_store(countRow + x + 12, sum_3);
+
+				x += 16;
+			}
+		}
+
+		// -------------------------------------------------------------
+		// EPILOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x <= endX) {
+			int32_t count = 0;
+			uint8_t *cRow;
+
+			// Top half
+			for (j = -yrange; j < 0; j++) {
+				cRow = colourGrid + (y + j) * colourGridWidth + x;
+				for (i = -xrange; i <= xrange + j; i++) {
+					count += (cRow[i] > aliveThresh_scalar);
+				}
+			}
+			// Bottom half
+			for (j = 0; j <= yrange; j++) {
+				cRow = colourGrid + (y + j) * colourGridWidth + x;
+				for (i = -xrange + j; i <= xrange; i++) {
+					count += (cRow[i] > aliveThresh_scalar);
+				}
 			}
 
 			countRow[x] = count;
@@ -806,7 +1066,7 @@ void nextGenerationHexagonal2(
 }
 
 
-EMSCRIPTEN_KEEPALIVE
+// EMSCRIPTEN_KEEPALIVE
 void nextGenerationTripod2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
@@ -820,43 +1080,181 @@ void nextGenerationTripod2(
 	const int32_t yrange,
 	const int32_t aliveStart
 ) {
-	int32_t x, y, i, j, count;
+	int32_t x, y, i, j;
+	int32_t startX = leftX - xrange;
+	int32_t endX = rightX + xrange;
 
-	// tripod
+	// Align chunks for 16-lane SIMD processing
+	int32_t alignedStart = (startX + 15) & ~15;
+	int32_t alignedEnd = (endX + 1) & ~15;
+	if (alignedStart > endX + 1) {
+		alignedStart = endX + 1;
+	}
+
+	// Calculate maximum possible neighbors in the Tripod neighborhood.
+	// Up Leg (yrange) + Left Leg & Center (xrange + 1) + Down-Right Leg (xrange)
+	int32_t max_ops = yrange + (2 * xrange) + 1;
+
+	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
+	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
+
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
-		x = leftX - xrange;
+		x = startX;
 
-		while (x <= rightX + xrange) {
-			count = 0;
+		// -------------------------------------------------------------
+		// PROLOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x < alignedStart) {
+			int32_t count = 0;
 
-			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-
-			for (j = -yrange; j < 0; j++) {
-				if (*colourRow >= aliveStart) {
-					count++;
-				}
-
-				colourRow += colourGridWidth;
+			// Up Leg
+			for (j = 1; j <= yrange; j++) {
+				uint8_t *cRow = colourGrid + (y - j) * colourGridWidth + x;
+				count += (cRow[0] > aliveThresh_scalar);
 			}
 
+			// Left Leg & Center
+			uint8_t *cRowY = colourGrid + y * colourGridWidth + x;
 			for (i = -xrange; i <= 0; i++) {
-				if (*(colourRow + i) >= aliveStart) {
-					count++;
-				}
+				count += (cRowY[i] > aliveThresh_scalar);
 			}
-			colourRow += colourGridWidth;
 
+			// Down-Right Leg
 			for (j = 1; j <= xrange; j++) {
-				if (*(colourRow + j) >= aliveStart) {
-					count++;
-				}
-
-				colourRow += colourGridWidth;
+				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+				count += (cRow[j] > aliveThresh_scalar);
 			}
 
-			*(countRow + x) = count;
+			countRow[x] = count;
+			x++;
+		}
+
+		// -------------------------------------------------------------
+		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
+		// -------------------------------------------------------------
+		if (max_ops <= 255) {
+			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
+			while (x < alignedEnd) {
+				v128_t c8 = wasm_i8x16_splat(0);
+
+				// Up Leg
+				for (j = 1; j <= yrange; j++) {
+					uint8_t *cRow = colourGrid + (y - j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
+				}
+
+				// Left Leg & Center
+				uint8_t *cRowY = colourGrid + y * colourGridWidth + x;
+				for (i = -xrange; i <= 0; i++) {
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowY + i), aliveThresh));
+				}
+
+				// Down-Right Leg
+				for (j = 1; j <= xrange; j++) {
+					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
+				}
+
+				// Widen 8-bit counts -> 16-bit counts
+				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+
+				// Widen 16-bit counts -> 32-bit counts & store
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
+
+				x += 16;
+			}
+		} else {
+			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
+			while (x < alignedEnd) {
+				v128_t count_lo = wasm_i16x8_splat(0);
+				v128_t count_hi = wasm_i16x8_splat(0);
+				v128_t c8 = wasm_i8x16_splat(0);
+				int ops = 0;
+
+				// Up Leg
+				for (j = 1; j <= yrange; j++) {
+					uint8_t *cRow = colourGrid + (y - j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
+					ops++;
+					if (ops == 255) {
+						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+						c8 = wasm_i8x16_splat(0);
+						ops = 0;
+					}
+				}
+
+				// Left Leg & Center
+				uint8_t *cRowY = colourGrid + y * colourGridWidth + x;
+				for (i = -xrange; i <= 0; i++) {
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowY + i), aliveThresh));
+					ops++;
+					if (ops == 255) {
+						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+						c8 = wasm_i8x16_splat(0);
+						ops = 0;
+					}
+				}
+
+				// Down-Right Leg
+				for (j = 1; j <= xrange; j++) {
+					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
+					ops++;
+					if (ops == 255) {
+						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+						c8 = wasm_i8x16_splat(0);
+						ops = 0;
+					}
+				}
+
+				if (ops > 0) {
+					count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+					count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+				}
+
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
+
+				x += 16;
+			}
+		}
+
+		// -------------------------------------------------------------
+		// EPILOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x <= endX) {
+			int32_t count = 0;
+
+			// Up Leg
+			for (j = 1; j <= yrange; j++) {
+				uint8_t *cRow = colourGrid + (y - j) * colourGridWidth + x;
+				count += (cRow[0] > aliveThresh_scalar);
+			}
+
+			// Left Leg & Center
+			uint8_t *cRowY = colourGrid + y * colourGridWidth + x;
+			for (i = -xrange; i <= 0; i++) {
+				count += (cRowY[i] > aliveThresh_scalar);
+			}
+
+			// Down-Right Leg
+			for (j = 1; j <= xrange; j++) {
+				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
+				count += (cRow[j] > aliveThresh_scalar);
+			}
+
+			countRow[x] = count;
 			x++;
 		}
 
@@ -947,7 +1345,7 @@ void nextGenerationCornerEdge2(
 }
 
 
-EMSCRIPTEN_KEEPALIVE
+// EMSCRIPTEN_KEEPALIVE
 void nextGenerationAsterisk2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
@@ -961,48 +1359,195 @@ void nextGenerationAsterisk2(
 	const int32_t yrange,
 	const int32_t aliveStart
 ) {
-	int32_t x, y, i, j, count;
+	int32_t x, y, i, j;
+	int32_t startX = leftX - xrange;
+	int32_t endX = rightX + xrange;
 
-	// asterisk
+	// Align chunks for 16-lane SIMD processing
+	int32_t alignedStart = (startX + 15) & ~15;
+	int32_t alignedEnd = (endX + 1) & ~15;
+	if (alignedStart > endX + 1) {
+		alignedStart = endX + 1;
+	}
+
+	// Calculate maximum possible neighbors in the Asterisk neighborhood.
+	// Top (2 * yrange) + Middle (2 * xrange + 1) + Bottom (2 * xrange)
+	int32_t max_ops = (2 * yrange) + (2 * xrange + 1) + (2 * xrange);
+
+	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
+	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
+
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
-		x = leftX - xrange;
+		x = startX;
 
-		while (x <= rightX + xrange) {
-			count = 0;
+		// -------------------------------------------------------------
+		// PROLOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x < alignedStart) {
+			int32_t count = 0;
+			uint8_t *cRow;
 
-			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-
+			// Top section
 			for (j = -yrange; j < 0; j++) {
-				if (*colourRow >= aliveStart) {
-					count++;
-				}
-				if (*(colourRow + j) >= aliveStart) {
-					count++;
-				}
-
-				colourRow += colourGridWidth;
+				cRow = colourGrid + (y + j) * colourGridWidth + x;
+				count += (cRow[0] > aliveThresh_scalar);
+				count += (cRow[j] > aliveThresh_scalar);
 			}
 
+			// Middle section
+			cRow = colourGrid + y * colourGridWidth + x;
 			for (i = -xrange; i <= xrange; i++) {
-				if (*(colourRow + i) >= aliveStart) {
-					count++;
-				}
+				count += (cRow[i] > aliveThresh_scalar);
 			}
-			colourRow += colourGridWidth;
 
+			// Bottom section (Note: bounded by xrange in original)
 			for (j = 1; j <= xrange; j++) {
-				if (*colourRow >= aliveStart) {
-					count++;
-				}
-				if (*(colourRow + j) >= aliveStart) {
-					count++;
+				cRow = colourGrid + (y + j) * colourGridWidth + x;
+				count += (cRow[0] > aliveThresh_scalar);
+				count += (cRow[j] > aliveThresh_scalar);
+			}
+
+			countRow[x] = count;
+			x++;
+		}
+
+		// -------------------------------------------------------------
+		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
+		// -------------------------------------------------------------
+		if (max_ops <= 255) {
+			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
+			while (x < alignedEnd) {
+				v128_t c8 = wasm_i8x16_splat(0);
+				uint8_t *cRow;
+
+				// Top section
+				for (j = -yrange; j < 0; j++) {
+					cRow = colourGrid + (y + j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
 				}
 
-				colourRow += colourGridWidth;
+				// Middle section
+				cRow = colourGrid + y * colourGridWidth + x;
+				for (i = -xrange; i <= xrange; i++) {
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+				}
+
+				// Bottom section
+				for (j = 1; j <= xrange; j++) {
+					cRow = colourGrid + (y + j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
+				}
+
+				// Widen 8-bit counts -> 16-bit counts
+				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+
+				// Widen 16-bit counts -> 32-bit counts & store
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
+
+				x += 16;
 			}
-			*(countRow + x) = count;
+		} else {
+			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
+			// (16-bit accumulator is perfectly safe here as O(R) shapes won't reach 65,535).
+			while (x < alignedEnd) {
+				v128_t count_lo = wasm_i16x8_splat(0);
+				v128_t count_hi = wasm_i16x8_splat(0);
+				v128_t c8 = wasm_i8x16_splat(0);
+				int ops = 0;
+				uint8_t *cRow;
+
+				// Top section
+				for (j = -yrange; j < 0; j++) {
+					cRow = colourGrid + (y + j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
+					ops += 2;
+					if (ops >= 254) { // Flush right before 255
+						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+						c8 = wasm_i8x16_splat(0);
+						ops = 0;
+					}
+				}
+
+				// Middle section
+				cRow = colourGrid + y * colourGridWidth + x;
+				for (i = -xrange; i <= xrange; i++) {
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+					ops++;
+					if (ops >= 254) {
+						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+						c8 = wasm_i8x16_splat(0);
+						ops = 0;
+					}
+				}
+
+				// Bottom section
+				for (j = 1; j <= xrange; j++) {
+					cRow = colourGrid + (y + j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
+					ops += 2;
+					if (ops >= 254) {
+						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+						c8 = wasm_i8x16_splat(0);
+						ops = 0;
+					}
+				}
+
+				// Final flush
+				if (ops > 0) {
+					count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+					count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+				}
+
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
+
+				x += 16;
+			}
+		}
+
+		// -------------------------------------------------------------
+		// EPILOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x <= endX) {
+			int32_t count = 0;
+			uint8_t *cRow;
+
+			// Top section
+			for (j = -yrange; j < 0; j++) {
+				cRow = colourGrid + (y + j) * colourGridWidth + x;
+				count += (cRow[0] > aliveThresh_scalar);
+				count += (cRow[j] > aliveThresh_scalar);
+			}
+
+			// Middle section
+			cRow = colourGrid + y * colourGridWidth + x;
+			for (i = -xrange; i <= xrange; i++) {
+				count += (cRow[i] > aliveThresh_scalar);
+			}
+
+			// Bottom section
+			for (j = 1; j <= xrange; j++) {
+				cRow = colourGrid + (y + j) * colourGridWidth + x;
+				count += (cRow[0] > aliveThresh_scalar);
+				count += (cRow[j] > aliveThresh_scalar);
+			}
+
+			countRow[x] = count;
 			x++;
 		}
 
@@ -1214,7 +1759,7 @@ void nextGenerationTriangular2(
 }
 
 
-EMSCRIPTEN_KEEPALIVE
+// EMSCRIPTEN_KEEPALIVE
 void nextGenerationSaltire2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
@@ -1228,45 +1773,153 @@ void nextGenerationSaltire2(
 	const int32_t yrange,
 	const int32_t aliveStart
 ) {
-	int32_t x, y, j, count;
+	int32_t x, y, j;
+	int32_t startX = leftX - xrange;
+	int32_t endX = rightX + xrange;
 
-	// saltire
-	int32_t * countRow = counts + (bottomY - yrange) * countsWidth;
+	// Align chunks for 16-lane SIMD processing
+	int32_t alignedStart = (startX + 15) & ~15;
+	int32_t alignedEnd = (endX + 1) & ~15;
+	if (alignedStart > endX + 1) {
+		alignedStart = endX + 1;
+	}
+
+	// Max neighbors for Saltire is 4 * R + 1
+	int32_t max_ops = (4 * yrange) + 1;
+
+	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
+	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
+
+	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
-		x = leftX - xrange;
-		while (x <= rightX + xrange) {
-			count = 0;
-			uint8_t *colourRow1 = colourGrid + (y + 1) * colourGridWidth + x;
-			uint8_t *colourRow2 = colourRow1 - colourGridWidth - colourGridWidth;
+		x = startX;
+
+		// -------------------------------------------------------------
+		// PROLOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x < alignedStart) {
+			int32_t count = 0;
+			uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
+			uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
 
 			for (j = 1; j <= yrange; j++) {
-				if (*(colourRow1 - j) >= aliveStart) {
-					count++;
-				}
-
-				if (*(colourRow1 + j) >= aliveStart) {
-					count++;
-				}
-
-				if (*(colourRow2 - j) >= aliveStart) {
-					count++;
-				}
-
-				if (*(colourRow2 + j) >= aliveStart) {
-					count++;
-				}
-
-				colourRow1 += colourGridWidth;
-				colourRow2 -= colourGridWidth;
+				count += (cRowDown[-j] > aliveThresh_scalar);
+				count += (cRowDown[j]  > aliveThresh_scalar);
+				count += (cRowUp[-j]   > aliveThresh_scalar);
+				count += (cRowUp[j]    > aliveThresh_scalar);
+				cRowDown += colourGridWidth;
+				cRowUp -= colourGridWidth;
 			}
 
-			uint8_t *colourRow = colourGrid + y * colourGridWidth + x;
-			if (*colourRow >= aliveStart) {
-				count++;
+			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+			count += (cRow[0] > aliveThresh_scalar);
+
+			countRow[x] = count;
+			x++;
+		}
+
+		// -------------------------------------------------------------
+		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
+		// -------------------------------------------------------------
+		if (max_ops <= 255) {
+			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
+			while (x < alignedEnd) {
+				v128_t c8 = wasm_i8x16_splat(0);
+
+				uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
+				uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
+
+				for (j = 1; j <= yrange; j++) {
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown - j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown + j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp - j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp + j), aliveThresh));
+					cRowDown += colourGridWidth;
+					cRowUp -= colourGridWidth;
+				}
+
+				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+				c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
+
+				// Widen 8-bit counts -> 16-bit counts
+				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+
+				// Widen 16-bit counts -> 32-bit counts & store
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
+
+				x += 16;
+			}
+		} else {
+			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
+			// (16-bit is entirely safe here, as max_ops for linear O(R) neighborhoods won't approach 65,535)
+			while (x < alignedEnd) {
+				v128_t count_lo = wasm_i16x8_splat(0);
+				v128_t count_hi = wasm_i16x8_splat(0);
+
+				uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
+				uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
+
+				int ops = 0;
+				v128_t c8 = wasm_i8x16_splat(0);
+
+				for (j = 1; j <= yrange; j++) {
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown - j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown + j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp - j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp + j), aliveThresh));
+					cRowDown += colourGridWidth;
+					cRowUp -= colourGridWidth;
+
+					ops += 4;
+					if (ops >= 252) { // Flush right before we exceed 255
+						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+						c8 = wasm_i8x16_splat(0);
+						ops = 0;
+					}
+				}
+
+				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+				c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
+
+				count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+				count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
+
+				x += 16;
+			}
+		}
+
+		// -------------------------------------------------------------
+		// EPILOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x <= endX) {
+			int32_t count = 0;
+			uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
+			uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
+
+			for (j = 1; j <= yrange; j++) {
+				count += (cRowDown[-j] > aliveThresh_scalar);
+				count += (cRowDown[j]  > aliveThresh_scalar);
+				count += (cRowUp[-j]   > aliveThresh_scalar);
+				count += (cRowUp[j]    > aliveThresh_scalar);
+				cRowDown += colourGridWidth;
+				cRowUp -= colourGridWidth;
 			}
 
-			*(countRow + x) = count;
+			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+			count += (cRow[0] > aliveThresh_scalar);
+
+			countRow[x] = count;
 			x++;
 		}
 
@@ -1275,7 +1928,7 @@ void nextGenerationSaltire2(
 }
 
 
-EMSCRIPTEN_KEEPALIVE
+// EMSCRIPTEN_KEEPALIVE
 void nextGenerationStar2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
@@ -1289,54 +1942,170 @@ void nextGenerationStar2(
 	const int32_t yrange,
 	const int32_t aliveStart
 ) {
-	int32_t x, y, i, j, count;
+	int32_t x, y, i, j;
+	int32_t startX = leftX - xrange;
+	int32_t endX = rightX + xrange;
+
+	// Align chunks for 16-lane SIMD processing
+	int32_t alignedStart = (startX + 15) & ~15;
+	int32_t alignedEnd = (endX + 1) & ~15;
+	if (alignedStart > endX + 1) {
+		alignedStart = endX + 1;
+	}
+
+	// Maximum neighbors possible in the Star neighborhood.
+	// We use this to determine if we can safely accumulate counts in 8-bit registers without overflow.
+	int32_t max_ops = (yrange * 6) + (xrange * 2 + 1);
+
+	// > threshold equivalent
+	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
+	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
-		x = leftX - xrange;
+		x = startX;
 
-		while (x <= rightX + xrange) {
-			count = 0;
-			uint8_t *colourRow1 = colourGrid + (y + 1) * colourGridWidth + x;
-			uint8_t *colourRow2 = colourRow1 - colourGridWidth - colourGridWidth;
+		// -------------------------------------------------------------
+		// PROLOGUE (Scalar, branchless)
+		// -------------------------------------------------------------
+		while (x < alignedStart) {
+			int32_t count = 0;
+			uint8_t *cRow1 = colourGrid + (y + 1) * colourGridWidth + x;
+			uint8_t *cRow2 = colourGrid + (y - 1) * colourGridWidth + x;
 
 			for (j = 1; j <= yrange; j++) {
-				if (*(colourRow1 - j) >= aliveStart) {
-					count++;
-				}
-
-				if (*colourRow1 >= aliveStart) {
-					count++;
-				}
-
-				if (*(colourRow1 + j) >= aliveStart) {
-					count++;
-				}
-
-				if (*(colourRow2 - j) >= aliveStart) {
-					count++;
-				}
-
-				if (*colourRow2 >= aliveStart) {
-					count++;
-				}
-
-				if (*(colourRow2 + j) >= aliveStart) {
-					count++;
-				}
-
-				colourRow1 += colourGridWidth;
-				colourRow2 -= colourGridWidth;
+				count += (cRow1[-j] > aliveThresh_scalar);
+				count += (cRow1[0]  > aliveThresh_scalar);
+				count += (cRow1[j]  > aliveThresh_scalar);
+				count += (cRow2[-j] > aliveThresh_scalar);
+				count += (cRow2[0]  > aliveThresh_scalar);
+				count += (cRow2[j]  > aliveThresh_scalar);
+				cRow1 += colourGridWidth;
+				cRow2 -= colourGridWidth;
 			}
 
-			uint8_t *colourRow = colourGrid + y * colourGridWidth + x;
+			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
 			for (i = -xrange; i <= xrange; i++) {
-				if (*(colourRow + i) >= aliveStart) {
-					count++;
-				}
+				count += (cRow[i] > aliveThresh_scalar);
 			}
-			*(countRow + x) = count;
+
+			countRow[x] = count;
+			x++;
+		}
+
+		// -------------------------------------------------------------
+		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
+		// -------------------------------------------------------------
+		if (max_ops <= 255) {
+			// FAST PATH: Range is small enough that 8-bit counts will never overflow.
+			// We can accumulate directly into i8x16 and only widen to 32-bit at the very end.
+			while (x < alignedEnd) {
+				v128_t c8 = wasm_i8x16_splat(0);
+
+				uint8_t *cRow1 = colourGrid + (y + 1) * colourGridWidth + x;
+				uint8_t *cRow2 = colourGrid + (y - 1) * colourGridWidth + x;
+
+				for (j = 1; j <= yrange; j++) {
+					// wasm_u8x16_gt returns 0xFF (-1) for true. Subtracting it safely adds 1.
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1 - j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1 + j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow2 - j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow2), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow2 + j), aliveThresh));
+					cRow1 += colourGridWidth;
+					cRow2 -= colourGridWidth;
+				}
+
+				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+				for (i = -xrange; i <= xrange; i++) {
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+				}
+
+				// Widen 8-bit counts -> 16-bit counts
+				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+
+				// Widen 16-bit counts -> 32-bit counts & store
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
+
+				x += 16;
+			}
+		} else {
+			// SAFE PATH: Large ranges (e.g. R > 31). We must routinely flush 8-bit counts to 16-bit.
+			while (x < alignedEnd) {
+				v128_t count_lo = wasm_i16x8_splat(0);
+				v128_t count_hi = wasm_i16x8_splat(0);
+
+				uint8_t *cRow1 = colourGrid + (y + 1) * colourGridWidth + x;
+				uint8_t *cRow2 = colourGrid + (y - 1) * colourGridWidth + x;
+
+				for (j = 1; j <= yrange; j++) {
+					v128_t c8 = wasm_i8x16_splat(0);
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1 - j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1 + j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow2 - j), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow2), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow2 + j), aliveThresh));
+
+					count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+					count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+					cRow1 += colourGridWidth;
+					cRow2 -= colourGridWidth;
+				}
+
+				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+				v128_t c8_i = wasm_i8x16_splat(0);
+				int ops = 0;
+				for (i = -xrange; i <= xrange; i++) {
+					c8_i = wasm_i8x16_sub(c8_i, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+					ops++;
+					if (ops == 255 || i == xrange) {
+						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8_i));
+						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8_i));
+						c8_i = wasm_i8x16_splat(0);
+						ops = 0;
+					}
+				}
+
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
+				x += 16;
+			}
+		}
+
+		// -------------------------------------------------------------
+		// EPILOGUE (Scalar, branchless)
+		// -------------------------------------------------------------
+		while (x <= endX) {
+			int32_t count = 0;
+			uint8_t *cRow1 = colourGrid + (y + 1) * colourGridWidth + x;
+			uint8_t *cRow2 = colourGrid + (y - 1) * colourGridWidth + x;
+
+			for (j = 1; j <= yrange; j++) {
+				count += (cRow1[-j] > aliveThresh_scalar);
+				count += (cRow1[0]  > aliveThresh_scalar);
+				count += (cRow1[j]  > aliveThresh_scalar);
+				count += (cRow2[-j] > aliveThresh_scalar);
+				count += (cRow2[0]  > aliveThresh_scalar);
+				count += (cRow2[j]  > aliveThresh_scalar);
+				cRow1 += colourGridWidth;
+				cRow2 -= colourGridWidth;
+			}
+
+			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+			for (i = -xrange; i <= xrange; i++) {
+				count += (cRow[i] > aliveThresh_scalar);
+			}
+
+			countRow[x] = count;
 			x++;
 		}
 
@@ -1345,7 +2114,7 @@ void nextGenerationStar2(
 }
 
 
-EMSCRIPTEN_KEEPALIVE
+// EMSCRIPTEN_KEEPALIVE
 void nextGenerationHash2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
@@ -1359,105 +2128,180 @@ void nextGenerationHash2(
 	const int32_t yrange,
 	const int32_t aliveStart
 ) {
-	int32_t x, y, i, j, count, rowCount, rowCount2;
+	int32_t x, y, i, j;
+	int32_t startX = leftX - xrange;
+	int32_t endX = rightX + xrange;
 
-	// hash
+	// Align chunks for 16-lane SIMD processing
+	int32_t alignedStart = (startX + 15) & ~15;
+	int32_t alignedEnd = (endX + 1) & ~15;
+	if (alignedStart > endX + 1) {
+		alignedStart = endX + 1;
+	}
+
+	// Calculate maximum possible neighbors in the Hash neighborhood.
+	int32_t max_ops = 1; // center cell
+	int32_t vert_rows = 2 * yrange + 1;
+	if (yrange >= 1) {
+		vert_rows -= 2;
+		max_ops += 2 * (2 * xrange + 1); // two horizontal bars at y-1 and y+1
+	}
+	max_ops += vert_rows * 2; // vertical columns at x-1 and x+1
+
+	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
+	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
+
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
-		int32_t* saveRow = countRow;
+		x = startX;
 
-		x = leftX - xrange;
-
-		// for the first cell count the entire neighborhood
-		count = 0;
-		rowCount = 0;
-		rowCount2 = 0;
-
-		uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-
-		for (j = -yrange; j <= yrange; j++) {
-
-			if (j == 1) {
-				for (i = -xrange; i <= xrange; i++) {
-					if (*(colourRow + i) >= aliveStart) {
-						rowCount++;
-					}
-				}
-			} else if (j == -1) {
-				for (i = -xrange; i <= xrange; i++) {
-					if (*(colourRow + i) >= aliveStart) {
-						rowCount2++;
-					}
-				}
-			} else {
-				if (*(colourRow - 1) >= aliveStart) {
-					count++;
-				}
-				if (*(colourRow + 1) >= aliveStart) {
-					count++;
-				}
-			}
-
-			colourRow += colourGridWidth;
-		}
-
-		if (*(colourGrid + y * colourGridWidth + x) >= aliveStart) {
-			count++;
-		}
-
-		countRow[x] = count + rowCount + rowCount2;
-		x++;
-
-		// handle remaining rows
-		while (x <= rightX + xrange) {
-			count = 0;
-
-			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-
+		// -------------------------------------------------------------
+		// PROLOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x < alignedStart) {
+			int32_t count = 0;
 			for (j = -yrange; j <= yrange; j++) {
-
-				if (j == 1) {
-					if (*(colourRow - xrange - 1) >= aliveStart) {
-						rowCount--;
-					}
-					if (*(colourRow + xrange) >= aliveStart) {
-						rowCount++;
-					}
-				} else if (j == -1) {
-					if (*(colourRow - xrange - 1) >= aliveStart) {
-						rowCount2--;
-					}
-					if (*(colourRow + xrange) >= aliveStart) {
-						rowCount2++;
-					}
-				} else {
-					if (*(colourRow - 1) >= aliveStart) {
-						count++;
-					}
-					if (*(colourRow + 1) >= aliveStart) {
-						count++;
-					}
+				if (j == 1 || j == -1) continue;
+				uint8_t* cRow = colourGrid + (y + j) * colourGridWidth + x;
+				count += (cRow[-1] > aliveThresh_scalar);
+				count += (cRow[1]  > aliveThresh_scalar);
+			}
+			if (yrange >= 1) {
+				uint8_t* rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
+				uint8_t* rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
+				for (i = -xrange; i <= xrange; i++) {
+					count += (rowM1[i] > aliveThresh_scalar);
+					count += (rowP1[i] > aliveThresh_scalar);
 				}
-
-				colourRow += colourGridWidth;
 			}
+			uint8_t* row0 = colourGrid + y * colourGridWidth + x;
+			count += (row0[0] > aliveThresh_scalar);
 
-			// check for survival
-			if (*(colourGrid + y * colourGridWidth + x) >= aliveStart) {
-				count++;
-			}
-
-			countRow[x] = count + rowCount + rowCount2;
+			countRow[x] = count;
 			x++;
 		}
 
-		countRow = saveRow + countsWidth;
+		// -------------------------------------------------------------
+		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
+		// -------------------------------------------------------------
+		if (max_ops <= 255) {
+			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
+			while (x < alignedEnd) {
+				v128_t c8 = wasm_i8x16_splat(0);
+
+				for (j = -yrange; j <= yrange; j++) {
+					if (j == 1 || j == -1) continue;
+					uint8_t* row = colourGrid + (y + j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row - 1), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row + 1), aliveThresh));
+				}
+
+				if (yrange >= 1) {
+					uint8_t* rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
+					uint8_t* rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
+					for (i = -xrange; i <= xrange; i++) {
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(rowM1 + i), aliveThresh));
+						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(rowP1 + i), aliveThresh));
+					}
+				}
+
+				uint8_t* row0 = colourGrid + y * colourGridWidth + x;
+				c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row0), aliveThresh));
+
+				// Widen 8-bit counts -> 16-bit counts
+				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+
+				// Widen 16-bit counts -> 32-bit counts & store
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
+
+				x += 16;
+			}
+		} else {
+			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
+			while (x < alignedEnd) {
+				v128_t count_lo = wasm_i16x8_splat(0);
+				v128_t count_hi = wasm_i16x8_splat(0);
+
+				for (j = -yrange; j <= yrange; j++) {
+					if (j == 1 || j == -1) continue;
+					v128_t c8 = wasm_i8x16_splat(0);
+					uint8_t* row = colourGrid + (y + j) * colourGridWidth + x;
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row - 1), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row + 1), aliveThresh));
+					count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+					count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+				}
+
+				if (yrange >= 1) {
+					uint8_t* rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
+					uint8_t* rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
+					v128_t c8_i = wasm_i8x16_splat(0);
+					int ops = 0;
+					for (i = -xrange; i <= xrange; i++) {
+						c8_i = wasm_i8x16_sub(c8_i, wasm_u8x16_gt(wasm_v128_load(rowM1 + i), aliveThresh));
+						c8_i = wasm_i8x16_sub(c8_i, wasm_u8x16_gt(wasm_v128_load(rowP1 + i), aliveThresh));
+						ops += 2;
+						if (ops >= 254 || i == xrange) {
+							count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8_i));
+							count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8_i));
+							c8_i = wasm_i8x16_splat(0);
+							ops = 0;
+						}
+					}
+				}
+
+				v128_t c8_c = wasm_i8x16_splat(0);
+				uint8_t* row0 = colourGrid + y * colourGridWidth + x;
+				c8_c = wasm_i8x16_sub(c8_c, wasm_u8x16_gt(wasm_v128_load(row0), aliveThresh));
+				count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8_c));
+				count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8_c));
+
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
+
+				x += 16;
+			}
+		}
+
+		// -------------------------------------------------------------
+		// EPILOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x <= endX) {
+			int32_t count = 0;
+			for (j = -yrange; j <= yrange; j++) {
+				if (j == 1 || j == -1) continue;
+				uint8_t* cRow = colourGrid + (y + j) * colourGridWidth + x;
+				count += (cRow[-1] > aliveThresh_scalar);
+				count += (cRow[1]  > aliveThresh_scalar);
+			}
+			if (yrange >= 1) {
+				uint8_t* rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
+				uint8_t* rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
+				for (i = -xrange; i <= xrange; i++) {
+					count += (rowM1[i] > aliveThresh_scalar);
+					count += (rowP1[i] > aliveThresh_scalar);
+				}
+			}
+			uint8_t* row0 = colourGrid + y * colourGridWidth + x;
+			count += (row0[0] > aliveThresh_scalar);
+
+			countRow[x] = count;
+			x++;
+		}
+
+		countRow += countsWidth;
 	}
 }
 
 
-EMSCRIPTEN_KEEPALIVE
+// EMSCRIPTEN_KEEPALIVE
 void nextGenerationCross2(
 	int32_t *const counts,
 	const uint32_t countsWidth,
@@ -1469,73 +2313,159 @@ void nextGenerationCross2(
 	const int32_t rightX,
 	const int32_t xrange,
 	const int32_t yrange,
-	const uint32_t aliveStart
+	const int32_t aliveStart
 ) {
-	int32_t x, y, i, j, count, rowCount;
+	int32_t x, y, i, j;
+	int32_t startX = leftX - xrange;
+	int32_t endX = rightX + xrange;
 
-	// cross
-	int32_t* countRow = counts + (bottomY - yrange) * countsWidth;
+	// Align chunks for 16-lane SIMD processing
+	int32_t alignedStart = (startX + 15) & ~15;
+	int32_t alignedEnd = (endX + 1) & ~15;
+	if (alignedStart > endX + 1) {
+		alignedStart = endX + 1;
+	}
+
+	// Calculate maximum possible neighbors in the Cross neighborhood.
+	int32_t max_ops = (2 * yrange) + (2 * xrange + 1);
+
+	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
+	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
+
+	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	for (y = bottomY - yrange; y <= topY + yrange; y++) {
-		int32_t *saveRow = countRow;
+		x = startX;
 
-		x = leftX - xrange;
+		// -------------------------------------------------------------
+		// PROLOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x < alignedStart) {
+			int32_t count = 0;
 
-		// for the first cell count the entire neighborhood
-		count = 0;
-		rowCount = 0;
-		uint8_t *colourRow1 = colourGrid + (y + 1) * colourGridWidth + x;
-		uint8_t *colourRow2 = colourRow1 - colourGridWidth - colourGridWidth;
-
-		for (j = 1; j <= yrange; j++) {
-			if (*colourRow1 >= aliveStart) {
-				count++;
-			}
-			if (*colourRow2 >= aliveStart) {
-				count++;
-			}
-			colourRow1 += colourGridWidth;
-			colourRow2 -= colourGridWidth;
-		}
-
-		colourRow1 = colourGrid + y * colourGridWidth + x;
-		for (i = -xrange; i <= xrange; i++) {
-			if (*(colourRow1 + i) >= aliveStart) {
-				rowCount++;
-			}
-		}
-		countRow[x] = count + rowCount;
-		x++;
-
-		// for remaining rows subtract the left and right cells
-		while (x <= rightX + xrange) {
-			count = 0;
-			colourRow1 = colourGrid + (y + 1) * colourGridWidth + x;
-			colourRow2 = colourRow1 - colourGridWidth - colourGridWidth;
+			uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
+			uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
 
 			for (j = 1; j <= yrange; j++) {
-				if (*colourRow1 >= aliveStart) {
-					count++;
-				}
-				if (*colourRow2 >= aliveStart) {
-					count++;
-				}
-				colourRow1 += colourGridWidth;
-				colourRow2 -= colourGridWidth;
+				count += (cRowDown[0] > aliveThresh_scalar);
+				count += (cRowUp[0] > aliveThresh_scalar);
+				cRowDown += colourGridWidth;
+				cRowUp -= colourGridWidth;
 			}
 
-			colourRow1 = colourGrid + y * colourGridWidth + x;
-			if (*(colourRow1 - xrange - 1) >= aliveStart) {
-				rowCount--;
+			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+			for (i = -xrange; i <= xrange; i++) {
+				count += (cRow[i] > aliveThresh_scalar);
 			}
-			if (*(colourRow1 + xrange) >= aliveStart) {
-				rowCount++;
-			}
-			countRow[x] = count + rowCount;
+
+			countRow[x] = count;
 			x++;
 		}
 
-		countRow = saveRow + countsWidth;
+		// -------------------------------------------------------------
+		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
+		// -------------------------------------------------------------
+		if (max_ops <= 255) {
+			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
+			while (x < alignedEnd) {
+				v128_t c8 = wasm_i8x16_splat(0);
+
+				uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
+				uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
+
+				for (j = 1; j <= yrange; j++) {
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp), aliveThresh));
+					cRowDown += colourGridWidth;
+					cRowUp -= colourGridWidth;
+				}
+
+				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+				for (i = -xrange; i <= xrange; i++) {
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+				}
+
+				// Widen 8-bit counts -> 16-bit counts
+				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
+				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
+
+				// Widen 16-bit counts -> 32-bit counts & store
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
+
+				x += 16;
+			}
+		} else {
+			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
+			while (x < alignedEnd) {
+				v128_t count_lo = wasm_i16x8_splat(0);
+				v128_t count_hi = wasm_i16x8_splat(0);
+
+				uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
+				uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
+
+				for (j = 1; j <= yrange; j++) {
+					v128_t c8 = wasm_i8x16_splat(0);
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown), aliveThresh));
+					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp), aliveThresh));
+
+					count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
+					count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
+					cRowDown += colourGridWidth;
+					cRowUp -= colourGridWidth;
+				}
+
+				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+				v128_t c8_i = wasm_i8x16_splat(0);
+				int ops = 0;
+				for (i = -xrange; i <= xrange; i++) {
+					c8_i = wasm_i8x16_sub(c8_i, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
+					ops++;
+					if (ops == 255 || i == xrange) {
+						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8_i));
+						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8_i));
+						c8_i = wasm_i8x16_splat(0);
+						ops = 0;
+					}
+				}
+
+				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
+
+				x += 16;
+			}
+		}
+
+		// -------------------------------------------------------------
+		// EPILOGUE (Scalar, branchless explicit accumulation)
+		// -------------------------------------------------------------
+		while (x <= endX) {
+			int32_t count = 0;
+
+			uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
+			uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
+
+			for (j = 1; j <= yrange; j++) {
+				count += (cRowDown[0] > aliveThresh_scalar);
+				count += (cRowUp[0] > aliveThresh_scalar);
+				cRowDown += colourGridWidth;
+				cRowUp -= colourGridWidth;
+			}
+
+			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
+			for (i = -xrange; i <= xrange; i++) {
+				count += (cRow[i] > aliveThresh_scalar);
+			}
+
+			countRow[x] = count;
+			x++;
+		}
+
+		countRow += countsWidth;
 	}
 }
 
