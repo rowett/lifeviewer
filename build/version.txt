@@ -1,3 +1,6 @@
+Build 1387
+- fixed issue when pasting RLE with x and/or y set to 0
+
 Build 1386
 - significant performance improvements for LifeViewer Pro to the following 2-state HROT neighbourhoods (tested at R7)
 	- Star 5.4x
