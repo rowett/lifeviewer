@@ -33,7 +33,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2025 Chris Rowett
+ Copyright (C) 2015-2026 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -3436,7 +3436,7 @@ void nextGenerationHROTVN2(
 				maxY1 = ipminrow;
 			}
 		}
-	}					
+	}
 
 	// return data to JS
 	shared[0] = minX;
@@ -3604,7 +3604,7 @@ void nextGenerationHROTVNN(
 				maxY1 = ipminrow;
 			}
 		}
-	}			
+	}
 
 	// return data to JS
 	shared[0] = minX;
@@ -4130,7 +4130,7 @@ void updateGridFromCountsN(
 			uint8_t sb6 = comboList[count2];
 			uint8_t sb7 = comboList[count3];
 
-			// now for cells 8 to 11 
+			// now for cells 8 to 11
 			count0 = *(countRow + x + 8);
 			count1 = *(countRow + x + 9);
 			count2 = *(countRow + x + 10);
@@ -4376,14 +4376,14 @@ void nextGenerationHROTMoore2(
 	const uint32_t ryp1 = yrange + 1;
 	const uint32_t leftXp1 = leftX + 1;
 
-	const v128_t zero = wasm_u8x16_splat(0);				// zero
-	const v128_t one = wasm_u8x16_splat(1);				// one
-	const v128_t two = wasm_u8x16_splat(2);				// two
-	const v128_t penBaseSet = wasm_u8x16_splat(64);			// base pen color for newly set cells
-	const v128_t penMaxSet = wasm_u8x16_splat(127);			// maximum pen color for set cells after increment
-	const v128_t penBaseClear = wasm_u8x16_splat(63);		// base pen color for newly cleared cells
-	const v128_t penMinClear = wasm_u8x16_splat(1);			// minimum pen color for cleared cells after decrement
-	const v128_t increment = wasm_u8x16_splat(1);			// increment/decrement by 1
+	const v128_t zero = wasm_u8x16_splat(0);
+	const v128_t one = wasm_u8x16_splat(1);
+	const v128_t two = wasm_u8x16_splat(2);
+	const v128_t penBaseSet = wasm_u8x16_splat(aliveStart);   // base pen color for newly set cells
+	const v128_t penMaxSet = wasm_u8x16_splat(aliveMax);      // maximum pen color for set cells after increment
+	const v128_t penBaseClear = wasm_u8x16_splat(deadStart);  // base pen color for newly cleared cells
+	const v128_t penMinClear = wasm_u8x16_splat(deadMin);     // minimum pen color for cleared cells after decrement
+	const v128_t increment = wasm_u8x16_splat(1);             // increment/decrement by 1
 
 	// compute the rest of the grid
 	int32_t *countRowYpr = counts + (bottomY + 1 + yrange) * countsWidth;
@@ -4406,46 +4406,31 @@ void nextGenerationHROTMoore2(
 
 		uint32_t x = leftXp1;
 
+		// left unaligned edge
 		while (x < alignedStart) {
-			// get the next state
 			uint32_t state = *colourRow;
 
-			// calculate the neighbourhood count
-			uint32_t count = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+			uint32_t count = countRowYpr[xpr] + countRowYmrp1[xmrp1] -
+			                 countRowYpr[xmrp1] - countRowYmrp1[xpr];
 
 			if (state < aliveStart) {
-				// this cell is dead
 				if (comboList[count] & 2) {
-					// new cell is born
 					state = aliveStart;
 					births++;
-				} else {
-					// state is still dead
-					if (state > deadMin) {
-						state--;
-					}
+				} else if (state > deadMin) {
+					state--;
 				}
 			} else {
-				// this cell is alive
 				if ((comboList[count] & 1) == 0) {
-					// cell dies
 					deaths++;
 					state = deadStart;
-				} else {
-					// state is still alive
-					if (state < aliveMax) {
-						state++;
-					}
+				} else if (state < aliveMax) {
+					state++;
 				}
 			}
 
-			// update the cell
 			*colourRow = state;
 
-			// update columns used if cell is alive
 			if (state > deadMin) {
 				rowAlive = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
@@ -4457,226 +4442,137 @@ void nextGenerationHROTMoore2(
 				}
 			}
 
-			// next column
 			xpr++;
 			xmrp1++;
 			colourRow++;
-
 			x++;
 		}
 
+		// aligned vectorized loop
 		while (x < alignedEnd) {
-			// load the next four cells of counts
-			v128_t countYprXpr = wasm_v128_load(countRowYpr + xpr);
-			v128_t countYmrp1Xmrp1 = wasm_v128_load(countRowYmrp1 + xmrp1);
-			v128_t countYprXmrp1 = wasm_v128_load(countRowYpr + xmrp1);
-			v128_t countYrmp1Xpr = wasm_v128_load(countRowYmrp1 + xpr);
+			v128_t countVec;
 
-			// compute the aggregate counts
-			v128_t countVec = wasm_i32x4_add(countYprXpr, countYmrp1Xmrp1);
-			countVec = wasm_i32x4_sub(countVec, countYprXmrp1);
-			countVec = wasm_i32x4_sub(countVec, countYrmp1Xpr);
-
-			// use each cell count to lookup the survival/birth
+			// block 1
+			countVec = wasm_i32x4_sub(
+				wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr), wasm_v128_load(countRowYmrp1 + xmrp1)),
+				wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1), wasm_v128_load(countRowYmrp1 + xpr))
+			);
 			const uint8_t sb0 = comboList[wasm_i32x4_extract_lane(countVec, 0)];
 			const uint8_t sb1 = comboList[wasm_i32x4_extract_lane(countVec, 1)];
 			const uint8_t sb2 = comboList[wasm_i32x4_extract_lane(countVec, 2)];
 			const uint8_t sb3 = comboList[wasm_i32x4_extract_lane(countVec, 3)];
 
-			xpr += 4;
-			xmrp1 += 4;
-
-			// repeat for the next 3 blocks of 4 cells
-			countYprXpr = wasm_v128_load(countRowYpr + xpr);
-			countYmrp1Xmrp1 = wasm_v128_load(countRowYmrp1 + xmrp1);
-			countYprXmrp1 = wasm_v128_load(countRowYpr + xmrp1);
-			countYrmp1Xpr = wasm_v128_load(countRowYmrp1 + xpr);
-
-			countVec = wasm_i32x4_add(countYprXpr, countYmrp1Xmrp1);
-			countVec = wasm_i32x4_sub(countVec, countYprXmrp1);
-			countVec = wasm_i32x4_sub(countVec, countYrmp1Xpr);
-
+			// block 2
+			countVec = wasm_i32x4_sub(
+				wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr + 4), wasm_v128_load(countRowYmrp1 + xmrp1 + 4)),
+				wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1 + 4), wasm_v128_load(countRowYmrp1 + xpr + 4))
+			);
 			const uint8_t sb4 = comboList[wasm_i32x4_extract_lane(countVec, 0)];
 			const uint8_t sb5 = comboList[wasm_i32x4_extract_lane(countVec, 1)];
 			const uint8_t sb6 = comboList[wasm_i32x4_extract_lane(countVec, 2)];
 			const uint8_t sb7 = comboList[wasm_i32x4_extract_lane(countVec, 3)];
 
-			xpr += 4;
-			xmrp1 += 4;
-
-			countYprXpr = wasm_v128_load(countRowYpr + xpr);
-			countYmrp1Xmrp1 = wasm_v128_load(countRowYmrp1 + xmrp1);
-			countYprXmrp1 = wasm_v128_load(countRowYpr + xmrp1);
-			countYrmp1Xpr = wasm_v128_load(countRowYmrp1 + xpr);
-
-			countVec = wasm_i32x4_add(countYprXpr, countYmrp1Xmrp1);
-			countVec = wasm_i32x4_sub(countVec, countYprXmrp1);
-			countVec = wasm_i32x4_sub(countVec, countYrmp1Xpr);
-
+			// block 3
+			countVec = wasm_i32x4_sub(
+				wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr + 8), wasm_v128_load(countRowYmrp1 + xmrp1 + 8)),
+				wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1 + 8), wasm_v128_load(countRowYmrp1 + xpr + 8))
+			);
 			const uint8_t sb8 = comboList[wasm_i32x4_extract_lane(countVec, 0)];
 			const uint8_t sb9 = comboList[wasm_i32x4_extract_lane(countVec, 1)];
 			const uint8_t sb10 = comboList[wasm_i32x4_extract_lane(countVec, 2)];
 			const uint8_t sb11 = comboList[wasm_i32x4_extract_lane(countVec, 3)];
 
-			xpr += 4;
-			xmrp1 += 4;
-
-			countYprXpr = wasm_v128_load(countRowYpr + xpr);
-			countYmrp1Xmrp1 = wasm_v128_load(countRowYmrp1 + xmrp1);
-			countYprXmrp1 = wasm_v128_load(countRowYpr + xmrp1);
-			countYrmp1Xpr = wasm_v128_load(countRowYmrp1 + xpr);
-
-			countVec = wasm_i32x4_add(countYprXpr, countYmrp1Xmrp1);
-			countVec = wasm_i32x4_sub(countVec, countYprXmrp1);
-			countVec = wasm_i32x4_sub(countVec, countYrmp1Xpr);
-
+			// block 4
+			countVec = wasm_i32x4_sub(
+				wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr + 12), wasm_v128_load(countRowYmrp1 + xmrp1 + 12)),
+				wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1 + 12), wasm_v128_load(countRowYmrp1 + xpr + 12))
+			);
 			const uint8_t sb12 = comboList[wasm_i32x4_extract_lane(countVec, 0)];
 			const uint8_t sb13 = comboList[wasm_i32x4_extract_lane(countVec, 1)];
 			const uint8_t sb14 = comboList[wasm_i32x4_extract_lane(countVec, 2)];
 			const uint8_t sb15 = comboList[wasm_i32x4_extract_lane(countVec, 3)];
 
-			xpr += 4;
-			xmrp1 += 4;
+			v128_t sbVec = wasm_u8x16_make(sb0, sb1, sb2, sb3, sb4, sb5, sb6, sb7, sb8, sb9, sb10, sb11, sb12, sb13, sb14, sb15);
+			v128_t survivalsVec = wasm_i8x16_eq(wasm_v128_and(sbVec, one), one);
+			v128_t birthsVec = wasm_i8x16_eq(wasm_v128_and(sbVec, two), two);
 
-			// get births and survivals for each cell
-			v128_t birthsVec = wasm_u8x16_make(sb0, sb1, sb2, sb3, sb4, sb5, sb6, sb7, sb8, sb9, sb10, sb11, sb12, sb13, sb14, sb15);
-			v128_t survivalsVec = wasm_v128_and(birthsVec, one);
-			survivalsVec = wasm_i8x16_eq(survivalsVec, one);
-			birthsVec = wasm_v128_and(birthsVec, two);
-			birthsVec = wasm_i8x16_eq(birthsVec, two);
-
-			// get the next 16 states and compute the next generation
 			v128_t pens = wasm_v128_load(colourRow);
-
-			// get which cells are alive in the previous generation (i.e. pen value >= 64)
 			v128_t pensIfAlive = wasm_u8x16_ge(pens, penBaseSet);
 
-			// get surviving cells (cells that were alive and survived)
 			v128_t pensIfSurvived = wasm_v128_and(pensIfAlive, survivalsVec);
-
-			// deaths is population count of alive cells that did not survive
 			deaths += __builtin_popcount(wasm_i8x16_bitmask(wasm_v128_andnot(pensIfAlive, survivalsVec)));
 
-			// get born cells (cells that were dead and were born)
 			v128_t pensIfBorn = wasm_v128_andnot(birthsVec, pensIfAlive);
-
-			// births is population count of bitmask of born cells
 			births += __builtin_popcount(wasm_i8x16_bitmask(pensIfBorn));
 
-			// merge surviving cells and births to get next generation alive/dead state
 			v128_t cells = wasm_v128_or(pensIfSurvived, pensIfBorn);
 
-			// now compute the actual states for the next generation
-			// case 1: assume cells are alive
-			//	pens < 64 become 64
-			//	pens >= 64 increment to 127
-
-			// increment the alive lanes and set dead lanes to 64
+			// alive Next Generation
 			v128_t pensAlive = wasm_v128_bitselect(wasm_i8x16_add(pens, increment), penBaseSet, pensIfAlive);
-
-			// ensure increment didn't go above the maximum value of 127
 			pensAlive = wasm_u8x16_min(pensAlive, penMaxSet);
 
-			// case 3: assume cells are dead
-			//	pens >= 64 become 63
-			//	pens < 64 decrement to 1
-
-			// determine which pens were originally 0 so we can ignore them during decrement saturation
+			// dead next generation (optimized floor clipping)
 			v128_t pensWereNotZero = wasm_u8x16_gt(pens, zero);
+			v128_t decremented = wasm_u8x16_sub_sat(pens, increment);
+			v128_t minFaded = wasm_v128_and(pensWereNotZero, penMinClear);
+			v128_t faded = wasm_u8x16_max(decremented, minFaded);
+			v128_t pensDead = wasm_v128_bitselect(penBaseClear, faded, pensIfAlive);
 
-			// set alive lanes to 63 and decrement the dead lanes
-			v128_t pensDead = wasm_v128_bitselect(penBaseClear, wasm_u8x16_sub_sat(pens, increment), pensIfAlive);
-
-			// saturate dead lanes that were decremented to a minimum value of 1
-			v128_t pensNeedingSat = wasm_u8x16_lt(pensDead, penMinClear);
-
-			// remove any lanes that were originally 0
-			pensNeedingSat = wasm_v128_and(pensNeedingSat, pensWereNotZero);
-			pensDead = wasm_v128_bitselect(penMinClear, pensDead, pensNeedingSat);
-
-			// now pick the dead or alive result based on the cells
 			pens = wasm_v128_bitselect(pensAlive, pensDead, cells);
-
-			// store updated pens back to memory
 			wasm_v128_store(colourRow, pens);
 
-			// update columns used if cells are occupied and/or cells are alive
 			v128_t cellsOccupied = wasm_u8x16_gt(pens, penMinClear);
-			v128_t cellsAlive = wasm_u8x16_ge(pens, penBaseSet);
+			v128_t cellsAliveMask = wasm_u8x16_ge(pens, penBaseSet);
 
-			// update the population from the cells alive bitmask population count
-			population += __builtin_popcount(wasm_i8x16_bitmask(cellsAlive));
+			population += __builtin_popcount(wasm_i8x16_bitmask(cellsAliveMask));
 
-			// load the next 16 column used flags
-			v128_t columnsUsed = wasm_v128_load(colUsed + x);
-
-			// create a mask with 1 for each occupied cell
-			v128_t deadMinCols = wasm_v128_and(cellsOccupied, one);
-
-			// create a mask with 2 for each alive cell
-			v128_t aliveStartCols = wasm_v128_and(cellsAlive, two);
-
-			// OR the masks into the columns used flags
-			columnsUsed = wasm_v128_or(columnsUsed, deadMinCols);
-			columnsUsed = wasm_v128_or(columnsUsed, aliveStartCols);
-
-			// write the column flags
-			wasm_v128_store(colUsed + x, columnsUsed);
-
-			// set the tile flag if any cell are alive
+			// combined and branched colUsed/tileRow updates
 			if (wasm_v128_any_true(cellsOccupied)) {
 				rowAlive = true;
-				if (wasm_v128_any_true(cellsAlive)) {
+
+				v128_t columnsUsed = wasm_v128_load(colUsed + x);
+				v128_t newCols = wasm_v128_and(cellsOccupied, one);
+
+				if (wasm_v128_any_true(cellsAliveMask)) {
 					colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 					liveRowAlive = true;
+					newCols = wasm_v128_or(newCols, wasm_v128_and(cellsAliveMask, two));
 				}
+
+				wasm_v128_store(colUsed + x, wasm_v128_or(columnsUsed, newCols));
 			}
 
-			// next column
+			xpr += 16;
+			xmrp1 += 16;
 			colourRow += 16;
 			x += 16;
 		}
 
+		// right unaligned edge
 		while (x <= rightX) {
-			// get the next state
 			uint32_t state = *colourRow;
 
-			// calculate the neighbourhood count
-			uint32_t count = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+			uint32_t count = countRowYpr[xpr] + countRowYmrp1[xmrp1] -
+			                 countRowYpr[xmrp1] - countRowYmrp1[xpr];
 
 			if (state < aliveStart) {
-				// this cell is dead
 				if (comboList[count] & 2) {
-					// new cell is born
 					state = aliveStart;
 					births++;
-				} else {
-					// state is still dead
-					if (state > deadMin) {
-						state--;
-					}
+				} else if (state > deadMin) {
+					state--;
 				}
 			} else {
-				// this cell is alive
 				if ((comboList[count] & 1) == 0) {
-					// cell dies
 					deaths++;
-					state = aliveStart - 1;
-				} else {
-					// state is still alive
-					if (state < aliveMax) {
-						state++;
-					}
+					state = deadStart;
+				} else if (state < aliveMax) {
+					state++;
 				}
 			}
 
-			// update the cell
 			*colourRow = state;
 
-			// update columns used if cell is alive
 			if (state > deadMin) {
 				rowAlive = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
@@ -4688,30 +4584,19 @@ void nextGenerationHROTMoore2(
 				}
 			}
 
-			// next column
 			xpr++;
 			xmrp1++;
 			colourRow++;
-
 			x++;
 		}
 
-		// update bounding box y if a cell in the row was alive
 		if (rowAlive) {
-			if (y < minY) {
-				minY = y;
-			}
-			if (y > maxY) {
-				maxY = y;
-			}
+			if (y < minY) minY = y;
+			if (y > maxY) maxY = y;
 		}
 		if (liveRowAlive) {
-			if (y < minY1) {
-				minY1 = y;
-			}
-			if (y > maxY1) {
-				maxY1 = y;
-			}
+			if (y < minY1) minY1 = y;
+			if (y > maxY1) maxY1 = y;
 		}
 
 		countRowYpr += countsWidth;
@@ -4719,7 +4604,6 @@ void nextGenerationHROTMoore2(
 		colourRow += colourRowOffset;
 	}
 
-	// return data to JS
 	shared[0] = minY;
 	shared[1] = maxY;
 	shared[2] = minY1;
@@ -4933,7 +4817,7 @@ void nextGenerationHROTMooreN(
 			uint8_t sb6 = comboList[count2];
 			uint8_t sb7 = comboList[count3];
 
-			// now for cells 8 to 11 
+			// now for cells 8 to 11
 			count0 = countRowYpr[xpr] +
 				countRowYmrp1[xmrp1] -
 				countRowYpr[xmrp1] -
@@ -5227,6 +5111,7 @@ void cumulativeMooreCounts2(
 	const uint32_t leftTarget = align16Left > align16Right ? align16Right : align16Left;
 
 	const v128_t addFour = wasm_i32x4_splat(4);	// add four
+	const v128_t oneToFour = wasm_i32x4_make(1, 2, 3, 4);
 
 	// alive cells
 	const v128_t alive = wasm_u8x16_splat(aliveStart);
@@ -5254,7 +5139,7 @@ void cumulativeMooreCounts2(
 			if (mask) {
 				if (mask == 0xffff) {
 					// all cells alive so add 1, 2, 3, ... 16 to the previous counts
-					v128_t addCount = wasm_i32x4_make(count + 1, count + 2, count + 3, count + 4);
+					v128_t addCount = wasm_i32x4_add(wasm_i32x4_splat(count), oneToFour);
 
 					// set 1 of 4
 					v128_t previousCounts = wasm_v128_load(prevCountRow);

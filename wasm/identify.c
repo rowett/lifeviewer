@@ -14,7 +14,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2025 Chris Rowett
+ Copyright (C) 2015-2026 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -383,21 +383,20 @@ void getHashTwoState(
 	const int32_t aliveStart,
 	uint32_t *const shared
 ) {
-	const uint64_t factor = 1000003;
-	const uint64_t primeX = 19349663;
-	const uint64_t primeY = 73856093;
-	uint64_t hash = 31415962;
+	const uint32_t factor = 1000003;
+	const uint32_t primeX = 19349663;
+	const uint32_t primeY = 73856093;
+	uint32_t hash = 31415962;
 
-	const uint64_t factor2 = 3000077;
-	const uint64_t primeX2 = 60000047;
-	const uint64_t primeY2 = 45230483;
-	uint64_t hash2 = 27182818;
+	const uint32_t factor2 = 3000077;
+	const uint32_t primeX2 = 60000047;
+	const uint32_t primeY2 = 45230483;
+	uint32_t hash2 = 27182818;
 
 	// alive cells
 	const v128_t alive = wasm_u8x16_splat(aliveStart);
 
 	// align left to 16 bytes
-	// we can read bytes to the left or right of the box since none of them will be alive so won't change the hash value
 	const uint32_t align16Left = left & ~15;
 
 	// get the starting offset in the colour grid
@@ -409,28 +408,30 @@ void getHashTwoState(
 	// process each row in the bounding box
 	for (uint32_t y = bottom; y <= top; y++) {
 		const uint32_t yshift = y - bottom;
-		const uint64_t yPrime = yshift * primeY;
-		const uint64_t yPrime2 = yshift * primeY2;
+		const uint32_t yPrime = yshift * primeY;
+		const uint32_t yPrime2 = yshift * primeY2;
 
 		// process each 16 byte chunk in the row
 		for (uint32_t x = align16Left; x <= right; x += 16) {
-			// load 16 bytes
+			// load 16 bytes and check if alive
 			v128_t row = wasm_v128_load(colourRow);
-
-			// check if each cell is alive
 			row = wasm_u8x16_ge(row, alive);
-
-			// get the results as a bitmask
 			uint16_t mask = wasm_i8x16_bitmask(row);
 
-			// iterate over the alive bits in the mask
-			const uint32_t xshift = x - left;
+			// if chunk is dead, skip xshift and base multiplications entirely
+			if (mask) {
+				const uint32_t xshift = x - left;
 
-			while (mask) {
-				uint32_t i = __builtin_ctz(mask);
-				hash = (hash * factor) ^ (yPrime ^ ((xshift + i) * primeX));
-				hash2 = (hash2 * factor2) ^ (yPrime2 ^ ((xshift + i) * primeX2));
-				mask &= (mask - 1);
+				// hoist the base X multiplication out of the ctz loop
+				const uint32_t xBase1 = xshift * primeX;
+				const uint32_t xBase2 = xshift * primeX2;
+
+				while (mask) {
+					uint32_t i = __builtin_ctz(mask);
+					hash = (hash * factor) ^ (yPrime ^ (xBase1 + i * primeX));
+					hash2 = (hash2 * factor2) ^ (yPrime2 ^ (xBase2 + i * primeX2));
+					mask &= (mask - 1);
+				}
 			}
 
 			// next chunk
@@ -442,8 +443,8 @@ void getHashTwoState(
 	}
 
 	// return data to JS
-	shared[0] = (uint32_t)hash;
-	shared[1] = (uint32_t)hash2;
+	shared[0] = hash;
+	shared[1] = hash2;
 }
 
 

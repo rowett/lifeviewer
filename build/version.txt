@@ -1,3 +1,13 @@
+Build 1385
+- improved Pro performance: 
+	- 2 state HROT algo (Moore)
+	- [R]Super algo (Moore)
+	- Generations algo
+	- Cell Age Shader
+	- 2 State Shader
+	- renderGrid
+	- 2 state hash for Identify
+
 Build 1384
 - fixed missing error message
 - fixed Change Rule adding extra bounded grid specification

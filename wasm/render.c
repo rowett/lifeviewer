@@ -12,7 +12,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2025 Chris Rowett
+ Copyright (C) 2015-2026 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -1237,15 +1237,19 @@ void renderGridNoClipNoRotate(
 	const double yFactor,
 	uint16_t *const xOffsets
 ) {
-	const uint32_t w8 = displayWidth >> 3;	// display width in 8 pixel chunks
-	const double dyy = (1.0f / camZoom) / yFactor;
-	const double dyx = 1.0f / camZoom;
+	const uint32_t w8 = displayWidth >> 3;
+	const double dyy = (1.0 / camZoom) / yFactor;
+	const double dyx = 1.0 / camZoom;
 
-	double sy = -((double)displayHeight / 2) * dyy + camYOff;
-	const double sx = -((double)displayWidth / 2) * dyx + camXOff;
+	double sy = -((double)displayHeight / 2.0) * dyy + camYOff;
+	const double sx = -((double)displayWidth / 2.0) * dyx + camXOff;
 
 	const uint32_t wm = widthMask & ~mask;
 	const uint32_t hm = heightMask & ~mask;
+
+	// inform compiler that outputs do not overlap with inputs
+	uint32_t *restrict out32 = data32;
+	const uint32_t *restrict colors = pixelColours;
 
 	// precompute offsets
 	for (uint32_t i = 0; i < displayWidth; i++) {
@@ -1254,55 +1258,34 @@ void renderGridNoClipNoRotate(
 
 	// process each row
 	for (uint32_t h = 0; h < displayHeight; h++) {
-		uint8_t *gridRow = grid + ((uint32_t)sy & hm) * gridWidth;
+		// local restrict pointers for the current row
+		const uint8_t *restrict gridRow = grid + ((uint32_t)sy & hm) * gridWidth;
+		const uint16_t *restrict xPtr = xOffsets;
 
 		// process each 8 pixel chunk on the row
 		for (uint32_t w = 0; w < w8; w++) {
-			// load 8 pixel indices
-			const v128_t indices = wasm_v128_load(xOffsets + (w << 3));
 
-			// gather pixel data
-			const uint32_t i0 = wasm_u16x8_extract_lane(indices, 0);
-			const uint32_t i1 = wasm_u16x8_extract_lane(indices, 1);
-			const uint32_t i2 = wasm_u16x8_extract_lane(indices, 2);
-			const uint32_t i3 = wasm_u16x8_extract_lane(indices, 3);
-			const uint32_t i4 = wasm_u16x8_extract_lane(indices, 4);
-			const uint32_t i5 = wasm_u16x8_extract_lane(indices, 5);
-			const uint32_t i6 = wasm_u16x8_extract_lane(indices, 6);
-			const uint32_t i7 = wasm_u16x8_extract_lane(indices, 7);
+			// group the reads separately from the writes
+			uint32_t p0 = gridRow[xPtr[0]];
+			uint32_t p1 = gridRow[xPtr[1]];
+			uint32_t p2 = gridRow[xPtr[2]];
+			uint32_t p3 = gridRow[xPtr[3]];
 
-			const v128_t pixels = wasm_i16x8_make(
-				*(gridRow + i0),
-				*(gridRow + i1),
-				*(gridRow + i2),
-				*(gridRow + i3),
-				*(gridRow + i4),
-				*(gridRow + i5),
-				*(gridRow + i6),
-				*(gridRow + i7)
-			);
+			// pack and store the first 4 pixels
+			wasm_v128_store(out32, wasm_i32x4_make(colors[p0], colors[p1], colors[p2], colors[p3]));
 
-			// map pixel values to RGBA colors
-			const v128_t colors1 = wasm_i32x4_make(
-				pixelColours[wasm_i16x8_extract_lane(pixels, 0)],
-				pixelColours[wasm_i16x8_extract_lane(pixels, 1)],
-				pixelColours[wasm_i16x8_extract_lane(pixels, 2)],
-				pixelColours[wasm_i16x8_extract_lane(pixels, 3)]
-			);
+			// fetch the next 4 pixels
+			uint32_t p4 = gridRow[xPtr[4]];
+			uint32_t p5 = gridRow[xPtr[5]];
+			uint32_t p6 = gridRow[xPtr[6]];
+			uint32_t p7 = gridRow[xPtr[7]];
 
-			const v128_t colors2 = wasm_i32x4_make(
-				pixelColours[wasm_i16x8_extract_lane(pixels, 4)],
-				pixelColours[wasm_i16x8_extract_lane(pixels, 5)],
-				pixelColours[wasm_i16x8_extract_lane(pixels, 6)],
-				pixelColours[wasm_i16x8_extract_lane(pixels, 7)]
-			);
+			// pack and store the second 4 pixels
+			wasm_v128_store(out32 + 4, wasm_i32x4_make(colors[p4], colors[p5], colors[p6], colors[p7]));
 
-			// write 8 RGBA pixels to display buffer
-			wasm_v128_store(data32, colors1);
-			wasm_v128_store(data32 + 4, colors2);
-
-			// move to the next chunk
-			data32 += 8;
+			// next set of pixels
+			xPtr += 8;
+			out32 += 8;
 		}
 
 		// next row
@@ -1334,22 +1317,20 @@ void renderGridClipNoRotate(
 	int32_t *const xOffsets,
 	int32_t *const xMaxOffsets
 ) {
-	const uint32_t w8 = displayWidth >> 3;	// display width in 8 pixel chunks
-	const double dyy = (1.0f / camZoom) / yFactor;
-	const double dyx = 1.0f / camZoom;
+	const uint32_t w8 = displayWidth >> 3;
 
-	double sy = -((double)displayHeight / 2) * dyy + camYOff;
-	const double sx = -((double)displayWidth / 2) * dyx + camXOff;
+	// enforce pure double precision
+	const double dyy = (1.0 / camZoom) / yFactor;
+	const double dyx = 1.0 / camZoom;
 
-	// width and height masks
+	double sy = -((double)displayHeight / 2.0) * dyy + camYOff;
+	const double sx = -((double)displayWidth / 2.0) * dyx + camXOff;
+
 	const uint32_t wm = widthMask & ~mask;
 	const uint32_t hm = heightMask & ~mask;
-
-	// comparison masks for clipping
 	const uint32_t wt = ~mask;
 	const uint32_t ht = ~mask;
 
-	// compute the x and y adjustments for full grid size
 	uint32_t xadj = 0;
 	while (xg < maxGridSize) {
 		xadj += xg >> 1;
@@ -1362,130 +1343,92 @@ void renderGridClipNoRotate(
 		yg <<= 1;
 	}
 
-	// pixel index for off grid
-	const uint32_t offGridValue = -2;
+	const int32_t offGridValue = -2;
+	const int32_t offMaxGridValue = -1;
 
-	// pixel index for off max grid (this one must be -1 since it's used as a vector mask)
-	const uint32_t offMaxGridValue = -1;
-
-	// precompute offsets
 	double x = sx;
 	for (uint32_t i = 0; i < displayWidth; i++) {
 		int32_t xi = (int32_t)floor(x);
+		int32_t xi_adj = xi + xadj;
+
+		int32_t onMaxGrid = (xi_adj >= 0 && xi_adj < (int32_t)maxGridSize);
+
 		if (x >= 0 && ((xi & wt) == (xi & wm))) {
 			xOffsets[i] = xi & wm;
 		} else {
-			if (xi + xadj >= 0 && xi + xadj < maxGridSize) {
-				xOffsets[i] = offGridValue;
-			} else {
-				xOffsets[i] = offMaxGridValue;
-			}
+			xOffsets[i] = onMaxGrid ? offGridValue : offMaxGridValue;
 		}
+
+		xMaxOffsets[i] = onMaxGrid ? 0 : offMaxGridValue;
 		x += dyx;
 	}
 
-	x = sx;
-	for (uint32_t i = 0; i < displayWidth; i++) {
-		int32_t xi = (int32_t)floor(x);
-		if (xi + xadj >= 0 && xi + xadj < maxGridSize) {
-			xMaxOffsets[i] = 0;
-		} else {
-			xMaxOffsets[i] = offMaxGridValue;
-		}
-		x += dyx;
-	}
-
-	// off max grid pixel colour
+	const uint32_t offGridColor = pixelColours[0];
 	const v128_t offMaxGridChunk = wasm_u32x4_splat(offMaxGrid);
+	const v128_t offGridChunk = wasm_u32x4_splat(offGridColor);
 
-	// off grid pixel colour
-	const v128_t offGridChunk = wasm_u32x4_splat(pixelColours[0]);
-
-	// constants
-	const v128_t zero = wasm_u32x4_splat(0);
-	const v128_t offGridVec = wasm_i32x4_splat(offGridValue);
-	const v128_t offMaxGridVec = wasm_i32x4_splat(offMaxGridValue);
+	// inform compiler that outputs do not overlap with inputs
+	uint32_t *restrict out32 = data32;
+	const uint32_t *restrict colors = pixelColours;
 
 	// process each row
 	for (uint32_t h = 0; h < displayHeight; h++) {
-		// get the next grid row
 		int32_t yi = (int32_t)floor(sy);
 
-		// check the row is on the grid
 		if (yi >= 0 && ((yi & ht) == (yi & hm))) {
-			uint8_t *gridRow = grid + (yi & hm) * gridWidth;
+			// on the grid
+			const uint8_t *restrict gridRow = grid + (yi & hm) * gridWidth;
+			const int32_t *restrict xPtr = xOffsets;
 
 			for (uint32_t w = 0; w < w8; w++) {
-				// load 8 pixel indices
-				v128_t indices1 = wasm_v128_load(xOffsets + (w << 3));
-				v128_t indices2 = wasm_v128_load(xOffsets + (w << 3) + 4);
+				int32_t i0 = xPtr[0];
+				int32_t i1 = xPtr[1];
+				int32_t i2 = xPtr[2];
+				int32_t i3 = xPtr[3];
 
-				// get masks to show which pixels are on the grid
-				const v128_t onGrid1 = wasm_i32x4_ge(indices1, zero); 
-				const v128_t onGrid2 = wasm_i32x4_ge(indices2, zero);
+				uint32_t c0 = (i0 >= 0) ? colors[gridRow[i0]] : ((i0 == offGridValue) ? offGridColor : offMaxGrid);
+				uint32_t c1 = (i1 >= 0) ? colors[gridRow[i1]] : ((i1 == offGridValue) ? offGridColor : offMaxGrid);
+				uint32_t c2 = (i2 >= 0) ? colors[gridRow[i2]] : ((i2 == offGridValue) ? offGridColor : offMaxGrid);
+				uint32_t c3 = (i3 >= 0) ? colors[gridRow[i3]] : ((i3 == offGridValue) ? offGridColor : offMaxGrid);
 
-				// get masks to show which pixels are off the normal grid
-				const v128_t offGrid1 = wasm_i32x4_eq(indices1, offGridVec);
-				const v128_t offGrid2 = wasm_i32x4_eq(indices2, offGridVec);
+				wasm_v128_store(out32, wasm_i32x4_make(c0, c1, c2, c3));
 
-				// get masks to show which pixels are off the max grid
-				const v128_t offMaxGrid1 = wasm_i32x4_eq(indices1, offMaxGridVec);
-				const v128_t offMaxGrid2 = wasm_i32x4_eq(indices2, offMaxGridVec);
+				int32_t i4 = xPtr[4];
+				int32_t i5 = xPtr[5];
+				int32_t i6 = xPtr[6];
+				int32_t i7 = xPtr[7];
 
-				// make the indices safe by setting any negative values to 0
-				indices1 = wasm_v128_bitselect(indices1, zero, onGrid1);
-				indices2 = wasm_v128_bitselect(indices2, zero, onGrid2);
+				uint32_t c4 = (i4 >= 0) ? colors[gridRow[i4]] : ((i4 == offGridValue) ? offGridColor : offMaxGrid);
+				uint32_t c5 = (i5 >= 0) ? colors[gridRow[i5]] : ((i5 == offGridValue) ? offGridColor : offMaxGrid);
+				uint32_t c6 = (i6 >= 0) ? colors[gridRow[i6]] : ((i6 == offGridValue) ? offGridColor : offMaxGrid);
+				uint32_t c7 = (i7 >= 0) ? colors[gridRow[i7]] : ((i7 == offGridValue) ? offGridColor : offMaxGrid);
 
-				// lookup the pixels from the colour grid using the indices
-				v128_t pixels1 = wasm_u32x4_make(
-					pixelColours[*(gridRow + wasm_u32x4_extract_lane(indices1, 0))],
-					pixelColours[*(gridRow + wasm_u32x4_extract_lane(indices1, 1))],
-					pixelColours[*(gridRow + wasm_u32x4_extract_lane(indices1, 2))],
-					pixelColours[*(gridRow + wasm_u32x4_extract_lane(indices1, 3))]
-				);
+				wasm_v128_store(out32 + 4, wasm_i32x4_make(c4, c5, c6, c7));
 
-				v128_t pixels2 = wasm_u32x4_make(
-					pixelColours[*(gridRow + wasm_u32x4_extract_lane(indices2, 0))],
-					pixelColours[*(gridRow + wasm_u32x4_extract_lane(indices2, 1))],
-					pixelColours[*(gridRow + wasm_u32x4_extract_lane(indices2, 2))],
-					pixelColours[*(gridRow + wasm_u32x4_extract_lane(indices2, 3))]
-				);
-
-				// replace off grid pixels
-				pixels1 = wasm_v128_bitselect(offGridChunk, pixels1, offGrid1);
-				pixels2 = wasm_v128_bitselect(offGridChunk, pixels2, offGrid2);
-
-				// write 8 RGBA pixels to display buffer replacing off max grid
-				wasm_v128_store(data32, wasm_v128_bitselect(offMaxGridChunk, pixels1, offMaxGrid1));
-				wasm_v128_store(data32 + 4, wasm_v128_bitselect(offMaxGridChunk, pixels2, offMaxGrid2));
-
-				// move to the next chunk
-				data32 += 8;
+				xPtr += 8;
+				out32 += 8;
 			}
 		} else {
-			// check if this row is off the grid or the max grid
 			if (yi + yadj >= 0 && yi + yadj < maxGridSize) {
-				// off the grid so need to display both grid and max grid colours
+				// on max grid
+				const int32_t *restrict xMaxPtr = xMaxOffsets;
+
 				for (uint32_t w = 0; w < w8; w++) {
-					// load 8 pixel indices indicating off grid or off max grid
-					const v128_t indices1 = wasm_v128_load(xMaxOffsets + (w << 3));
-					const v128_t indices2 = wasm_v128_load(xMaxOffsets + (w << 3) + 4);
+					const v128_t indices1 = wasm_v128_load(xMaxPtr);
+					const v128_t indices2 = wasm_v128_load(xMaxPtr + 4);
 
-					// use the indices to pick the correct pixel colours
-					wasm_v128_store(data32, wasm_v128_bitselect(offMaxGridChunk, offGridChunk, indices1));
-					wasm_v128_store(data32 + 4, wasm_v128_bitselect(offMaxGridChunk, offGridChunk, indices2));
+					wasm_v128_store(out32, wasm_v128_bitselect(offMaxGridChunk, offGridChunk, indices1));
+					wasm_v128_store(out32 + 4, wasm_v128_bitselect(offMaxGridChunk, offGridChunk, indices2));
 
-					// next chunk
-					data32 += 8;
+					xMaxPtr += 8;
+					out32 += 8;
 				}
 			} else {
-				// off the max grid so fill the entire row with max grid colour
+				// off max grid
 				for (uint32_t w = 0; w < w8; w++) {
-					wasm_v128_store(data32, offMaxGridChunk);
-					wasm_v128_store(data32 + 4, offMaxGridChunk);
-
-					// next chunk
-					data32 += 8;
+					wasm_v128_store(out32, offMaxGridChunk);
+					wasm_v128_store(out32 + 4, offMaxGridChunk);
+					out32 += 8;
 				}
 			}
 		}
@@ -1754,7 +1697,7 @@ void renderOverlayClipNoRotate(
 				v128_t indices2 = wasm_v128_load(xOffsets + (w << 3) + 4);
 
 				// get masks to show which pixels are on the grid
-				const v128_t onGrid1 = wasm_i32x4_ge(indices1, zero); 
+				const v128_t onGrid1 = wasm_i32x4_ge(indices1, zero);
 				const v128_t onGrid2 = wasm_i32x4_ge(indices2, zero);
 
 				// get masks to show which pixels are off the normal grid

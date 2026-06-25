@@ -33,7 +33,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2025 Chris Rowett
+ Copyright (C) 2015-2026 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -686,9 +686,6 @@ void convertToPens2(
 						wasm_v128_store(colourRow, cells);
 
 						// update the tile alive flags
-						//cells = wasm_v128_or(cells, wasm_i32x4_shuffle(cells, cells, 1, 0, 3, 2));
-						//cells = wasm_v128_or(cells, wasm_i32x4_shuffle(cells, cells, 2, 3, 0, 1));
-						//tileAlive |= wasm_u32x4_extract_lane(cells, 0);
 						tileAlive |= wasm_v128_any_true(cells);
 					} else {
 						wasm_v128_store(colourRow, zero);
@@ -744,110 +741,85 @@ void convertToPensAge(
 	const uint32_t tileGridWidth = colourGridWidth >> 8;
 	const uint32_t gridWidth = colourGridWidth >> 4;
 
-	const v128_t zero = wasm_u8x16_splat(0);				// zero
-	const v128_t penBaseSet = wasm_u8x16_splat(64);			// base pen color for newly set cells
-	const v128_t penMaxSet = wasm_u8x16_splat(127);			// maximum pen color for set cells after increment
-	const v128_t penBaseClear = wasm_u8x16_splat(63);		// base pen color for newly cleared cells
-	const v128_t penMinClear = wasm_u8x16_splat(1);			// minimum pen color for cleared cells after decrement
-	const v128_t increment = wasm_u8x16_splat(1);			// increment/decrement by 1
-	const v128_t mask = wasm_u64x2_splat(0x0102040810204080);	// mask to isolate cell bits
+	const v128_t zero = wasm_u8x16_splat(0);
+	const v128_t penBaseSet = wasm_u8x16_splat(64);
+	const v128_t penMaxSet = wasm_u8x16_splat(127);
+	const v128_t penBaseClear = wasm_u8x16_splat(63);
+	const v128_t penMinClear = wasm_u8x16_splat(1);
+	const v128_t increment = wasm_u8x16_splat(1);
+	const v128_t mask = wasm_u64x2_splat(0x0102040810204080);
 
 	// find each occupied tile
 	for (int32_t th = 0; th < tileRows; th++) {
 		uint32_t leftX = 0;
 
+		// calculate row offsets once per tile row
+		const uint32_t colourRowOffset = (th << 4) * colourGridWidth;
+		const uint32_t gridRowOffset = (th << 4) * gridWidth;
+
 		for (uint32_t tw = 0; tw < tileCols16; tw++) {
-			// get the next tile group
 			uint16_t tiles = tileGrid[tw + tileRowOffset] | colourTileGrid[tw + tileRowOffset];
 			uint16_t nextTiles = 0;
 
 			// process each tile in the tile group
 			while (tiles) {
-				// get the next tile
 				uint32_t b = 31 - __builtin_clz(tiles);
 				tiles &= ~(1 << b);
 
 				uint32_t currentX = leftX + xSize * (15 - b);
-				uint32_t tileAlive = 0;
-
-				const uint32_t colourRowOffset = (th << 4) * colourGridWidth;
-				const uint32_t gridRowOffset = (th << 4) * gridWidth;
-
 				uint32_t cr = currentX << 4;
-				uint8_t *colourRow = colourGrid + cr + colourRowOffset;
-				uint16_t *gridRow = grid + currentX + gridRowOffset;
+
+				// prevent compiler from stalling loads
+				uint8_t *restrict colourRow = colourGrid + cr + colourRowOffset;
+				const uint16_t *restrict gridRow = grid + currentX + gridRowOffset;
 
 				uint32_t h = bottomY;
+
+				// 3. accumulate inside loop, process outside
+				v128_t tileAliveVec = zero;
+
 				while (h < topY) {
 					uint32_t nextCell = *gridRow;
 
-					// expand the 16 bits into 16 lanes with a zero bit = 0 and a one bit = 255
-
-					// splat the upper and lower cell 8 bits across lanes
-					// cells stores the lower 8 bits in the first byte and the upper in the second byte
 					v128_t lower = wasm_u8x16_splat(nextCell >> 8);
 					v128_t cells = wasm_u8x16_splat(nextCell & 0xff);
 
-					// combine upper and lower into a single 128-bit vector
 					cells = wasm_v8x16_shuffle(lower, cells, 0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23);
-
-					// apply the bitmask to isolate individual bits in each lane
 					cells = wasm_v128_and(cells, mask);
-
-					// test for zero or non-zero in each lane to create 0 or 255
 					cells = wasm_u8x16_gt(cells, zero);
 
-					// load the 16 pen values
 					v128_t pens = wasm_v128_load(colourRow);
-
-					// get a mask of which lanes are alive (i.e. pen value >= 64)
 					v128_t pensIfAlive = wasm_u8x16_ge(pens, penBaseSet);
 
 					// case 1: assume cells are alive
-					//	pens < 64 become 64
-					//	pens >= 64 increment to 127
-
-					// increment the alive lanes and set dead lanes to 64
-					v128_t pensAlive = wasm_v128_bitselect(wasm_i8x16_add(pens, increment), penBaseSet, pensIfAlive);
-
-					// ensure increment didn't go above the maximum value of 127
+					v128_t pensAlive = wasm_v128_bitselect(wasm_u8x16_add_sat(pens, increment), penBaseSet, pensIfAlive);
 					pensAlive = wasm_u8x16_min(pensAlive, penMaxSet);
 
 					// case 2: assume cells are dead
-					//	pens >= 64 become 63
-					//	pens < 64 decrement to 1
-
-					// determine which pens were originally 0 so we can ignore them during decrement saturation
 					v128_t pensWereNotZero = wasm_u8x16_gt(pens, zero);
 
-					// set alive lanes to 63 and decrement the dead lanes
-					v128_t pensDead = wasm_v128_bitselect(penBaseClear, wasm_u8x16_sub_sat(pens, increment), pensIfAlive);
+					// clamping with max + AND
+					v128_t dec = wasm_u8x16_sub_sat(pens, increment);
+					v128_t decClamped = wasm_u8x16_max(dec, penMinClear);
+					v128_t deadPath = wasm_v128_and(decClamped, pensWereNotZero);
 
-					// saturate dead lanes that were decremented to a minimum value of 1
-					v128_t pensNeedingSat = wasm_u8x16_lt(pensDead, penMinClear);
+					v128_t pensDead = wasm_v128_bitselect(penBaseClear, deadPath, pensIfAlive);
 
-					// remove any lanes that were originally 0
-					pensNeedingSat = wasm_v128_and(pensNeedingSat, pensWereNotZero);
-					pensDead = wasm_v128_bitselect(penMinClear, pensDead, pensNeedingSat);
-
-					// now pick the dead or alive result based on the cells
 					pens = wasm_v128_bitselect(pensAlive, pensDead, cells);
 
-					// store updated pens back to memory
 					wasm_v128_store(colourRow, pens);
 
-					// update the tile alive flags
-					pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 1, 0, 3, 2));
-					pens = wasm_v128_or(pens, wasm_i32x4_shuffle(pens, pens, 2, 3, 0, 1));
-					tileAlive |= wasm_u32x4_extract_lane(pens, 0);
+					// accumulate pens visually instead of folding them horizontally
+					tileAliveVec = wasm_v128_or(tileAliveVec, pens);
 
 					h++;
 					colourRow += colourGridWidth;
 					gridRow += gridWidth;
 				}
 
-				// if any pens were > 1 then the tile is alive
-				if (tileAlive & 0xfefefefe) {
+				// if any lane accumulated a value > 1, the tile is alive
+				v128_t gt1 = wasm_u8x16_gt(tileAliveVec, increment);
+				if (wasm_i8x16_bitmask(gt1) != 0) {
 					nextTiles |= (1 << b);
 				}
 			}
@@ -1080,7 +1052,6 @@ void convertToPensNeighbours(
 }
 
 
-// Function to vectorize the update of the colour grid, including population, births, and deaths
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationGenerations(
 	uint8_t *const colourGrid,
@@ -1109,12 +1080,11 @@ void nextGenerationGenerations(
 	const uint32_t tileGridWidth = colourGridWidth >> 8;
 	const uint32_t gridWidth = colourGridWidth >> 4;
 
-	const v128_t zeroVec = wasm_u8x16_splat(0);				// zero
-	const v128_t oneVec = wasm_u8x16_splat(1);				// one
-	const v128_t deadStateVec = wasm_u8x16_splat(deadState);		// newly dead state
-	const v128_t maxGenStateVec = wasm_u8x16_splat(maxGenState);	// state for alive cell
-	const v128_t minDeadStateVec = wasm_u8x16_splat(minDeadState);	// minimum dead state
-	const v128_t maskVec = wasm_u64x2_splat(0x0102040810204080);	// mask to isolate cell bits
+	const v128_t zeroVec = wasm_u8x16_splat(0);
+	const v128_t deadStateVec = wasm_u8x16_splat(deadState);
+	const v128_t maxGenStateVec = wasm_u8x16_splat(maxGenState);
+	const v128_t minDeadStateVec = wasm_u8x16_splat(minDeadState);
+	const v128_t maskVec = wasm_u64x2_splat(0x0102040810204080);
 	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 
 	// bounding box
@@ -1135,119 +1105,100 @@ void nextGenerationGenerations(
 		const uint32_t gridRowOffset = (th << 4) * gridWidth;
 
 		for (uint32_t tw = 0; tw < tileCols16; tw++) {
-			// get the next tile group
 			uint16_t tiles = tileGrid[tw + tileRowOffset] | colourTileGrid[tw + tileRowOffset];
 			uint16_t nextTiles = 0;
 
 			// process each tile in the tile group
 			while (tiles) {
-				// get the next tile
 				uint32_t b = 31 - __builtin_clz(tiles);
 				tiles &= ~(1 << b);
 
 				uint32_t currentX = leftX + xSize * (15 - b);
+				uint32_t cx = currentX << 4; // pre-calculated grid offset
 				uint32_t tileAlive = 0;
 
-				uint32_t cr = currentX << 4;
-				uint8_t *colourRow = colourGrid + colourRowOffset + cr;
+				uint8_t *colourRow = colourGrid + colourRowOffset + cx;
 				uint16_t *gridRow = grid + currentX + gridRowOffset;
+
+				// local accumulators prevent loop-carried dependency stalls
+				uint32_t tileLeftX = width;
+				uint32_t tileRightX = 0;
+				uint32_t tileMinY = height;
+				uint32_t tileMaxY = 0;
 
 				// process each row of the tile
 				uint32_t h = bottomY;
 				while (h < topY) {
-					// get the next 16 cells from the grid evolution (bits)
 					uint32_t nextCell = *gridRow;
 
-					// expand the 16 bits into 16 lanes with a zero bit = 0 and a one bit = 255
-
-					// cells stores the lower 8 bits in the first byte and the upper in the second byte
-					// combine upper and lower into a single 128-bit vector
 					v128_t cells = wasm_v8x16_shuffle(
 						wasm_u8x16_splat(nextCell >> 8),
 						wasm_u8x16_splat(nextCell & 0xff),
 						0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23
 					);
+					cells = wasm_u8x16_gt(wasm_v128_and(cells, maskVec), zeroVec);
 
-					// apply the bitmask to isolate individual bits in each lane
-					cells = wasm_v128_and(cells, maskVec);
-
-					// test for zero or non-zero in each lane to create 0 or 255
-					cells = wasm_u8x16_gt(cells, zeroVec);
-
-					// load the colour cells from last generation
 					v128_t colourVec = wasm_v128_load(colourRow);
-					const v128_t origColourVec = wasm_i8x16_eq(colourVec, maxGenStateVec);
+					v128_t origColourVec = wasm_i8x16_eq(colourVec, maxGenStateVec);
 
-					// find which cells are (<= deadState || == maxGenState) && alive in bit cells
-					// these will be set to maxGenState
-					v128_t setToAliveMask = wasm_v128_and(
-						cells,
-						wasm_v128_or(
-							wasm_u8x16_le(colourVec, deadStateVec),
-							wasm_i8x16_eq(colourVec, maxGenStateVec)
-						)
+					v128_t canBecomeAlive = wasm_v128_or(
+						wasm_u8x16_le(colourVec, deadStateVec),
+						origColourVec
 					);
+					v128_t setToAliveMask = wasm_v128_and(cells, canBecomeAlive);
 
-					// the other cells will decrement if they are bigger than minDeadState
-					// and their bit cells cleared
 					v128_t biggerThanMinMask = wasm_u8x16_gt(colourVec, minDeadStateVec);
-					v128_t decrementedValues = wasm_u8x16_sub_sat(colourVec, wasm_v128_and(biggerThanMinMask, oneVec));
 
-					// set the alive cells to maxGenState and the others to the decremented values
+					// optimized fade: Wasm boolean true is 0xFF (-1 in int8).
+					// colour + (-1) safely calculates colour - 1 and implicitly handles min clamp.
+					v128_t decrementedValues = wasm_i8x16_add(colourVec, biggerThanMinMask);
+
 					v128_t newColourVec = wasm_v128_bitselect(maxGenStateVec, decrementedValues, setToAliveMask);
 
-					// update the population from the cells alive bitmask population count
-					uint32_t aliveCells = wasm_i8x16_bitmask(wasm_i8x16_swizzle(setToAliveMask, reverseVec));
-					population += __builtin_popcount(aliveCells);
+					// offload demographic logic to fast scalar bitwise operations
+					uint32_t m_set = wasm_i8x16_bitmask(setToAliveMask);
+					uint32_t m_orig = wasm_i8x16_bitmask(origColourVec);
 
-					// update births and deaths
-					births += __builtin_popcount(wasm_i8x16_bitmask(wasm_v128_andnot(setToAliveMask, origColourVec)));
-					deaths += __builtin_popcount(wasm_i8x16_bitmask(wasm_v128_andnot(origColourVec, setToAliveMask)));
+					population += __builtin_popcount(m_set);
+					births += __builtin_popcount(m_set & ~m_orig);
+					deaths += __builtin_popcount(m_orig & ~m_set);
 
-					// store updated cell colours
 					wasm_v128_store(colourRow, newColourVec);
+					*gridRow = wasm_i8x16_bitmask(wasm_i8x16_swizzle(setToAliveMask, reverseVec));
 
-					// update cell bit grid
-					*gridRow = aliveCells;
+					// deduce occupied status purely from integer bits rather than another Vector GT compare
+					uint32_t occupiedBits = wasm_i8x16_bitmask(biggerThanMinMask) | m_set;
 
-					// determine if any cells in the row are non-zero
-					if (wasm_v128_any_true(wasm_u8x16_gt(newColourVec, minDeadStateVec))) {
+					if (occupiedBits) {
 						tileAlive = 1;
-
-						// check if any cells in the row are alive
 						uint32_t aliveBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, deadStateVec));
 
-						// compute the left and right most occupied cell
 						if (aliveBits) {
-							uint32_t leftMost = 31 - __builtin_clz(aliveBits);
-							uint32_t rightMost = __builtin_ctz(aliveBits);
+							uint32_t lM = 31 - __builtin_clz(aliveBits);
+							uint32_t rM = __builtin_ctz(aliveBits);
+							uint32_t rX = cx + rM;
+							uint32_t lX = cx + lM;
 
-							// update the min and max X
-							if ((currentX << 4) + rightMost < newLeftX) {
-								newLeftX = (currentX << 4) + rightMost;
-							}
-							if ((currentX << 4) + leftMost > newRightX) {
-								newRightX = (currentX << 4) + leftMost;
-							}
-						}
-
-						if (h < newBottomY) {
-							newBottomY = h;
-						}
-						if (h > newTopY) {
-							newTopY = h;
+							// ternary operator forces LLVM to emit branchless `select` instructions
+							tileLeftX  = rX < tileLeftX  ? rX : tileLeftX;
+							tileRightX = lX > tileRightX ? lX : tileRightX;
+							tileMinY   = h  < tileMinY   ? h  : tileMinY;
+							tileMaxY   = h  > tileMaxY   ? h  : tileMaxY;
 						}
 					}
 
-					// next row
 					h++;
 					colourRow += colourGridWidth;
 					gridRow += gridWidth;
 				}
 
-				// update tile bits if this tile has occupied cells
+				// apply accumulated tight tile bounds to the global bounding box
 				if (tileAlive) {
 					nextTiles |= (1 << b);
+					newLeftX   = tileLeftX  < newLeftX   ? tileLeftX  : newLeftX;
+					newRightX  = tileRightX > newRightX  ? tileRightX : newRightX;
+					newBottomY = tileMinY   < newBottomY ? tileMinY   : newBottomY;
+					newTopY    = tileMaxY   > newTopY    ? tileMaxY   : newTopY;
 				}
 			}
 
@@ -1261,7 +1212,6 @@ void nextGenerationGenerations(
 		tileRowOffset += tileGridWidth;
 	}
 
-	// return data to JS
 	*shared++ = population;
 	*shared++ = births;
 	*shared++ = deaths;
@@ -2120,19 +2070,15 @@ void nextGenerationSuperMoore(
 	const uint32_t alive9or11 = (1 << 9) | (1 << 11);
 	const uint32_t alive1or3or5or13or15or17or19or21or23or25 = (1 << 1) | (1 << 3) | (1 << 5) | (1 << 13) | (1 << 15) | (1 << 17) | (1 << 19) | (1 << 21) | (1 << 23) | (1 << 25);
 
-	// tile width in 16 bit chunks
 	const uint32_t xSize = tileX >> 1;
-
-	// tile columns in 16 bit values
 	const uint32_t tileCols16 = tileCols >> 4;
 
-	// grid
-	uint16_t *grid = grid16;
+	// explicitly separate the read and write buffers
+	uint16_t *restrict grid = grid16;
 	uint16_t *tileGrid = tileGrid16;
-	uint8_t *colourGrid = nextColourGrid8;
-	uint8_t *outputGrid = colourGrid8;
+	uint8_t *restrict colourGrid = nextColourGrid8;
+	uint8_t *restrict outputGrid = colourGrid8;
 
-	// select the correct grid
 	if (counter & 1) {
 		grid = nextGrid16;
 		tileGrid = nextTileGrid16;
@@ -2140,77 +2086,50 @@ void nextGenerationSuperMoore(
 		outputGrid = nextColourGrid8;
 	}
 
-	// clear column occupied flags
 	memset(columnOccupied16, 0, columnOccupiedWidth * sizeof(*columnOccupied16));
 	memset(columnAliveOccupied16, 0, columnOccupiedWidth * sizeof(*columnAliveOccupied16));
-
-	// clear row occupied flags
 	memset(rowOccupied16, 0, rowOccupiedWidth * sizeof(*rowOccupied16));
 	memset(rowAliveOccupied16, 0, rowOccupiedWidth * sizeof(*rowAliveOccupied16));
 
-	// set the initial tile row
 	uint32_t bottomY = 0;
 	uint32_t topY = bottomY + ySize;
 
 	// scan each row of tiles
 	for (uint32_t th = 0; th < height >> 4; th++) {
-		// set initial tile column
 		uint32_t leftX = 0;
 
-		// get the tile row and colour tile rows
 		uint16_t *tileGridRow = tileGrid + th * tileGridWidth;
 		uint16_t *colourTileRow = colourTileGrid + th * tileGridWidth;
 		uint16_t *colourTileHistoryRow = colourTileHistoryGrid + th * tileGridWidth;
 
-		// scan each set of tiles
 		for (uint32_t tw = 0; tw < tileCols16; tw++) {
-			// get the next tile group (16 tiles)
 			uint32_t tiles = tileGridRow[tw] | colourTileRow[tw];
 			uint32_t currentX = leftX;
 			uint32_t origTiles = tiles;
 
-			// compute next colour for each tile in the set
 			while (tiles) {
 				uint32_t b = 31 - __builtin_clz(tiles);
 				tiles &= ~(1 << b);
 
 				leftX = currentX + xSize * (15 - b);
 
-				// mark no cells in this column
 				uint32_t colOccupied = 0;
 				uint32_t colAliveOccupied = 0;
-
-				// mark no cells in the tile rows
 				uint32_t rowOccupied = 0;
 				uint32_t rowAliveOccupied = 0;
 				uint32_t rowIndex = 32768;
-
-				// clear type mask
 				uint32_t typeMask = 0;
 
-				// process each row
 				for (uint32_t h = bottomY; h < topY; h++) {
-					// get correct starting colour index
 					uint32_t cr = (leftX << 4);
 
-					// get the grid and colour grid row
-					uint16_t *gridRow = grid + h * gridWidth + leftX;
-					uint8_t *colourGridRow = colourGrid + h * colourGridWidth + cr;
-					uint8_t *aboveRow = colourGridRow - colourGridWidth;
-					uint8_t *belowRow = colourGridRow + colourGridWidth;
+					uint16_t *restrict gridRow = grid + h * gridWidth + leftX;
+					const uint8_t *restrict colourGridRow = colourGrid + h * colourGridWidth + cr;
+					const uint8_t *restrict aboveRow = (h == 0) ? blankColourRow : (colourGridRow - colourGridWidth);
+					const uint8_t *restrict belowRow = (h == height - 1) ? blankColourRow : (colourGridRow + colourGridWidth);
 
-					// deal with bottom row of the grid
-					if (h == 0) {
-						aboveRow = blankColourRow;
-					}
-					if (h == height - 1) {
-						belowRow = blankColourRow;
-					}
+					uint8_t *restrict destRow = outputGrid + h * colourGridWidth + cr;
 
-					// destination to write bit cells
-					uint8_t *destRow = outputGrid + h * colourGridWidth + cr;
-
-					// get initial neighbours
 					uint32_t lcol = 0;
 					if (cr == 0) {
 						c = 0;
@@ -2222,18 +2141,17 @@ void nextGenerationSuperMoore(
 					e = *colourGridRow;
 					rcol = (1 << e) | (1 << *belowRow) | (1 << *aboveRow);
 
-					// process each 16bit chunk (16 cells) along the row
 					uint32_t nextCell = *gridRow;
 
-					// process each cell in the chunk
+					// keep track of modifications purely in this scalar register
+					uint32_t modifiedCell = nextCell;
+
 					uint32_t colIndex = 1 << 15;
 					while (colIndex > 0) {
-						// get next column
 						colourGridRow++;
 						belowRow++;
 						aboveRow++;
 
-						// shift neighbourhood left
 						c = e;
 						e = *colourGridRow;
 						lcol = ccol;
@@ -2241,69 +2159,56 @@ void nextGenerationSuperMoore(
 						rcol = (1 << e) | (1 << *belowRow) | (1 << *aboveRow);
 						value = c;
 
-						// typemask has a bit set per state in the neighbouring cells
 						typeMask = lcol | ccol | rcol;
-
-						// handle state 6
 						bool process = true;
 
 						if (typeMask & (1 << 6)) {
 							process = false;
-
-							if (c == 1) {
-								value = 2;
-							} else if (c == 3 || c == 5) {
-								value = 9;
-							} else if (c == 7 || c == 8 || c >= 13) {
-								value = 0;
-							} else if (c == 9) {
-								value = 10;
-							} else if (c == 11) {
-								value = 12;
-							} else {
-								process = true;
+							switch (c) {
+								case 1:  value = 2; break;
+								case 3:
+								case 5:  value = 9; break;
+								case 7:
+								case 8:  value = 0; break;
+								case 9:  value = 10; break;
+								case 11: value = 12; break;
+								default:
+									if (c >= 13) value = 0;
+									else process = true;
+									break;
 							}
 
-							// clear cell in bit grid
+							// clear cell locally if necessary
 							if (!process && (c & 1)) {
-								if (nextCell & colIndex) {
-									*gridRow &= ~colIndex;
+								if (modifiedCell & colIndex) {
+									modifiedCell &= ~colIndex;
 									deaths++;
 									population--;
 								}
 							}
 						}
 
-						// check whether state still needs processing
 						if (process) {
-							// get cell state from bit grid
-							if (nextCell & colIndex) {
-								// cell alive
-								// was cell alive in this generation
+							// use the active memory state (modifiedCell) for logical checks
+							if (modifiedCell & colIndex) {
 								if ((c & 1) == 0) {
-									// cell was dead so has been born now
 									switch (c) {
 										case 4:
 											value = 3;
 											break;
-
 										case 6:
-											// clear cell in bit grid
-											*gridRow &= ~colIndex;
+											modifiedCell &= ~colIndex;
 											births--;
 											population--;
 											break;
-
 										case 8:
 											value = 7;
 											break;
-
 										default:
 											value = 1;
 											calc = typeMask & alive9to25;
 
 											if (((typeMask & alive1or3or5or7) == 0) && (__builtin_popcount(calc) == 1)) {
-												// the bit index gives the cell state
 												value = 31 - __builtin_clz(calc);
 											} else {
 												calc = typeMask & alive13or15or17or19or21or23or25;
@@ -2325,82 +2230,47 @@ void nextGenerationSuperMoore(
 									}
 								}
 							} else {
-								// cell dead
-								// was cell alive in this generation
 								if (c & 1) {
-									// cell was alive so has died
 									if (c <= 11) {
-										if (c == 5) {
-											value = 4;
-										} else {
-											value = c + 1;
-										}
+										value = (c == 5) ? 4 : (c + 1);
 									} else {
 										value = 0;
 									}
 								} else {
-									// cell is still dead
 									if (c >= 14) {
 										switch (c) {
-											case 14:
-												value = 0;
-												break;
-
-											case 16:
-												if (typeMask & aliveWith14) {
-													value = 14;
-												}
-												break;
-
-											case 18:
-												if (typeMask & (1 << 22)) {
-													value = 22;
-												}
-												break;
-
-											case 20:
-												if (typeMask & (1 << 18)) {
-													value = 18;
-												}
-												break;
-
-											case 22:
-												if (typeMask & (1 << 20)) {
-													value = 20;
-												}
-												break;
-
-											case 24:
-												if (typeMask & aliveWith14or18) {
-													value = 18;
-												}
-												break;
+											case 14: value = 0; break;
+											case 16: if (typeMask & aliveWith14) value = 14; break;
+											case 18: if (typeMask & (1 << 22)) value = 22; break;
+											case 20: if (typeMask & (1 << 18)) value = 18; break;
+											case 22: if (typeMask & (1 << 20)) value = 20; break;
+											case 24: if (typeMask & aliveWith14or18) value = 18; break;
 										}
 									}
 								}
 							}
 						}
 
-						// output new cell state
-						*destRow = value;
-						destRow++;
+						*destRow++ = value;
 
 						if (value > 0) {
 							colOccupied |= colIndex;
 							rowOccupied |= rowIndex;
 
-							// update alive tracker
 							if (value & 1) {
 								colAliveOccupied |= colIndex;
 								rowAliveOccupied |= rowIndex;
 							}
 						}
 
-						// next bit cell
 						colIndex >>= 1;
 					}
 
-					// next row
+					// commit modifications to RAM only if bits changed
+					if (modifiedCell != nextCell) {
+						*gridRow = modifiedCell;
+					}
+
 					rowIndex >>= 1;
 				}
 
@@ -2410,25 +2280,19 @@ void nextGenerationSuperMoore(
 				rowAliveOccupied16[th] |= rowAliveOccupied;
 			}
 
-			// save the tile group
 			colourTileRow[tw] = origTiles;
 			colourTileHistoryRow[tw] |= origTiles;
-
-			// next tile set
 			leftX = currentX + (xSize << 4);
 		}
 
-		// next tile row
 		bottomY += ySize;
 		topY += ySize;
 	}
 
-	// return data to JS
 	*shared++ = population;
 	*shared++ = births;
 	*shared++ = deaths;
 
-	// update bounding boxes
 	shared = updateBoundingBox(columnOccupied16, columnOccupiedWidth, rowOccupied16, rowOccupiedWidth, width, height, shared);
 	shared = updateBoundingBox(columnAliveOccupied16, columnOccupiedWidth, rowAliveOccupied16, rowOccupiedWidth, width, height, shared);
 }

@@ -3,7 +3,7 @@
 
 /*
 This file is part of LifeViewer
- Copyright (C) 2015-2025 Chris Rowett
+ Copyright (C) 2015-2026 Chris Rowett
 
  LifeViewer is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -355,7 +355,7 @@ This file is part of LifeViewer
 		/** @const {string} */ externalViewerTitle : "LifeViewer",
 
 		// build version
-		/** @const {number} */ versionBuild : 1384,
+		/** @const {number} */ versionBuild : 1385,
 
 		// standard edition name
 		/** @const {string} */ standardEdition : "Standard",
