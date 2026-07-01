@@ -1,3 +1,8 @@
+Build 1388
+- significant performance improvements for LifeViewer Pro
+	- HROT von Neumann 2-state 7x
+	- HROT von Neumann N-state 7x
+
 Build 1387
 - fixed issue when pasting RLE with x and/or y set to 0
 

@@ -54,67 +54,75 @@ This file is part of LifeViewer
 #include <wasm_simd128.h>
 #include <emscripten.h>
 
-
 // EMSCRIPTEN_KEEPALIVE
 void nextGenerationCheckerBoth2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart,
-	const int32_t start
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart,
+    const int32_t start)
+{
 	int32_t x, y, i, j;
 	int32_t startX = leftX - xrange;
 	int32_t endX = rightX + xrange;
 
-	// Align chunks for 16-lane SIMD processing
+	// align chunks for 16-lane SIMD processing
 	int32_t alignedStart = (startX + 15) & ~15;
 	int32_t alignedEnd = (endX + 1) & ~15;
-	if (alignedStart > endX + 1) {
+	if (alignedStart > endX + 1)
+	{
 		alignedStart = endX + 1;
 	}
 
-	// Calculate max possible operations dynamically.
-	// Checkerboard O(R^2) area can easily exceed 65k for large rules.
+	// calculate max possible operations dynamically.
+	// checkerboard O(R^2) area can easily exceed 65k for large rules.
 	int32_t max_ops = 0;
 	int32_t temp_offset = start;
-	for (j = -yrange; j <= yrange; j++) {
-		for (i = -xrange + temp_offset; i <= xrange - temp_offset; i += 2) {
+	for (j = -yrange; j <= yrange; j++)
+	{
+		for (i = -xrange + temp_offset; i <= xrange - temp_offset; i += 2)
+		{
 			max_ops++;
 		}
 		temp_offset = 1 - temp_offset;
 	}
-	if (start == 1) max_ops++;
+	if (start == 1)
+		max_ops++;
 
 	const uint8_t aliveThresh_scalar = (uint8_t)(aliveStart - 1);
 	const v128_t aliveThresh = wasm_u8x16_splat(aliveThresh_scalar);
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = startX;
 
 		// -------------------------------------------------------------
 		// PROLOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			int32_t count = 0;
 			int32_t offset = start;
-			for (j = -yrange; j <= yrange; j++) {
+			for (j = -yrange; j <= yrange; j++)
+			{
 				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
-				for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+				for (i = -xrange + offset; i <= xrange - offset; i += 2)
+				{
 					count += (cRow[i] > aliveThresh_scalar);
 				}
 				offset = 1 - offset;
 			}
-			if (start == 1) {
+			if (start == 1)
+			{
 				uint8_t *midRow = colourGrid + y * colourGridWidth + x;
 				count += (midRow[0] > aliveThresh_scalar);
 			}
@@ -125,39 +133,47 @@ void nextGenerationCheckerBoth2(
 		// -------------------------------------------------------------
 		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
 		// -------------------------------------------------------------
-		if (max_ops <= 255) {
+		if (max_ops <= 255)
+		{
 			// FAST PATH: Small range. Accumulate entirely in 8-bit vectors.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t c8 = wasm_i8x16_splat(0);
 				int32_t offset = start;
 
-				for (j = -yrange; j <= yrange; j++) {
+				for (j = -yrange; j <= yrange; j++)
+				{
 					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
-					for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+					for (i = -xrange + offset; i <= xrange - offset; i += 2)
+					{
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 					}
 					offset = 1 - offset;
 				}
 
-				if (start == 1) {
+				if (start == 1)
+				{
 					uint8_t *midRow = colourGrid + y * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(midRow), aliveThresh));
 				}
 
-				// Widen directly to 32-bit & store
+				// widen directly to 32-bit & store
 				v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
 				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(c16_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
 				x += 16;
 			}
-		} else {
+		}
+		else
+		{
 			// SAFE PATH: Large range (O(R^2)). Flush 8-bit into 32-bit accumulators directly
 			// to avoid both 8-bit and 16-bit integer overflows completely.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t sum_0 = wasm_i32x4_splat(0);
 				v128_t sum_1 = wasm_i32x4_splat(0);
 				v128_t sum_2 = wasm_i32x4_splat(0);
@@ -167,12 +183,15 @@ void nextGenerationCheckerBoth2(
 				int ops = 0;
 				int32_t offset = start;
 
-				for (j = -yrange; j <= yrange; j++) {
+				for (j = -yrange; j <= yrange; j++)
+				{
 					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
-					for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+					for (i = -xrange + offset; i <= xrange - offset; i += 2)
+					{
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 						ops++;
-						if (ops == 255) {
+						if (ops == 255)
+						{
 							v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
 							v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 							sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
@@ -186,13 +205,15 @@ void nextGenerationCheckerBoth2(
 					offset = 1 - offset;
 				}
 
-				if (start == 1) {
+				if (start == 1)
+				{
 					uint8_t *midRow = colourGrid + y * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(midRow), aliveThresh));
 					ops++;
 				}
 
-				if (ops > 0) {
+				if (ops > 0)
+				{
 					v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
 					v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 					sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
@@ -201,9 +222,9 @@ void nextGenerationCheckerBoth2(
 					sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
 				}
 
-				wasm_v128_store(countRow + x,      sum_0);
-				wasm_v128_store(countRow + x + 4,  sum_1);
-				wasm_v128_store(countRow + x + 8,  sum_2);
+				wasm_v128_store(countRow + x, sum_0);
+				wasm_v128_store(countRow + x + 4, sum_1);
+				wasm_v128_store(countRow + x + 8, sum_2);
 				wasm_v128_store(countRow + x + 12, sum_3);
 
 				x += 16;
@@ -213,17 +234,21 @@ void nextGenerationCheckerBoth2(
 		// -------------------------------------------------------------
 		// EPILOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x <= endX) {
+		while (x <= endX)
+		{
 			int32_t count = 0;
 			int32_t offset = start;
-			for (j = -yrange; j <= yrange; j++) {
+			for (j = -yrange; j <= yrange; j++)
+			{
 				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
-				for (i = -xrange + offset; i <= xrange - offset; i += 2) {
+				for (i = -xrange + offset; i <= xrange - offset; i += 2)
+				{
 					count += (cRow[i] > aliveThresh_scalar);
 				}
 				offset = 1 - offset;
 			}
-			if (start == 1) {
+			if (start == 1)
+			{
 				uint8_t *midRow = colourGrid + y * colourGridWidth + x;
 				count += (midRow[0] > aliveThresh_scalar);
 			}
@@ -235,82 +260,88 @@ void nextGenerationCheckerBoth2(
 	}
 }
 
-// Wrappers stay untouched
+// wrappers stay untouched
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationCheckerboard2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	nextGenerationCheckerBoth2(counts, countsWidth, colourGrid, colourGridWidth, leftX, bottomY, rightX, topY, xrange, yrange, aliveStart, 1);
 }
 
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationAlignedCheckerboard2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	nextGenerationCheckerBoth2(counts, countsWidth, colourGrid, colourGridWidth, leftX, bottomY, rightX, topY, xrange, yrange, aliveStart, 0);
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationGaussian2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t i, j, x, y, inc, weight, count;
 
 	// Gaussian
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 
 			uint8_t *colourRow1 = colourGrid + (y - yrange) * colourGridWidth + x;
 			uint8_t *colourRow2 = colourGrid + (y + yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j < 0; j++) {
+			for (j = -yrange; j < 0; j++)
+			{
 				inc = j + yrange + 1;
 				weight = inc;
-				for (i = -xrange; i <= 0; i++) {
-					if (*(colourRow1 + i) >= aliveStart) {
+				for (i = -xrange; i <= 0; i++)
+				{
+					if (*(colourRow1 + i) >= aliveStart)
+					{
 						count += weight;
 					}
 					weight += inc;
 				}
 
 				weight -= inc + inc;
-				for (i = 1; i <= xrange; i++) {
-					if (*(colourRow1 + i) >= aliveStart) {
+				for (i = 1; i <= xrange; i++)
+				{
+					if (*(colourRow1 + i) >= aliveStart)
+					{
 						count += weight;
 					}
 					weight -= inc;
@@ -319,16 +350,20 @@ void nextGenerationGaussian2(
 				inc = j + yrange + 1;
 				weight = inc;
 
-				for (i = -xrange; i <= 0; i++) {
-					if (*(colourRow2 + i) >= aliveStart) {
+				for (i = -xrange; i <= 0; i++)
+				{
+					if (*(colourRow2 + i) >= aliveStart)
+					{
 						count += weight;
 					}
 					weight += inc;
 				}
 
 				weight -= inc + inc;
-				for (i = 1; i <= xrange; i++) {
-					if (*(colourRow2 + i) >= aliveStart) {
+				for (i = 1; i <= xrange; i++)
+				{
+					if (*(colourRow2 + i) >= aliveStart)
+					{
 						count += weight;
 					}
 					weight -= inc;
@@ -340,21 +375,26 @@ void nextGenerationGaussian2(
 
 			inc = xrange + 1;
 			weight = inc;
-			for (i = -xrange; i <= 0; i++) {
-				if (*(colourRow1 + i) >= aliveStart) {
+			for (i = -xrange; i <= 0; i++)
+			{
+				if (*(colourRow1 + i) >= aliveStart)
+				{
 					count += weight;
 				}
 				weight += inc;
 			}
 
 			weight -= inc + inc;
-			for (i = 1; i <= xrange; i++) {
-				if (*(colourRow1 + i) >= aliveStart) {
+			for (i = 1; i <= xrange; i++)
+			{
+				if (*(colourRow1 + i) >= aliveStart)
+				{
 					count += weight;
 				}
 				weight -= inc;
 			}
-			if (*colourRow1 >= aliveStart) {
+			if (*colourRow1 >= aliveStart)
+			{
 				count++;
 			}
 
@@ -366,39 +406,42 @@ void nextGenerationGaussian2(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationCustom2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int16_t *const neighbourList,
-	const int32_t neighbourLength,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart,
-	const int32_t isTriangular
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int16_t *const neighbourList,
+    const int32_t neighbourLength,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart,
+    const int32_t isTriangular)
+{
 	int32_t i, j, k, l, x, y, count;
 
 	// Custom
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 			j = 0;
-			while (j < neighbourLength) {
+			while (j < neighbourLength)
+			{
 				// get the row number
 				i = neighbourList[j];
-				if (isTriangular && (((x + y) & 1) == 0)) {
+				if (isTriangular && (((x + y) & 1) == 0))
+				{
 					i = -i;
 				}
 				j++;
@@ -409,8 +452,10 @@ void nextGenerationCustom2(
 				k = neighbourList[j];
 				j++;
 
-				for (l = j; l < j + k; l++) {
-					if (*(colourRow + neighbourList[l]) >= aliveStart) {
+				for (l = j; l < j + k; l++)
+				{
+					if (*(colourRow + neighbourList[l]) >= aliveStart)
+					{
 						count++;
 					}
 				}
@@ -424,20 +469,19 @@ void nextGenerationCustom2(
 	}
 }
 
-
 void nextGenerationWeighted2R1(
-	int32_t *counts,
-	const uint32_t countsWidth,
-	uint8_t *colourGrid,
-	const uint32_t colourGridWidth,
-	const int8_t *weightedNeighbourhood,
-	const int32_t bottomY,
-	const int32_t leftX,
-	const int32_t topY,
-	const int32_t rightX,
-	const int32_t range,
-	const uint32_t aliveStart
-) {
+    int32_t *counts,
+    const uint32_t countsWidth,
+    uint8_t *colourGrid,
+    const uint32_t colourGridWidth,
+    const int8_t *weightedNeighbourhood,
+    const int32_t bottomY,
+    const int32_t leftX,
+    const int32_t topY,
+    const int32_t rightX,
+    const int32_t range,
+    const uint32_t aliveStart)
+{
 	int32_t x, y, count;
 
 	const int8_t w0 = weightedNeighbourhood[0];
@@ -456,40 +500,51 @@ void nextGenerationWeighted2R1(
 	const uint32_t nextCol = colourGridWidth + colourGridWidth - 1;
 	const uint32_t nextRow = colourGridWidth - (rightX + range - (leftX - range) + 1);
 
-	for (y = bottomY - range; y <= topY + range; y++) {
+	for (y = bottomY - range; y <= topY + range; y++)
+	{
 		x = leftX - range;
 
-		while (x <= rightX + range) {
+		while (x <= rightX + range)
+		{
 			count = 0;
-			if (*(colourRow - 1) >= aliveStart) {
+			if (*(colourRow - 1) >= aliveStart)
+			{
 				count += w0;
 			}
-			if (*colourRow >= aliveStart) {
+			if (*colourRow >= aliveStart)
+			{
 				count += w1;
 			}
-			if (*(colourRow + 1) >= aliveStart) {
+			if (*(colourRow + 1) >= aliveStart)
+			{
 				count += w2;
 			}
 
 			colourRow += colourGridWidth;
-			if (*(colourRow - 1) >= aliveStart) {
+			if (*(colourRow - 1) >= aliveStart)
+			{
 				count += w3;
 			}
-			if (*colourRow >= aliveStart) {
+			if (*colourRow >= aliveStart)
+			{
 				count += w4;
 			}
-			if (*(colourRow + 1) >= aliveStart) {
+			if (*(colourRow + 1) >= aliveStart)
+			{
 				count += w5;
 			}
 
 			colourRow += colourGridWidth;
-			if (*(colourRow - 1) >= aliveStart) {
+			if (*(colourRow - 1) >= aliveStart)
+			{
 				count += w6;
 			}
-			if (*colourRow >= aliveStart) {
+			if (*colourRow >= aliveStart)
+			{
 				count += w7;
 			}
-			if (*(colourRow + 1) >= aliveStart) {
+			if (*(colourRow + 1) >= aliveStart)
+			{
 				count += w8;
 			}
 
@@ -504,56 +559,67 @@ void nextGenerationWeighted2R1(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationWeighted2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int8_t *const weightedNeighbourhood,
-	const uint32_t weightedNeighbourhoodLength,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart,
-	const int32_t isTriangular
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int8_t *const weightedNeighbourhood,
+    const uint32_t weightedNeighbourhoodLength,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart,
+    const int32_t isTriangular)
+{
 	int32_t i, j, k, l, x, y, count;
 
 	const int32_t rowChunk = xrange + xrange + 1;
 
 	// check for square range 1
-	if (xrange == 1 && yrange == 1 && !isTriangular) {
+	if (xrange == 1 && yrange == 1 && !isTriangular)
+	{
 		nextGenerationWeighted2R1(counts, countsWidth, colourGrid, colourGridWidth, weightedNeighbourhood, bottomY, leftX, topY, rightX, xrange, aliveStart);
-	} else {
+	}
+	else
+	{
 		// Weighted
 		int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 		// weighted
-		if (isTriangular) {
-			for (y = bottomY - yrange; y <= topY + yrange; y++) {
+		if (isTriangular)
+		{
+			for (y = bottomY - yrange; y <= topY + yrange; y++)
+			{
 				x = leftX - xrange;
 
-				while (x <= rightX + xrange) {
+				while (x <= rightX + xrange)
+				{
 					count = 0;
-					if ((x + y) & 1) {
+					if ((x + y) & 1)
+					{
 						l = -rowChunk;
 						k = weightedNeighbourhoodLength + l;
 						l += l;
-					} else {
+					}
+					else
+					{
 						k = 0;
 						l = 0;
 					}
 
 					uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-					for (j = -yrange; j <= yrange; j++) {
-						for (i = -xrange; i <= xrange; i++) {
-							if (*(colourRow + i) >= aliveStart) {
+					for (j = -yrange; j <= yrange; j++)
+					{
+						for (i = -xrange; i <= xrange; i++)
+						{
+							if (*(colourRow + i) >= aliveStart)
+							{
 								count += weightedNeighbourhood[k];
 							}
 							k++;
@@ -568,19 +634,26 @@ void nextGenerationWeighted2(
 
 				countRow += countsWidth;
 			}
-		} else {
-			for (y = bottomY - yrange; y <= topY + yrange; y++) {
+		}
+		else
+		{
+			for (y = bottomY - yrange; y <= topY + yrange; y++)
+			{
 				x = leftX - xrange;
 
-				while (x <= rightX + xrange) {
+				while (x <= rightX + xrange)
+				{
 					count = 0;
 					k = 0;
 
 					uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-					for (j = -yrange; j <= yrange; j++) {
-						for (i = -xrange; i <= xrange; i++) {
-							if (*(colourRow + i) >= aliveStart) {
+					for (j = -yrange; j <= yrange; j++)
+					{
+						for (i = -xrange; i <= xrange; i++)
+						{
+							if (*(colourRow + i) >= aliveStart)
+							{
 								count += weightedNeighbourhood[k];
 							}
 							k++;
@@ -598,25 +671,24 @@ void nextGenerationWeighted2(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationWeightedStates2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int8_t *const weightedNeighbourhood,
-	const uint32_t weightedNeighbourhoodLength,
-	const uint8_t *const weightedStates,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart,
-	const int32_t isTriangular
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int8_t *const weightedNeighbourhood,
+    const uint32_t weightedNeighbourhoodLength,
+    const uint8_t *const weightedStates,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart,
+    const int32_t isTriangular)
+{
 	int32_t i, j, k, l, x, y, count;
 
 	const int32_t rowChunk = xrange + xrange + 1;
@@ -628,28 +700,39 @@ void nextGenerationWeightedStates2(
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	// weighted
-	if (isTriangular) {
-		for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	if (isTriangular)
+	{
+		for (y = bottomY - yrange; y <= topY + yrange; y++)
+		{
 			x = leftX - xrange;
 
-			while (x <= rightX + xrange) {
+			while (x <= rightX + xrange)
+			{
 				count = 0;
-				if ((x + y) & 1) {
+				if ((x + y) & 1)
+				{
 					l = -rowChunk;
 					k = weightedNeighbourhoodLength + l;
 					l += l;
-				} else {
+				}
+				else
+				{
 					k = 0;
 					l = 0;
 				}
 
 				uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-				for (j = -yrange; j <= yrange; j++) {
-					for (i = -xrange; i <= xrange; i++) {
-						if (*(colourRow + i) >= aliveStart) {
+				for (j = -yrange; j <= yrange; j++)
+				{
+					for (i = -xrange; i <= xrange; i++)
+					{
+						if (*(colourRow + i) >= aliveStart)
+						{
 							count += weightedNeighbourhood[k] * aliveWeight;
-						} else {
+						}
+						else
+						{
 							count += weightedNeighbourhood[k] * deadWeight;
 						}
 						k++;
@@ -664,21 +747,30 @@ void nextGenerationWeightedStates2(
 
 			countRow += countsWidth;
 		}
-	} else {
-		for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	}
+	else
+	{
+		for (y = bottomY - yrange; y <= topY + yrange; y++)
+		{
 			x = leftX - xrange;
 
-			while (x <= rightX + xrange) {
+			while (x <= rightX + xrange)
+			{
 				count = 0;
 				k = 0;
 
 				uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-				for (j = -yrange; j <= yrange; j++) {
-					for (i = -xrange; i <= xrange; i++) {
-						if (*(colourRow + i) >= aliveStart) {
+				for (j = -yrange; j <= yrange; j++)
+				{
+					for (i = -xrange; i <= xrange; i++)
+					{
+						if (*(colourRow + i) >= aliveStart)
+						{
 							count += weightedNeighbourhood[k] * aliveWeight;
-						} else {
+						}
+						else
+						{
 							count += weightedNeighbourhood[k] * deadWeight;
 						}
 						k++;
@@ -695,37 +787,38 @@ void nextGenerationWeightedStates2(
 	}
 }
 
-
 // EMSCRIPTEN_KEEPALIVE
 void nextGenerationShaped2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const uint32_t *const widths,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const uint32_t *const widths,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t x, y, i, j;
 	int32_t startX = leftX - xrange;
 	int32_t endX = rightX + xrange;
 
-	// Align chunks for 16-lane SIMD processing
+	// align chunks for 16-lane SIMD processing
 	int32_t alignedStart = (startX + 15) & ~15;
 	int32_t alignedEnd = (endX + 1) & ~15;
-	if (alignedStart > endX + 1) {
+	if (alignedStart > endX + 1)
+	{
 		alignedStart = endX + 1;
 	}
 
-	// Calculate maximum possible neighbors dynamically.
+	// calculate maximum possible neighbors dynamically.
 	// Circular/L2 areas scale by O(R^2) and can exceed 65,535 for large rules.
 	int32_t max_ops = 0;
-	for (j = -yrange; j <= yrange; j++) {
+	for (j = -yrange; j <= yrange; j++)
+	{
 		max_ops += (2 * widths[j + yrange]) + 1;
 	}
 
@@ -734,18 +827,22 @@ void nextGenerationShaped2(
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = startX;
 
 		// -------------------------------------------------------------
 		// PROLOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			int32_t count = 0;
-			for (j = -yrange; j <= yrange; j++) {
+			for (j = -yrange; j <= yrange; j++)
+			{
 				int32_t width = widths[j + yrange];
 				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
-				for (i = -width; i <= width; i++) {
+				for (i = -width; i <= width; i++)
+				{
 					count += (cRow[i] > aliveThresh_scalar);
 				}
 			}
@@ -756,15 +853,19 @@ void nextGenerationShaped2(
 		// -------------------------------------------------------------
 		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
 		// -------------------------------------------------------------
-		if (max_ops <= 255) {
+		if (max_ops <= 255)
+		{
 			// FAST PATH: Small shape. Accumulate safely into 8-bit registers.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t c8 = wasm_i8x16_splat(0);
 
-				for (j = -yrange; j <= yrange; j++) {
+				for (j = -yrange; j <= yrange; j++)
+				{
 					int32_t width = widths[j + yrange];
 					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
-					for (i = -width; i <= width; i++) {
+					for (i = -width; i <= width; i++)
+					{
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 					}
 				}
@@ -774,17 +875,20 @@ void nextGenerationShaped2(
 				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 
 				// Widen 16-bit -> 32-bit & store
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(c16_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
 				x += 16;
 			}
-		} else {
+		}
+		else
+		{
 			// SAFE PATH: Large shapes. Flush 8-bit counts directly to 32-bit
 			// accumulators to avoid any chance of integer overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t sum_0 = wasm_i32x4_splat(0);
 				v128_t sum_1 = wasm_i32x4_splat(0);
 				v128_t sum_2 = wasm_i32x4_splat(0);
@@ -793,16 +897,19 @@ void nextGenerationShaped2(
 				v128_t c8 = wasm_i8x16_splat(0);
 				int ops = 0;
 
-				for (j = -yrange; j <= yrange; j++) {
+				for (j = -yrange; j <= yrange; j++)
+				{
 					int32_t width = widths[j + yrange];
 					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
 
-					for (i = -width; i <= width; i++) {
+					for (i = -width; i <= width; i++)
+					{
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 						ops++;
 
 						// Flush to 32-bit accumulators right before 8-bit wrap
-						if (ops == 255) {
+						if (ops == 255)
+						{
 							v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
 							v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 							sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
@@ -817,7 +924,8 @@ void nextGenerationShaped2(
 				}
 
 				// Final flush for remaining counts
-				if (ops > 0) {
+				if (ops > 0)
+				{
 					v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
 					v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 					sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
@@ -826,9 +934,9 @@ void nextGenerationShaped2(
 					sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
 				}
 
-				wasm_v128_store(countRow + x,      sum_0);
-				wasm_v128_store(countRow + x + 4,  sum_1);
-				wasm_v128_store(countRow + x + 8,  sum_2);
+				wasm_v128_store(countRow + x, sum_0);
+				wasm_v128_store(countRow + x + 4, sum_1);
+				wasm_v128_store(countRow + x + 8, sum_2);
 				wasm_v128_store(countRow + x + 12, sum_3);
 
 				x += 16;
@@ -838,12 +946,15 @@ void nextGenerationShaped2(
 		// -------------------------------------------------------------
 		// EPILOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x <= endX) {
+		while (x <= endX)
+		{
 			int32_t count = 0;
-			for (j = -yrange; j <= yrange; j++) {
+			for (j = -yrange; j <= yrange; j++)
+			{
 				int32_t width = widths[j + yrange];
 				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
-				for (i = -width; i <= width; i++) {
+				for (i = -width; i <= width; i++)
+				{
 					count += (cRow[i] > aliveThresh_scalar);
 				}
 			}
@@ -855,21 +966,20 @@ void nextGenerationShaped2(
 	}
 }
 
-
 // EMSCRIPTEN_KEEPALIVE
 void nextGenerationHexagonal2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t x, y, i, j;
 	int32_t startX = leftX - xrange;
 	int32_t endX = rightX + xrange;
@@ -877,20 +987,25 @@ void nextGenerationHexagonal2(
 	// Align chunks for 16-lane SIMD processing
 	int32_t alignedStart = (startX + 15) & ~15;
 	int32_t alignedEnd = (endX + 1) & ~15;
-	if (alignedStart > endX + 1) {
+	if (alignedStart > endX + 1)
+	{
 		alignedStart = endX + 1;
 	}
 
 	// Calculate maximum possible neighbors dynamically.
 	// Hexagonal shapes scale by O(R^2) and can exceed safe accumulator limits.
 	int32_t max_ops = 0;
-	for (j = -yrange; j < 0; j++) {
-		for (i = -xrange; i <= xrange + j; i++) {
+	for (j = -yrange; j < 0; j++)
+	{
+		for (i = -xrange; i <= xrange + j; i++)
+		{
 			max_ops++;
 		}
 	}
-	for (j = 0; j <= yrange; j++) {
-		for (i = -xrange + j; i <= xrange; i++) {
+	for (j = 0; j <= yrange; j++)
+	{
+		for (i = -xrange + j; i <= xrange; i++)
+		{
 			max_ops++;
 		}
 	}
@@ -900,27 +1015,33 @@ void nextGenerationHexagonal2(
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = startX;
 
 		// -------------------------------------------------------------
 		// PROLOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			int32_t count = 0;
 			uint8_t *cRow;
 
 			// Top half
-			for (j = -yrange; j < 0; j++) {
+			for (j = -yrange; j < 0; j++)
+			{
 				cRow = colourGrid + (y + j) * colourGridWidth + x;
-				for (i = -xrange; i <= xrange + j; i++) {
+				for (i = -xrange; i <= xrange + j; i++)
+				{
 					count += (cRow[i] > aliveThresh_scalar);
 				}
 			}
 			// Bottom half
-			for (j = 0; j <= yrange; j++) {
+			for (j = 0; j <= yrange; j++)
+			{
 				cRow = colourGrid + (y + j) * colourGridWidth + x;
-				for (i = -xrange + j; i <= xrange; i++) {
+				for (i = -xrange + j; i <= xrange; i++)
+				{
 					count += (cRow[i] > aliveThresh_scalar);
 				}
 			}
@@ -932,23 +1053,29 @@ void nextGenerationHexagonal2(
 		// -------------------------------------------------------------
 		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
 		// -------------------------------------------------------------
-		if (max_ops <= 255) {
+		if (max_ops <= 255)
+		{
 			// FAST PATH: Small shape. Accumulate safely into 8-bit registers.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t c8 = wasm_i8x16_splat(0);
 				uint8_t *cRow;
 
 				// Top half
-				for (j = -yrange; j < 0; j++) {
+				for (j = -yrange; j < 0; j++)
+				{
 					cRow = colourGrid + (y + j) * colourGridWidth + x;
-					for (i = -xrange; i <= xrange + j; i++) {
+					for (i = -xrange; i <= xrange + j; i++)
+					{
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 					}
 				}
 				// Bottom half
-				for (j = 0; j <= yrange; j++) {
+				for (j = 0; j <= yrange; j++)
+				{
 					cRow = colourGrid + (y + j) * colourGridWidth + x;
-					for (i = -xrange + j; i <= xrange; i++) {
+					for (i = -xrange + j; i <= xrange; i++)
+					{
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 					}
 				}
@@ -958,17 +1085,20 @@ void nextGenerationHexagonal2(
 				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 
 				// Widen 16-bit -> 32-bit & store
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(c16_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
 				x += 16;
 			}
-		} else {
+		}
+		else
+		{
 			// SAFE PATH: Large shapes. Flush 8-bit counts directly to 32-bit
 			// accumulators to avoid integer overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t sum_0 = wasm_i32x4_splat(0);
 				v128_t sum_1 = wasm_i32x4_splat(0);
 				v128_t sum_2 = wasm_i32x4_splat(0);
@@ -979,12 +1109,15 @@ void nextGenerationHexagonal2(
 				uint8_t *cRow;
 
 				// Top half
-				for (j = -yrange; j < 0; j++) {
+				for (j = -yrange; j < 0; j++)
+				{
 					cRow = colourGrid + (y + j) * colourGridWidth + x;
-					for (i = -xrange; i <= xrange + j; i++) {
+					for (i = -xrange; i <= xrange + j; i++)
+					{
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 						ops++;
-						if (ops == 255) {
+						if (ops == 255)
+						{
 							v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
 							v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 							sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
@@ -998,12 +1131,15 @@ void nextGenerationHexagonal2(
 				}
 
 				// Bottom half
-				for (j = 0; j <= yrange; j++) {
+				for (j = 0; j <= yrange; j++)
+				{
 					cRow = colourGrid + (y + j) * colourGridWidth + x;
-					for (i = -xrange + j; i <= xrange; i++) {
+					for (i = -xrange + j; i <= xrange; i++)
+					{
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 						ops++;
-						if (ops == 255) {
+						if (ops == 255)
+						{
 							v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
 							v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 							sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
@@ -1017,7 +1153,8 @@ void nextGenerationHexagonal2(
 				}
 
 				// Final flush for remaining counts
-				if (ops > 0) {
+				if (ops > 0)
+				{
 					v128_t c16_lo = wasm_u16x8_extend_low_u8x16(c8);
 					v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 					sum_0 = wasm_i32x4_add(sum_0, wasm_u32x4_extend_low_u16x8(c16_lo));
@@ -1026,9 +1163,9 @@ void nextGenerationHexagonal2(
 					sum_3 = wasm_i32x4_add(sum_3, wasm_u32x4_extend_high_u16x8(c16_hi));
 				}
 
-				wasm_v128_store(countRow + x,      sum_0);
-				wasm_v128_store(countRow + x + 4,  sum_1);
-				wasm_v128_store(countRow + x + 8,  sum_2);
+				wasm_v128_store(countRow + x, sum_0);
+				wasm_v128_store(countRow + x + 4, sum_1);
+				wasm_v128_store(countRow + x + 8, sum_2);
 				wasm_v128_store(countRow + x + 12, sum_3);
 
 				x += 16;
@@ -1038,21 +1175,26 @@ void nextGenerationHexagonal2(
 		// -------------------------------------------------------------
 		// EPILOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x <= endX) {
+		while (x <= endX)
+		{
 			int32_t count = 0;
 			uint8_t *cRow;
 
 			// Top half
-			for (j = -yrange; j < 0; j++) {
+			for (j = -yrange; j < 0; j++)
+			{
 				cRow = colourGrid + (y + j) * colourGridWidth + x;
-				for (i = -xrange; i <= xrange + j; i++) {
+				for (i = -xrange; i <= xrange + j; i++)
+				{
 					count += (cRow[i] > aliveThresh_scalar);
 				}
 			}
 			// Bottom half
-			for (j = 0; j <= yrange; j++) {
+			for (j = 0; j <= yrange; j++)
+			{
 				cRow = colourGrid + (y + j) * colourGridWidth + x;
-				for (i = -xrange + j; i <= xrange; i++) {
+				for (i = -xrange + j; i <= xrange; i++)
+				{
 					count += (cRow[i] > aliveThresh_scalar);
 				}
 			}
@@ -1065,21 +1207,20 @@ void nextGenerationHexagonal2(
 	}
 }
 
-
 // EMSCRIPTEN_KEEPALIVE
 void nextGenerationTripod2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t x, y, i, j;
 	int32_t startX = leftX - xrange;
 	int32_t endX = rightX + xrange;
@@ -1087,7 +1228,8 @@ void nextGenerationTripod2(
 	// Align chunks for 16-lane SIMD processing
 	int32_t alignedStart = (startX + 15) & ~15;
 	int32_t alignedEnd = (endX + 1) & ~15;
-	if (alignedStart > endX + 1) {
+	if (alignedStart > endX + 1)
+	{
 		alignedStart = endX + 1;
 	}
 
@@ -1100,29 +1242,34 @@ void nextGenerationTripod2(
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = startX;
 
 		// -------------------------------------------------------------
 		// PROLOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			int32_t count = 0;
 
 			// Up Leg
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				uint8_t *cRow = colourGrid + (y - j) * colourGridWidth + x;
 				count += (cRow[0] > aliveThresh_scalar);
 			}
 
 			// Left Leg & Center
 			uint8_t *cRowY = colourGrid + y * colourGridWidth + x;
-			for (i = -xrange; i <= 0; i++) {
+			for (i = -xrange; i <= 0; i++)
+			{
 				count += (cRowY[i] > aliveThresh_scalar);
 			}
 
 			// Down-Right Leg
-			for (j = 1; j <= xrange; j++) {
+			for (j = 1; j <= xrange; j++)
+			{
 				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
 				count += (cRow[j] > aliveThresh_scalar);
 			}
@@ -1134,25 +1281,30 @@ void nextGenerationTripod2(
 		// -------------------------------------------------------------
 		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
 		// -------------------------------------------------------------
-		if (max_ops <= 255) {
+		if (max_ops <= 255)
+		{
 			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t c8 = wasm_i8x16_splat(0);
 
 				// Up Leg
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					uint8_t *cRow = colourGrid + (y - j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
 				}
 
 				// Left Leg & Center
 				uint8_t *cRowY = colourGrid + y * colourGridWidth + x;
-				for (i = -xrange; i <= 0; i++) {
+				for (i = -xrange; i <= 0; i++)
+				{
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowY + i), aliveThresh));
 				}
 
 				// Down-Right Leg
-				for (j = 1; j <= xrange; j++) {
+				for (j = 1; j <= xrange; j++)
+				{
 					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
 				}
@@ -1162,27 +1314,32 @@ void nextGenerationTripod2(
 				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 
 				// Widen 16-bit counts -> 32-bit counts & store
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(c16_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
 				x += 16;
 			}
-		} else {
+		}
+		else
+		{
 			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t count_lo = wasm_i16x8_splat(0);
 				v128_t count_hi = wasm_i16x8_splat(0);
 				v128_t c8 = wasm_i8x16_splat(0);
 				int ops = 0;
 
 				// Up Leg
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					uint8_t *cRow = colourGrid + (y - j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
 					ops++;
-					if (ops == 255) {
+					if (ops == 255)
+					{
 						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 						c8 = wasm_i8x16_splat(0);
@@ -1192,10 +1349,12 @@ void nextGenerationTripod2(
 
 				// Left Leg & Center
 				uint8_t *cRowY = colourGrid + y * colourGridWidth + x;
-				for (i = -xrange; i <= 0; i++) {
+				for (i = -xrange; i <= 0; i++)
+				{
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowY + i), aliveThresh));
 					ops++;
-					if (ops == 255) {
+					if (ops == 255)
+					{
 						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 						c8 = wasm_i8x16_splat(0);
@@ -1204,11 +1363,13 @@ void nextGenerationTripod2(
 				}
 
 				// Down-Right Leg
-				for (j = 1; j <= xrange; j++) {
+				for (j = 1; j <= xrange; j++)
+				{
 					uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
 					ops++;
-					if (ops == 255) {
+					if (ops == 255)
+					{
 						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 						c8 = wasm_i8x16_splat(0);
@@ -1216,14 +1377,15 @@ void nextGenerationTripod2(
 					}
 				}
 
-				if (ops > 0) {
+				if (ops > 0)
+				{
 					count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 					count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 				}
 
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(count_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
 
 				x += 16;
@@ -1233,23 +1395,27 @@ void nextGenerationTripod2(
 		// -------------------------------------------------------------
 		// EPILOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x <= endX) {
+		while (x <= endX)
+		{
 			int32_t count = 0;
 
 			// Up Leg
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				uint8_t *cRow = colourGrid + (y - j) * colourGridWidth + x;
 				count += (cRow[0] > aliveThresh_scalar);
 			}
 
 			// Left Leg & Center
 			uint8_t *cRowY = colourGrid + y * colourGridWidth + x;
-			for (i = -xrange; i <= 0; i++) {
+			for (i = -xrange; i <= 0; i++)
+			{
 				count += (cRowY[i] > aliveThresh_scalar);
 			}
 
 			// Down-Right Leg
-			for (j = 1; j <= xrange; j++) {
+			for (j = 1; j <= xrange; j++)
+			{
 				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
 				count += (cRow[j] > aliveThresh_scalar);
 			}
@@ -1262,23 +1428,22 @@ void nextGenerationTripod2(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationCornerEdge2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart,
-	const int32_t cornerRange,
-	const int32_t edgeRange
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart,
+    const int32_t cornerRange,
+    const int32_t edgeRange)
+{
 	int32_t x, y, count;
 
 	const uint32_t cr2 = (cornerRange * 2) * colourGridWidth;
@@ -1287,51 +1452,62 @@ void nextGenerationCornerEdge2(
 	// asterisk
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 
 			// corners
 			uint8_t *colourRow = colourGrid + (y - cornerRange) * colourGridWidth + x;
 
-			if (*(colourRow - cornerRange) >= aliveStart) {
+			if (*(colourRow - cornerRange) >= aliveStart)
+			{
 				count++;
 			}
-			if (*(colourRow + cornerRange) >= aliveStart) {
+			if (*(colourRow + cornerRange) >= aliveStart)
+			{
 				count++;
 			}
 
 			colourRow += cr2;
-			if (*(colourRow - cornerRange) >= aliveStart) {
+			if (*(colourRow - cornerRange) >= aliveStart)
+			{
 				count++;
 			}
-			if (*(colourRow + cornerRange) >= aliveStart) {
+			if (*(colourRow + cornerRange) >= aliveStart)
+			{
 				count++;
 			}
 
 			// edges
 			colourRow = colourGrid + (y - edgeRange) * colourGridWidth + x;
-			if (*colourRow >= aliveStart) {
+			if (*colourRow >= aliveStart)
+			{
 				count++;
 			}
 
 			colourRow += er2;
-			if (*colourRow >= aliveStart) {
+			if (*colourRow >= aliveStart)
+			{
 				count++;
 			}
 
 			colourRow = colourGrid + y * colourGridWidth + x;
-			if (*(colourRow - edgeRange) >= aliveStart) {
+			if (*(colourRow - edgeRange) >= aliveStart)
+			{
 				count++;
 			}
-			if (*(colourRow + edgeRange) >= aliveStart) {
+			if (*(colourRow + edgeRange) >= aliveStart)
+			{
 				count++;
 			}
 
 			// survival
-			if (*colourRow >= aliveStart) {
+			if (*colourRow >= aliveStart)
+			{
 				count++;
 			}
 
@@ -1344,21 +1520,20 @@ void nextGenerationCornerEdge2(
 	}
 }
 
-
 // EMSCRIPTEN_KEEPALIVE
 void nextGenerationAsterisk2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t x, y, i, j;
 	int32_t startX = leftX - xrange;
 	int32_t endX = rightX + xrange;
@@ -1366,7 +1541,8 @@ void nextGenerationAsterisk2(
 	// Align chunks for 16-lane SIMD processing
 	int32_t alignedStart = (startX + 15) & ~15;
 	int32_t alignedEnd = (endX + 1) & ~15;
-	if (alignedStart > endX + 1) {
+	if (alignedStart > endX + 1)
+	{
 		alignedStart = endX + 1;
 	}
 
@@ -1379,18 +1555,21 @@ void nextGenerationAsterisk2(
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = startX;
 
 		// -------------------------------------------------------------
 		// PROLOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			int32_t count = 0;
 			uint8_t *cRow;
 
 			// Top section
-			for (j = -yrange; j < 0; j++) {
+			for (j = -yrange; j < 0; j++)
+			{
 				cRow = colourGrid + (y + j) * colourGridWidth + x;
 				count += (cRow[0] > aliveThresh_scalar);
 				count += (cRow[j] > aliveThresh_scalar);
@@ -1398,12 +1577,14 @@ void nextGenerationAsterisk2(
 
 			// Middle section
 			cRow = colourGrid + y * colourGridWidth + x;
-			for (i = -xrange; i <= xrange; i++) {
+			for (i = -xrange; i <= xrange; i++)
+			{
 				count += (cRow[i] > aliveThresh_scalar);
 			}
 
 			// Bottom section (Note: bounded by xrange in original)
-			for (j = 1; j <= xrange; j++) {
+			for (j = 1; j <= xrange; j++)
+			{
 				cRow = colourGrid + (y + j) * colourGridWidth + x;
 				count += (cRow[0] > aliveThresh_scalar);
 				count += (cRow[j] > aliveThresh_scalar);
@@ -1416,14 +1597,17 @@ void nextGenerationAsterisk2(
 		// -------------------------------------------------------------
 		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
 		// -------------------------------------------------------------
-		if (max_ops <= 255) {
+		if (max_ops <= 255)
+		{
 			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t c8 = wasm_i8x16_splat(0);
 				uint8_t *cRow;
 
 				// Top section
-				for (j = -yrange; j < 0; j++) {
+				for (j = -yrange; j < 0; j++)
+				{
 					cRow = colourGrid + (y + j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
@@ -1431,12 +1615,14 @@ void nextGenerationAsterisk2(
 
 				// Middle section
 				cRow = colourGrid + y * colourGridWidth + x;
-				for (i = -xrange; i <= xrange; i++) {
+				for (i = -xrange; i <= xrange; i++)
+				{
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 				}
 
 				// Bottom section
-				for (j = 1; j <= xrange; j++) {
+				for (j = 1; j <= xrange; j++)
+				{
 					cRow = colourGrid + (y + j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
@@ -1447,17 +1633,20 @@ void nextGenerationAsterisk2(
 				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 
 				// Widen 16-bit counts -> 32-bit counts & store
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(c16_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
 				x += 16;
 			}
-		} else {
+		}
+		else
+		{
 			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
 			// (16-bit accumulator is perfectly safe here as O(R) shapes won't reach 65,535).
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t count_lo = wasm_i16x8_splat(0);
 				v128_t count_hi = wasm_i16x8_splat(0);
 				v128_t c8 = wasm_i8x16_splat(0);
@@ -1465,12 +1654,14 @@ void nextGenerationAsterisk2(
 				uint8_t *cRow;
 
 				// Top section
-				for (j = -yrange; j < 0; j++) {
+				for (j = -yrange; j < 0; j++)
+				{
 					cRow = colourGrid + (y + j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
 					ops += 2;
-					if (ops >= 254) { // Flush right before 255
+					if (ops >= 254)
+					{ // Flush right before 255
 						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 						c8 = wasm_i8x16_splat(0);
@@ -1480,10 +1671,12 @@ void nextGenerationAsterisk2(
 
 				// Middle section
 				cRow = colourGrid + y * colourGridWidth + x;
-				for (i = -xrange; i <= xrange; i++) {
+				for (i = -xrange; i <= xrange; i++)
+				{
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 					ops++;
-					if (ops >= 254) {
+					if (ops >= 254)
+					{
 						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 						c8 = wasm_i8x16_splat(0);
@@ -1492,12 +1685,14 @@ void nextGenerationAsterisk2(
 				}
 
 				// Bottom section
-				for (j = 1; j <= xrange; j++) {
+				for (j = 1; j <= xrange; j++)
+				{
 					cRow = colourGrid + (y + j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + j), aliveThresh));
 					ops += 2;
-					if (ops >= 254) {
+					if (ops >= 254)
+					{
 						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 						c8 = wasm_i8x16_splat(0);
@@ -1506,14 +1701,15 @@ void nextGenerationAsterisk2(
 				}
 
 				// Final flush
-				if (ops > 0) {
+				if (ops > 0)
+				{
 					count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 					count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 				}
 
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(count_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
 
 				x += 16;
@@ -1523,12 +1719,14 @@ void nextGenerationAsterisk2(
 		// -------------------------------------------------------------
 		// EPILOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x <= endX) {
+		while (x <= endX)
+		{
 			int32_t count = 0;
 			uint8_t *cRow;
 
 			// Top section
-			for (j = -yrange; j < 0; j++) {
+			for (j = -yrange; j < 0; j++)
+			{
 				cRow = colourGrid + (y + j) * colourGridWidth + x;
 				count += (cRow[0] > aliveThresh_scalar);
 				count += (cRow[j] > aliveThresh_scalar);
@@ -1536,12 +1734,14 @@ void nextGenerationAsterisk2(
 
 			// Middle section
 			cRow = colourGrid + y * colourGridWidth + x;
-			for (i = -xrange; i <= xrange; i++) {
+			for (i = -xrange; i <= xrange; i++)
+			{
 				count += (cRow[i] > aliveThresh_scalar);
 			}
 
 			// Bottom section
-			for (j = 1; j <= xrange; j++) {
+			for (j = 1; j <= xrange; j++)
+			{
 				cRow = colourGrid + (y + j) * colourGridWidth + x;
 				count += (cRow[0] > aliveThresh_scalar);
 				count += (cRow[j] > aliveThresh_scalar);
@@ -1555,49 +1755,55 @@ void nextGenerationAsterisk2(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationTriangular2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t x, y, i, j, k, l, width, count;
 
 	// triangular
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
 		// for the first cell compute the whole neighbourhood
 		count = 0;
 		k = (x + y) & 1;
 
-		if (k == 0) {
+		if (k == 0)
+		{
 			width = yrange + 1;
 
-			uint8_t* colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
+			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j < 0; j++) {
-				for (i = -width; i < width; i += 2) {
-					if (*(colourRow + i) >= aliveStart) {
+			for (j = -yrange; j < 0; j++)
+			{
+				for (i = -width; i < width; i += 2)
+				{
+					if (*(colourRow + i) >= aliveStart)
+					{
 						count++;
 					}
-					if (*(colourRow + i + 1) >= aliveStart) {
+					if (*(colourRow + i + 1) >= aliveStart)
+					{
 						count++;
 					}
 				}
 
-				if (*(colourRow + i) >= aliveStart) {
+				if (*(colourRow + i) >= aliveStart)
+				{
 					count++;
 				}
 				width++;
@@ -1605,39 +1811,51 @@ void nextGenerationTriangular2(
 				colourRow += colourGridWidth;
 			}
 
-			for (j = 0; j <= yrange; j++) {
+			for (j = 0; j <= yrange; j++)
+			{
 				width--;
-				for (i = -width; i < width; i += 2) {
-					if (*(colourRow + i) >= aliveStart) {
+				for (i = -width; i < width; i += 2)
+				{
+					if (*(colourRow + i) >= aliveStart)
+					{
 						count++;
 					}
-					if (*(colourRow + i + 1) >= aliveStart) {
+					if (*(colourRow + i + 1) >= aliveStart)
+					{
 						count++;
 					}
 				}
 
-				if (*(colourRow + i) >= aliveStart) {
+				if (*(colourRow + i) >= aliveStart)
+				{
 					count++;
 				}
 
 				colourRow += colourGridWidth;
 			}
-		} else {
+		}
+		else
+		{
 			width = yrange;
 
-			uint8_t* colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
+			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j <= 0; j++) {
-				for (i = -width; i < width; i += 2) {
-					if (*(colourRow + i) >= aliveStart) {
+			for (j = -yrange; j <= 0; j++)
+			{
+				for (i = -width; i < width; i += 2)
+				{
+					if (*(colourRow + i) >= aliveStart)
+					{
 						count++;
 					}
-					if (*(colourRow + i + 1) >= aliveStart) {
+					if (*(colourRow + i + 1) >= aliveStart)
+					{
 						count++;
 					}
 				}
 
-				if (*(colourRow + i) >= aliveStart) {
+				if (*(colourRow + i) >= aliveStart)
+				{
 					count++;
 				}
 				width++;
@@ -1645,19 +1863,24 @@ void nextGenerationTriangular2(
 				colourRow += colourGridWidth;
 			}
 
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				width--;
 
-				for (i = -width; i < width; i += 2) {
-					if (*(colourRow + i) >= aliveStart) {
+				for (i = -width; i < width; i += 2)
+				{
+					if (*(colourRow + i) >= aliveStart)
+					{
 						count++;
 					}
-					if (*(colourRow + i + 1) >= aliveStart) {
+					if (*(colourRow + i + 1) >= aliveStart)
+					{
 						count++;
 					}
 				}
 
-				if (*(colourRow + i) >= aliveStart) {
+				if (*(colourRow + i) >= aliveStart)
+				{
 					count++;
 				}
 
@@ -1668,19 +1891,24 @@ void nextGenerationTriangular2(
 
 		// for the remaining cells compute the edge differences
 		x++;
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			k = (x + y) & 1;
-			if (k == 0) {
+			if (k == 0)
+			{
 				l = yrange;
 
 				uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-				for (j = -yrange; j < 0; j++) {
-					if (*(colourRow + l) >= aliveStart) {
+				for (j = -yrange; j < 0; j++)
+				{
+					if (*(colourRow + l) >= aliveStart)
+					{
 						count++;
 					}
 					l++;
-					if (*(colourRow + l) >= aliveStart) {
+					if (*(colourRow + l) >= aliveStart)
+					{
 						count++;
 					}
 
@@ -1688,37 +1916,47 @@ void nextGenerationTriangular2(
 				}
 
 				// j == 0 case
-				if (*(colourRow - l - 1) >= aliveStart) {
+				if (*(colourRow - l - 1) >= aliveStart)
+				{
 					count--;
 				}
-				if (*(colourRow + l) >= aliveStart) {
+				if (*(colourRow + l) >= aliveStart)
+				{
 					count++;
 				}
 				l++;
 
 				colourRow += colourGridWidth;
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					l--;
-					if (*(colourRow - l - 1) >= aliveStart) {
+					if (*(colourRow - l - 1) >= aliveStart)
+					{
 						count--;
 					}
-					if (*(colourRow - l) >= aliveStart) {
+					if (*(colourRow - l) >= aliveStart)
+					{
 						count--;
 					}
 
 					colourRow += colourGridWidth;
 				}
-			} else {
+			}
+			else
+			{
 				l = yrange + 1;
 
 				uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-				for (j = -yrange; j < 0; j++) {
-					if (*(colourRow - l - 1) >= aliveStart) {
+				for (j = -yrange; j < 0; j++)
+				{
+					if (*(colourRow - l - 1) >= aliveStart)
+					{
 						count--;
 					}
-					if (*(colourRow - l) >= aliveStart) {
+					if (*(colourRow - l) >= aliveStart)
+					{
 						count--;
 					}
 					l++;
@@ -1728,21 +1966,26 @@ void nextGenerationTriangular2(
 
 				// j == 0 case
 				l--;
-				if (*(colourRow - l - 1) >= aliveStart) {
+				if (*(colourRow - l - 1) >= aliveStart)
+				{
 					count--;
 				}
-				if (*(colourRow + l) >= aliveStart) {
+				if (*(colourRow + l) >= aliveStart)
+				{
 					count++;
 				}
 
 				colourRow += colourGridWidth;
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					l--;
-					if (*(colourRow + l) >= aliveStart) {
+					if (*(colourRow + l) >= aliveStart)
+					{
 						count++;
 					}
-					if (*(colourRow + l + 1) >= aliveStart) {
+					if (*(colourRow + l + 1) >= aliveStart)
+					{
 						count++;
 					}
 
@@ -1758,21 +2001,20 @@ void nextGenerationTriangular2(
 	}
 }
 
-
 // EMSCRIPTEN_KEEPALIVE
 void nextGenerationSaltire2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t x, y, j;
 	int32_t startX = leftX - xrange;
 	int32_t endX = rightX + xrange;
@@ -1780,7 +2022,8 @@ void nextGenerationSaltire2(
 	// Align chunks for 16-lane SIMD processing
 	int32_t alignedStart = (startX + 15) & ~15;
 	int32_t alignedEnd = (endX + 1) & ~15;
-	if (alignedStart > endX + 1) {
+	if (alignedStart > endX + 1)
+	{
 		alignedStart = endX + 1;
 	}
 
@@ -1792,22 +2035,25 @@ void nextGenerationSaltire2(
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = startX;
 
 		// -------------------------------------------------------------
 		// PROLOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			int32_t count = 0;
 			uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
 			uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
 
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				count += (cRowDown[-j] > aliveThresh_scalar);
-				count += (cRowDown[j]  > aliveThresh_scalar);
-				count += (cRowUp[-j]   > aliveThresh_scalar);
-				count += (cRowUp[j]    > aliveThresh_scalar);
+				count += (cRowDown[j] > aliveThresh_scalar);
+				count += (cRowUp[-j] > aliveThresh_scalar);
+				count += (cRowUp[j] > aliveThresh_scalar);
 				cRowDown += colourGridWidth;
 				cRowUp -= colourGridWidth;
 			}
@@ -1822,15 +2068,18 @@ void nextGenerationSaltire2(
 		// -------------------------------------------------------------
 		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
 		// -------------------------------------------------------------
-		if (max_ops <= 255) {
+		if (max_ops <= 255)
+		{
 			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t c8 = wasm_i8x16_splat(0);
 
 				uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
 				uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown - j), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown + j), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp - j), aliveThresh));
@@ -1847,17 +2096,20 @@ void nextGenerationSaltire2(
 				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 
 				// Widen 16-bit counts -> 32-bit counts & store
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(c16_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
 				x += 16;
 			}
-		} else {
+		}
+		else
+		{
 			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
 			// (16-bit is entirely safe here, as max_ops for linear O(R) neighborhoods won't approach 65,535)
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t count_lo = wasm_i16x8_splat(0);
 				v128_t count_hi = wasm_i16x8_splat(0);
 
@@ -1867,7 +2119,8 @@ void nextGenerationSaltire2(
 				int ops = 0;
 				v128_t c8 = wasm_i8x16_splat(0);
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown - j), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown + j), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp - j), aliveThresh));
@@ -1876,7 +2129,8 @@ void nextGenerationSaltire2(
 					cRowUp -= colourGridWidth;
 
 					ops += 4;
-					if (ops >= 252) { // Flush right before we exceed 255
+					if (ops >= 252)
+					{ // Flush right before we exceed 255
 						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 						c8 = wasm_i8x16_splat(0);
@@ -1890,9 +2144,9 @@ void nextGenerationSaltire2(
 				count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 				count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(count_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
 
 				x += 16;
@@ -1902,16 +2156,18 @@ void nextGenerationSaltire2(
 		// -------------------------------------------------------------
 		// EPILOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x <= endX) {
+		while (x <= endX)
+		{
 			int32_t count = 0;
 			uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
 			uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
 
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				count += (cRowDown[-j] > aliveThresh_scalar);
-				count += (cRowDown[j]  > aliveThresh_scalar);
-				count += (cRowUp[-j]   > aliveThresh_scalar);
-				count += (cRowUp[j]    > aliveThresh_scalar);
+				count += (cRowDown[j] > aliveThresh_scalar);
+				count += (cRowUp[-j] > aliveThresh_scalar);
+				count += (cRowUp[j] > aliveThresh_scalar);
 				cRowDown += colourGridWidth;
 				cRowUp -= colourGridWidth;
 			}
@@ -1927,21 +2183,20 @@ void nextGenerationSaltire2(
 	}
 }
 
-
 // EMSCRIPTEN_KEEPALIVE
 void nextGenerationStar2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t x, y, i, j;
 	int32_t startX = leftX - xrange;
 	int32_t endX = rightX + xrange;
@@ -1949,7 +2204,8 @@ void nextGenerationStar2(
 	// Align chunks for 16-lane SIMD processing
 	int32_t alignedStart = (startX + 15) & ~15;
 	int32_t alignedEnd = (endX + 1) & ~15;
-	if (alignedStart > endX + 1) {
+	if (alignedStart > endX + 1)
+	{
 		alignedStart = endX + 1;
 	}
 
@@ -1963,30 +2219,34 @@ void nextGenerationStar2(
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = startX;
 
 		// -------------------------------------------------------------
 		// PROLOGUE (Scalar, branchless)
 		// -------------------------------------------------------------
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			int32_t count = 0;
 			uint8_t *cRow1 = colourGrid + (y + 1) * colourGridWidth + x;
 			uint8_t *cRow2 = colourGrid + (y - 1) * colourGridWidth + x;
 
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				count += (cRow1[-j] > aliveThresh_scalar);
-				count += (cRow1[0]  > aliveThresh_scalar);
-				count += (cRow1[j]  > aliveThresh_scalar);
+				count += (cRow1[0] > aliveThresh_scalar);
+				count += (cRow1[j] > aliveThresh_scalar);
 				count += (cRow2[-j] > aliveThresh_scalar);
-				count += (cRow2[0]  > aliveThresh_scalar);
-				count += (cRow2[j]  > aliveThresh_scalar);
+				count += (cRow2[0] > aliveThresh_scalar);
+				count += (cRow2[j] > aliveThresh_scalar);
 				cRow1 += colourGridWidth;
 				cRow2 -= colourGridWidth;
 			}
 
 			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
-			for (i = -xrange; i <= xrange; i++) {
+			for (i = -xrange; i <= xrange; i++)
+			{
 				count += (cRow[i] > aliveThresh_scalar);
 			}
 
@@ -1997,16 +2257,19 @@ void nextGenerationStar2(
 		// -------------------------------------------------------------
 		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
 		// -------------------------------------------------------------
-		if (max_ops <= 255) {
+		if (max_ops <= 255)
+		{
 			// FAST PATH: Range is small enough that 8-bit counts will never overflow.
 			// We can accumulate directly into i8x16 and only widen to 32-bit at the very end.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t c8 = wasm_i8x16_splat(0);
 
 				uint8_t *cRow1 = colourGrid + (y + 1) * colourGridWidth + x;
 				uint8_t *cRow2 = colourGrid + (y - 1) * colourGridWidth + x;
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					// wasm_u8x16_gt returns 0xFF (-1) for true. Subtracting it safely adds 1.
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1 - j), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1), aliveThresh));
@@ -2019,7 +2282,8 @@ void nextGenerationStar2(
 				}
 
 				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
-				for (i = -xrange; i <= xrange; i++) {
+				for (i = -xrange; i <= xrange; i++)
+				{
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 				}
 
@@ -2028,23 +2292,27 @@ void nextGenerationStar2(
 				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 
 				// Widen 16-bit counts -> 32-bit counts & store
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(c16_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
 				x += 16;
 			}
-		} else {
+		}
+		else
+		{
 			// SAFE PATH: Large ranges (e.g. R > 31). We must routinely flush 8-bit counts to 16-bit.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t count_lo = wasm_i16x8_splat(0);
 				v128_t count_hi = wasm_i16x8_splat(0);
 
 				uint8_t *cRow1 = colourGrid + (y + 1) * colourGridWidth + x;
 				uint8_t *cRow2 = colourGrid + (y - 1) * colourGridWidth + x;
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					v128_t c8 = wasm_i8x16_splat(0);
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1 - j), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow1), aliveThresh));
@@ -2062,10 +2330,12 @@ void nextGenerationStar2(
 				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
 				v128_t c8_i = wasm_i8x16_splat(0);
 				int ops = 0;
-				for (i = -xrange; i <= xrange; i++) {
+				for (i = -xrange; i <= xrange; i++)
+				{
 					c8_i = wasm_i8x16_sub(c8_i, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 					ops++;
-					if (ops == 255 || i == xrange) {
+					if (ops == 255 || i == xrange)
+					{
 						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8_i));
 						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8_i));
 						c8_i = wasm_i8x16_splat(0);
@@ -2073,9 +2343,9 @@ void nextGenerationStar2(
 					}
 				}
 
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(count_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
 				x += 16;
 			}
@@ -2084,24 +2354,27 @@ void nextGenerationStar2(
 		// -------------------------------------------------------------
 		// EPILOGUE (Scalar, branchless)
 		// -------------------------------------------------------------
-		while (x <= endX) {
+		while (x <= endX)
+		{
 			int32_t count = 0;
 			uint8_t *cRow1 = colourGrid + (y + 1) * colourGridWidth + x;
 			uint8_t *cRow2 = colourGrid + (y - 1) * colourGridWidth + x;
 
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				count += (cRow1[-j] > aliveThresh_scalar);
-				count += (cRow1[0]  > aliveThresh_scalar);
-				count += (cRow1[j]  > aliveThresh_scalar);
+				count += (cRow1[0] > aliveThresh_scalar);
+				count += (cRow1[j] > aliveThresh_scalar);
 				count += (cRow2[-j] > aliveThresh_scalar);
-				count += (cRow2[0]  > aliveThresh_scalar);
-				count += (cRow2[j]  > aliveThresh_scalar);
+				count += (cRow2[0] > aliveThresh_scalar);
+				count += (cRow2[j] > aliveThresh_scalar);
 				cRow1 += colourGridWidth;
 				cRow2 -= colourGridWidth;
 			}
 
 			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
-			for (i = -xrange; i <= xrange; i++) {
+			for (i = -xrange; i <= xrange; i++)
+			{
 				count += (cRow[i] > aliveThresh_scalar);
 			}
 
@@ -2113,21 +2386,20 @@ void nextGenerationStar2(
 	}
 }
 
-
 // EMSCRIPTEN_KEEPALIVE
 void nextGenerationHash2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t x, y, i, j;
 	int32_t startX = leftX - xrange;
 	int32_t endX = rightX + xrange;
@@ -2135,14 +2407,16 @@ void nextGenerationHash2(
 	// Align chunks for 16-lane SIMD processing
 	int32_t alignedStart = (startX + 15) & ~15;
 	int32_t alignedEnd = (endX + 1) & ~15;
-	if (alignedStart > endX + 1) {
+	if (alignedStart > endX + 1)
+	{
 		alignedStart = endX + 1;
 	}
 
 	// Calculate maximum possible neighbors in the Hash neighborhood.
 	int32_t max_ops = 1; // center cell
 	int32_t vert_rows = 2 * yrange + 1;
-	if (yrange >= 1) {
+	if (yrange >= 1)
+	{
 		vert_rows -= 2;
 		max_ops += 2 * (2 * xrange + 1); // two horizontal bars at y-1 and y+1
 	}
@@ -2153,29 +2427,35 @@ void nextGenerationHash2(
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = startX;
 
 		// -------------------------------------------------------------
 		// PROLOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			int32_t count = 0;
-			for (j = -yrange; j <= yrange; j++) {
-				if (j == 1 || j == -1) continue;
-				uint8_t* cRow = colourGrid + (y + j) * colourGridWidth + x;
+			for (j = -yrange; j <= yrange; j++)
+			{
+				if (j == 1 || j == -1)
+					continue;
+				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
 				count += (cRow[-1] > aliveThresh_scalar);
-				count += (cRow[1]  > aliveThresh_scalar);
+				count += (cRow[1] > aliveThresh_scalar);
 			}
-			if (yrange >= 1) {
-				uint8_t* rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
-				uint8_t* rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
-				for (i = -xrange; i <= xrange; i++) {
+			if (yrange >= 1)
+			{
+				uint8_t *rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
+				uint8_t *rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
+				for (i = -xrange; i <= xrange; i++)
+				{
 					count += (rowM1[i] > aliveThresh_scalar);
 					count += (rowP1[i] > aliveThresh_scalar);
 				}
 			}
-			uint8_t* row0 = colourGrid + y * colourGridWidth + x;
+			uint8_t *row0 = colourGrid + y * colourGridWidth + x;
 			count += (row0[0] > aliveThresh_scalar);
 
 			countRow[x] = count;
@@ -2185,28 +2465,34 @@ void nextGenerationHash2(
 		// -------------------------------------------------------------
 		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
 		// -------------------------------------------------------------
-		if (max_ops <= 255) {
+		if (max_ops <= 255)
+		{
 			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t c8 = wasm_i8x16_splat(0);
 
-				for (j = -yrange; j <= yrange; j++) {
-					if (j == 1 || j == -1) continue;
-					uint8_t* row = colourGrid + (y + j) * colourGridWidth + x;
+				for (j = -yrange; j <= yrange; j++)
+				{
+					if (j == 1 || j == -1)
+						continue;
+					uint8_t *row = colourGrid + (y + j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row - 1), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row + 1), aliveThresh));
 				}
 
-				if (yrange >= 1) {
-					uint8_t* rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
-					uint8_t* rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
-					for (i = -xrange; i <= xrange; i++) {
+				if (yrange >= 1)
+				{
+					uint8_t *rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
+					uint8_t *rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
+					for (i = -xrange; i <= xrange; i++)
+					{
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(rowM1 + i), aliveThresh));
 						c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(rowP1 + i), aliveThresh));
 					}
 				}
 
-				uint8_t* row0 = colourGrid + y * colourGridWidth + x;
+				uint8_t *row0 = colourGrid + y * colourGridWidth + x;
 				c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row0), aliveThresh));
 
 				// Widen 8-bit counts -> 16-bit counts
@@ -2214,39 +2500,47 @@ void nextGenerationHash2(
 				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 
 				// Widen 16-bit counts -> 32-bit counts & store
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(c16_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
 				x += 16;
 			}
-		} else {
+		}
+		else
+		{
 			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t count_lo = wasm_i16x8_splat(0);
 				v128_t count_hi = wasm_i16x8_splat(0);
 
-				for (j = -yrange; j <= yrange; j++) {
-					if (j == 1 || j == -1) continue;
+				for (j = -yrange; j <= yrange; j++)
+				{
+					if (j == 1 || j == -1)
+						continue;
 					v128_t c8 = wasm_i8x16_splat(0);
-					uint8_t* row = colourGrid + (y + j) * colourGridWidth + x;
+					uint8_t *row = colourGrid + (y + j) * colourGridWidth + x;
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row - 1), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(row + 1), aliveThresh));
 					count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8));
 					count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8));
 				}
 
-				if (yrange >= 1) {
-					uint8_t* rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
-					uint8_t* rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
+				if (yrange >= 1)
+				{
+					uint8_t *rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
+					uint8_t *rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
 					v128_t c8_i = wasm_i8x16_splat(0);
 					int ops = 0;
-					for (i = -xrange; i <= xrange; i++) {
+					for (i = -xrange; i <= xrange; i++)
+					{
 						c8_i = wasm_i8x16_sub(c8_i, wasm_u8x16_gt(wasm_v128_load(rowM1 + i), aliveThresh));
 						c8_i = wasm_i8x16_sub(c8_i, wasm_u8x16_gt(wasm_v128_load(rowP1 + i), aliveThresh));
 						ops += 2;
-						if (ops >= 254 || i == xrange) {
+						if (ops >= 254 || i == xrange)
+						{
 							count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8_i));
 							count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8_i));
 							c8_i = wasm_i8x16_splat(0);
@@ -2256,14 +2550,14 @@ void nextGenerationHash2(
 				}
 
 				v128_t c8_c = wasm_i8x16_splat(0);
-				uint8_t* row0 = colourGrid + y * colourGridWidth + x;
+				uint8_t *row0 = colourGrid + y * colourGridWidth + x;
 				c8_c = wasm_i8x16_sub(c8_c, wasm_u8x16_gt(wasm_v128_load(row0), aliveThresh));
 				count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8_c));
 				count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8_c));
 
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(count_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
 
 				x += 16;
@@ -2273,23 +2567,28 @@ void nextGenerationHash2(
 		// -------------------------------------------------------------
 		// EPILOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x <= endX) {
+		while (x <= endX)
+		{
 			int32_t count = 0;
-			for (j = -yrange; j <= yrange; j++) {
-				if (j == 1 || j == -1) continue;
-				uint8_t* cRow = colourGrid + (y + j) * colourGridWidth + x;
+			for (j = -yrange; j <= yrange; j++)
+			{
+				if (j == 1 || j == -1)
+					continue;
+				uint8_t *cRow = colourGrid + (y + j) * colourGridWidth + x;
 				count += (cRow[-1] > aliveThresh_scalar);
-				count += (cRow[1]  > aliveThresh_scalar);
+				count += (cRow[1] > aliveThresh_scalar);
 			}
-			if (yrange >= 1) {
-				uint8_t* rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
-				uint8_t* rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
-				for (i = -xrange; i <= xrange; i++) {
+			if (yrange >= 1)
+			{
+				uint8_t *rowM1 = colourGrid + (y - 1) * colourGridWidth + x;
+				uint8_t *rowP1 = colourGrid + (y + 1) * colourGridWidth + x;
+				for (i = -xrange; i <= xrange; i++)
+				{
 					count += (rowM1[i] > aliveThresh_scalar);
 					count += (rowP1[i] > aliveThresh_scalar);
 				}
 			}
-			uint8_t* row0 = colourGrid + y * colourGridWidth + x;
+			uint8_t *row0 = colourGrid + y * colourGridWidth + x;
 			count += (row0[0] > aliveThresh_scalar);
 
 			countRow[x] = count;
@@ -2300,21 +2599,20 @@ void nextGenerationHash2(
 	}
 }
 
-
 // EMSCRIPTEN_KEEPALIVE
 void nextGenerationCross2(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t aliveStart
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t aliveStart)
+{
 	int32_t x, y, i, j;
 	int32_t startX = leftX - xrange;
 	int32_t endX = rightX + xrange;
@@ -2322,7 +2620,8 @@ void nextGenerationCross2(
 	// Align chunks for 16-lane SIMD processing
 	int32_t alignedStart = (startX + 15) & ~15;
 	int32_t alignedEnd = (endX + 1) & ~15;
-	if (alignedStart > endX + 1) {
+	if (alignedStart > endX + 1)
+	{
 		alignedStart = endX + 1;
 	}
 
@@ -2334,19 +2633,22 @@ void nextGenerationCross2(
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = startX;
 
 		// -------------------------------------------------------------
 		// PROLOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			int32_t count = 0;
 
 			uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
 			uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
 
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				count += (cRowDown[0] > aliveThresh_scalar);
 				count += (cRowUp[0] > aliveThresh_scalar);
 				cRowDown += colourGridWidth;
@@ -2354,7 +2656,8 @@ void nextGenerationCross2(
 			}
 
 			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
-			for (i = -xrange; i <= xrange; i++) {
+			for (i = -xrange; i <= xrange; i++)
+			{
 				count += (cRow[i] > aliveThresh_scalar);
 			}
 
@@ -2365,15 +2668,18 @@ void nextGenerationCross2(
 		// -------------------------------------------------------------
 		// MAIN SIMD LOOP (Processing 16 cells simultaneously)
 		// -------------------------------------------------------------
-		if (max_ops <= 255) {
+		if (max_ops <= 255)
+		{
 			// FAST PATH: Accumulate safely into 8-bit registers without overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t c8 = wasm_i8x16_splat(0);
 
 				uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
 				uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp), aliveThresh));
 					cRowDown += colourGridWidth;
@@ -2381,7 +2687,8 @@ void nextGenerationCross2(
 				}
 
 				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
-				for (i = -xrange; i <= xrange; i++) {
+				for (i = -xrange; i <= xrange; i++)
+				{
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 				}
 
@@ -2390,23 +2697,27 @@ void nextGenerationCross2(
 				v128_t c16_hi = wasm_u16x8_extend_high_u8x16(c8);
 
 				// Widen 16-bit counts -> 32-bit counts & store
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(c16_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(c16_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(c16_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(c16_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(c16_hi));
 
 				x += 16;
 			}
-		} else {
+		}
+		else
+		{
 			// SAFE PATH: Large ranges. Flush 8-bit counts to 16-bit mid-loop to prevent overflow.
-			while (x < alignedEnd) {
+			while (x < alignedEnd)
+			{
 				v128_t count_lo = wasm_i16x8_splat(0);
 				v128_t count_hi = wasm_i16x8_splat(0);
 
 				uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
 				uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					v128_t c8 = wasm_i8x16_splat(0);
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowDown), aliveThresh));
 					c8 = wasm_i8x16_sub(c8, wasm_u8x16_gt(wasm_v128_load(cRowUp), aliveThresh));
@@ -2420,10 +2731,12 @@ void nextGenerationCross2(
 				uint8_t *cRow = colourGrid + y * colourGridWidth + x;
 				v128_t c8_i = wasm_i8x16_splat(0);
 				int ops = 0;
-				for (i = -xrange; i <= xrange; i++) {
+				for (i = -xrange; i <= xrange; i++)
+				{
 					c8_i = wasm_i8x16_sub(c8_i, wasm_u8x16_gt(wasm_v128_load(cRow + i), aliveThresh));
 					ops++;
-					if (ops == 255 || i == xrange) {
+					if (ops == 255 || i == xrange)
+					{
 						count_lo = wasm_i16x8_add(count_lo, wasm_u16x8_extend_low_u8x16(c8_i));
 						count_hi = wasm_i16x8_add(count_hi, wasm_u16x8_extend_high_u8x16(c8_i));
 						c8_i = wasm_i8x16_splat(0);
@@ -2431,9 +2744,9 @@ void nextGenerationCross2(
 					}
 				}
 
-				wasm_v128_store(countRow + x,      wasm_u32x4_extend_low_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 4,  wasm_u32x4_extend_high_u16x8(count_lo));
-				wasm_v128_store(countRow + x + 8,  wasm_u32x4_extend_low_u16x8(count_hi));
+				wasm_v128_store(countRow + x, wasm_u32x4_extend_low_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 4, wasm_u32x4_extend_high_u16x8(count_lo));
+				wasm_v128_store(countRow + x + 8, wasm_u32x4_extend_low_u16x8(count_hi));
 				wasm_v128_store(countRow + x + 12, wasm_u32x4_extend_high_u16x8(count_hi));
 
 				x += 16;
@@ -2443,13 +2756,15 @@ void nextGenerationCross2(
 		// -------------------------------------------------------------
 		// EPILOGUE (Scalar, branchless explicit accumulation)
 		// -------------------------------------------------------------
-		while (x <= endX) {
+		while (x <= endX)
+		{
 			int32_t count = 0;
 
 			uint8_t *cRowDown = colourGrid + (y + 1) * colourGridWidth + x;
 			uint8_t *cRowUp = colourGrid + (y - 1) * colourGridWidth + x;
 
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				count += (cRowDown[0] > aliveThresh_scalar);
 				count += (cRowUp[0] > aliveThresh_scalar);
 				cRowDown += colourGridWidth;
@@ -2457,7 +2772,8 @@ void nextGenerationCross2(
 			}
 
 			uint8_t *cRow = colourGrid + y * colourGridWidth + x;
-			for (i = -xrange; i <= xrange; i++) {
+			for (i = -xrange; i <= xrange; i++)
+			{
 				count += (cRow[i] > aliveThresh_scalar);
 			}
 
@@ -2469,28 +2785,28 @@ void nextGenerationCross2(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationCheckerBothN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState,
-	const int32_t start
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState,
+    const int32_t start)
+{
 	int32_t x, y, i, j;
 	int32_t count, count2, offset;
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
 		// for the first two cells in a row count the entire neighbourhood
@@ -2499,9 +2815,12 @@ void nextGenerationCheckerBothN(
 		uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 		uint8_t *midColourRow = colourGrid + y * colourGridWidth;
 
-		for (j = -yrange; j <= yrange; j++) {
-			for (i = -xrange + offset; i <= xrange - offset; i += 2) {
-				if (*(colourRow + i) == maxGenState) {
+		for (j = -yrange; j <= yrange; j++)
+		{
+			for (i = -xrange + offset; i <= xrange - offset; i += 2)
+			{
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 			}
@@ -2511,21 +2830,26 @@ void nextGenerationCheckerBothN(
 		}
 
 		// check for survival
-		if (start == 1 && *(midColourRow + x) == maxGenState) {
+		if (start == 1 && *(midColourRow + x) == maxGenState)
+		{
 			count++;
 		}
 		*(countRow + x) = count;
 		x++;
 
 		// check if there are two cells in the row
-		if (x <= rightX + xrange) {
+		if (x <= rightX + xrange)
+		{
 			count2 = 0;
 			offset = start;
 			colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j <= yrange; j++) {
-				for (i = -xrange + offset; i <= xrange - offset; i += 2) {
-					if (*(colourRow + i) == maxGenState) {
+			for (j = -yrange; j <= yrange; j++)
+			{
+				for (i = -xrange + offset; i <= xrange - offset; i += 2)
+				{
+					if (*(colourRow + i) == maxGenState)
+					{
 						count2++;
 					}
 				}
@@ -2535,22 +2859,27 @@ void nextGenerationCheckerBothN(
 			}
 
 			// check for survival
-			if (start == 1 && *(midColourRow + x) == maxGenState) {
+			if (start == 1 && *(midColourRow + x) == maxGenState)
+			{
 				count2++;
 			}
 			*(countRow + x) = count2;
 			x++;
 
 			// for the remaining cell pairs on the row subtract the left and add the right cells
-			while (x <= rightX + xrange) {
+			while (x <= rightX + xrange)
+			{
 				offset = start;
 				colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-				for (j = -yrange; j <= yrange; j++) {
-					if (*(colourRow - xrange + offset - 2) == maxGenState) {
+				for (j = -yrange; j <= yrange; j++)
+				{
+					if (*(colourRow - xrange + offset - 2) == maxGenState)
+					{
 						count--;
 					}
-					if (*(colourRow + xrange - offset) == maxGenState) {
+					if (*(colourRow + xrange - offset) == maxGenState)
+					{
 						count++;
 					}
 					offset = 1 - offset;
@@ -2559,26 +2888,33 @@ void nextGenerationCheckerBothN(
 				}
 
 				// check for survival
-				if (start == 1) {
-					if (*(midColourRow + x - 2) == maxGenState) {
+				if (start == 1)
+				{
+					if (*(midColourRow + x - 2) == maxGenState)
+					{
 						count--;
 					}
-					if (*(midColourRow + x) == maxGenState) {
+					if (*(midColourRow + x) == maxGenState)
+					{
 						count++;
 					}
 				}
 				*(countRow + x) = count;
 				x++;
 
-				if (x <= rightX + xrange) {
+				if (x <= rightX + xrange)
+				{
 					offset = start;
 					colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-					for (j = -yrange; j <= yrange; j++) {
-						if (*(colourRow - xrange + offset - 2) == maxGenState) {
+					for (j = -yrange; j <= yrange; j++)
+					{
+						if (*(colourRow - xrange + offset - 2) == maxGenState)
+						{
 							count2--;
 						}
-						if (*(colourRow + xrange - offset) == maxGenState) {
+						if (*(colourRow + xrange - offset) == maxGenState)
+						{
 							count2++;
 						}
 						offset = 1 - offset;
@@ -2587,11 +2923,14 @@ void nextGenerationCheckerBothN(
 					}
 
 					// check for survival
-					if (start == 1) {
-						if (*(midColourRow + x - 2) == maxGenState) {
+					if (start == 1)
+					{
+						if (*(midColourRow + x - 2) == maxGenState)
+						{
 							count2--;
 						}
-						if (*(midColourRow + x) == maxGenState) {
+						if (*(midColourRow + x) == maxGenState)
+						{
 							count2++;
 						}
 					}
@@ -2606,84 +2945,87 @@ void nextGenerationCheckerBothN(
 	}
 }
 
-
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationCheckerboardN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	nextGenerationCheckerBoth2(counts, countsWidth, colourGrid, colourGridWidth, leftX, bottomY, rightX, topY, xrange, yrange, maxGenState, 1);
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationAlignedCheckerboardN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	nextGenerationCheckerBoth2(counts, countsWidth, colourGrid, colourGridWidth, leftX, bottomY, rightX, topY, xrange, yrange, maxGenState, 0);
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationGaussianN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	int32_t i, j, x, y, inc, weight, count;
 
 	// Gaussian
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 
 			uint8_t *colourRow1 = colourGrid + (y - yrange) * colourGridWidth + x;
 			uint8_t *colourRow2 = colourGrid + (y + yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j < 0; j++) {
+			for (j = -yrange; j < 0; j++)
+			{
 				inc = j + yrange + 1;
 				weight = inc;
-				for (i = -xrange; i <= 0; i++) {
-					if (*(colourRow1 + i) == maxGenState) {
+				for (i = -xrange; i <= 0; i++)
+				{
+					if (*(colourRow1 + i) == maxGenState)
+					{
 						count += weight;
 					}
 					weight += inc;
 				}
 
 				weight -= inc + inc;
-				for (i = 1; i <= xrange; i++) {
-					if (*(colourRow1 + i) == maxGenState) {
+				for (i = 1; i <= xrange; i++)
+				{
+					if (*(colourRow1 + i) == maxGenState)
+					{
 						count += weight;
 					}
 					weight -= inc;
@@ -2692,16 +3034,20 @@ void nextGenerationGaussianN(
 				inc = j + yrange + 1;
 				weight = inc;
 
-				for (i = -xrange; i <= 0; i++) {
-					if (*(colourRow2 + i) == maxGenState) {
+				for (i = -xrange; i <= 0; i++)
+				{
+					if (*(colourRow2 + i) == maxGenState)
+					{
 						count += weight;
 					}
 					weight += inc;
 				}
 
 				weight -= inc + inc;
-				for (i = 1; i <= xrange; i++) {
-					if (*(colourRow2 + i) == maxGenState) {
+				for (i = 1; i <= xrange; i++)
+				{
+					if (*(colourRow2 + i) == maxGenState)
+					{
 						count += weight;
 					}
 					weight -= inc;
@@ -2713,21 +3059,26 @@ void nextGenerationGaussianN(
 
 			inc = xrange + 1;
 			weight = inc;
-			for (i = -xrange; i <= 0; i++) {
-				if (*(colourRow1 + i) == maxGenState) {
+			for (i = -xrange; i <= 0; i++)
+			{
+				if (*(colourRow1 + i) == maxGenState)
+				{
 					count += weight;
 				}
 				weight += inc;
 			}
 
 			weight -= inc + inc;
-			for (i = 1; i <= xrange; i++) {
-				if (*(colourRow1 + i) == maxGenState) {
+			for (i = 1; i <= xrange; i++)
+			{
+				if (*(colourRow1 + i) == maxGenState)
+				{
 					count += weight;
 				}
 				weight -= inc;
 			}
-			if (*colourRow1 == maxGenState) {
+			if (*colourRow1 == maxGenState)
+			{
 				count++;
 			}
 
@@ -2739,39 +3090,42 @@ void nextGenerationGaussianN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationCustomN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int16_t *neighbourList,
-	const int32_t neighbourLength,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState,
-	const int32_t isTriangular
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int16_t *neighbourList,
+    const int32_t neighbourLength,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState,
+    const int32_t isTriangular)
+{
 	int32_t i, j, k, l, x, y, count;
 
 	// Custom
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 			j = 0;
-			while (j < neighbourLength) {
+			while (j < neighbourLength)
+			{
 				// get the row number
 				i = neighbourList[j];
-				if (isTriangular && (((x + y) & 1) == 0)) {
+				if (isTriangular && (((x + y) & 1) == 0))
+				{
 					i = -i;
 				}
 				j++;
@@ -2782,8 +3136,10 @@ void nextGenerationCustomN(
 				k = neighbourList[j];
 				j++;
 
-				for (l = j; l < j + k; l++) {
-					if (*(colourRow + neighbourList[l]) == maxGenState) {
+				for (l = j; l < j + k; l++)
+				{
+					if (*(colourRow + neighbourList[l]) == maxGenState)
+					{
 						count++;
 					}
 				}
@@ -2797,20 +3153,19 @@ void nextGenerationCustomN(
 	}
 }
 
-
 void nextGenerationWeightedNR1(
-	int32_t *counts,
-	const uint32_t countsWidth,
-	uint8_t *colourGrid,
-	const uint32_t colourGridWidth,
-	const int8_t *weightedNeighbourhood,
-	const int32_t bottomY,
-	const int32_t leftX,
-	const int32_t topY,
-	const int32_t rightX,
-	const int32_t range,
-	const uint32_t maxGenState
-) {
+    int32_t *counts,
+    const uint32_t countsWidth,
+    uint8_t *colourGrid,
+    const uint32_t colourGridWidth,
+    const int8_t *weightedNeighbourhood,
+    const int32_t bottomY,
+    const int32_t leftX,
+    const int32_t topY,
+    const int32_t rightX,
+    const int32_t range,
+    const uint32_t maxGenState)
+{
 	int32_t x, y, count;
 
 	const int8_t w0 = weightedNeighbourhood[0];
@@ -2829,40 +3184,51 @@ void nextGenerationWeightedNR1(
 	const uint32_t nextCol = colourGridWidth + colourGridWidth - 1;
 	const uint32_t nextRow = colourGridWidth - (rightX + range - (leftX - range) + 1);
 
-	for (y = bottomY - range; y <= topY + range; y++) {
+	for (y = bottomY - range; y <= topY + range; y++)
+	{
 		x = leftX - range;
 
-		while (x <= rightX + range) {
+		while (x <= rightX + range)
+		{
 			count = 0;
-			if (*(colourRow - 1) == maxGenState) {
+			if (*(colourRow - 1) == maxGenState)
+			{
 				count += w0;
 			}
-			if (*colourRow == maxGenState) {
+			if (*colourRow == maxGenState)
+			{
 				count += w1;
 			}
-			if (*(colourRow + 1) == maxGenState) {
+			if (*(colourRow + 1) == maxGenState)
+			{
 				count += w2;
 			}
 
 			colourRow += colourGridWidth;
-			if (*(colourRow - 1) == maxGenState) {
+			if (*(colourRow - 1) == maxGenState)
+			{
 				count += w3;
 			}
-			if (*colourRow == maxGenState) {
+			if (*colourRow == maxGenState)
+			{
 				count += w4;
 			}
-			if (*(colourRow + 1) == maxGenState) {
+			if (*(colourRow + 1) == maxGenState)
+			{
 				count += w5;
 			}
 
 			colourRow += colourGridWidth;
-			if (*(colourRow - 1) == maxGenState) {
+			if (*(colourRow - 1) == maxGenState)
+			{
 				count += w6;
 			}
-			if (*colourRow == maxGenState) {
+			if (*colourRow == maxGenState)
+			{
 				count += w7;
 			}
-			if (*(colourRow + 1) == maxGenState) {
+			if (*(colourRow + 1) == maxGenState)
+			{
 				count += w8;
 			}
 
@@ -2877,56 +3243,67 @@ void nextGenerationWeightedNR1(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationWeightedN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int8_t *weightedNeighbourhood,
-	const uint32_t weightedNeighbourhoodLength,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState,
-	const int32_t isTriangular
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int8_t *weightedNeighbourhood,
+    const uint32_t weightedNeighbourhoodLength,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState,
+    const int32_t isTriangular)
+{
 	int32_t i, j, k, l, x, y, count;
 
 	const int32_t rowChunk = xrange + xrange + 1;
 
 	// check for square range 1
-	if (xrange == 1 && yrange == 1 && !isTriangular) {
+	if (xrange == 1 && yrange == 1 && !isTriangular)
+	{
 		nextGenerationWeighted2R1(counts, countsWidth, colourGrid, colourGridWidth, weightedNeighbourhood, bottomY, leftX, topY, rightX, xrange, maxGenState);
-	} else {
+	}
+	else
+	{
 		// Weighted
 		int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 		// weighted
-		if (isTriangular) {
-			for (y = bottomY - yrange; y <= topY + yrange; y++) {
+		if (isTriangular)
+		{
+			for (y = bottomY - yrange; y <= topY + yrange; y++)
+			{
 				x = leftX - xrange;
 
-				while (x <= rightX + xrange) {
+				while (x <= rightX + xrange)
+				{
 					count = 0;
-					if ((x + y) & 1) {
+					if ((x + y) & 1)
+					{
 						l = -rowChunk;
 						k = weightedNeighbourhoodLength + l;
 						l += l;
-					} else {
+					}
+					else
+					{
 						k = 0;
 						l = 0;
 					}
 
 					uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-					for (j = -yrange; j <= yrange; j++) {
-						for (i = -xrange; i <= xrange; i++) {
-							if (*(colourRow + i) == maxGenState) {
+					for (j = -yrange; j <= yrange; j++)
+					{
+						for (i = -xrange; i <= xrange; i++)
+						{
+							if (*(colourRow + i) == maxGenState)
+							{
 								count += weightedNeighbourhood[k];
 							}
 							k++;
@@ -2941,19 +3318,26 @@ void nextGenerationWeightedN(
 
 				countRow += countsWidth;
 			}
-		} else {
-			for (y = bottomY - yrange; y <= topY + yrange; y++) {
+		}
+		else
+		{
+			for (y = bottomY - yrange; y <= topY + yrange; y++)
+			{
 				x = leftX - xrange;
 
-				while (x <= rightX + xrange) {
+				while (x <= rightX + xrange)
+				{
 					count = 0;
 					k = 0;
 
 					uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-					for (j = -yrange; j <= yrange; j++) {
-						for (i = -xrange; i <= xrange; i++) {
-							if (*(colourRow + i) == maxGenState) {
+					for (j = -yrange; j <= yrange; j++)
+					{
+						for (i = -xrange; i <= xrange; i++)
+						{
+							if (*(colourRow + i) == maxGenState)
+							{
 								count += weightedNeighbourhood[k];
 							}
 							k++;
@@ -2971,25 +3355,24 @@ void nextGenerationWeightedN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationWeightedStatesN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int8_t *weightedNeighbourhood,
-	const uint32_t weightedNeighbourhoodLength,
-	const uint8_t *weightedStates,
-	const int32_t leftX,
-	const int32_t bottomY,
-	const int32_t rightX,
-	const int32_t topY,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState,
-	const int32_t isTriangular
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int8_t *weightedNeighbourhood,
+    const uint32_t weightedNeighbourhoodLength,
+    const uint8_t *weightedStates,
+    const int32_t leftX,
+    const int32_t bottomY,
+    const int32_t rightX,
+    const int32_t topY,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState,
+    const int32_t isTriangular)
+{
 	int32_t i, j, k, l, x, y, count;
 
 	const int32_t rowChunk = xrange + xrange + 1;
@@ -3001,28 +3384,39 @@ void nextGenerationWeightedStatesN(
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
 	// weighted
-	if (isTriangular) {
-		for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	if (isTriangular)
+	{
+		for (y = bottomY - yrange; y <= topY + yrange; y++)
+		{
 			x = leftX - xrange;
 
-			while (x <= rightX + xrange) {
+			while (x <= rightX + xrange)
+			{
 				count = 0;
-				if ((x + y) & 1) {
+				if ((x + y) & 1)
+				{
 					l = -rowChunk;
 					k = weightedNeighbourhoodLength + l;
 					l += l;
-				} else {
+				}
+				else
+				{
 					k = 0;
 					l = 0;
 				}
 
 				uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-				for (j = -yrange; j <= yrange; j++) {
-					for (i = -xrange; i <= xrange; i++) {
-						if (*(colourRow + i) == maxGenState) {
+				for (j = -yrange; j <= yrange; j++)
+				{
+					for (i = -xrange; i <= xrange; i++)
+					{
+						if (*(colourRow + i) == maxGenState)
+						{
 							count += weightedNeighbourhood[k] * aliveWeight;
-						} else {
+						}
+						else
+						{
 							count += weightedNeighbourhood[k] * deadWeight;
 						}
 						k++;
@@ -3037,21 +3431,30 @@ void nextGenerationWeightedStatesN(
 
 			countRow += countsWidth;
 		}
-	} else {
-		for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	}
+	else
+	{
+		for (y = bottomY - yrange; y <= topY + yrange; y++)
+		{
 			x = leftX - xrange;
 
-			while (x <= rightX + xrange) {
+			while (x <= rightX + xrange)
+			{
 				count = 0;
 				k = 0;
 
 				uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-				for (j = -yrange; j <= yrange; j++) {
-					for (i = -xrange; i <= xrange; i++) {
-						if (*(colourRow + i) == maxGenState) {
+				for (j = -yrange; j <= yrange; j++)
+				{
+					for (i = -xrange; i <= xrange; i++)
+					{
+						if (*(colourRow + i) == maxGenState)
+						{
 							count += weightedNeighbourhood[k] * aliveWeight;
-						} else {
+						}
+						else
+						{
 							count += weightedNeighbourhood[k] * deadWeight;
 						}
 						k++;
@@ -3068,45 +3471,50 @@ void nextGenerationWeightedStatesN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationShapedN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const uint32_t *widths,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const uint32_t *widths,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	int32_t i, j, x, y, width, count;
 
 	// L2 or Circular
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
 		// for the first cell in the row count the entire neighborhood
 		count = 0;
 		uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-		for (j = -yrange; j <= yrange; j++) {
+		for (j = -yrange; j <= yrange; j++)
+		{
 			width = widths[j + yrange];
-			for (i = -width; i < width; i += 2) {
-				if (*(colourRow + i) == maxGenState) {
+			for (i = -width; i < width; i += 2)
+			{
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
-				if (*(colourRow + i + 1) == maxGenState) {
+				if (*(colourRow + i + 1) == maxGenState)
+				{
 					count++;
 				}
 			}
-			if (*(colourRow + i) == maxGenState) {
+			if (*(colourRow + i) == maxGenState)
+			{
 				count++;
 			}
 
@@ -3116,15 +3524,19 @@ void nextGenerationShapedN(
 		x++;
 
 		// for the remaining rows subtract the left and add the right cells
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j <= yrange; j++) {
+			for (j = -yrange; j <= yrange; j++)
+			{
 				width = widths[j + yrange];
-				if (*(colourRow - width - 1) == maxGenState) {
+				if (*(colourRow - width - 1) == maxGenState)
+				{
 					count--;
 				}
-				if (*(colourRow + width) == maxGenState) {
+				if (*(colourRow + width) == maxGenState)
+				{
 					count++;
 				}
 
@@ -3138,34 +3550,37 @@ void nextGenerationShapedN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationHexagonalN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	int32_t x, y, i, j, count;
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
 		// for the first cell count the entire neighbourhood
 		count = 0;
 		uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
-		for (j = -yrange; j < 0; j++) {
-			for (i = -xrange; i <= xrange + j; i++) {
-				if (*(colourRow + i) == maxGenState) {
+		for (j = -yrange; j < 0; j++)
+		{
+			for (i = -xrange; i <= xrange + j; i++)
+			{
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 			}
@@ -3173,9 +3588,12 @@ void nextGenerationHexagonalN(
 			colourRow += colourGridWidth;
 		}
 
-		for (j = 0; j <= yrange; j++) {
-			for (i = -xrange + j; i <= xrange; i++) {
-				if (*(colourRow + i) == maxGenState) {
+		for (j = 0; j <= yrange; j++)
+		{
+			for (i = -xrange + j; i <= xrange; i++)
+			{
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 			}
@@ -3187,25 +3605,32 @@ void nextGenerationHexagonalN(
 		x++;
 
 		// for the remaining rows subtract the left and add the right cells
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j < 0; j++) {
-				if (*(colourRow - xrange - 1) == maxGenState) {
+			for (j = -yrange; j < 0; j++)
+			{
+				if (*(colourRow - xrange - 1) == maxGenState)
+				{
 					count--;
 				}
-				if (*(colourRow + xrange + j) == maxGenState) {
+				if (*(colourRow + xrange + j) == maxGenState)
+				{
 					count++;
 				}
 
 				colourRow += colourGridWidth;
 			}
 
-			for (j = 0; j <= yrange; j++) {
-				if (*(colourRow - xrange + j - 1) == maxGenState) {
+			for (j = 0; j <= yrange; j++)
+			{
+				if (*(colourRow - xrange + j - 1) == maxGenState)
+				{
 					count--;
 				}
-				if (*(colourRow + xrange) == maxGenState) {
+				if (*(colourRow + xrange) == maxGenState)
+				{
 					count++;
 				}
 
@@ -3220,51 +3645,58 @@ void nextGenerationHexagonalN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationTripodN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	int32_t x, y, i, j, count;
 
 	// tripod
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 
 			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j < 0; j++) {
-				if (*colourRow == maxGenState) {
+			for (j = -yrange; j < 0; j++)
+			{
+				if (*colourRow == maxGenState)
+				{
 					count++;
 				}
 
 				colourRow += colourGridWidth;
 			}
 
-			for (i = -xrange; i <= 0; i++) {
-				if (*(colourRow + i) == maxGenState) {
+			for (i = -xrange; i <= 0; i++)
+			{
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 			}
 			colourRow += colourGridWidth;
 
-			for (j = 1; j <= xrange; j++) {
-				if (*(colourRow + j) == maxGenState) {
+			for (j = 1; j <= xrange; j++)
+			{
+				if (*(colourRow + j) == maxGenState)
+				{
 					count++;
 				}
 
@@ -3279,23 +3711,22 @@ void nextGenerationTripodN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationCornerEdgeN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState,
-	const int32_t cornerRange,
-	const int32_t edgeRange
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState,
+    const int32_t cornerRange,
+    const int32_t edgeRange)
+{
 	int32_t x, y, count;
 
 	const uint32_t cr2 = (cornerRange * 2) * colourGridWidth;
@@ -3304,51 +3735,62 @@ void nextGenerationCornerEdgeN(
 	// asterisk
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 
 			// corners
 			uint8_t *colourRow = colourGrid + (y - cornerRange) * colourGridWidth + x;
 
-			if (*(colourRow - cornerRange) == maxGenState) {
+			if (*(colourRow - cornerRange) == maxGenState)
+			{
 				count++;
 			}
-			if (*(colourRow + cornerRange) == maxGenState) {
+			if (*(colourRow + cornerRange) == maxGenState)
+			{
 				count++;
 			}
 
 			colourRow += cr2;
-			if (*(colourRow - cornerRange) == maxGenState) {
+			if (*(colourRow - cornerRange) == maxGenState)
+			{
 				count++;
 			}
-			if (*(colourRow + cornerRange) == maxGenState) {
+			if (*(colourRow + cornerRange) == maxGenState)
+			{
 				count++;
 			}
 
 			// edges
 			colourRow = colourGrid + (y - edgeRange) * colourGridWidth + x;
-			if (*colourRow == maxGenState) {
+			if (*colourRow == maxGenState)
+			{
 				count++;
 			}
 
 			colourRow += er2;
-			if (*colourRow == maxGenState) {
+			if (*colourRow == maxGenState)
+			{
 				count++;
 			}
 
 			colourRow = colourGrid + y * colourGridWidth + x;
-			if (*(colourRow - edgeRange) == maxGenState) {
+			if (*(colourRow - edgeRange) == maxGenState)
+			{
 				count++;
 			}
-			if (*(colourRow + edgeRange) == maxGenState) {
+			if (*(colourRow + edgeRange) == maxGenState)
+			{
 				count++;
 			}
 
 			// survival
-			if (*colourRow == maxGenState) {
+			if (*colourRow == maxGenState)
+			{
 				count++;
 			}
 
@@ -3361,57 +3803,66 @@ void nextGenerationCornerEdgeN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationAsteriskN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	int32_t x, y, i, j, count;
 
 	// asterisk
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 
 			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j < 0; j++) {
-				if (*colourRow == maxGenState) {
+			for (j = -yrange; j < 0; j++)
+			{
+				if (*colourRow == maxGenState)
+				{
 					count++;
 				}
-				if (*(colourRow + j) == maxGenState) {
+				if (*(colourRow + j) == maxGenState)
+				{
 					count++;
 				}
 
 				colourRow += colourGridWidth;
 			}
 
-			for (i = -xrange; i <= xrange; i++) {
-				if (*(colourRow + i) == maxGenState) {
+			for (i = -xrange; i <= xrange; i++)
+			{
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 			}
 			colourRow += colourGridWidth;
 
-			for (j = 1; j <= xrange; j++) {
-				if (*colourRow == maxGenState) {
+			for (j = 1; j <= xrange; j++)
+			{
+				if (*colourRow == maxGenState)
+				{
 					count++;
 				}
-				if (*(colourRow + j) == maxGenState) {
+				if (*(colourRow + j) == maxGenState)
+				{
 					count++;
 				}
 
@@ -3425,49 +3876,55 @@ void nextGenerationAsteriskN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationTriangularN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	int32_t x, y, i, j, k, l, width, count;
 
 	// triangular
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
 		// for the first cell compute the whole neighbourhood
 		count = 0;
 		k = (x + y) & 1;
 
-		if (k == 0) {
+		if (k == 0)
+		{
 			width = yrange + 1;
 
-			uint8_t* colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
+			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j < 0; j++) {
-				for (i = -width; i < width; i += 2) {
-					if (*(colourRow + i) == maxGenState) {
+			for (j = -yrange; j < 0; j++)
+			{
+				for (i = -width; i < width; i += 2)
+				{
+					if (*(colourRow + i) == maxGenState)
+					{
 						count++;
 					}
-					if (*(colourRow + i + 1) == maxGenState) {
+					if (*(colourRow + i + 1) == maxGenState)
+					{
 						count++;
 					}
 				}
 
-				if (*(colourRow + i) == maxGenState) {
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 				width++;
@@ -3475,39 +3932,51 @@ void nextGenerationTriangularN(
 				colourRow += colourGridWidth;
 			}
 
-			for (j = 0; j <= yrange; j++) {
+			for (j = 0; j <= yrange; j++)
+			{
 				width--;
-				for (i = -width; i < width; i += 2) {
-					if (*(colourRow + i) == maxGenState) {
+				for (i = -width; i < width; i += 2)
+				{
+					if (*(colourRow + i) == maxGenState)
+					{
 						count++;
 					}
-					if (*(colourRow + i + 1) == maxGenState) {
+					if (*(colourRow + i + 1) == maxGenState)
+					{
 						count++;
 					}
 				}
 
-				if (*(colourRow + i) == maxGenState) {
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 
 				colourRow += colourGridWidth;
 			}
-		} else {
+		}
+		else
+		{
 			width = yrange;
 
-			uint8_t* colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
+			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j <= 0; j++) {
-				for (i = -width; i < width; i += 2) {
-					if (*(colourRow + i) == maxGenState) {
+			for (j = -yrange; j <= 0; j++)
+			{
+				for (i = -width; i < width; i += 2)
+				{
+					if (*(colourRow + i) == maxGenState)
+					{
 						count++;
 					}
-					if (*(colourRow + i + 1) == maxGenState) {
+					if (*(colourRow + i + 1) == maxGenState)
+					{
 						count++;
 					}
 				}
 
-				if (*(colourRow + i) == maxGenState) {
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 				width++;
@@ -3515,19 +3984,24 @@ void nextGenerationTriangularN(
 				colourRow += colourGridWidth;
 			}
 
-			for (j = 1; j <= yrange; j++) {
+			for (j = 1; j <= yrange; j++)
+			{
 				width--;
 
-				for (i = -width; i < width; i += 2) {
-					if (*(colourRow + i) == maxGenState) {
+				for (i = -width; i < width; i += 2)
+				{
+					if (*(colourRow + i) == maxGenState)
+					{
 						count++;
 					}
-					if (*(colourRow + i + 1) == maxGenState) {
+					if (*(colourRow + i + 1) == maxGenState)
+					{
 						count++;
 					}
 				}
 
-				if (*(colourRow + i) == maxGenState) {
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 
@@ -3538,19 +4012,24 @@ void nextGenerationTriangularN(
 
 		// for the remaining cells compute the edge differences
 		x++;
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			k = (x + y) & 1;
-			if (k == 0) {
+			if (k == 0)
+			{
 				l = yrange;
 
 				uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-				for (j = -yrange; j < 0; j++) {
-					if (*(colourRow + l) == maxGenState) {
+				for (j = -yrange; j < 0; j++)
+				{
+					if (*(colourRow + l) == maxGenState)
+					{
 						count++;
 					}
 					l++;
-					if (*(colourRow + l) == maxGenState) {
+					if (*(colourRow + l) == maxGenState)
+					{
 						count++;
 					}
 
@@ -3558,37 +4037,47 @@ void nextGenerationTriangularN(
 				}
 
 				// j == 0 case
-				if (*(colourRow - l - 1) == maxGenState) {
+				if (*(colourRow - l - 1) == maxGenState)
+				{
 					count--;
 				}
-				if (*(colourRow + l) == maxGenState) {
+				if (*(colourRow + l) == maxGenState)
+				{
 					count++;
 				}
 				l++;
 
 				colourRow += colourGridWidth;
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					l--;
-					if (*(colourRow - l - 1) == maxGenState) {
+					if (*(colourRow - l - 1) == maxGenState)
+					{
 						count--;
 					}
-					if (*(colourRow - l) == maxGenState) {
+					if (*(colourRow - l) == maxGenState)
+					{
 						count--;
 					}
 
 					colourRow += colourGridWidth;
 				}
-			} else {
+			}
+			else
+			{
 				l = yrange + 1;
 
 				uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-				for (j = -yrange; j < 0; j++) {
-					if (*(colourRow - l - 1) == maxGenState) {
+				for (j = -yrange; j < 0; j++)
+				{
+					if (*(colourRow - l - 1) == maxGenState)
+					{
 						count--;
 					}
-					if (*(colourRow - l) == maxGenState) {
+					if (*(colourRow - l) == maxGenState)
+					{
 						count--;
 					}
 					l++;
@@ -3598,21 +4087,26 @@ void nextGenerationTriangularN(
 
 				// j == 0 case
 				l--;
-				if (*(colourRow - l - 1) == maxGenState) {
+				if (*(colourRow - l - 1) == maxGenState)
+				{
 					count--;
 				}
-				if (*(colourRow + l) == maxGenState) {
+				if (*(colourRow + l) == maxGenState)
+				{
 					count++;
 				}
 
 				colourRow += colourGridWidth;
 
-				for (j = 1; j <= yrange; j++) {
+				for (j = 1; j <= yrange; j++)
+				{
 					l--;
-					if (*(colourRow + l) == maxGenState) {
+					if (*(colourRow + l) == maxGenState)
+					{
 						count++;
 					}
-					if (*(colourRow + l + 1) == maxGenState) {
+					if (*(colourRow + l + 1) == maxGenState)
+					{
 						count++;
 					}
 
@@ -3628,47 +4122,53 @@ void nextGenerationTriangularN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationSaltireN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	int32_t x, y, j, count;
 
 	// saltire
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 			uint8_t *colourRow1 = colourGrid + (y + 1) * colourGridWidth + x;
 			uint8_t *colourRow2 = colourRow1 - colourGridWidth - colourGridWidth;
 
-			for (j = 1; j <= yrange; j++) {
-				if (*(colourRow1 - j) == maxGenState) {
+			for (j = 1; j <= yrange; j++)
+			{
+				if (*(colourRow1 - j) == maxGenState)
+				{
 					count++;
 				}
 
-				if (*(colourRow1 + j) == maxGenState) {
+				if (*(colourRow1 + j) == maxGenState)
+				{
 					count++;
 				}
 
-				if (*(colourRow2 - j) == maxGenState) {
+				if (*(colourRow2 - j) == maxGenState)
+				{
 					count++;
 				}
 
-				if (*(colourRow2 + j) == maxGenState) {
+				if (*(colourRow2 + j) == maxGenState)
+				{
 					count++;
 				}
 
@@ -3677,7 +4177,8 @@ void nextGenerationSaltireN(
 			}
 
 			uint8_t *colourRow = colourGrid + y * colourGridWidth + x;
-			if (*colourRow == maxGenState) {
+			if (*colourRow == maxGenState)
+			{
 				count++;
 			}
 
@@ -3689,55 +4190,63 @@ void nextGenerationSaltireN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationStarN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	int32_t x, y, i, j, count;
 
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		x = leftX - xrange;
 
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 			uint8_t *colourRow1 = colourGrid + (y + 1) * colourGridWidth + x;
 			uint8_t *colourRow2 = colourRow1 - colourGridWidth - colourGridWidth;
 
-			for (j = 1; j <= yrange; j++) {
-				if (*(colourRow1 - j) == maxGenState) {
+			for (j = 1; j <= yrange; j++)
+			{
+				if (*(colourRow1 - j) == maxGenState)
+				{
 					count++;
 				}
 
-				if (*colourRow1 == maxGenState) {
+				if (*colourRow1 == maxGenState)
+				{
 					count++;
 				}
 
-				if (*(colourRow1 + j) == maxGenState) {
+				if (*(colourRow1 + j) == maxGenState)
+				{
 					count++;
 				}
 
-				if (*(colourRow2 - j) == maxGenState) {
+				if (*(colourRow2 - j) == maxGenState)
+				{
 					count++;
 				}
 
-				if (*colourRow2 == maxGenState) {
+				if (*colourRow2 == maxGenState)
+				{
 					count++;
 				}
 
-				if (*(colourRow2 + j) == maxGenState) {
+				if (*(colourRow2 + j) == maxGenState)
+				{
 					count++;
 				}
 
@@ -3746,8 +4255,10 @@ void nextGenerationStarN(
 			}
 
 			uint8_t *colourRow = colourGrid + y * colourGridWidth + x;
-			for (i = -xrange; i <= xrange; i++) {
-				if (*(colourRow + i) == maxGenState) {
+			for (i = -xrange; i <= xrange; i++)
+			{
+				if (*(colourRow + i) == maxGenState)
+				{
 					count++;
 				}
 			}
@@ -3759,27 +4270,27 @@ void nextGenerationStarN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationHashN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const int32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const int32_t maxGenState)
+{
 	int32_t x, y, i, j, count, rowCount, rowCount2;
 
 	// hash
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		int32_t *saveRow = countRow;
 
 		x = leftX - xrange;
@@ -3791,25 +4302,37 @@ void nextGenerationHashN(
 
 		uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-		for (j = -yrange; j <= yrange; j++) {
+		for (j = -yrange; j <= yrange; j++)
+		{
 
-			if (j == 1) {
-				for (i = -xrange; i <= xrange; i++) {
-					if (*(colourRow + i) == maxGenState) {
+			if (j == 1)
+			{
+				for (i = -xrange; i <= xrange; i++)
+				{
+					if (*(colourRow + i) == maxGenState)
+					{
 						rowCount++;
 					}
 				}
-			} else if (j == -1) {
-				for (i = -xrange; i <= xrange; i++) {
-					if (*(colourRow + i) == maxGenState) {
+			}
+			else if (j == -1)
+			{
+				for (i = -xrange; i <= xrange; i++)
+				{
+					if (*(colourRow + i) == maxGenState)
+					{
 						rowCount2++;
 					}
 				}
-			} else {
-				if (*(colourRow - 1) == maxGenState) {
+			}
+			else
+			{
+				if (*(colourRow - 1) == maxGenState)
+				{
 					count++;
 				}
-				if (*(colourRow + 1) == maxGenState) {
+				if (*(colourRow + 1) == maxGenState)
+				{
 					count++;
 				}
 			}
@@ -3817,7 +4340,8 @@ void nextGenerationHashN(
 			colourRow += colourGridWidth;
 		}
 
-		if (*(colourGrid + y * colourGridWidth + x) == maxGenState) {
+		if (*(colourGrid + y * colourGridWidth + x) == maxGenState)
+		{
 			count++;
 		}
 
@@ -3825,32 +4349,45 @@ void nextGenerationHashN(
 		x++;
 
 		// handle remaining rows
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 
 			uint8_t *colourRow = colourGrid + (y - yrange) * colourGridWidth + x;
 
-			for (j = -yrange; j <= yrange; j++) {
+			for (j = -yrange; j <= yrange; j++)
+			{
 
-				if (j == 1) {
-					if (*(colourRow - xrange - 1) == maxGenState) {
+				if (j == 1)
+				{
+					if (*(colourRow - xrange - 1) == maxGenState)
+					{
 						rowCount--;
 					}
-					if (*(colourRow + xrange) == maxGenState) {
+					if (*(colourRow + xrange) == maxGenState)
+					{
 						rowCount++;
 					}
-				} else if (j == -1) {
-					if (*(colourRow - xrange - 1) == maxGenState) {
+				}
+				else if (j == -1)
+				{
+					if (*(colourRow - xrange - 1) == maxGenState)
+					{
 						rowCount2--;
 					}
-					if (*(colourRow + xrange) == maxGenState) {
+					if (*(colourRow + xrange) == maxGenState)
+					{
 						rowCount2++;
 					}
-				} else {
-					if (*(colourRow - 1) == maxGenState) {
+				}
+				else
+				{
+					if (*(colourRow - 1) == maxGenState)
+					{
 						count++;
 					}
-					if (*(colourRow + 1) == maxGenState) {
+					if (*(colourRow + 1) == maxGenState)
+					{
 						count++;
 					}
 				}
@@ -3859,7 +4396,8 @@ void nextGenerationHashN(
 			}
 
 			// check for survival
-			if (*(colourGrid + y * colourGridWidth + x) == maxGenState) {
+			if (*(colourGrid + y * colourGridWidth + x) == maxGenState)
+			{
 				count++;
 			}
 
@@ -3871,27 +4409,27 @@ void nextGenerationHashN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void nextGenerationCrossN(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const uint32_t maxGenState
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const uint32_t maxGenState)
+{
 	int32_t x, y, i, j, count, rowCount;
 
 	// cross
 	int32_t *countRow = counts + (bottomY - yrange) * countsWidth;
 
-	for (y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		int32_t *saveRow = countRow;
 
 		x = leftX - xrange;
@@ -3902,11 +4440,14 @@ void nextGenerationCrossN(
 		uint8_t *colourRow1 = colourGrid + (y + 1) * colourGridWidth + x;
 		uint8_t *colourRow2 = colourRow1 - colourGridWidth - colourGridWidth;
 
-		for (j = 1; j <= yrange; j++) {
-			if (*colourRow1 == maxGenState) {
+		for (j = 1; j <= yrange; j++)
+		{
+			if (*colourRow1 == maxGenState)
+			{
 				count++;
 			}
-			if (*colourRow2 == maxGenState) {
+			if (*colourRow2 == maxGenState)
+			{
 				count++;
 			}
 			colourRow1 += colourGridWidth;
@@ -3914,8 +4455,10 @@ void nextGenerationCrossN(
 		}
 
 		colourRow1 = colourGrid + y * colourGridWidth + x;
-		for (i = -xrange; i <= xrange; i++) {
-			if (*(colourRow1 + i) == maxGenState) {
+		for (i = -xrange; i <= xrange; i++)
+		{
+			if (*(colourRow1 + i) == maxGenState)
+			{
 				rowCount++;
 			}
 		}
@@ -3923,16 +4466,20 @@ void nextGenerationCrossN(
 		x++;
 
 		// for remaining rows subtract the left and right cells
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			count = 0;
 			colourRow1 = colourGrid + (y + 1) * colourGridWidth + x;
 			colourRow2 = colourRow1 - colourGridWidth - colourGridWidth;
 
-			for (j = 1; j <= yrange; j++) {
-				if (*colourRow1 == maxGenState) {
+			for (j = 1; j <= yrange; j++)
+			{
+				if (*colourRow1 == maxGenState)
+				{
 					count++;
 				}
-				if (*colourRow2 == maxGenState) {
+				if (*colourRow2 == maxGenState)
+				{
 					count++;
 				}
 				colourRow1 += colourGridWidth;
@@ -3940,10 +4487,12 @@ void nextGenerationCrossN(
 			}
 
 			colourRow1 = colourGrid + y * colourGridWidth + x;
-			if (*(colourRow1 - xrange - 1) == maxGenState) {
+			if (*(colourRow1 - xrange - 1) == maxGenState)
+			{
 				rowCount--;
 			}
-			if (*(colourRow1 + xrange) == maxGenState) {
+			if (*(colourRow1 + xrange) == maxGenState)
+			{
 				rowCount++;
 			}
 			countRow[x] = count + rowCount;
@@ -3954,18 +4503,17 @@ void nextGenerationCrossN(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void clearTopAndLeft(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t ry2,
-	const int32_t rx2
-) {
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    const int32_t bottomY,
+    const int32_t topY,
+    const int32_t leftX,
+    const int32_t rightX,
+    const int32_t ry2,
+    const int32_t rx2)
+{
 	// 1. Pre-calculate byte sizes to clear, avoiding math in the loop
 	const size_t topBytesToClear = (rightX - leftX + 1) * sizeof(int32_t);
 	const size_t leftBytesToClear = (rx2 + 1) * sizeof(int32_t);
@@ -3977,144 +4525,125 @@ void clearTopAndLeft(
 	int32_t *countsRow = counts + (bottomY * countsWidth) + leftX;
 
 	// Clear Top Region
-	for (int32_t y = bottomY; y < midY; y++) {
+	for (int32_t y = bottomY; y < midY; y++)
+	{
 		memset(countsRow, 0, topBytesToClear);
 		countsRow += countsWidth;
 	}
 
 	// Clear Left Region
-	for (int32_t y = midY; y <= topY; y++) {
+	for (int32_t y = midY; y <= topY; y++)
+	{
 		memset(countsRow, 0, leftBytesToClear);
 		countsRow += countsWidth;
 	}
 }
 
-
-
-EMSCRIPTEN_KEEPALIVE
-void clearTopAndLeft_orig(
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	const int32_t bottomY,
-	const int32_t topY,
-	const int32_t leftX,
-	const int32_t rightX,
-	const int32_t ry2,
-	const int32_t rx2
-) {
-	// put zeros in top 2*range rows
-	int32_t *countsRow = counts + bottomY * countsWidth;
-
-	for (int32_t y = bottomY; y < bottomY + ry2; y++) {
-		for (int32_t x = leftX; x <= rightX; x++) {
-			*(countsRow + x) = 0;
-		}
-		countsRow += countsWidth;
-	}
-
-	// put zeros in left 2*range columns
-	countsRow = counts + (bottomY + ry2) * countsWidth;
-
-	for (int32_t y = bottomY + ry2; y <= topY; y++) {
-		for (int32_t x = leftX; x <= leftX + rx2; x++) {
-			*(countsRow + x) = 0;
-		}
-		countsRow += countsWidth;
-	}
-}
-
-
 EMSCRIPTEN_KEEPALIVE
 void wrapTorusHROT(
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const uint32_t lx,
-	const uint32_t by,
-	const uint32_t rx,
-	const uint32_t ty,
-	const uint32_t xrange,
-	const uint32_t yrange
-) {
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const uint32_t lx,
+    const uint32_t by,
+    const uint32_t rx,
+    const uint32_t ty,
+    const uint32_t xrange,
+    const uint32_t yrange)
+{
 	// precompute useful values
 	uint32_t rowSize = (rx - lx + 1);
 	uint32_t extendedSize = (xrange + 1);
 	uint32_t y;
 
 	// copy the bottom rows to the top border
-	for (y = 0; y < yrange; y++) {
+	for (y = 0; y < yrange; y++)
+	{
 		uint8_t *sourceRow = colourGrid + (by + y) * colourGridWidth + lx;
 		uint8_t *destRow = colourGrid + (ty + y + 1) * colourGridWidth + lx;
-		for (uint32_t i = 0; i < rowSize; i++) {
+		for (uint32_t i = 0; i < rowSize; i++)
+		{
 			destRow[i] = sourceRow[i];
 		}
 	}
 
 	// copy the top rows to the bottom border
-	for (y = 0; y < yrange; y++) {
+	for (y = 0; y < yrange; y++)
+	{
 		uint8_t *sourceRow = colourGrid + (ty - y) * colourGridWidth + lx;
 		uint8_t *destRow = colourGrid + (by - y - 1) * colourGridWidth + lx;
-		for (uint32_t i = 0; i < rowSize; i++) {
+		for (uint32_t i = 0; i < rowSize; i++)
+		{
 			destRow[i] = sourceRow[i];
 		}
 	}
 
 	// copy the left columns to the right border and the right columns to the left border
-	for (y = by; y <= ty; y++) {
+	for (y = by; y <= ty; y++)
+	{
 		uint8_t *sourceRow = colourGrid + y * colourGridWidth;
 		// copy left to right
-		for (uint32_t i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++)
+		{
 			sourceRow[rx + 1 + i] = sourceRow[lx + i];
 		}
 		// copy right to left
-		for (uint32_t i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++)
+		{
 			sourceRow[lx - xrange - 1 + i] = sourceRow[rx - xrange + i];
 		}
 	}
 
 	// copy bottom left to top right and bottom right to top left
-	for (y = 0; y < yrange; y++) {
+	for (y = 0; y < yrange; y++)
+	{
 		uint8_t *sourceRow = colourGrid + (by + y) * colourGridWidth;
 		uint8_t *destRow = colourGrid + (ty + y + 1) * colourGridWidth;
-		for (uint32_t i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++)
+		{
 			destRow[rx + 1 + i] = sourceRow[lx + i];
 		}
-		for (uint32_t i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++)
+		{
 			destRow[lx - xrange - 1 + i] = sourceRow[rx - xrange + i];
 		}
 	}
 
 	// copy top left to bottom right and top right to bottom left
-	for (y = 0; y < yrange; y++) {
+	for (y = 0; y < yrange; y++)
+	{
 		uint8_t *sourceRow = colourGrid + (ty - y) * colourGridWidth;
 		uint8_t *destRow = colourGrid + (by - y - 1) * colourGridWidth;
-		for (uint32_t i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++)
+		{
 			destRow[rx + 1 + i] = sourceRow[lx + i];
 		}
-		for (uint32_t i = 0; i < extendedSize; i++) {
+		for (uint32_t i = 0; i < extendedSize; i++)
+		{
 			destRow[lx - xrange - 1 + i] = sourceRow[rx - xrange + i];
 		}
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 void clearHROTOutside(
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	const uint32_t lx,
-	const uint32_t by,
-	const uint32_t rx,
-	const uint32_t ty,
-	const uint32_t xrange,
-	const uint32_t yrange
-) {
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    const uint32_t lx,
+    const uint32_t by,
+    const uint32_t rx,
+    const uint32_t ty,
+    const uint32_t xrange,
+    const uint32_t yrange)
+{
 	// clear the top border
 	uint8_t *fromTop = colourGrid + (ty + 1) * colourGridWidth + lx;
 	uint32_t amount = rx + 1 - lx;
 	uint32_t nextRow = colourGridWidth - amount;
 
-	for (uint32_t y = 0; y < yrange; y++) {
-		for (uint32_t x = 0; x < amount; x++) {
+	for (uint32_t y = 0; y < yrange; y++)
+	{
+		for (uint32_t x = 0; x < amount; x++)
+		{
 			*fromTop++ = 0;
 		}
 		fromTop += nextRow;
@@ -4124,11 +4653,13 @@ void clearHROTOutside(
 	uint8_t *fromBottom = colourGrid + (by - 1) * colourGridWidth + lx;
 	nextRow = colourGridWidth + amount;
 
-	for (uint32_t y = 0; y < yrange; y++) {
-		for (uint32_t x = 0; x < amount; x++) {
+	for (uint32_t y = 0; y < yrange; y++)
+	{
+		for (uint32_t x = 0; x < amount; x++)
+		{
 			*fromBottom++ = 0;
 		}
-		fromBottom -=nextRow;
+		fromBottom -= nextRow;
 	}
 
 	// clear the left and right columns
@@ -4140,11 +4671,14 @@ void clearHROTOutside(
 	uint32_t rightAmount = lx - (lx - xrange - 1);
 	uint32_t nextRightRow = colourGridWidth - rightAmount;
 
-	for (uint32_t y = by; y <= ty; y++) {
-		for (uint32_t x = 0; x < leftAmount; x++) {
+	for (uint32_t y = by; y <= ty; y++)
+	{
+		for (uint32_t x = 0; x < leftAmount; x++)
+		{
 			*leftChunk++ = 0;
 		}
-		for (uint32_t x = 0; x < rightAmount; x++) {
+		for (uint32_t x = 0; x < rightAmount; x++)
+		{
 			*rightChunk++ = 0;
 		}
 		leftChunk += nextLeftRow;
@@ -4161,11 +4695,14 @@ void clearHROTOutside(
 	rightAmount = lx - (lx - xrange - 1);
 	nextRightRow = colourGridWidth - rightAmount;
 
-	for (uint32_t y = 0; y < yrange; y++) {
-		for (uint32_t x = 0; x < leftAmount; x++) {
+	for (uint32_t y = 0; y < yrange; y++)
+	{
+		for (uint32_t x = 0; x < leftAmount; x++)
+		{
 			*leftChunk++ = 0;
 		}
-		for (uint32_t x = 0; x < rightAmount; x++) {
+		for (uint32_t x = 0; x < rightAmount; x++)
+		{
 			*rightChunk++ = 0;
 		}
 		leftChunk += nextLeftRow;
@@ -4182,11 +4719,14 @@ void clearHROTOutside(
 	rightAmount = lx - (lx - xrange - 1);
 	nextRightRow = colourGridWidth + rightAmount;
 
-	for (uint32_t y = 0; y < yrange; y++) {
-		for (uint32_t x = 0; x < leftAmount; x++) {
+	for (uint32_t y = 0; y < yrange; y++)
+	{
+		for (uint32_t x = 0; x < leftAmount; x++)
+		{
 			*leftChunk++ = 0;
 		}
-		for (uint32_t x = 0; x < rightAmount; x++) {
+		for (uint32_t x = 0; x < rightAmount; x++)
+		{
 			*rightChunk++ = 0;
 		}
 		leftChunk -= nextLeftRow;
@@ -4194,86 +4734,551 @@ void clearHROTOutside(
 	}
 };
 
-
+// ----------------------------------------------------------------------------
 // globals for getCount2L()
+// ----------------------------------------------------------------------------
 static int32_t g_ncols = 0;
 static int32_t g_ccht = 0;
 static int32_t g_halfccwd = 0;
-static uint32_t g_countsWidth = 0;;
+static uint32_t g_countsWidth = 0;
 static int32_t *g_precalc = 0;
 static int32_t *g_counts = 0;
 static int32_t g_ncolsMinusCcht = 0;
 static int32_t g_ncolsMinus1 = 0;
-static int32_t g_cchtPlus1 = 0;
+static int32_t g_cchtMinus1 = 0;
 static int32_t g_cchtPlusHalfccwdPlus1 = 0;
 
 EMSCRIPTEN_KEEPALIVE
-static inline int32_t getCount2L(int32_t i, int32_t j, int32_t *const countRow) {
-	if (i < 0 || i + j < 0 || j - i >= g_ncols) {
+static inline int32_t getCount2L(int32_t i, int32_t j, int32_t *const countRow)
+{
+	if (i < 0 || i + j < 0 || j - i >= g_ncols)
+	{
 		return 0;
 	}
 
-	if (j < 0 && i + j < g_ccht) {
+	if (j < 0 && i + j < g_ccht)
+	{
 		return *(g_counts + (i + j) * g_countsWidth);
 	}
 
-	//if (j >= g_ncols && j - i >= g_ncols - g_ccht) {
-	if (j >= g_ncols && j - i >= g_ncolsMinusCcht) {
+	if (j >= g_ncols && j - i >= g_ncolsMinusCcht)
+	{
 		return *(g_counts + (i + g_ncolsMinus1 - j) * g_countsWidth + g_ncolsMinus1);
 	}
 
-	if (i < g_ccht) {
+	if (i < g_ccht)
+	{
 		return *(countRow + j);
 	}
 
-	if ((i - g_ccht + 1) + j <= g_halfccwd) {
-		return *(g_precalc + (i - g_cchtPlus1 + j));
+	if ((i - g_ccht + 1) + j <= g_halfccwd)
+	{
+		return *(g_precalc + (i - g_cchtMinus1 + j));
 	}
 
-	if (j - (i - g_ccht + 1) >= g_halfccwd) {
-		return *(g_precalc + (j - (i - g_cchtPlus1)));
+	if (j - (i - g_ccht + 1) >= g_halfccwd)
+	{
+		return *(g_precalc + (j - (i - g_cchtMinus1)));
 	}
 
-	//return *(g_precalc + (g_halfccwd + ((i + j + g_ccht + g_halfccwd + 1) & 1)));
 	return *(g_precalc + (g_halfccwd + ((i + j + g_cchtPlusHalfccwdPlus1) & 1)));
+}
+
+// ----------------------------------------------------------------------------
+// Row classification, hoisted out of the per-column hot path.
+// ----------------------------------------------------------------------------
+typedef struct
+{
+	int32_t mode;  // 0 = always-zero (row < 0), 1 = direct lookup, 2 = precalc/extrapolated
+	int32_t *base; // mode 1: this row's base pointer (base[c] == value at column c)
+			   // mode 2: g_precalc (row ccht-1's base pointer)
+	int32_t k;	   // mode 2 only: row - (ccht - 1)
+	int32_t row;   // original row index, used by the general fallback below
+} RowPlan;
+
+static inline RowPlan planRow(int32_t row, int32_t *counts, uint32_t countsWidth,
+					int32_t ccht, int32_t *precalc)
+{
+	RowPlan p;
+	p.row = row;
+	if (row < 0)
+	{
+		p.mode = 0;
+		p.base = 0;
+		p.k = 0;
+	}
+	else if (row < ccht)
+	{
+		p.mode = 1;
+		p.base = counts + row * countsWidth;
+		p.k = 0;
+	}
+	else
+	{
+		p.mode = 2;
+		p.base = precalc;
+		p.k = row - (ccht - 1);
+	}
+	return p;
+}
+
+// Fully general fetch: correct for every case (mirror edges, extrapolation,
+// dead rows). Used for the narrow edge bands and whenever a row isn't part
+// of an established branch-free interior segment.
+static inline int32_t fetchGeneral(RowPlan p, int32_t c)
+{
+	if (p.mode == 0)
+	{
+		return 0;
+	}
+	return getCount2L(p.row, c, p.mode == 1 ? p.base : 0);
+}
+
+// ----------------------------------------------------------------------------
+// Shared per-cell state machine + bounding-box/population bookkeeping,
+// factored out so the scalar path and the SIMD-extracted path can't drift
+// apart from each other (this is a direct, unmodified transcription of the
+// original inline logic).
+// ----------------------------------------------------------------------------
+static inline void applyCellUpdate2(
+    int32_t count,
+    uint8_t *const colourCell,
+    const uint8_t *const comboList,
+    uint16_t *const colourTileRow,
+    const uint32_t aliveStart,
+    const uint32_t aliveMax,
+    const uint32_t deadStart,
+    const uint32_t deadMin,
+    const uint32_t x,
+    uint32_t *const minX, uint32_t *const maxX,
+    uint32_t *const minX1, uint32_t *const maxX1,
+    uint32_t *const population, uint32_t *const births, uint32_t *const deaths,
+    bool *const rowAlive, bool *const liveRowAlive)
+{
+	uint32_t state = *colourCell;
+
+	if (state < aliveStart)
+	{
+		if (comboList[count] & 2)
+		{
+			// new cell is born
+			state = aliveStart;
+			(*births)++;
+		}
+		else
+		{
+			// state is still dead
+			if (state > deadMin)
+			{
+				state--;
+			}
+		}
+	}
+	else
+	{
+		// this cell is alive
+		if ((comboList[count] & 1) == 0)
+		{
+			// cell dies
+			(*deaths)++;
+			state = deadStart;
+		}
+		else
+		{
+			if (state < aliveMax)
+			{
+				state++;
+			}
+		}
+	}
+
+	*colourCell = (uint8_t)state;
+
+	if (state > deadMin)
+	{
+		if (x < *minX)
+			*minX = x;
+		if (x > *maxX)
+			*maxX = x;
+		*rowAlive = true;
+
+		colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+
+		if (state >= aliveStart)
+		{
+			(*population)++;
+			*liveRowAlive = true;
+			if (x < *minX1)
+				*minX1 = x;
+			if (x > *maxX1)
+				*maxX1 = x;
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------
+// Shared per-cell state machine + bounding-box/population bookkeeping,
+// factored out so the scalar path and the SIMD-extracted path can't drift
+// apart from each other (this is a direct, unmodified transcription of the
+// original inline logic).
+// ----------------------------------------------------------------------------
+static inline void applyCellUpdateN(
+    int32_t count,
+    uint8_t *const colourCell,
+    const uint8_t *const comboList,
+    uint16_t *const colourTileRow,
+    const uint32_t deadState,
+    const uint32_t minDeadState,
+    const uint32_t maxGenState,
+    const uint32_t x,
+    uint32_t *const minX, uint32_t *const maxX,
+    uint32_t *const minX1, uint32_t *const maxX1,
+    uint32_t *const population, uint32_t *const births, uint32_t *const deaths,
+    bool *const rowAlive, bool *const liveRowAlive)
+{
+	uint32_t state = *colourCell;
+
+	if (state <= deadState)
+	{
+		if (comboList[count] & 2)
+		{
+			// new cell is born
+			state = maxGenState;
+			(*births)++;
+		}
+		else
+		{
+			// state is still dead
+			if (state > minDeadState)
+			{
+				state--;
+			}
+		}
+	}
+	else if (state == maxGenState)
+	{
+		// this cell is alive
+		if ((comboList[count] & 1) == 0)
+		{
+			// cell decays by one state
+			(*deaths)++;
+			state--;
+		}
+	}
+	else
+	{
+		// this cell will eventually die
+		if (state > minDeadState)
+		{
+			state--;
+		}
+	}
+
+	*colourCell = (uint8_t)state;
+
+	if (state > minDeadState)
+	{
+		if (x < *minX)
+			*minX = x;
+		if (x > *maxX)
+			*maxX = x;
+		*rowAlive = true;
+
+		colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
+
+		if (state == maxGenState)
+		{
+			(*population)++;
+			*liveRowAlive = true;
+			if (x < *minX1)
+				*minX1 = x;
+			if (x > *maxX1)
+				*maxX1 = x;
+		}
+	}
 }
 
 
 EMSCRIPTEN_KEEPALIVE
-// calculate next generation for Higher Range Outer Totalistic algo with 2-state von Neumann neighbourhood
+void cumulativeVNCounts2(
+    const int32_t height,
+    const int32_t ccht,
+    const int32_t ncols,
+    const int32_t nrows,
+    const int32_t bottomY,
+    const int32_t leftX,
+    const int32_t aliveStart,
+    const int32_t halfccwd,
+    int32_t *const counts,
+    uint8_t *const colourGrid,
+    const uint32_t countsWidth,
+    const uint32_t colourGridWidth)
+{
+	// set the globals used by getCount2L()
+	g_precalc = counts + (ccht - 1) * countsWidth;
+	g_ncols = ncols;
+	g_ccht = ccht;
+	g_halfccwd = halfccwd;
+	g_counts = counts;
+	g_countsWidth = countsWidth;
+	g_ncolsMinus1 = ncols - 1;	   // defensive fix: this function's own right-edge
+	g_ncolsMinusCcht = ncols - ccht; // mirror lookup (j == ncols) can read these too
+
+	const int32_t interiorLo = 1;
+	const int32_t interiorHi = ncols - 2; // inclusive; j-1, j, j+1 all safely in [0, ncols)
+
+	for (int32_t i = 0; i < ccht; i++)
+	{
+		if (i + bottomY >= height)
+		{
+			continue;
+		}
+
+		int32_t *countRow = counts + i * countsWidth;
+		uint8_t *colourRow = colourGrid + (i + bottomY) * colourGridWidth + leftX;
+		const int32_t im1 = i - 1;
+		const int32_t im2 = im1 - 1;
+		int32_t *countRowIm1 = countRow - countsWidth;
+		int32_t *countRowIm2 = countRowIm1 - countsWidth;
+		const bool rowHasColour = (i < nrows);
+
+		// getCount2L treats any row < 0 as always-zero WITHOUT dereferencing its
+		// countRow pointer -- so forming countRowIm1/countRowIm2 as raw pointer
+		// arithmetic is safe there even when im1/im2 are negative, since they're
+		// never actually read in that case. The interior fast path below reads
+		// them directly, with no such guard, so it must not run when im1 or im2
+		// is negative (only possible for i == 0 and i == 1: a fixed, negligible
+		// number of rows). Route those through the general path entirely.
+		const bool rowsValid = (im1 >= 0) && (im2 >= 0);
+
+		if (!rowsValid)
+		{
+			for (int32_t j = 0; j <= ncols; j++)
+			{
+				int32_t val = getCount2L(im1, j - 1, countRowIm1) + getCount2L(im1, j + 1, countRowIm1) - getCount2L(im2, j, countRowIm2);
+				if (rowHasColour && j < ncols && colourRow[j] >= aliveStart)
+				{
+					val += 1;
+				}
+				countRow[j] = val;
+			}
+			continue;
+		}
+
+		// --- left edge: general, correctness-preserving ---
+		int32_t j = 0;
+		for (; j < interiorLo && j <= ncols; j++)
+		{
+			int32_t val = getCount2L(im1, j - 1, countRowIm1) + getCount2L(im1, j + 1, countRowIm1) - getCount2L(im2, j, countRowIm2);
+			if (rowHasColour && j < ncols && colourRow[j] >= aliveStart)
+			{
+				val += 1;
+			}
+			countRow[j] = val;
+		}
+
+		// --- interior: branch-free, SIMD, 4 columns at a time ---
+		for (; j + 3 <= interiorHi; j += 4)
+		{
+			v128_t left = wasm_v128_load(&countRowIm1[j - 1]);
+			v128_t right = wasm_v128_load(&countRowIm1[j + 1]);
+			v128_t mid = wasm_v128_load(&countRowIm2[j]);
+			v128_t sum = wasm_i32x4_sub(wasm_i32x4_add(left, right), mid);
+
+			if (rowHasColour)
+			{
+				v128_t alive = wasm_i32x4_make(
+				    colourRow[j] >= aliveStart,
+				    colourRow[j + 1] >= aliveStart,
+				    colourRow[j + 2] >= aliveStart,
+				    colourRow[j + 3] >= aliveStart);
+				sum = wasm_i32x4_add(sum, alive);
+			}
+			wasm_v128_store(&countRow[j], sum);
+		}
+
+		// scalar tail (fewer than 4 columns left before interiorHi)
+		for (; j <= interiorHi; j++)
+		{
+			int32_t val = countRowIm1[j - 1] + countRowIm1[j + 1] - countRowIm2[j];
+			if (rowHasColour && colourRow[j] >= aliveStart)
+			{
+				val += 1;
+			}
+			countRow[j] = val;
+		}
+
+		// --- right edge: general ---
+		for (j = (interiorHi + 1 > interiorLo ? interiorHi + 1 : interiorLo); j <= ncols; j++)
+		{
+			int32_t val = getCount2L(im1, j - 1, countRowIm1) + getCount2L(im1, j + 1, countRowIm1) - getCount2L(im2, j, countRowIm2);
+			if (rowHasColour && j < ncols && colourRow[j] >= aliveStart)
+			{
+				val += 1;
+			}
+			countRow[j] = val;
+		}
+	}
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+void cumulativeVNCountsN(
+    const int32_t height,
+    const int32_t ccht,
+    const int32_t ncols,
+    const int32_t nrows,
+    const int32_t bottomY,
+    const int32_t leftX,
+    const int32_t maxGridState,
+    const int32_t halfccwd,
+    int32_t *const counts,
+    uint8_t *const colourGrid,
+    const uint32_t countsWidth,
+    const uint32_t colourGridWidth)
+{
+	// set the globals used by getCount2L()
+	g_precalc = counts + (ccht - 1) * countsWidth;
+	g_ncols = ncols;
+	g_ccht = ccht;
+	g_halfccwd = halfccwd;
+	g_counts = counts;
+	g_countsWidth = countsWidth;
+	g_ncolsMinus1 = ncols - 1;	   // defensive fix: this function's own right-edge
+	g_ncolsMinusCcht = ncols - ccht; // mirror lookup (j == ncols) can read these too
+
+	const int32_t interiorLo = 1;
+	const int32_t interiorHi = ncols - 2; // inclusive; j-1, j, j+1 all safely in [0, ncols)
+
+	for (int32_t i = 0; i < ccht; i++)
+	{
+		if (i + bottomY >= height)
+		{
+			continue;
+		}
+
+		int32_t *countRow = counts + i * countsWidth;
+		uint8_t *colourRow = colourGrid + (i + bottomY) * colourGridWidth + leftX;
+		const int32_t im1 = i - 1;
+		const int32_t im2 = im1 - 1;
+		int32_t *countRowIm1 = countRow - countsWidth;
+		int32_t *countRowIm2 = countRowIm1 - countsWidth;
+		const bool rowHasColour = (i < nrows);
+
+		// getCount2L treats any row < 0 as always-zero WITHOUT dereferencing its
+		// countRow pointer -- so forming countRowIm1/countRowIm2 as raw pointer
+		// arithmetic is safe there even when im1/im2 are negative, since they're
+		// never actually read in that case. The interior fast path below reads
+		// them directly, with no such guard, so it must not run when im1 or im2
+		// is negative (only possible for i == 0 and i == 1: a fixed, negligible
+		// number of rows). Route those through the general path entirely.
+		const bool rowsValid = (im1 >= 0) && (im2 >= 0);
+
+		if (!rowsValid)
+		{
+			for (int32_t j = 0; j <= ncols; j++)
+			{
+				int32_t val = getCount2L(im1, j - 1, countRowIm1) + getCount2L(im1, j + 1, countRowIm1) - getCount2L(im2, j, countRowIm2);
+				if (rowHasColour && j < ncols && colourRow[j] == maxGridState)
+				{
+					val += 1;
+				}
+				countRow[j] = val;
+			}
+			continue;
+		}
+
+		// --- left edge: general, correctness-preserving ---
+		int32_t j = 0;
+		for (; j < interiorLo && j <= ncols; j++)
+		{
+			int32_t val = getCount2L(im1, j - 1, countRowIm1) + getCount2L(im1, j + 1, countRowIm1) - getCount2L(im2, j, countRowIm2);
+			if (rowHasColour && j < ncols && colourRow[j] == maxGridState)
+			{
+				val += 1;
+			}
+			countRow[j] = val;
+		}
+
+		// --- interior: branch-free, SIMD, 4 columns at a time ---
+		for (; j + 3 <= interiorHi; j += 4)
+		{
+			v128_t left = wasm_v128_load(&countRowIm1[j - 1]);
+			v128_t right = wasm_v128_load(&countRowIm1[j + 1]);
+			v128_t mid = wasm_v128_load(&countRowIm2[j]);
+			v128_t sum = wasm_i32x4_sub(wasm_i32x4_add(left, right), mid);
+
+			if (rowHasColour)
+			{
+				v128_t alive = wasm_i32x4_make(
+				    colourRow[j] == maxGridState,
+				    colourRow[j + 1] == maxGridState,
+				    colourRow[j + 2] == maxGridState,
+				    colourRow[j + 3] == maxGridState);
+				sum = wasm_i32x4_add(sum, alive);
+			}
+			wasm_v128_store(&countRow[j], sum);
+		}
+
+		// scalar tail (fewer than 4 columns left before interiorHi)
+		for (; j <= interiorHi; j++)
+		{
+			int32_t val = countRowIm1[j - 1] + countRowIm1[j + 1] - countRowIm2[j];
+			if (rowHasColour && colourRow[j] == maxGridState)
+			{
+				val += 1;
+			}
+			countRow[j] = val;
+		}
+
+		// --- right edge: general ---
+		for (j = (interiorHi + 1 > interiorLo ? interiorHi + 1 : interiorLo); j <= ncols; j++)
+		{
+			int32_t val = getCount2L(im1, j - 1, countRowIm1) + getCount2L(im1, j + 1, countRowIm1) - getCount2L(im2, j, countRowIm2);
+			if (rowHasColour && j < ncols && colourRow[j] == maxGridState)
+			{
+				val += 1;
+			}
+			countRow[j] = val;
+		}
+	}
+}
+
+
+EMSCRIPTEN_KEEPALIVE
 void nextGenerationHROTVN2(
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	uint16_t *const colourTileHistoryGrid,
-	const uint32_t colourTileGridWidth,
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	const uint8_t *const comboList,
-	const uint32_t bottomY,
-	const uint32_t leftX,
-	const uint32_t xrange,
-	const uint32_t yrange,
-	const uint32_t nrows,
-	const uint32_t ncols,
-	const uint32_t aliveStart,
-	const uint32_t aliveMax,
-	const uint32_t deadStart,
-	const uint32_t deadMin,
-	const uint32_t ccht,
-	const uint32_t halfccwd,
-	uint32_t *const shared,
-	uint32_t minX,
-	uint32_t maxX,
-	uint32_t minY,
-	uint32_t maxY,
-	uint32_t minX1,
-	uint32_t maxX1,
-	uint32_t minY1,
-	uint32_t maxY1,
-	uint32_t population,
-	uint32_t births,
-	uint32_t deaths
-) {
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    uint16_t *const colourTileHistoryGrid,
+    const uint32_t colourTileGridWidth,
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    const uint8_t *const comboList,
+    const uint32_t bottomY,
+    const uint32_t leftX,
+    const uint32_t xrange,
+    const uint32_t yrange,
+    const uint32_t nrows,
+    const uint32_t ncols,
+    const uint32_t aliveStart,
+    const uint32_t aliveMax,
+    const uint32_t deadStart,
+    const uint32_t deadMin,
+    const uint32_t ccht,
+    const uint32_t halfccwd,
+    uint32_t *const shared,
+    uint32_t minX,
+    uint32_t maxX,
+    uint32_t minY,
+    uint32_t maxY,
+    uint32_t minX1,
+    uint32_t maxX1,
+    uint32_t minY1,
+    uint32_t maxY1,
+    uint32_t population,
+    uint32_t births,
+    uint32_t deaths)
+{
 	// set the globals used by getCount2L()
 	g_ncols = ncols;
 	g_ccht = ccht;
@@ -4283,122 +5288,121 @@ void nextGenerationHROTVN2(
 	g_counts = counts;
 	g_ncolsMinusCcht = ncols - ccht;
 	g_ncolsMinus1 = ncols - 1;
-	g_cchtPlus1 = ccht + 1;
+	g_cchtMinus1 = ccht - 1;
 	g_cchtPlusHalfccwdPlus1 = ccht + halfccwd + 1;
 
 	// calculate final neighborhood counts and update the corresponding cells in the grid
-	for (uint32_t i = yrange; i <= nrows - yrange; i++) {
+	for (uint32_t i = yrange; i <= nrows - yrange; i++)
+	{
 		const uint32_t im1 = i - 1;
-		int32_t *countRowIm1 = counts + im1 * countsWidth;
 		const uint32_t ipr = i + yrange;
-		int32_t *countRowIpr = counts + ipr * countsWidth;
 		const uint32_t iprm1 = ipr - 1;
-		int32_t *countRowIprm1 = counts + iprm1 * countsWidth;
 		const uint32_t imrm1 = i - yrange - 1;
-		int32_t *countRowImrm1 = counts + imrm1 * countsWidth;
 		const uint32_t imrm2 = imrm1 - 1;
-		int32_t *countRowImrm2 = counts + imrm2 * countsWidth;
+
+		// Resolved once per outer row instead of being re-derived by every one
+		// of the ~8*ncols getCount2L calls that used to touch these rows.
+		RowPlan planIpr = planRow((int32_t)ipr, counts, countsWidth, (int32_t)ccht, g_precalc);
+		RowPlan planIm1 = planRow((int32_t)im1, counts, countsWidth, (int32_t)ccht, g_precalc);
+		RowPlan planImrm2 = planRow((int32_t)imrm2, counts, countsWidth, (int32_t)ccht, g_precalc);
+		RowPlan planIprm1 = planRow((int32_t)iprm1, counts, countsWidth, (int32_t)ccht, g_precalc);
+		RowPlan planImrm1 = planRow((int32_t)imrm1, counts, countsWidth, (int32_t)ccht, g_precalc);
+
+		// Rows are monotonic: imrm2 <= imrm1 <= im1 <= iprm1 <= ipr (for yrange >= 0).
+		// So checking the smallest and largest both land in [0, ccht) guarantees
+		// all five do -- a single O(1) check instead of five.
+		const bool allDirect = (planImrm2.mode == 1) && (planIpr.mode == 1);
+
 		const uint32_t ipminrow = i + bottomY;
 		uint8_t *colourRow = colourGrid + ipminrow * colourGridWidth + leftX + xrange;
 		uint16_t *colourTileRow = colourTileHistoryGrid + (ipminrow >> 4) * colourTileGridWidth;
 		bool rowAlive = false;
 		bool liveRowAlive = false;
 
-		for (uint32_t j = xrange; j <= ncols - xrange; j++) {
-			// get the neighbourhood count
-			const uint32_t jpr = j + xrange;
-			const uint32_t jmr = j - xrange;
+		// Safe zone where every im1 column offset (+/-xrange, +/-(xrange+1))
+		// stays within [0, ncols) -- i.e. no mirror lookup can be needed there.
+		const int32_t jFastLo = (int32_t)xrange + 1;
+		const int32_t jFastHi = (int32_t)ncols - (int32_t)xrange - 2;
 
-			const int32_t count = getCount2L(ipr , j, countRowIpr)
-				- getCount2L(im1 , jpr + 1, countRowIm1)
-				- getCount2L(im1 , jmr - 1, countRowIm1)
-				+ getCount2L(imrm2 , j, countRowImrm2)
-				+ getCount2L(iprm1 , j, countRowIprm1)
-				- getCount2L(im1 , jpr, countRowIm1)
-				- getCount2L(im1 , jmr, countRowIm1)
-				+ getCount2L(imrm1 , j, countRowImrm1);
+		uint32_t j = xrange;
+		while (j <= ncols - xrange)
+		{
+			if (allDirect && (int32_t)j >= jFastLo && (int32_t)(j + 3) <= jFastHi)
+			{
+				// --- branch-free, SIMD, 4 columns at a time ---
+				v128_t vIpr = wasm_v128_load(&planIpr.base[j]);
+				v128_t vIm1p1 = wasm_v128_load(&planIm1.base[j + xrange + 1]);
+				v128_t vIm1m1 = wasm_v128_load(&planIm1.base[j - xrange - 1]);
+				v128_t vImrm2 = wasm_v128_load(&planImrm2.base[j]);
+				v128_t vIprm1 = wasm_v128_load(&planIprm1.base[j]);
+				v128_t vIm1p0 = wasm_v128_load(&planIm1.base[j + xrange]);
+				v128_t vIm1m0 = wasm_v128_load(&planIm1.base[j - xrange]);
+				v128_t vImrm1 = wasm_v128_load(&planImrm1.base[j]);
 
-			// get the current state
-			uint32_t state = *colourRow;
+				v128_t vCount = vIpr;
+				vCount = wasm_i32x4_sub(vCount, vIm1p1);
+				vCount = wasm_i32x4_sub(vCount, vIm1m1);
+				vCount = wasm_i32x4_add(vCount, vImrm2);
+				vCount = wasm_i32x4_add(vCount, vIprm1);
+				vCount = wasm_i32x4_sub(vCount, vIm1p0);
+				vCount = wasm_i32x4_sub(vCount, vIm1m0);
+				vCount = wasm_i32x4_add(vCount, vImrm1);
 
-			// update the state based on the rules
-			if (state < aliveStart) {
-				if (comboList[count] & 2) {
-					// new cell is born
-					state = aliveStart;
-					births++;
-				} else {
-					// state is still dead
-					if (state > deadMin) {
-						state--;
-					}
-				}
-			} else {
-				// this cell is alive
-				if ((comboList[count] & 1) == 0) {
-					// cell dies
-					deaths++;
-					state = deadStart;
-				} else {
-					if (state < aliveMax) {
-						state++;
-					}
+				int32_t counts4[4];
+				wasm_v128_store(counts4, vCount);
+
+				for (int lane = 0; lane < 4; lane++)
+				{
+					uint32_t x = leftX + j;
+					applyCellUpdate2(counts4[lane], colourRow, comboList, colourTileRow,
+							     aliveStart, aliveMax, deadStart, deadMin, x,
+							     &minX, &maxX, &minX1, &maxX1,
+							     &population, &births, &deaths,
+							     &rowAlive, &liveRowAlive);
+					colourRow++;
+					j++;
 				}
 			}
+			else
+			{
+				// --- general, correctness-preserving single column ---
+				const uint32_t jpr = j + xrange;
+				const uint32_t jmr = j - xrange;
 
-			// update the cell
-			*colourRow = state;
+				int32_t count = fetchGeneral(planIpr, (int32_t)j) - fetchGeneral(planIm1, (int32_t)(jpr + 1)) - fetchGeneral(planIm1, (int32_t)(jmr - 1)) + fetchGeneral(planImrm2, (int32_t)j) + fetchGeneral(planIprm1, (int32_t)j) - fetchGeneral(planIm1, (int32_t)jpr) - fetchGeneral(planIm1, (int32_t)jmr) + fetchGeneral(planImrm1, (int32_t)j);
 
-			// check for occupied cells
-			if (state > deadMin) {
-				// update the bounding box
 				uint32_t x = leftX + j;
-				if (x < minX) {
-					minX = x;
-				}
-				if (x > maxX) {
-					maxX = x;
-				}
-				rowAlive = true;
-
-				// update the tile
-				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-
-				// check for alive cells
-				if (state >= aliveStart) {
-					// update the population
-					population++;
-					liveRowAlive = true;
-
-					// update the alive bounding box
-					if (x < minX1) {
-						minX1 = x;
-					}
-					if (x > maxX1) {
-						maxX1 = x;
-					}
-				}
+				applyCellUpdate2(count, colourRow, comboList, colourTileRow,
+						     aliveStart, aliveMax, deadStart, deadMin, x,
+						     &minX, &maxX, &minX1, &maxX1,
+						     &population, &births, &deaths,
+						     &rowAlive, &liveRowAlive);
+				colourRow++;
+				j++;
 			}
-
-			// next column
-			colourRow++;
 		}
 
 		// update the bounding boxes
-		if (rowAlive) {
-			if (ipminrow < minY) {
+		if (rowAlive)
+		{
+			if (ipminrow < minY)
+			{
 				minY = ipminrow;
 			}
-			if (ipminrow > maxY) {
+			if (ipminrow > maxY)
+			{
 				maxY = ipminrow;
 			}
 		}
 
-		if (liveRowAlive) {
-			if (ipminrow < minY1) {
+		if (liveRowAlive)
+		{
+			if (ipminrow < minY1)
+			{
 				minY1 = ipminrow;
 			}
-			if (ipminrow > maxY1) {
+			if (ipminrow > maxY1)
+			{
 				maxY1 = ipminrow;
 			}
 		}
@@ -4420,39 +5424,38 @@ void nextGenerationHROTVN2(
 
 
 EMSCRIPTEN_KEEPALIVE
-// calculate next generation for Higher Range Outer Totalistic algo with 2-state von Neumann neighbourhood
 void nextGenerationHROTVNN(
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	uint16_t *const colourTileHistoryGrid,
-	const uint32_t colourTileGridWidth,
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	const uint8_t *const comboList,
-	const uint32_t bottomY,
-	const uint32_t leftX,
-	const uint32_t xrange,
-	const uint32_t yrange,
-	const uint32_t nrows,
-	const uint32_t ncols,
-	const uint32_t deadState,
-	const uint32_t minDeadState,
-	const uint32_t maxGenState,
-	const uint32_t ccht,
-	const uint32_t halfccwd,
-	uint32_t *const shared,
-	uint32_t minX,
-	uint32_t maxX,
-	uint32_t minY,
-	uint32_t maxY,
-	uint32_t minX1,
-	uint32_t maxX1,
-	uint32_t minY1,
-	uint32_t maxY1,
-	uint32_t population,
-	uint32_t births,
-	uint32_t deaths
-) {
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    uint16_t *const colourTileHistoryGrid,
+    const uint32_t colourTileGridWidth,
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    const uint8_t *const comboList,
+    const uint32_t bottomY,
+    const uint32_t leftX,
+    const uint32_t xrange,
+    const uint32_t yrange,
+    const uint32_t nrows,
+    const uint32_t ncols,
+    const uint32_t deadState,
+    const uint32_t minDeadState,
+    const uint32_t maxGenState,
+    const uint32_t ccht,
+    const uint32_t halfccwd,
+    uint32_t *const shared,
+    uint32_t minX,
+    uint32_t maxX,
+    uint32_t minY,
+    uint32_t maxY,
+    uint32_t minX1,
+    uint32_t maxX1,
+    uint32_t minY1,
+    uint32_t maxY1,
+    uint32_t population,
+    uint32_t births,
+    uint32_t deaths)
+{
 	// set the globals used by getCount2L()
 	g_ncols = ncols;
 	g_ccht = ccht;
@@ -4462,111 +5465,121 @@ void nextGenerationHROTVNN(
 	g_counts = counts;
 	g_ncolsMinusCcht = ncols - ccht;
 	g_ncolsMinus1 = ncols - 1;
-	g_cchtPlus1 = ccht + 1;
+	g_cchtMinus1 = ccht - 1;
 	g_cchtPlusHalfccwdPlus1 = ccht + halfccwd + 1;
 
 	// calculate final neighborhood counts and update the corresponding cells in the grid
-	for (uint32_t i = yrange; i <= nrows - yrange; i++) {
+	for (uint32_t i = yrange; i <= nrows - yrange; i++)
+	{
 		const uint32_t im1 = i - 1;
-		int32_t *countRowIm1 = counts + im1 * countsWidth;
 		const uint32_t ipr = i + yrange;
-		int32_t *countRowIpr = counts + ipr * countsWidth;
 		const uint32_t iprm1 = ipr - 1;
-		int32_t *countRowIprm1 = counts + iprm1 * countsWidth;
 		const uint32_t imrm1 = i - yrange - 1;
-		int32_t *countRowImrm1 = counts + imrm1 * countsWidth;
 		const uint32_t imrm2 = imrm1 - 1;
-		int32_t *countRowImrm2 = counts + imrm2 * countsWidth;
+
+		// Resolved once per outer row instead of being re-derived by every one
+		// of the ~8*ncols getCount2L calls that used to touch these rows.
+		RowPlan planIpr = planRow((int32_t)ipr, counts, countsWidth, (int32_t)ccht, g_precalc);
+		RowPlan planIm1 = planRow((int32_t)im1, counts, countsWidth, (int32_t)ccht, g_precalc);
+		RowPlan planImrm2 = planRow((int32_t)imrm2, counts, countsWidth, (int32_t)ccht, g_precalc);
+		RowPlan planIprm1 = planRow((int32_t)iprm1, counts, countsWidth, (int32_t)ccht, g_precalc);
+		RowPlan planImrm1 = planRow((int32_t)imrm1, counts, countsWidth, (int32_t)ccht, g_precalc);
+
+		// Rows are monotonic: imrm2 <= imrm1 <= im1 <= iprm1 <= ipr (for yrange >= 0).
+		// So checking the smallest and largest both land in [0, ccht) guarantees
+		// all five do -- a single O(1) check instead of five.
+		const bool allDirect = (planImrm2.mode == 1) && (planIpr.mode == 1);
+
 		const uint32_t ipminrow = i + bottomY;
 		uint8_t *colourRow = colourGrid + ipminrow * colourGridWidth + leftX + xrange;
 		uint16_t *colourTileRow = colourTileHistoryGrid + (ipminrow >> 4) * colourTileGridWidth;
 		bool rowAlive = false;
 		bool liveRowAlive = false;
 
-		for (uint32_t j = xrange; j <= ncols - xrange; j++) {
-			const uint32_t jpr = j + xrange;
-			const uint32_t jmr = j - xrange;
+		// Safe zone where every im1 column offset (+/-xrange, +/-(xrange+1))
+		// stays within [0, ncols) -- i.e. no mirror lookup can be needed there.
+		const int32_t jFastLo = (int32_t)xrange + 1;
+		const int32_t jFastHi = (int32_t)ncols - (int32_t)xrange - 2;
 
-			const int32_t count = getCount2L(ipr , j, countRowIpr)
-				- getCount2L(im1 , jpr + 1, countRowIm1)
-				- getCount2L(im1 , jmr - 1, countRowIm1)
-				+ getCount2L(imrm2 , j, countRowImrm2)
-				+ getCount2L(iprm1 , j, countRowIprm1)
-				- getCount2L(im1 , jpr, countRowIm1)
-				- getCount2L(im1 , jmr, countRowIm1)
-				+ getCount2L(imrm1 , j, countRowImrm1);
+		uint32_t j = xrange;
+		while (j <= ncols - xrange)
+		{
+			if (allDirect && (int32_t)j >= jFastLo && (int32_t)(j + 3) <= jFastHi)
+			{
+				// --- branch-free, SIMD, 4 columns at a time ---
+				v128_t vIpr = wasm_v128_load(&planIpr.base[j]);
+				v128_t vIm1p1 = wasm_v128_load(&planIm1.base[j + xrange + 1]);
+				v128_t vIm1m1 = wasm_v128_load(&planIm1.base[j - xrange - 1]);
+				v128_t vImrm2 = wasm_v128_load(&planImrm2.base[j]);
+				v128_t vIprm1 = wasm_v128_load(&planIprm1.base[j]);
+				v128_t vIm1p0 = wasm_v128_load(&planIm1.base[j + xrange]);
+				v128_t vIm1m0 = wasm_v128_load(&planIm1.base[j - xrange]);
+				v128_t vImrm1 = wasm_v128_load(&planImrm1.base[j]);
 
-			const uint32_t jpmincol = j + leftX;
-			uint32_t state = *colourRow;
+				v128_t vCount = vIpr;
+				vCount = wasm_i32x4_sub(vCount, vIm1p1);
+				vCount = wasm_i32x4_sub(vCount, vIm1m1);
+				vCount = wasm_i32x4_add(vCount, vImrm2);
+				vCount = wasm_i32x4_add(vCount, vIprm1);
+				vCount = wasm_i32x4_sub(vCount, vIm1p0);
+				vCount = wasm_i32x4_sub(vCount, vIm1m0);
+				vCount = wasm_i32x4_add(vCount, vImrm1);
 
-			if (state <= deadState) {
-				if (comboList[count] & 2) {
-					// new cell is born
-					state = maxGenState;
-					births++;
-				} else {
-					if (state > minDeadState) {
-						state--;
-					}
-				}
-			} else if (state == maxGenState) {
-				// this cell is alive
-				if ((comboList[count] & 1) == 0) {
-					// cell decays by one state
-					state--;
-					deaths++;
-				}
-			} else {
-				// this cell will eventually die
-				if (state > minDeadState) {
-					state--;
-				}
-			}
+				int32_t counts4[4];
+				wasm_v128_store(counts4, vCount);
 
-			// update the cell
-			*colourRow = state;
-
-			if (state > minDeadState) {
-				colourTileRow[jpmincol >> 8] |= (1 << (~(jpmincol >> 4) & 15));
-				if (jpmincol < minX) {
-					minX = jpmincol;
-				}
-				if (jpmincol > maxX) {
-					maxX = jpmincol;
-				}
-
-				rowAlive = true;
-				if (state == maxGenState) {
-					population++;
-				}
-				if (state > deadState) {
-					liveRowAlive = true;
-					if (jpmincol < minX1) {
-						minX1 = jpmincol;
-					}
-					if (jpmincol > maxX1) {
-						maxX1 = jpmincol;
-					}
+				for (int lane = 0; lane < 4; lane++)
+				{
+					uint32_t x = leftX + j;
+					applyCellUpdateN(counts4[lane], colourRow, comboList, colourTileRow,
+							     deadState, minDeadState, maxGenState, x,
+							     &minX, &maxX, &minX1, &maxX1,
+							     &population, &births, &deaths,
+							     &rowAlive, &liveRowAlive);
+					colourRow++;
+					j++;
 				}
 			}
+			else
+			{
+				// --- general, correctness-preserving single column ---
+				const uint32_t jpr = j + xrange;
+				const uint32_t jmr = j - xrange;
 
-			// next column
-			colourRow++;
+				int32_t count = fetchGeneral(planIpr, (int32_t)j) - fetchGeneral(planIm1, (int32_t)(jpr + 1)) - fetchGeneral(planIm1, (int32_t)(jmr - 1)) + fetchGeneral(planImrm2, (int32_t)j) + fetchGeneral(planIprm1, (int32_t)j) - fetchGeneral(planIm1, (int32_t)jpr) - fetchGeneral(planIm1, (int32_t)jmr) + fetchGeneral(planImrm1, (int32_t)j);
+
+				uint32_t x = leftX + j;
+				applyCellUpdateN(count, colourRow, comboList, colourTileRow,
+						     deadState, minDeadState, maxGenState, x,
+						     &minX, &maxX, &minX1, &maxX1,
+						     &population, &births, &deaths,
+						     &rowAlive, &liveRowAlive);
+				colourRow++;
+				j++;
+			}
 		}
 
-		if (rowAlive) {
-			if (ipminrow < minY) {
+		// update the bounding boxes
+		if (rowAlive)
+		{
+			if (ipminrow < minY)
+			{
 				minY = ipminrow;
 			}
-			if (ipminrow > maxY) {
+			if (ipminrow > maxY)
+			{
 				maxY = ipminrow;
 			}
 		}
-		if (liveRowAlive) {
-			if (ipminrow < minY1) {
+
+		if (liveRowAlive)
+		{
+			if (ipminrow < minY1)
+			{
 				minY1 = ipminrow;
 			}
-			if (ipminrow > maxY1) {
+			if (ipminrow > maxY1)
+			{
 				maxY1 = ipminrow;
 			}
 		}
@@ -4590,27 +5603,27 @@ void nextGenerationHROTVNN(
 EMSCRIPTEN_KEEPALIVE
 // update grid from counts for Higher Range Outer Totalistic algo with 2-states
 void updateGridFromCounts2(
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	uint16_t *const colourTileHistoryGrid,
-	const uint32_t colourTileGridWidth,
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	const uint8_t *const comboList,
-	const int32_t bottomY,
-	const int32_t leftX,
-	const int32_t topY,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const uint32_t aliveStart,
-	const uint32_t aliveMax,
-	const uint32_t deadStart,
-	const uint32_t deadMin,
-	uint32_t *const shared,
-	const uint32_t engineWidth,
-	const uint32_t engineHeight
-) {
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    uint16_t *const colourTileHistoryGrid,
+    const uint32_t colourTileGridWidth,
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    const uint8_t *const comboList,
+    const int32_t bottomY,
+    const int32_t leftX,
+    const int32_t topY,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const uint32_t aliveStart,
+    const uint32_t aliveMax,
+    const uint32_t deadStart,
+    const uint32_t deadMin,
+    uint32_t *const shared,
+    const uint32_t engineWidth,
+    const uint32_t engineHeight)
+{
 	// setup bounding box
 	int32_t minX = engineWidth;
 	int32_t maxX = 0;
@@ -4626,25 +5639,27 @@ void updateGridFromCounts2(
 	uint32_t births = 0;
 	uint32_t deaths = 0;
 
-	const v128_t zero = wasm_u8x16_splat(0);				// zero
-	const v128_t one = wasm_u8x16_splat(1);				// one
-	const v128_t two = wasm_u8x16_splat(2);				// two
-	const v128_t penBaseSet = wasm_u8x16_splat(64);			// base pen color for newly set cells
-	const v128_t penMaxSet = wasm_u8x16_splat(127);			// maximum pen color for set cells after increment
-	const v128_t penBaseClear = wasm_u8x16_splat(63);		// base pen color for newly cleared cells
-	const v128_t penMinClear = wasm_u8x16_splat(1);			// minimum pen color for cleared cells after decrement
-	const v128_t increment = wasm_u8x16_splat(1);			// increment/decrement by 1
+	const v128_t zero = wasm_u8x16_splat(0);		  // zero
+	const v128_t one = wasm_u8x16_splat(1);		  // one
+	const v128_t two = wasm_u8x16_splat(2);		  // two
+	const v128_t penBaseSet = wasm_u8x16_splat(64);	  // base pen color for newly set cells
+	const v128_t penMaxSet = wasm_u8x16_splat(127);	  // maximum pen color for set cells after increment
+	const v128_t penBaseClear = wasm_u8x16_splat(63); // base pen color for newly cleared cells
+	const v128_t penMinClear = wasm_u8x16_splat(1);	  // minimum pen color for cleared cells after decrement
+	const v128_t increment = wasm_u8x16_splat(1);	  // increment/decrement by 1
 
 	// compute the rest of the grid
 	int32_t alignedStart = (leftX - xrange + 15) & ~15;
 	const int32_t alignedEnd = (rightX + xrange) & ~15;
-	if (alignedStart > rightX + xrange) {
+	if (alignedStart > rightX + xrange)
+	{
 		alignedStart = rightX + xrange + 1;
 	}
 
 	int32_t leftMost, rightMost;
 
-	for (int32_t y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (int32_t y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		uint8_t *colourRow = colourGrid + y * colourGridWidth;
 		uint16_t *colourTileRow = colourTileHistoryGrid + (y >> 4) * colourTileGridWidth;
 		int32_t *countRow = counts + y * countsWidth;
@@ -4654,34 +5669,46 @@ void updateGridFromCounts2(
 
 		int32_t x = leftX - xrange;
 
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			// get the next state
 			uint8_t state = *(colourRow + x);
 
 			// calculate the neighbourhood count
 			int32_t count = *(countRow + x);
 
-			if (state < aliveStart) {
+			if (state < aliveStart)
+			{
 				// this cell is dead
-				if (comboList[count] & 2) {
+				if (comboList[count] & 2)
+				{
 					// new cell is born
 					state = aliveStart;
 					births++;
-				} else {
+				}
+				else
+				{
 					// state is still dead
-					if (state > deadMin) {
+					if (state > deadMin)
+					{
 						state--;
 					}
 				}
-			} else {
+			}
+			else
+			{
 				// this cell is alive
-				if ((comboList[count] & 1) == 0) {
+				if ((comboList[count] & 1) == 0)
+				{
 					// cell dies
 					deaths++;
 					state = deadStart;
-				} else {
+				}
+				else
+				{
 					// state is still alive
-					if (state < aliveMax) {
+					if (state < aliveMax)
+					{
 						state++;
 					}
 				}
@@ -4691,22 +5718,28 @@ void updateGridFromCounts2(
 			*(colourRow + x) = state;
 
 			// update columns used if cell is alive
-			if (state > deadMin) {
+			if (state > deadMin)
+			{
 				rowOccupied = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-				if (x < minX) {
+				if (x < minX)
+				{
 					minX = x;
 				}
-				if (x > maxX) {
+				if (x > maxX)
+				{
 					maxX = x;
 				}
-				if (state >= aliveStart) {
+				if (state >= aliveStart)
+				{
 					population++;
 					rowAlive = true;
-					if (x < minX1) {
+					if (x < minX1)
+					{
 						minX1 = x;
 					}
-					if (x > maxX1) {
+					if (x > maxX1)
+					{
 						maxX1 = x;
 					}
 				}
@@ -4715,7 +5748,8 @@ void updateGridFromCounts2(
 			x++;
 		}
 
-		while (x < alignedEnd) {
+		while (x < alignedEnd)
+		{
 			// get the next four counts and lookup the births/survivals for each
 			v128_t count4 = wasm_v128_load(countRow + x);
 			uint8_t sb0 = comboList[wasm_i32x4_extract_lane(count4, 0)];
@@ -4813,7 +5847,8 @@ void updateGridFromCounts2(
 
 			// check if any cells are occupied
 			uint32_t aliveBits = wasm_i8x16_bitmask(cellsOccupied);
-			if (aliveBits) {
+			if (aliveBits)
+			{
 				// mark the row as having occupied cells
 				rowOccupied = true;
 
@@ -4822,16 +5857,19 @@ void updateGridFromCounts2(
 				rightMost = __builtin_ctz(aliveBits);
 
 				// update the min and max X
-				if (x + rightMost < minX) {
+				if (x + rightMost < minX)
+				{
 					minX = x + rightMost;
 				}
-				if (x + leftMost > maxX) {
+				if (x + leftMost > maxX)
+				{
 					maxX = x + leftMost;
 				}
 
 				// check if any of the occupied cells are alive
 				aliveBits = wasm_i8x16_bitmask(cellsAlive);
-				if (aliveBits) {
+				if (aliveBits)
+				{
 					// update the tile
 					colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 
@@ -4839,10 +5877,12 @@ void updateGridFromCounts2(
 					leftMost = 31 - __builtin_clz(aliveBits);
 					rightMost = __builtin_ctz(aliveBits);
 
-					if (x + rightMost < minX1) {
+					if (x + rightMost < minX1)
+					{
 						minX1 = x + rightMost;
 					}
-					if (x + leftMost > maxX1) {
+					if (x + leftMost > maxX1)
+					{
 						maxX1 = x + leftMost;
 					}
 				}
@@ -4851,34 +5891,46 @@ void updateGridFromCounts2(
 			x += 16;
 		}
 
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			// get the next state
 			uint32_t state = *(colourRow + x);
 
 			// calculate the neighbourhood count
 			uint32_t count = *(countRow + x);
 
-			if (state < aliveStart) {
+			if (state < aliveStart)
+			{
 				// this cell is dead
-				if (comboList[count] & 2) {
+				if (comboList[count] & 2)
+				{
 					// new cell is born
 					state = aliveStart;
 					births++;
-				} else {
+				}
+				else
+				{
 					// state is still dead
-					if (state > deadMin) {
+					if (state > deadMin)
+					{
 						state--;
 					}
 				}
-			} else {
+			}
+			else
+			{
 				// this cell is alive
-				if ((comboList[count] & 1) == 0) {
+				if ((comboList[count] & 1) == 0)
+				{
 					// cell dies
 					deaths++;
 					state = aliveStart - 1;
-				} else {
+				}
+				else
+				{
 					// state is still alive
-					if (state < aliveMax) {
+					if (state < aliveMax)
+					{
 						state++;
 					}
 				}
@@ -4888,21 +5940,27 @@ void updateGridFromCounts2(
 			*(colourRow + x) = state;
 
 			// update columns used if cell is alive
-			if (state > deadMin) {
+			if (state > deadMin)
+			{
 				rowOccupied = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-				if (x < minX) {
+				if (x < minX)
+				{
 					minX = x;
 				}
-				if (x > maxX) {
+				if (x > maxX)
+				{
 					maxX = x;
 				}
-				if (state >= aliveStart) {
+				if (state >= aliveStart)
+				{
 					population++;
-					if (x < minX1) {
+					if (x < minX1)
+					{
 						minX1 = x;
 					}
-					if (x > maxX1) {
+					if (x > maxX1)
+					{
 						maxX1 = x;
 					}
 					rowAlive = true;
@@ -4913,20 +5971,26 @@ void updateGridFromCounts2(
 		}
 
 		// update bounding box y if a cell in the row was occupied
-		if (rowOccupied) {
-			if (y < minY) {
+		if (rowOccupied)
+		{
+			if (y < minY)
+			{
 				minY = y;
 			}
-			if (y > maxY) {
+			if (y > maxY)
+			{
 				maxY = y;
 			}
 
 			// update bounding box y if a cell in the row was alive
-			if (rowAlive) {
-				if (y < minY1) {
+			if (rowAlive)
+			{
+				if (y < minY1)
+				{
 					minY1 = y;
 				}
-				if (y > maxY1) {
+				if (y > maxY1)
+				{
 					maxY1 = y;
 				}
 			}
@@ -4947,30 +6011,29 @@ void updateGridFromCounts2(
 	shared[10] = deaths;
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 // update grid from counts for Higher Range Outer Totalistic algo with N-states
 void updateGridFromCountsN(
-	uint8_t *colourGrid,
-	const uint32_t colourGridWidth,
-	uint16_t *const colourTileHistoryGrid,
-	const uint32_t colourTileGridWidth,
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	const uint8_t *const comboList,
-	const int32_t bottomY,
-	const int32_t leftX,
-	const int32_t topY,
-	const int32_t rightX,
-	const int32_t xrange,
-	const int32_t yrange,
-	const uint32_t deadState,
-	const uint32_t maxGenState,
-	const uint32_t minDeadState,
-	uint32_t *const shared,
-	const uint32_t engineWidth,
-	const uint32_t engineHeight
-) {
+    uint8_t *colourGrid,
+    const uint32_t colourGridWidth,
+    uint16_t *const colourTileHistoryGrid,
+    const uint32_t colourTileGridWidth,
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    const uint8_t *const comboList,
+    const int32_t bottomY,
+    const int32_t leftX,
+    const int32_t topY,
+    const int32_t rightX,
+    const int32_t xrange,
+    const int32_t yrange,
+    const uint32_t deadState,
+    const uint32_t maxGenState,
+    const uint32_t minDeadState,
+    uint32_t *const shared,
+    const uint32_t engineWidth,
+    const uint32_t engineHeight)
+{
 	// setup bounding box
 	int32_t minX = engineWidth;
 	int32_t maxX = 0;
@@ -4989,18 +6052,20 @@ void updateGridFromCountsN(
 	// compute the rest of the grid
 	int32_t alignedStart = (leftX - xrange + 15) & ~15;
 	const int32_t alignedEnd = (rightX + xrange) & ~15;
-	if (alignedStart > rightX + xrange) {
+	if (alignedStart > rightX + xrange)
+	{
 		alignedStart = rightX + xrange + 1;
 	}
 
-	const v128_t oneVec = wasm_u8x16_splat(1);				// one
-	const v128_t twoVec = wasm_u8x16_splat(2);				// two
-	const v128_t deadStateVec = wasm_u8x16_splat(deadState);		// newly dead state
-	const v128_t maxGenStateVec = wasm_u8x16_splat(maxGenState);	// state for alive cell
-	const v128_t minDeadStateVec = wasm_u8x16_splat(minDeadState);	// minimum dead state
+	const v128_t oneVec = wasm_u8x16_splat(1);			   // one
+	const v128_t twoVec = wasm_u8x16_splat(2);			   // two
+	const v128_t deadStateVec = wasm_u8x16_splat(deadState);	   // newly dead state
+	const v128_t maxGenStateVec = wasm_u8x16_splat(maxGenState);   // state for alive cell
+	const v128_t minDeadStateVec = wasm_u8x16_splat(minDeadState); // minimum dead state
 	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 
-	for (int32_t y = bottomY - yrange; y <= topY + yrange; y++) {
+	for (int32_t y = bottomY - yrange; y <= topY + yrange; y++)
+	{
 		uint8_t *colourRow = colourGrid + y * colourGridWidth;
 		uint16_t *colourTileRow = colourTileHistoryGrid + (y >> 4) * colourTileGridWidth;
 		int32_t *countRow = counts + y * countsWidth;
@@ -5010,35 +6075,47 @@ void updateGridFromCountsN(
 
 		int32_t x = leftX - xrange;
 
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			// get the next state
 			uint8_t state = *(colourRow + x);
 
 			// calculate the neighbourhood count
 			int32_t count = *(countRow + x);
 
-			if (state <= deadState) {
+			if (state <= deadState)
+			{
 				// this cell is dead
-				if (comboList[count] & 2) {
+				if (comboList[count] & 2)
+				{
 					// new cell is born
 					state = maxGenState;
 					births++;
-				} else {
+				}
+				else
+				{
 					// state is still dead
-					if (state > minDeadState) {
+					if (state > minDeadState)
+					{
 						state--;
 					}
 				}
-			} else if (state == maxGenState) {
+			}
+			else if (state == maxGenState)
+			{
 				// this cell is alive
-				if ((comboList[count] & 1) == 0) {
+				if ((comboList[count] & 1) == 0)
+				{
 					// cell dies
 					state--;
 					deaths++;
 				}
-			} else {
+			}
+			else
+			{
 				// state is still alive
-				if (state > minDeadState) {
+				if (state > minDeadState)
+				{
 					state--;
 				}
 			}
@@ -5047,24 +6124,31 @@ void updateGridFromCountsN(
 			*(colourRow + x) = state;
 
 			// update columns used if cell is alive
-			if (state > minDeadState) {
+			if (state > minDeadState)
+			{
 				rowOccupied = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-				if (x < minX) {
+				if (x < minX)
+				{
 					minX = x;
 				}
-				if (x > maxX) {
+				if (x > maxX)
+				{
 					maxX = x;
 				}
-				if (state == maxGenState) {
+				if (state == maxGenState)
+				{
 					population++;
 				}
-				if (state > deadState) {
+				if (state > deadState)
+				{
 					rowAlive = true;
-					if (x < minX1) {
+					if (x < minX1)
+					{
 						minX1 = x;
 					}
-					if (x > maxX1) {
+					if (x > maxX1)
+					{
 						maxX1 = x;
 					}
 				}
@@ -5073,7 +6157,8 @@ void updateGridFromCountsN(
 			x++;
 		}
 
-		while (x < alignedEnd) {
+		while (x < alignedEnd)
+		{
 			// get neighbourhood counts, then births and survivals, for cells 0 to 3
 			int32_t count0 = *(countRow + x);
 			int32_t count1 = *(countRow + x + 1);
@@ -5143,12 +6228,10 @@ void updateGridFromCountsN(
 			// find which cells are (<= deadState || == maxGenState) && alive in bit cells
 			// these will be set to maxGenState
 			v128_t setToAliveMask = wasm_v128_and(
-				cells,
-				wasm_v128_or(
-					wasm_u8x16_le(colourVec, deadStateVec),
-					wasm_i8x16_eq(colourVec, maxGenStateVec)
-				)
-			);
+			    cells,
+			    wasm_v128_or(
+				  wasm_u8x16_le(colourVec, deadStateVec),
+				  wasm_i8x16_eq(colourVec, maxGenStateVec)));
 
 			// the other cells will decrement if they are bigger than minDeadState
 			// and their bit cells cleared
@@ -5171,7 +6254,8 @@ void updateGridFromCountsN(
 
 			// determine if any cells in the row are non-zero
 			uint32_t occupiedBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, minDeadStateVec));
-			if (occupiedBits) {
+			if (occupiedBits)
+			{
 				rowOccupied = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 
@@ -5180,16 +6264,19 @@ void updateGridFromCountsN(
 				int32_t rightMost = __builtin_ctz(occupiedBits);
 
 				// update occupied bounding box
-				if (x + rightMost < minX) {
+				if (x + rightMost < minX)
+				{
 					minX = x + rightMost;
 				}
-				if (x + leftMost > maxX) {
+				if (x + leftMost > maxX)
+				{
 					maxX = x + leftMost;
 				}
 
 				// check if any cells in the row are alive
 				uint32_t aliveBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, deadStateVec));
-				if (aliveBits) {
+				if (aliveBits)
+				{
 					rowAlive = true;
 
 					// compute the left and right most occupied cell
@@ -5197,10 +6284,12 @@ void updateGridFromCountsN(
 					int32_t rightMost = __builtin_ctz(aliveBits);
 
 					// update alive bounding box
-					if (x + rightMost < minX1) {
+					if (x + rightMost < minX1)
+					{
 						minX1 = x + rightMost;
 					}
-					if (x + leftMost > maxX1) {
+					if (x + leftMost > maxX1)
+					{
 						maxX1 = x + leftMost;
 					}
 				}
@@ -5209,35 +6298,47 @@ void updateGridFromCountsN(
 			x += 16;
 		}
 
-		while (x <= rightX + xrange) {
+		while (x <= rightX + xrange)
+		{
 			// get the next state
 			uint32_t state = *(colourRow + x);
 
 			// calculate the neighbourhood count
 			uint32_t count = *(countRow + x);
 
-			if (state <= deadState) {
+			if (state <= deadState)
+			{
 				// this cell is dead
-				if (comboList[count] & 2) {
+				if (comboList[count] & 2)
+				{
 					// new cell is born
 					state = maxGenState;
 					births++;
-				} else {
+				}
+				else
+				{
 					// state is still dead
-					if (state > minDeadState) {
+					if (state > minDeadState)
+					{
 						state--;
 					}
 				}
-			} else if (state == maxGenState) {
+			}
+			else if (state == maxGenState)
+			{
 				// this cell is alive
-				if ((comboList[count] & 1) == 0) {
+				if ((comboList[count] & 1) == 0)
+				{
 					// cell dies
 					state--;
 					deaths++;
 				}
-			} else {
+			}
+			else
+			{
 				// state is still alive
-				if (state > minDeadState) {
+				if (state > minDeadState)
+				{
 					state--;
 				}
 			}
@@ -5246,23 +6347,30 @@ void updateGridFromCountsN(
 			*(colourRow + x) = state;
 
 			// update columns used if cell is alive
-			if (state > minDeadState) {
+			if (state > minDeadState)
+			{
 				rowOccupied = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-				if (x < minX) {
+				if (x < minX)
+				{
 					minX = x;
 				}
-				if (x > maxX) {
+				if (x > maxX)
+				{
 					maxX = x;
 				}
-				if (state == maxGenState) {
+				if (state == maxGenState)
+				{
 					population++;
 				}
-				if (state > deadState) {
-					if (x < minX1) {
+				if (state > deadState)
+				{
+					if (x < minX1)
+					{
 						minX1 = x;
 					}
-					if (x > maxX1) {
+					if (x > maxX1)
+					{
 						maxX1 = x;
 					}
 					rowAlive = true;
@@ -5273,20 +6381,26 @@ void updateGridFromCountsN(
 		}
 
 		// update bounding box y if a cell in the row was occupied
-		if (rowOccupied) {
-			if (y < minY) {
+		if (rowOccupied)
+		{
+			if (y < minY)
+			{
 				minY = y;
 			}
-			if (y > maxY) {
+			if (y > maxY)
+			{
 				maxY = y;
 			}
 
 			// update bounding box y if a cell in the row was alive
-			if (rowAlive) {
-				if (y < minY1) {
+			if (rowAlive)
+			{
+				if (y < minY1)
+				{
 					minY1 = y;
 				}
-				if (y > maxY1) {
+				if (y > maxY1)
+				{
 					maxY1 = y;
 				}
 			}
@@ -5307,48 +6421,47 @@ void updateGridFromCountsN(
 	shared[10] = deaths;
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 // calculate next generation for Higher Range Outer Totalistic algo with 2-state Moore neighbourhood
 void nextGenerationHROTMoore2(
-	uint8_t *restrict const colourGrid,
-	const uint32_t colourGridWidth,
-	uint16_t *restrict const colourTileHistoryGrid,
-	const uint32_t colourTileGridWidth,
-	int32_t *restrict const counts,
-	const uint32_t countsWidth,
-	const uint8_t *restrict const comboList,
-	uint8_t *restrict const colUsed,
-	const uint32_t bottomY,
-	const uint32_t leftX,
-	const uint32_t topY,
-	const uint32_t rightX,
-	const uint32_t xrange,
-	const uint32_t yrange,
-	const uint32_t aliveStart,
-	const uint32_t aliveMax,
-	const uint32_t deadStart,
-	const uint32_t deadMin,
-	uint32_t *restrict const shared,
-	uint32_t minY,
-	uint32_t maxY,
-	uint32_t minY1,
-	uint32_t maxY1,
-	uint32_t population,
-	uint32_t births,
-	uint32_t deaths
-) {
+    uint8_t *restrict const colourGrid,
+    const uint32_t colourGridWidth,
+    uint16_t *restrict const colourTileHistoryGrid,
+    const uint32_t colourTileGridWidth,
+    int32_t *restrict const counts,
+    const uint32_t countsWidth,
+    const uint8_t *restrict const comboList,
+    uint8_t *restrict const colUsed,
+    const uint32_t bottomY,
+    const uint32_t leftX,
+    const uint32_t topY,
+    const uint32_t rightX,
+    const uint32_t xrange,
+    const uint32_t yrange,
+    const uint32_t aliveStart,
+    const uint32_t aliveMax,
+    const uint32_t deadStart,
+    const uint32_t deadMin,
+    uint32_t *restrict const shared,
+    uint32_t minY,
+    uint32_t maxY,
+    uint32_t minY1,
+    uint32_t maxY1,
+    uint32_t population,
+    uint32_t births,
+    uint32_t deaths)
+{
 	const uint32_t rxp1 = xrange + 1;
 	const uint32_t ryp1 = yrange + 1;
 	const uint32_t leftXp1 = leftX + 1;
 
 	const v128_t one = wasm_u8x16_splat(1);
 	const v128_t two = wasm_u8x16_splat(2);
-	const v128_t penBaseSet = wasm_u8x16_splat(aliveStart);   // base pen color for newly set cells
-	const v128_t penMaxSet = wasm_u8x16_splat(aliveMax);      // maximum pen color for set cells after increment
-	const v128_t penBaseClear = wasm_u8x16_splat(deadStart);  // base pen color for newly cleared cells
-	const v128_t penMinClear = wasm_u8x16_splat(deadMin);     // minimum pen color for cleared cells after decrement
-	const v128_t increment = wasm_u8x16_splat(1);             // increment/decrement by 1
+	const v128_t penBaseSet = wasm_u8x16_splat(aliveStart);  // base pen color for newly set cells
+	const v128_t penMaxSet = wasm_u8x16_splat(aliveMax);	   // maximum pen color for set cells after increment
+	const v128_t penBaseClear = wasm_u8x16_splat(deadStart); // base pen color for newly cleared cells
+	const v128_t penMinClear = wasm_u8x16_splat(deadMin);	   // minimum pen color for cleared cells after decrement
+	const v128_t increment = wasm_u8x16_splat(1);		   // increment/decrement by 1
 
 	// compute the rest of the grid
 	int32_t *restrict countRowYpr = counts + (bottomY + 1 + yrange) * countsWidth;
@@ -5358,11 +6471,13 @@ void nextGenerationHROTMoore2(
 
 	uint32_t alignedStart = (leftXp1 + 15) & ~15;
 	const uint32_t alignedEnd = rightX & ~15;
-	if (alignedStart > rightX) {
+	if (alignedStart > rightX)
+	{
 		alignedStart = rightX + 1;
 	}
 
-	for (uint32_t y = bottomY + 1; y <= topY; y++) {
+	for (uint32_t y = bottomY + 1; y <= topY; y++)
+	{
 		uint16_t *restrict colourTileRow = colourTileHistoryGrid + (y >> 4) * colourTileGridWidth;
 		uint32_t xpr = leftXp1 + xrange;
 		uint32_t xmrp1 = leftXp1 - rxp1;
@@ -5372,35 +6487,47 @@ void nextGenerationHROTMoore2(
 		uint32_t x = leftXp1;
 
 		// left unaligned edge
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			uint32_t state = *colourRow;
 
 			uint32_t count = countRowYpr[xpr] + countRowYmrp1[xmrp1] -
-			                 countRowYpr[xmrp1] - countRowYmrp1[xpr];
+					     countRowYpr[xmrp1] - countRowYmrp1[xpr];
 
-			if (state < aliveStart) {
-				if (comboList[count] & 2) {
+			if (state < aliveStart)
+			{
+				if (comboList[count] & 2)
+				{
 					state = aliveStart;
 					births++;
-				} else if (state > deadMin) {
+				}
+				else if (state > deadMin)
+				{
 					state--;
 				}
-			} else {
-				if ((comboList[count] & 1) == 0) {
+			}
+			else
+			{
+				if ((comboList[count] & 1) == 0)
+				{
 					deaths++;
 					state = deadStart;
-				} else if (state < aliveMax) {
+				}
+				else if (state < aliveMax)
+				{
 					state++;
 				}
 			}
 
 			*colourRow = state;
 
-			if (state > deadMin) {
+			if (state > deadMin)
+			{
 				rowAlive = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 				colUsed[x] |= 1;
-				if (state >= aliveStart) {
+				if (state >= aliveStart)
+				{
 					population++;
 					liveRowAlive = true;
 					colUsed[x] |= 2;
@@ -5414,14 +6541,14 @@ void nextGenerationHROTMoore2(
 		}
 
 		// aligned vectorized loop
-		while (x < alignedEnd) {
+		while (x < alignedEnd)
+		{
 			v128_t countVec;
 
 			// block 1
 			countVec = wasm_i32x4_sub(
-				wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr), wasm_v128_load(countRowYmrp1 + xmrp1)),
-				wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1), wasm_v128_load(countRowYmrp1 + xpr))
-			);
+			    wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr), wasm_v128_load(countRowYmrp1 + xmrp1)),
+			    wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1), wasm_v128_load(countRowYmrp1 + xpr)));
 			const uint8_t sb0 = comboList[wasm_i32x4_extract_lane(countVec, 0)];
 			const uint8_t sb1 = comboList[wasm_i32x4_extract_lane(countVec, 1)];
 			const uint8_t sb2 = comboList[wasm_i32x4_extract_lane(countVec, 2)];
@@ -5429,9 +6556,8 @@ void nextGenerationHROTMoore2(
 
 			// block 2
 			countVec = wasm_i32x4_sub(
-				wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr + 4), wasm_v128_load(countRowYmrp1 + xmrp1 + 4)),
-				wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1 + 4), wasm_v128_load(countRowYmrp1 + xpr + 4))
-			);
+			    wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr + 4), wasm_v128_load(countRowYmrp1 + xmrp1 + 4)),
+			    wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1 + 4), wasm_v128_load(countRowYmrp1 + xpr + 4)));
 			const uint8_t sb4 = comboList[wasm_i32x4_extract_lane(countVec, 0)];
 			const uint8_t sb5 = comboList[wasm_i32x4_extract_lane(countVec, 1)];
 			const uint8_t sb6 = comboList[wasm_i32x4_extract_lane(countVec, 2)];
@@ -5439,9 +6565,8 @@ void nextGenerationHROTMoore2(
 
 			// block 3
 			countVec = wasm_i32x4_sub(
-				wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr + 8), wasm_v128_load(countRowYmrp1 + xmrp1 + 8)),
-				wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1 + 8), wasm_v128_load(countRowYmrp1 + xpr + 8))
-			);
+			    wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr + 8), wasm_v128_load(countRowYmrp1 + xmrp1 + 8)),
+			    wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1 + 8), wasm_v128_load(countRowYmrp1 + xpr + 8)));
 			const uint8_t sb8 = comboList[wasm_i32x4_extract_lane(countVec, 0)];
 			const uint8_t sb9 = comboList[wasm_i32x4_extract_lane(countVec, 1)];
 			const uint8_t sb10 = comboList[wasm_i32x4_extract_lane(countVec, 2)];
@@ -5449,9 +6574,8 @@ void nextGenerationHROTMoore2(
 
 			// block 4
 			countVec = wasm_i32x4_sub(
-				wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr + 12), wasm_v128_load(countRowYmrp1 + xmrp1 + 12)),
-				wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1 + 12), wasm_v128_load(countRowYmrp1 + xpr + 12))
-			);
+			    wasm_i32x4_add(wasm_v128_load(countRowYpr + xpr + 12), wasm_v128_load(countRowYmrp1 + xmrp1 + 12)),
+			    wasm_i32x4_add(wasm_v128_load(countRowYpr + xmrp1 + 12), wasm_v128_load(countRowYmrp1 + xpr + 12)));
 			const uint8_t sb12 = comboList[wasm_i32x4_extract_lane(countVec, 0)];
 			const uint8_t sb13 = comboList[wasm_i32x4_extract_lane(countVec, 1)];
 			const uint8_t sb14 = comboList[wasm_i32x4_extract_lane(countVec, 2)];
@@ -5497,7 +6621,8 @@ void nextGenerationHROTMoore2(
 			population += __builtin_popcount(wasm_i8x16_bitmask(cellsAliveMask));
 
 			// combined and branched colUsed/tileRow updates
-			if (wasm_v128_any_true(cellsOccupied)) {
+			if (wasm_v128_any_true(cellsOccupied))
+			{
 				rowAlive = true;
 
 				// Fixed: the tile-history bit must be set for ANY occupied cell
@@ -5511,7 +6636,8 @@ void nextGenerationHROTMoore2(
 				v128_t columnsUsed = wasm_v128_load(colUsed + x);
 				v128_t newCols = wasm_v128_and(cellsOccupied, one);
 
-				if (wasm_v128_any_true(cellsAliveMask)) {
+				if (wasm_v128_any_true(cellsAliveMask))
+				{
 					liveRowAlive = true;
 					newCols = wasm_v128_or(newCols, wasm_v128_and(cellsAliveMask, two));
 				}
@@ -5526,35 +6652,47 @@ void nextGenerationHROTMoore2(
 		}
 
 		// right unaligned edge
-		while (x <= rightX) {
+		while (x <= rightX)
+		{
 			uint32_t state = *colourRow;
 
 			uint32_t count = countRowYpr[xpr] + countRowYmrp1[xmrp1] -
-			                 countRowYpr[xmrp1] - countRowYmrp1[xpr];
+					     countRowYpr[xmrp1] - countRowYmrp1[xpr];
 
-			if (state < aliveStart) {
-				if (comboList[count] & 2) {
+			if (state < aliveStart)
+			{
+				if (comboList[count] & 2)
+				{
 					state = aliveStart;
 					births++;
-				} else if (state > deadMin) {
+				}
+				else if (state > deadMin)
+				{
 					state--;
 				}
-			} else {
-				if ((comboList[count] & 1) == 0) {
+			}
+			else
+			{
+				if ((comboList[count] & 1) == 0)
+				{
 					deaths++;
 					state = deadStart;
-				} else if (state < aliveMax) {
+				}
+				else if (state < aliveMax)
+				{
 					state++;
 				}
 			}
 
 			*colourRow = state;
 
-			if (state > deadMin) {
+			if (state > deadMin)
+			{
 				rowAlive = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 				colUsed[x] |= 1;
-				if (state >= aliveStart) {
+				if (state >= aliveStart)
+				{
 					population++;
 					liveRowAlive = true;
 					colUsed[x] |= 2;
@@ -5567,13 +6705,19 @@ void nextGenerationHROTMoore2(
 			x++;
 		}
 
-		if (rowAlive) {
-			if (y < minY) minY = y;
-			if (y > maxY) maxY = y;
+		if (rowAlive)
+		{
+			if (y < minY)
+				minY = y;
+			if (y > maxY)
+				maxY = y;
 		}
-		if (liveRowAlive) {
-			if (y < minY1) minY1 = y;
-			if (y > maxY1) maxY1 = y;
+		if (liveRowAlive)
+		{
+			if (y < minY1)
+				minY1 = y;
+			if (y > maxY1)
+				maxY1 = y;
 		}
 
 		countRowYpr += countsWidth;
@@ -5590,48 +6734,47 @@ void nextGenerationHROTMoore2(
 	shared[6] = deaths;
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 // calculate next generation for Higher Range Outer Totalistic algo with N-state Moore neighbourhood
 void nextGenerationHROTMooreN(
-	uint8_t *const colourGrid,
-	const uint32_t colourGridWidth,
-	uint16_t *const colourTileHistoryGrid,
-	const uint32_t colourTileGridWidth,
-	int32_t *const counts,
-	const uint32_t countsWidth,
-	const uint8_t *const comboList,
-	const uint32_t bottomY,
-	const uint32_t leftX,
-	const uint32_t topY,
-	const uint32_t rightX,
-	const uint32_t xrange,
-	const uint32_t yrange,
-	const uint32_t deadState,
-	const uint32_t minDeadState,
-	const uint32_t maxGenState,
-	uint32_t *const shared,
-	uint32_t minX,
-	uint32_t maxX,
-	uint32_t minY,
-	uint32_t maxY,
-	uint32_t minX1,
-	uint32_t maxX1,
-	uint32_t minY1,
-	uint32_t maxY1,
-	uint32_t population,
-	uint32_t births,
-	uint32_t deaths
-) {
+    uint8_t *const colourGrid,
+    const uint32_t colourGridWidth,
+    uint16_t *const colourTileHistoryGrid,
+    const uint32_t colourTileGridWidth,
+    int32_t *const counts,
+    const uint32_t countsWidth,
+    const uint8_t *const comboList,
+    const uint32_t bottomY,
+    const uint32_t leftX,
+    const uint32_t topY,
+    const uint32_t rightX,
+    const uint32_t xrange,
+    const uint32_t yrange,
+    const uint32_t deadState,
+    const uint32_t minDeadState,
+    const uint32_t maxGenState,
+    uint32_t *const shared,
+    uint32_t minX,
+    uint32_t maxX,
+    uint32_t minY,
+    uint32_t maxY,
+    uint32_t minX1,
+    uint32_t maxX1,
+    uint32_t minY1,
+    uint32_t maxY1,
+    uint32_t population,
+    uint32_t births,
+    uint32_t deaths)
+{
 	const uint32_t rxp1 = xrange + 1;
 	const uint32_t ryp1 = yrange + 1;
 	const uint32_t leftXp1 = leftX + 1;
 
-	const v128_t oneVec = wasm_u8x16_splat(1);				// one
-	const v128_t twoVec = wasm_u8x16_splat(2);				// two
-	const v128_t deadStateVec = wasm_u8x16_splat(deadState);		// newly dead state
-	const v128_t maxGenStateVec = wasm_u8x16_splat(maxGenState);	// state for alive cell
-	const v128_t minDeadStateVec = wasm_u8x16_splat(minDeadState);	// minimum dead state
+	const v128_t oneVec = wasm_u8x16_splat(1);			   // one
+	const v128_t twoVec = wasm_u8x16_splat(2);			   // two
+	const v128_t deadStateVec = wasm_u8x16_splat(deadState);	   // newly dead state
+	const v128_t maxGenStateVec = wasm_u8x16_splat(maxGenState);   // state for alive cell
+	const v128_t minDeadStateVec = wasm_u8x16_splat(minDeadState); // minimum dead state
 	const v128_t reverseVec = wasm_u8x16_make(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 
 	// compute the rest of the grid
@@ -5642,11 +6785,13 @@ void nextGenerationHROTMooreN(
 
 	uint32_t alignedStart = (leftXp1 + 15) & ~15;
 	const uint32_t alignedEnd = rightX & ~15;
-	if (alignedStart > rightX + xrange) {
+	if (alignedStart > rightX + xrange)
+	{
 		alignedStart = rightX + xrange + 1;
 	}
 
-	for (uint32_t y = bottomY + 1; y <= topY; y++) {
+	for (uint32_t y = bottomY + 1; y <= topY; y++)
+	{
 		uint16_t *colourTileRow = colourTileHistoryGrid + (y >> 4) * colourTileGridWidth;
 		uint32_t xpr = leftXp1 + xrange;
 		uint32_t xmrp1 = leftXp1 - rxp1;
@@ -5655,38 +6800,50 @@ void nextGenerationHROTMooreN(
 
 		uint32_t x = leftXp1;
 
-		while (x < alignedStart) {
+		while (x < alignedStart)
+		{
 			// get the next state
 			uint32_t state = *colourRow;
 
 			// calculate the neighbourhood count
 			uint32_t count = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+					     countRowYmrp1[xmrp1] -
+					     countRowYpr[xmrp1] -
+					     countRowYmrp1[xpr];
 
-			if (state <= deadState) {
+			if (state <= deadState)
+			{
 				// this cell is dead
-				if (comboList[count] & 2) {
+				if (comboList[count] & 2)
+				{
 					// new cell is born
 					state = maxGenState;
 					births++;
-				} else {
+				}
+				else
+				{
 					// state is still dead
-					if (state > minDeadState) {
+					if (state > minDeadState)
+					{
 						state--;
 					}
 				}
-			} else if (state == maxGenState) {
+			}
+			else if (state == maxGenState)
+			{
 				// this cell is alive
-				if ((comboList[count] & 1) == 0) {
+				if ((comboList[count] & 1) == 0)
+				{
 					// cell dies
 					state--;
 					deaths++;
 				}
-			} else {
+			}
+			else
+			{
 				// this cell will eventually die
-				if (state > minDeadState) {
+				if (state > minDeadState)
+				{
 					state--;
 				}
 			}
@@ -5694,24 +6851,31 @@ void nextGenerationHROTMooreN(
 			// update the cell
 			*colourRow = state;
 
-			if (state > minDeadState) {
+			if (state > minDeadState)
+			{
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-				if (x < minX) {
+				if (x < minX)
+				{
 					minX = x;
 				}
-				if (x > maxX) {
+				if (x > maxX)
+				{
 					maxX = x;
 				}
 				rowAlive = true;
-				if (state == maxGenState) {
+				if (state == maxGenState)
+				{
 					population++;
 				}
-				if (state > deadState) {
+				if (state > deadState)
+				{
 					liveRowAlive = true;
-					if (x < minX1) {
+					if (x < minX1)
+					{
 						minX1 = x;
 					}
-					if (x > maxX1) {
+					if (x > maxX1)
+					{
 						maxX1 = x;
 					}
 				}
@@ -5725,33 +6889,34 @@ void nextGenerationHROTMooreN(
 			x++;
 		}
 
-		while (x < alignedEnd) {
+		while (x < alignedEnd)
+		{
 			// get neighbourhood counts, then births and survivals, for cells 0 to 3
 			uint32_t count0 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+						countRowYmrp1[xmrp1] -
+						countRowYpr[xmrp1] -
+						countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			uint32_t count1 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+						countRowYmrp1[xmrp1] -
+						countRowYpr[xmrp1] -
+						countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			uint32_t count2 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+						countRowYmrp1[xmrp1] -
+						countRowYpr[xmrp1] -
+						countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			uint32_t count3 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+						countRowYmrp1[xmrp1] -
+						countRowYpr[xmrp1] -
+						countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
@@ -5762,30 +6927,30 @@ void nextGenerationHROTMooreN(
 
 			// now for cells 4 to 7
 			count0 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			count1 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			count2 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			count3 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
@@ -5796,30 +6961,30 @@ void nextGenerationHROTMooreN(
 
 			// now for cells 8 to 11
 			count0 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			count1 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			count2 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			count3 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
@@ -5830,30 +6995,30 @@ void nextGenerationHROTMooreN(
 
 			// finally cells 12 to 15
 			count0 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			count1 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			count2 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
 			count3 = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+				   countRowYmrp1[xmrp1] -
+				   countRowYpr[xmrp1] -
+				   countRowYmrp1[xpr];
 			xpr++;
 			xmrp1++;
 
@@ -5887,12 +7052,10 @@ void nextGenerationHROTMooreN(
 			// find which cells are (<= deadState || == maxGenState) && alive in bit cells
 			// these will be set to maxGenState
 			v128_t setToAliveMask = wasm_v128_and(
-				cells,
-				wasm_v128_or(
-					wasm_u8x16_le(colourVec, deadStateVec),
-					wasm_i8x16_eq(colourVec, maxGenStateVec)
-				)
-			);
+			    cells,
+			    wasm_v128_or(
+				  wasm_u8x16_le(colourVec, deadStateVec),
+				  wasm_i8x16_eq(colourVec, maxGenStateVec)));
 
 			// the other cells will decrement if they are bigger than minDeadState
 			// and their bit cells cleared
@@ -5915,7 +7078,8 @@ void nextGenerationHROTMooreN(
 
 			// determine if any cells in the row are non-zero
 			uint32_t occupiedBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, minDeadStateVec));
-			if (occupiedBits) {
+			if (occupiedBits)
+			{
 				rowAlive = true;
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
 
@@ -5924,16 +7088,19 @@ void nextGenerationHROTMooreN(
 				uint32_t rightMost = __builtin_ctz(occupiedBits);
 
 				// update occupied bounding box
-				if (x + rightMost < minX) {
+				if (x + rightMost < minX)
+				{
 					minX = x + rightMost;
 				}
-				if (x + leftMost > maxX) {
+				if (x + leftMost > maxX)
+				{
 					maxX = x + leftMost;
 				}
 
 				// check if any cells in the row are alive
 				uint32_t aliveBits = wasm_i8x16_bitmask(wasm_u8x16_gt(newColourVec, deadStateVec));
-				if (aliveBits) {
+				if (aliveBits)
+				{
 					liveRowAlive = true;
 
 					// compute the left and right most occupied cell
@@ -5941,10 +7108,12 @@ void nextGenerationHROTMooreN(
 					uint32_t rightMost = __builtin_ctz(aliveBits);
 
 					// update alive bounding box
-					if (x + rightMost < minX1) {
+					if (x + rightMost < minX1)
+					{
 						minX1 = x + rightMost;
 					}
-					if (x + leftMost > maxX1) {
+					if (x + leftMost > maxX1)
+					{
 						maxX1 = x + leftMost;
 					}
 				}
@@ -5955,38 +7124,50 @@ void nextGenerationHROTMooreN(
 			x += 16;
 		}
 
-		while (x <= rightX) {
+		while (x <= rightX)
+		{
 			// get the next state
 			uint32_t state = *colourRow;
 
 			// calculate the neighbourhood count
 			uint32_t count = countRowYpr[xpr] +
-				countRowYmrp1[xmrp1] -
-				countRowYpr[xmrp1] -
-				countRowYmrp1[xpr];
+					     countRowYmrp1[xmrp1] -
+					     countRowYpr[xmrp1] -
+					     countRowYmrp1[xpr];
 
-			if (state <= deadState) {
+			if (state <= deadState)
+			{
 				// this cell is dead
-				if (comboList[count] & 2) {
+				if (comboList[count] & 2)
+				{
 					// new cell is born
 					state = maxGenState;
 					births++;
-				} else {
+				}
+				else
+				{
 					// state is still dead
-					if (state > minDeadState) {
+					if (state > minDeadState)
+					{
 						state--;
 					}
 				}
-			} else if (state == maxGenState) {
+			}
+			else if (state == maxGenState)
+			{
 				// this cell is alive
-				if ((comboList[count] & 1) == 0) {
+				if ((comboList[count] & 1) == 0)
+				{
 					// cell dies
 					state--;
 					deaths++;
 				}
-			} else {
+			}
+			else
+			{
 				// state is still alive
-				if (state > minDeadState) {
+				if (state > minDeadState)
+				{
 					state--;
 				}
 			}
@@ -5994,24 +7175,31 @@ void nextGenerationHROTMooreN(
 			// update the cell
 			*colourRow = state;
 
-			if (state > minDeadState) {
+			if (state > minDeadState)
+			{
 				colourTileRow[x >> 8] |= (1 << (~(x >> 4) & 15));
-				if (x < minX) {
+				if (x < minX)
+				{
 					minX = x;
 				}
-				if (x > maxX) {
+				if (x > maxX)
+				{
 					maxX = x;
 				}
 				rowAlive = true;
-				if (state == maxGenState) {
+				if (state == maxGenState)
+				{
 					population++;
 				}
-				if (state > deadState) {
+				if (state > deadState)
+				{
 					liveRowAlive = true;
-					if (x < minX1) {
+					if (x < minX1)
+					{
 						minX1 = x;
 					}
-					if (x > maxX1) {
+					if (x > maxX1)
+					{
 						maxX1 = x;
 					}
 				}
@@ -6026,19 +7214,25 @@ void nextGenerationHROTMooreN(
 		}
 
 		// update bounding box y if a cell in the row was alive
-		if (rowAlive) {
-			if (y < minY) {
+		if (rowAlive)
+		{
+			if (y < minY)
+			{
 				minY = y;
 			}
-			if (y > maxY) {
+			if (y > maxY)
+			{
 				maxY = y;
 			}
 		}
-		if (liveRowAlive) {
-			if (y < minY1) {
+		if (liveRowAlive)
+		{
+			if (y < minY1)
+			{
 				minY1 = y;
 			}
-			if (y > maxY1) {
+			if (y > maxY1)
+			{
 				maxY1 = y;
 			}
 		}
@@ -6061,7 +7255,6 @@ void nextGenerationHROTMooreN(
 	shared[9] = births;
 	shared[10] = deaths;
 }
-
 
 // ---------------------------------------------------------------------------
 // Optimized cumulativeMooreCounts2: 64-byte (4x v128) loop unrolling.
@@ -6216,11 +7409,11 @@ void cumulativeMooreCounts2(
 	// unrolled loop's condition is checked, so this guard is exact, not just
 	// defensive.
 	const uint32_t align64Right = (align16Left >= align16Right)
-	    ? leftTarget
-	    : align16Left + ((align16Right - align16Left) & ~63u);
+						    ? leftTarget
+						    : align16Left + ((align16Right - align16Left) & ~63u);
 	const uint32_t align32Right = (align16Left >= align16Right)
-	    ? leftTarget
-	    : align16Left + ((align16Right - align16Left) & ~31u);
+						    ? leftTarget
+						    : align16Left + ((align16Right - align16Left) & ~31u);
 
 	// Constants hoisted outside the loop
 	const v128_t addFour = wasm_i32x4_splat(4);
@@ -6301,20 +7494,19 @@ void cumulativeMooreCounts2(
 	}
 }
 
-
 EMSCRIPTEN_KEEPALIVE
 // cumulative counts for HROT Moore neighbourhood N-state
 void cumulativeMooreCountsN(
-	int32_t *const counts,
-	uint8_t *const colourGrid,
-	const uint32_t bottom,
-	const uint32_t left,
-	const uint32_t top,
-	const uint32_t right,
-	const int32_t maxGenState,
-	const uint32_t countWidth,
-	const uint32_t colourGridWidth
-) {
+    int32_t *const counts,
+    uint8_t *const colourGrid,
+    const uint32_t bottom,
+    const uint32_t left,
+    const uint32_t top,
+    const uint32_t right,
+    const int32_t maxGenState,
+    const uint32_t countWidth,
+    const uint32_t colourGridWidth)
+{
 	uint8_t *colourRow = colourGrid + bottom * colourGridWidth + left;
 	int32_t *countRow = counts + bottom * countWidth + left;
 	int32_t *prevCountRow = countRow - countWidth;
@@ -6329,12 +7521,15 @@ void cumulativeMooreCountsN(
 	// alive cells
 	const v128_t alive = wasm_u8x16_splat(maxGenState);
 
-	for (uint32_t y = bottom; y <= top; y++) {
+	for (uint32_t y = bottom; y <= top; y++)
+	{
 		uint32_t count = 0;
 
 		uint32_t x = left;
-		while (x < leftTarget) {
-			if ((*colourRow) == maxGenState) {
+		while (x < leftTarget)
+		{
+			if ((*colourRow) == maxGenState)
+			{
 				count++;
 			}
 			*countRow = *prevCountRow + count;
@@ -6344,21 +7539,27 @@ void cumulativeMooreCountsN(
 			x++;
 		}
 
-		while (x < align16Right) {
+		while (x < align16Right)
+		{
 			// get the next 16 cells
 			v128_t row = wasm_v128_load(colourRow);
 			v128_t cellsAlive = wasm_i8x16_eq(row, alive);
 			const uint32_t mask = wasm_i8x16_bitmask(cellsAlive);
-			if (mask) {
-				for (int32_t b = 0; b < 16; b++) {
-					if (mask & (1 << b)) {
+			if (mask)
+			{
+				for (int32_t b = 0; b < 16; b++)
+				{
+					if (mask & (1 << b))
+					{
 						count++;
 					}
 					*countRow = *prevCountRow + count;
 					countRow++;
 					prevCountRow++;
 				}
-			} else {
+			}
+			else
+			{
 				// set the current chunk to the previous counts plus the current cumulative count
 				const v128_t addCount = wasm_i32x4_splat(count);
 
@@ -6396,8 +7597,10 @@ void cumulativeMooreCountsN(
 			x += 16;
 		}
 
-		while (x <= right) {
-			if ((*colourRow) == maxGenState) {
+		while (x <= right)
+		{
+			if ((*colourRow) == maxGenState)
+			{
 				count++;
 			}
 			*countRow = *prevCountRow + count;
@@ -6412,133 +7615,3 @@ void cumulativeMooreCountsN(
 		prevCountRow += nextCountRow;
 	}
 }
-
-
-EMSCRIPTEN_KEEPALIVE
-//int32_t getCount2(int32_t i, int32_t j, int32_t *counts, uint32_t countWidth, int32_t *countRow, int32_t ncols, int32_t ccht, int32_t halfccwd, int32_t *precalc) {
-static inline int32_t getCount2(int32_t i, int32_t j, int32_t *const countRow) {
-	if (j < 0 && i + j < g_ccht) {
-		return *(g_counts + (i + j) * g_countsWidth);
-	}
-
-	if (j >= g_ncols && j - i >= g_ncols - g_ccht) {
-		return *(g_counts + (i + g_ncols - 1 - j) * g_countsWidth + (g_ncols - 1));
-	}
-
-	if (i < g_ccht) {
-		return *(countRow + j);
-	}
-
-	if ((i - g_ccht + 1) + j <= g_halfccwd) {
-		return *(g_precalc + (i - g_ccht + 1 + j));
-	}
-
-	if (j - (i - g_ccht + 1) >= g_halfccwd) {
-		return *(g_precalc + (j - (i - g_ccht + 1)));
-	}
-
-	return *(g_precalc + (g_halfccwd + ((i + j + g_ccht + g_halfccwd + 1) & 1)));
-}
-
-
-EMSCRIPTEN_KEEPALIVE
-// cumulative counts for HROT von Neumann neighbourhood 2-state
-void cumulativeVNCounts2(
-	const int32_t height,
-	const int32_t ccht,
-	const int32_t ncols,
-	const int32_t nrows,
-	const int32_t bottomY,
-	const int32_t leftX,
-	const int32_t aliveStart,
-	const int32_t halfccwd,
-	int32_t *const counts,
-	uint8_t *const colourGrid,
-	const uint32_t countsWidth,
-	const uint32_t colourGridWidth
-) {
-	// set the globals used by getCount2()
-	g_precalc = counts + (ccht - 1) * countsWidth;
-	g_ncols = ncols;
-	g_ccht = ccht;
-	g_halfccwd = halfccwd;
-	g_counts = counts;
-	g_countsWidth = countsWidth;
-
-	for (int32_t i = 0; i < ccht; i++) {
-		if (i + bottomY < height) {
-			int32_t *countRow = counts + i * countsWidth;
-			uint8_t *colourRow = colourGrid + (i + bottomY) * colourGridWidth + leftX;
-			const int32_t im1 = i - 1;
-			const int32_t im2 = im1 - 1;
-			int32_t *countRowIm1 = countRow - countsWidth;
-			int32_t *countRowIm2 = countRowIm1 - countsWidth;
-
-			for (int32_t j = 0; j <= ncols; j++) {
-				const int32_t count1 = (im1 < 0 || im1 + j - 1 < 0 || j - 1 - im1 >= ncols) ? 0 : getCount2(im1, j - 1, countRowIm1);
-				const int32_t count2 = (im1 < 0 || im1 + j + 1 < 0 || j + 1 - im1 >= ncols) ? 0 : getCount2(im1, j + 1, countRowIm1);
-				const int32_t count3 = (im2 < 0 || im2 + j < 0 || j - im2 >= ncols) ? 0 : getCount2(im2, j, countRowIm2);
-
-				*countRow = count1 + count2 - count3;
-
-				if (i < nrows && (colourRow[j] >= aliveStart)) {
-					*countRow += 1;
-				}
-
-				countRow++;
-			}
-		}
-	}
-}
-
-
-EMSCRIPTEN_KEEPALIVE
-// cumulative counts for HROT von Neumann neighbourhood N-state
-void cumulativeVNCountsN(
-	const int32_t height,
-	const int32_t ccht,
-	const int32_t ncols,
-	const int32_t nrows,
-	const int32_t bottomY,
-	const int32_t leftX,
-	const int32_t maxGridState,
-	const int32_t halfccwd,
-	int32_t *const counts,
-	uint8_t *const colourGrid,
-	const uint32_t countsWidth,
-	const uint32_t colourGridWidth
-) {
-	// set the globals used by getCount2()
-	g_precalc = counts + (ccht - 1) * countsWidth;
-	g_ncols = ncols;
-	g_ccht = ccht;
-	g_halfccwd = halfccwd;
-	g_counts = counts;
-	g_countsWidth = countsWidth;
-
-	for (int32_t i = 0; i < ccht; i++) {
-		if (i + bottomY < height) {
-			int32_t *countRow = counts + i * countsWidth;
-			uint8_t *colourRow = colourGrid + (i + bottomY) * colourGridWidth + leftX;
-			const int32_t im1 = i - 1;
-			const int32_t im2 = im1 - 1;
-			int32_t *countRowIm1 = countRow - countsWidth;
-			int32_t *countRowIm2 = countRowIm1 - countsWidth;
-
-			for (int32_t j = 0; j <= ncols; j++) {
-				const int32_t count1 = (im1 < 0 || im1 + j - 1 < 0 || j - 1 - im1 >= ncols) ? 0 : getCount2(im1, j - 1, countRowIm1);
-				const int32_t count2 = (im1 < 0 || im1 + j + 1 < 0 || j + 1 - im1 >= ncols) ? 0 : getCount2(im1, j + 1, countRowIm1);
-				const int32_t count3 = (im2 < 0 || im2 + j < 0 || j - im2 >= ncols) ? 0 : getCount2(im2, j, countRowIm2);
-
-				*countRow = count1 + count2 - count3;
-
-				if (i < nrows && (colourRow[j] == maxGridState)) {
-					*countRow += 1;
-				}
-
-				countRow++;
-			}
-		}
-	}
-}
-
